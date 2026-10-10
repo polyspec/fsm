@@ -196,7 +196,7 @@ test('copy --to json into a non-empty target exits 1 with E_STORE_NOT_EMPTY and 
   assert.deepEqual(filesOf(target), before);
 });
 
-test('copy --to mermaid into an empty target writes the files that the mermaid store writes for the same definitions', () => {
+test('copy --to mermaid into an empty target writes the files that the mermaid store writes for the same definitions', async () => {
   const source = project({
     'status.config.json': CONFIG_JSON,
     'machines/order.status.json': ORDER_TEXT,
@@ -210,8 +210,8 @@ test('copy --to mermaid into an empty target writes the files that the mermaid s
     stderr: '',
   });
   const expected = project();
-  const loaded = jsonStore(source).load();
-  mermaidStore(expected).save({ definitions: loaded.definitions, lock: loaded.lock });
+  const loaded = await jsonStore(source).load();
+  await mermaidStore(expected).save({ definitions: loaded.definitions, lock: loaded.lock });
   assert.deepEqual(filesOf(target), filesOf(expected));
   assert.deepEqual(filesOf(target), {
     'machines/order.status.mmd': ORDER_MMD_TEXT,
@@ -231,7 +231,7 @@ test('copy --to mermaid into a non-empty target exits 1 with E_STORE_NOT_EMPTY a
   assert.deepEqual(filesOf(target), before);
 });
 
-test('copy --to json from a mermaid project into an empty target writes the files that the json store writes for the same definitions', () => {
+test('copy --to json from a mermaid project into an empty target writes the files that the json store writes for the same definitions', async () => {
   const source = project({
     'status.config.json': MERMAID_CONFIG,
     'machines/order.status.mmd': ORDER_MMD_TEXT,
@@ -245,8 +245,8 @@ test('copy --to json from a mermaid project into an empty target writes the file
     stderr: '',
   });
   const expected = project();
-  const loaded = mermaidStore(source).load();
-  jsonStore(expected).save({ definitions: loaded.definitions, lock: loaded.lock });
+  const loaded = await mermaidStore(source).load();
+  await jsonStore(expected).save({ definitions: loaded.definitions, lock: loaded.lock });
   assert.deepEqual(filesOf(target), filesOf(expected));
   assert.deepEqual(filesOf(target), {
     'machines/order.status.json': ORDER_TEXT,

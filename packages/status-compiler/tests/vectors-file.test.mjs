@@ -29,8 +29,8 @@ test('the committed order vectors hold the format that check-parity reads', () =
   for (const feature of features) assert.ok(cases.some(entry => entry.feature === feature), `no case of ${feature}`);
 });
 
-test('the committed order vectors are byte-identical to the core output for the committed machine and lock', () => {
-  const store = jsonStore(ROOT).load();
+test('the committed order vectors are byte-identical to the core output for the committed machine and lock', async () => {
+  const store = await jsonStore(ROOT).load();
   assert.deepEqual(store.findings, []);
   const [definition] = store.definitions;
   const generated = vectors(normalize(definition), store.lock);

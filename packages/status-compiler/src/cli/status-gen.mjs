@@ -85,27 +85,27 @@ function storeOf(kind, root) {
 }
 
 /** The findings of the command. vectors writes <out>/<machine>.json for every machine and no file when it has findings. */
-function execute({ command, project, renames, to, root, out }) {
+async function execute({ command, project, renames, to, root, out }) {
   const configured = configuredStore(project);
   if (!configured.ok) return configured.findings;
-  if (command === 'copy') return copy(configured.store, storeOf(to, root)).findings;
+  if (command === 'copy') return (await copy(configured.store, storeOf(to, root))).findings;
   if (command === 'vectors') {
-    const result = run('vectors', configured.store, {});
+    const result = await run('vectors', configured.store, {});
     if (result.findings.length > 0) return result.findings;
     for (const generated of result.vectors) writeJson(path.join(out, `${generated.machine}.json`), generated);
     return [];
   }
-  return run(command, configured.store, { renames }).findings;
+  return (await run(command, configured.store, { renames })).findings;
 }
 
 /** Runs the command line and returns its exit code. */
-function main(argv) {
+async function main(argv) {
   const parsed = parse(argv);
   if ('usage' in parsed) {
     process.stderr.write(`[status-gen] usage: ${parsed.usage}\n${USAGE}\n`);
     return 2;
   }
-  const findings = execute(parsed);
+  const findings = await execute(parsed);
   if (findings.length > 0) {
     for (const { code, machine, path: at, message } of findings) {
       process.stderr.write(`[status-gen] ${code} ${machine ?? '-'} ${at}: ${message}\n`);
@@ -116,4 +116,13 @@ function main(argv) {
   return 0;
 }
 
-process.exitCode = main(process.argv.slice(2));
+main(process.argv.slice(2)).then(
+  code => {
+    process.exitCode = code;
+  },
+  error => {
+    // An unexpected rejection is never swallowed: it is printed and the command exits 1.
+    process.stderr.write(`[status-gen] ${error instanceof Error ? error.stack : String(error)}\n`);
+    process.exitCode = 1;
+  },
+);

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 9a11713456406bc0c6e354d6bf28da0a4a872c3bca8173d4658da3684234bf4b -->
+<!-- source-sha256: cd2e071f9d48912ec36180fd0ff06493ed5a34340e0b6de4dad3ea8bf07e8c58 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-06-1: store 계약이 비동기가 되었다. JSON·Mermaid store의 `load()`와 `save()`가 Promise를 돌려주고, `run`과 `copy`(`src/core/run.mjs`)도 비동기이므로 DB store가 비동기 orm client를 쓸 수 있다. `status-gen`은 명령을 await하며, 예상하지 못한 거부는 출력하고 종료 코드 1로 끝난다. validate, normalize, lock, vectors는 동기로 남는다. store 계약 테스트(`tests/store-contract.mjs`)는 모든 store에서 Promise를 await하며, store나 명령을 부르는 모든 테스트가 await한다.
 - S-08: Mermaid store(`src/store-mermaid/`)는 `docs/spec/status.md`의 B-1 정규 형식으로 `machines/*.status.mmd`를 읽고 쓴다. `parse.mjs`는 정규 형식 밖의 모든 줄을 줄 번호와 함께 `E_MERMAID_UNSUPPORTED`로 거부하고, `write.mjs`는 정규 형식으로 쓴다. `save`는 정의되지 않은 `*.status.mmd` 파일을 지우고 store 계약(`tests/store-contract.mjs`)을 통과한다. lock 읽기·쓰기는 두 파일 store가 함께 쓰도록 `src/store-lock/lock-file.mjs`로 옮겼다. `status-gen`은 `{"store":"mermaid"}`를 받고, `copy --to json|mermaid`는 빈 대상으로 두 방향 모두 옮긴다. 모든 valid fixture는 json → mermaid → json에서 바이트 단위로 왕복한다.
 - S-05-3: core `validate`는 machine·상태·이벤트 key의 길이를 64자로 제한한다. 64자를 넘는 key는 해당 경로에서 `E_KEY_FORMAT`으로 실패하며, 메시지는 길이와 상한을 밝힌다. DB store는 key를 `varchar(64)`에 담으므로, 이 상한으로 세 store가 같은 key를 받아들인다(`docs/spec/status.md`, B-5).
 - S-07: 루트 conformance 파일은 `status.config.json`(`{"store":"json"}`), `machines/order.status.json`(B-1의 order 예시, JSON store가 기록), 그 `status.lock.json`과 `contracts/features.json`이다. core `vectors`(`src/core/vectors.mjs`)는 IR과 lock에서 C-4의 모든 케이스를 계산하며, `status-gen vectors --out <dir>`는 `<machine>.json`을 쓰므로 `conformance/vectors/order.json`은 89 케이스를 가진다. `scripts/gen-check.mjs`(`make gen-check`)는 vector 파일을 `var/gen-check/`에 다시 만들고 `conformance/vectors`의 추적 파일이 그와 같아야 함을 요구하며, 테스트는 `make gen-check-test`다.

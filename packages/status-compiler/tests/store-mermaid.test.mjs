@@ -47,10 +47,10 @@ function jsonFixture(name) {
 }
 
 /** Loads a Mermaid checkout whose only machine file, order.status.mmd, holds `text`, and returns the findings. */
-function loadOrder(text) {
+async function loadOrder(text) {
   const root = tempRoot();
   write(root, 'machines/order.status.mmd', text);
-  return mermaidStore(root).load().findings;
+  return (await mermaidStore(root).load()).findings;
 }
 
 storeContract('mermaid', () => {
@@ -58,21 +58,21 @@ storeContract('mermaid', () => {
   return { store: mermaidStore(root), snapshot: () => bytesOf(root) };
 });
 
-test('mermaid store: a missing lock file is the empty lock', () => {
+test('mermaid store: a missing lock file is the empty lock', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.mmd', ORDER_MMD_TEXT);
-  const loaded = mermaidStore(root).load();
+  const loaded = await mermaidStore(root).load();
   assert.deepEqual(loaded.lock, {});
   assert.deepEqual(shape(loaded.findings), []);
   assert.equal(loaded.definitions.length, 1);
 });
 
-test('mermaid store: load reads the Mermaid files in name order, and the lock of the canonical lock file', () => {
+test('mermaid store: load reads the Mermaid files in name order, and the lock of the canonical lock file', async () => {
   const root = tempRoot();
   write(root, 'machines/track.status.mmd', TRACK_MMD_TEXT);
   write(root, 'machines/order.status.mmd', ORDER_MMD_TEXT);
   write(root, 'status.lock.json', LOCK_TEXT);
-  const loaded = mermaidStore(root).load();
+  const loaded = await mermaidStore(root).load();
   assert.deepEqual(loaded.definitions.map(definition => definition.machine), ['order', 'track']);
   assert.deepEqual(loaded.definitions[0], order());
   assert.deepEqual(loaded.definitions[1], track());
@@ -80,9 +80,9 @@ test('mermaid store: load reads the Mermaid files in name order, and the lock of
   assert.deepEqual(shape(loaded.findings), []);
 });
 
-test('mermaid store: save writes the canonical texts and the canonical lock', () => {
+test('mermaid store: save writes the canonical texts and the canonical lock', async () => {
   const root = tempRoot();
-  mermaidStore(root).save({ definitions: [order(), track()], lock: lock() });
+  await mermaidStore(root).save({ definitions: [order(), track()], lock: lock() });
   assert.deepEqual(filesOf(root), {
     'machines/order.status.mmd': ORDER_MMD_TEXT,
     'machines/track.status.mmd': TRACK_MMD_TEXT,
@@ -90,59 +90,59 @@ test('mermaid store: save writes the canonical texts and the canonical lock', ()
   });
 });
 
-test('mermaid store: save writes the spec example of B-1 for the order example', () => {
-  const source = jsonStore(jsonFixture('order')).load();
+test('mermaid store: save writes the spec example of B-1 for the order example', async () => {
+  const source = await jsonStore(jsonFixture('order')).load();
   const root = tempRoot();
-  mermaidStore(root).save({ definitions: source.definitions, lock: source.lock });
+  await mermaidStore(root).save({ definitions: source.definitions, lock: source.lock });
   assert.equal(readFileSync(path.join(root, 'machines/order.status.mmd'), 'utf8'), SPEC_ORDER_MMD_TEXT);
 });
 
-test('mermaid store: a canonical checkout changes no byte on save(load())', () => {
+test('mermaid store: a canonical checkout changes no byte on save(load())', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.mmd', ORDER_MMD_TEXT);
   write(root, 'machines/track.status.mmd', TRACK_MMD_TEXT);
   write(root, 'status.lock.json', LOCK_TEXT);
   const before = bytesOf(root);
   const store = mermaidStore(root);
-  const loaded = store.load();
+  const loaded = await store.load();
   assert.deepEqual(shape(loaded.findings), []);
-  store.save({ definitions: loaded.definitions, lock: loaded.lock });
+  await store.save({ definitions: loaded.definitions, lock: loaded.lock });
   assert.equal(bytesOf(root), before);
 });
 
-test('mermaid store: save deletes the Mermaid files that are no longer defined and leaves the JSON files alone', () => {
+test('mermaid store: save deletes the Mermaid files that are no longer defined and leaves the JSON files alone', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.mmd', ORDER_MMD_TEXT);
   write(root, 'machines/track.status.mmd', TRACK_MMD_TEXT);
   write(root, 'machines/other.status.json', 'kept\n');
-  mermaidStore(root).save({ definitions: [track()], lock: { track: { reserved: [], codes: { 1: 'only' } } } });
+  await mermaidStore(root).save({ definitions: [track()], lock: { track: { reserved: [], codes: { 1: 'only' } } } });
   assert.equal(existsSync(path.join(root, 'machines/order.status.mmd')), false);
   assert.equal(readFileSync(path.join(root, 'machines/track.status.mmd'), 'utf8'), TRACK_MMD_TEXT);
   assert.equal(readFileSync(path.join(root, 'machines/other.status.json'), 'utf8'), 'kept\n');
 });
 
-test('mermaid store: a file whose name is not <title>.status.mmd fails E_SCHEMA at $.machine', () => {
+test('mermaid store: a file whose name is not <title>.status.mmd fails E_SCHEMA at $.machine', async () => {
   const root = tempRoot();
   write(root, 'machines/wrong.status.mmd', ORDER_MMD_TEXT);
-  assert.deepEqual(shape(mermaidStore(root).load().findings), [{ code: 'E_SCHEMA', machine: 'order', path: '$.machine' }]);
+  assert.deepEqual(shape((await mermaidStore(root).load()).findings), [{ code: 'E_SCHEMA', machine: 'order', path: '$.machine' }]);
 });
 
-test('mermaid store: a file in machines that is not a status file fails E_SCHEMA', () => {
+test('mermaid store: a file in machines that is not a status file fails E_SCHEMA', async () => {
   const root = tempRoot();
   write(root, 'machines/notes.txt', 'not a machine');
-  assert.deepEqual(shape(mermaidStore(root).load().findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
+  assert.deepEqual(shape((await mermaidStore(root).load()).findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
 });
 
-test('mermaid store: a *.status.json file in machines fails E_STORE_MIXED', () => {
+test('mermaid store: a *.status.json file in machines fails E_STORE_MIXED', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.json', '{}\n');
-  assert.deepEqual(shape(mermaidStore(root).load().findings), [{ code: 'E_STORE_MIXED', machine: null, path: '$' }]);
+  assert.deepEqual(shape((await mermaidStore(root).load()).findings), [{ code: 'E_STORE_MIXED', machine: null, path: '$' }]);
 });
 
-test('mermaid store: a lock file that is not valid JSON fails E_SCHEMA at $', () => {
+test('mermaid store: a lock file that is not valid JSON fails E_SCHEMA at $', async () => {
   const root = tempRoot();
   write(root, 'status.lock.json', '{ "order": ');
-  assert.deepEqual(shape(mermaidStore(root).load().findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
+  assert.deepEqual(shape((await mermaidStore(root).load()).findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
 });
 
 /** The lines of the order example of the canonical form, one per constant (lines 1 to 9 of ORDER_MMD_TEXT). */
@@ -183,40 +183,40 @@ const unsupportedCases = [
 ];
 
 for (const [name, lines, expected] of unsupportedCases) {
-  test(`mermaid store: ${name} fails E_MERMAID_UNSUPPORTED at its line`, () => {
-    const findings = loadOrder(lines.map(line => `${line}\n`).join(''));
+  test(`mermaid store: ${name} fails E_MERMAID_UNSUPPORTED at its line`, async () => {
+    const findings = await loadOrder(lines.map(line => `${line}\n`).join(''));
     assert.deepEqual(findings.map(({ code, machine, path: at }) => ({ code, machine, path: at })),
       expected.map(() => ({ code: 'E_MERMAID_UNSUPPORTED', machine: 'order', path: '$' })));
     assert.deepEqual(findings.map(finding => lineOf(finding.message)), expected);
   });
 }
 
-test('mermaid store: a file without a final line break fails E_MERMAID_UNSUPPORTED at its last line', () => {
-  const findings = loadOrder(ORDER_MMD_TEXT.slice(0, -1));
+test('mermaid store: a file without a final line break fails E_MERMAID_UNSUPPORTED at its last line', async () => {
+  const findings = await loadOrder(ORDER_MMD_TEXT.slice(0, -1));
   assert.deepEqual(shape(findings), [{ code: 'E_MERMAID_UNSUPPORTED', machine: 'order', path: '$' }]);
   assert.deepEqual(findings.map(finding => lineOf(finding.message)), [9]);
 });
 
-test('mermaid store: the canonical texts load without findings', () => {
-  assert.deepEqual(shape(loadOrder(ORDER_MMD_TEXT)), []);
-  assert.deepEqual(shape(loadOrder(SPEC_ORDER_MMD_TEXT)), []);
+test('mermaid store: the canonical texts load without findings', async () => {
+  assert.deepEqual(shape(await loadOrder(ORDER_MMD_TEXT)), []);
+  assert.deepEqual(shape(await loadOrder(SPEC_ORDER_MMD_TEXT)), []);
 });
 
 for (const file of readdirSync(FIXTURES).filter(name => name.endsWith('.json')).sort()) {
   const name = file.slice(0, -'.json'.length);
-  test(`mermaid store: the valid fixture ${name} round-trips json -> mermaid -> json byte-identically`, () => {
-    const source = jsonStore(jsonFixture(name)).load();
+  test(`mermaid store: the valid fixture ${name} round-trips json -> mermaid -> json byte-identically`, async () => {
+    const source = await jsonStore(jsonFixture(name)).load();
     assert.deepEqual(shape(source.findings), []);
     const expected = tempRoot();
-    jsonStore(expected).save({ definitions: source.definitions, lock: source.lock });
+    await jsonStore(expected).save({ definitions: source.definitions, lock: source.lock });
     const middle = tempRoot();
-    mermaidStore(middle).save({ definitions: source.definitions, lock: source.lock });
-    const mermaid = mermaidStore(middle).load();
+    await mermaidStore(middle).save({ definitions: source.definitions, lock: source.lock });
+    const mermaid = await mermaidStore(middle).load();
     assert.deepEqual(shape(mermaid.findings), []);
     assert.deepEqual(mermaid.definitions, source.definitions);
     assert.deepEqual(mermaid.lock, source.lock);
     const back = tempRoot();
-    jsonStore(back).save({ definitions: mermaid.definitions, lock: mermaid.lock });
+    await jsonStore(back).save({ definitions: mermaid.definitions, lock: mermaid.lock });
     assert.equal(bytesOf(back), bytesOf(expected));
   });
 }
@@ -236,9 +236,9 @@ const unrepresentable = [
 ];
 
 for (const [name, definition, reason] of unrepresentable) {
-  test(`mermaid store: save refuses ${name} and writes nothing`, () => {
+  test(`mermaid store: save refuses ${name} and writes nothing`, async () => {
     const root = tempRoot();
-    assert.throws(() => mermaidStore(root).save({ definitions: [definition], lock: {} }), error => error.message.includes(reason));
+    await assert.rejects(mermaidStore(root).save({ definitions: [definition], lock: {} }), error => error.message.includes(reason));
     assert.equal(bytesOf(root), '');
   });
 }
