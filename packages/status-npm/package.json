@@ -1,0 +1,15 @@
+{
+  "name": "@polyspec/status-npm",
+  "version": "0.0.0",
+  "private": true,
+  "description": "npm consumer test bed of status: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/status-v1.md, C-2)",
+  "type": "module",
+  "license": "MIT",
+  "devDependencies": {
+    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.7/polyspec-orm-npm-0.0.7.tgz",
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.7/polyspec-ordered-json-npm-0.0.7.tgz"
+  },
+  "overrides": {
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.7/polyspec-ordered-json-npm-0.0.7.tgz"
+  }
+}

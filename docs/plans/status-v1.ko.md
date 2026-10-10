@@ -1,5 +1,5 @@
 <!-- doc-id: plan-status-v1 -->
-<!-- source-sha256: 6e5644c857a5e428d960284b0e166b1612789cf10565dc2911c966c15a2d021f -->
+<!-- source-sha256: c1ff42e64239824cf6d35c04d696fc7d98d6af2c227c3e00c5138e7c8339fe2e -->
 # status v1 계획
 
 [English](status-v1.md)
@@ -164,7 +164,7 @@ packages/status-<kind>/
   examples/persist.<ext>    # B-4 orm persistence; tests run it with the persist vectors
   examples/model/           # orm-generated model from the root schema/persist.dbs (committed, covered by gen-check); rust uses build.rs as an allowed difference
 ```
-- `make gen`은 status-gen 출력과 orm-gen 출력을 함께 만든다.
+- `make gen`은 status-gen 출력과 orm-gen 출력을 함께 만든다. `contracts/layout.json`에서 kind의 `generated` glob이 이 출력이 쓰는 파일을 이름 짓고, `gen-check`는 정확히 그 파일을 비교한다.
 
 | kind | manifest | src | tests 비고 |
 |---|---|---|---|
@@ -235,7 +235,7 @@ packages/status-<kind>/
 - 루트 `gen-check`
   1. `status-gen vectors --out var/gen-check/conformance/vectors` 실행
   2. `kinds`의 각 패키지에서 `make gen DEST=$(CURDIR)/var/gen-check/<kind>` 실행
-  3. `scripts/gen-check.mjs`가 kit `trackedFiles`(추적 파일과 무시되지 않은 파일만 읽으므로 `__pycache__/`, php-ext `src/`의 phpize 산출물 같은 무시된 출력은 읽지 않는다)로 작업 트리와 비교한다. `conformance/vectors`, 각 패키지 `src/`·`tests/vectors.<ext>`·`examples/model/`(rust 제외)의 파일 집합이 같고 내용이 바이트 동일해야 한다.
+  3. `scripts/gen-check.mjs`가 kit `trackedFiles`(추적 파일과 무시되지 않은 파일만 읽으므로 `__pycache__/`, php-ext `src/`의 phpize 산출물 같은 무시된 출력은 읽지 않는다)로 작업 트리와 비교한다. `conformance/vectors`, 각 패키지 `src/`·`tests/vectors.<ext>`·`examples/model/`(rust 제외)의 파일 집합이 같고 내용이 바이트 동일해야 한다. 각 패키지에서 비교하는 파일은 `contracts/layout.json`의 kind `generated` glob이 맞는 파일이며, 이 glob이 없는 kind는 `layout-config` finding이다.
   - `gen-check-test`(`tests/gen-check/`) RED: 1바이트 변경 fixture, 파일 추가 fixture, 읽지 말아야 할 무시된 파일
 
 ### C-6. status-db `packages/status-db`

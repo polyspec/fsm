@@ -100,6 +100,37 @@
         "db-test",
         "dependency-policy-check"
       ]
+    },
+    {
+      "paths": [
+        "contracts/layout.json"
+      ],
+      "targets": [
+        "layout-test",
+        "layout-check",
+        "gen-check",
+        "packages-test"
+      ]
+    },
+    {
+      "paths": [
+        "packages/status-npm/**"
+      ],
+      "targets": [
+        "layout-check",
+        "gen-check",
+        "parity-npm",
+        "dependency-policy-check"
+      ]
+    },
+    {
+      "paths": [
+        "schema/persist.dbs"
+      ],
+      "targets": [
+        "gen-check",
+        "packages-test"
+      ]
     }
   ]
 }

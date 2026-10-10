@@ -6,8 +6,9 @@
 // It regenerates into var/gen-check/: the vectors (status-gen vectors --out var/gen-check/conformance/vectors) and, for each
 // kind of contracts/layout.json, the generated files of its package (make -C packages/status-<kind> gen DEST=<var/gen-check/
 // <kind>>). It then compares the tracked and non-ignored files of the working tree (scripts/kit/tracked-files.mjs) with the
-// generated files of conformance/vectors and, per kind, of src/, examples/model/ and tests/vectors.*: the same set of files
-// with the same bytes. Each difference is one line on standard error, `[gen-check] <rule> <path>: <message>`:
+// generated files of conformance/vectors and, per kind, with the files that the kind's `generated` globs match: the same set
+// of files with the same bytes. A kind without `generated` globs is a finding (rule `layout-config`). Each difference is one
+// line on standard error, `[gen-check] <rule> <path>: <message>`:
 //
 //   missing   generated, but not in the working tree
 //   extra     in the working tree, but not generated
@@ -18,6 +19,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { matchesAny } from './kit/glob.mjs';
 import { isMain } from './kit/paths.mjs';
 import { trackedFiles } from './kit/tracked-files.mjs';
 
@@ -28,9 +30,6 @@ const CLI = 'packages/status-compiler/src/cli/status-gen.mjs';
 
 const finding = (rule, file, message) => ({ rule, path: file, message });
 const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
-
-/** The files of a kind package that its generator writes and the tree holds: src/, examples/model/ and tests/vectors.<ext>. */
-const kindFile = rel => rel.startsWith('src/') || rel.startsWith('examples/model/') || /^tests\/vectors\.[^/]+$/.test(rel);
 
 /** The files below `dir` as paths relative to it with `/` separators; none when the directory does not exist. */
 function filesUnder(dir, prefix = '') {
@@ -75,13 +74,21 @@ function compareArea(root, { base, dir, select }) {
   return found;
 }
 
-/** The findings of the checkout `root`: a generation failure, or every difference of the compared areas. */
+/** The findings of the checkout `root`: a layout without the generated globs of a kind, a generation failure, or every difference. */
 export function genCheckFindings(root) {
-  const kinds = Object.keys(readJson(path.join(root, LAYOUT)).kinds).sort();
+  const layout = readJson(path.join(root, LAYOUT));
+  const kinds = Object.keys(layout.kinds).sort();
+  const withoutGlobs = kinds.filter(kind => !Array.isArray(layout.kinds[kind].generated));
+  if (withoutGlobs.length > 0) {
+    return withoutGlobs.map(kind => finding('layout-config', LAYOUT, `the kind ${kind} has no generated globs; name the files its generator writes`));
+  }
   const failed = generate(root, kinds);
   if (failed.length > 0) return failed;
   const areas = [{ base: VECTORS, dir: path.join(root, OUT, VECTORS), select: () => true }];
-  for (const kind of kinds) areas.push({ base: `packages/status-${kind}`, dir: path.join(root, OUT, kind), select: kindFile });
+  for (const kind of kinds) {
+    const globs = layout.kinds[kind].generated;
+    areas.push({ base: `packages/status-${kind}`, dir: path.join(root, OUT, kind), select: rel => matchesAny(globs, rel) });
+  }
   return areas.flatMap(area => compareArea(root, area));
 }
 

@@ -3,7 +3,8 @@
   "composerPlatforms": [],
   "pythonManifests": [],
   "npmLocks": [
-    "packages/status-db/package-lock.json"
+    "packages/status-db/package-lock.json",
+    "packages/status-npm/package-lock.json"
   ],
   "exceptions": []
 }

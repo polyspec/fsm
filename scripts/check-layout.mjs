@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Checks the canonical layout of the language packages against contracts/layout.json (`make layout-check`):
 //
-//   layout-config    contracts/layout.json exists and matches the schema below; a kind is one of the six targets
+//   layout-config    contracts/layout.json exists and matches the schema below; a kind is one of the six targets and
+//                    names the generated globs of its package (the files that gen-check compares)
 //   layout-kinds     the directories of packages/ are exactly the tools and the kinds (packages/status-<kind>)
 //   layout-file      every file of a kind package matches a canonical file, a required file or an allowed glob of the kind
 //   layout-missing   every canonical file and every required file of the kind exists, and every canonical directory holds a file
@@ -24,7 +25,12 @@ export const LAYOUT = 'contracts/layout.json';
 export const KINDS = ['go', 'npm', 'php', 'php-ext', 'python', 'rust'];
 
 const strings = { type: 'array', items: { type: 'string', pattern: '^[^/].*[^/]$' } };
-const kindSchema = { type: 'object', required: ['required', 'allowed'], additionalProperties: false, properties: { required: strings, allowed: strings } };
+const kindSchema = {
+  type: 'object',
+  required: ['required', 'allowed', 'generated'],
+  additionalProperties: false,
+  properties: { required: strings, allowed: strings, generated: strings },
+};
 const SCHEMA = {
   type: 'object',
   required: ['schema', 'tools', 'canonical', 'kinds'],

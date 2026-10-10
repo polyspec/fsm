@@ -1,0 +1,7 @@
+dbspec 1 persist
+
+table item {
+  id i64
+  status i32
+  primary key (id)
+}

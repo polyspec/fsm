@@ -11,9 +11,13 @@ include scripts/kit/kit.mk
 # records parity-check requires.
 comma := ,
 TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test parity-check
+# The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
+# test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
+KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test packages-test parity-check
+
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test parity-check packages-test test-npm parity-npm
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -58,3 +62,18 @@ db-test: db-deps
 
 parity-check:
 	node scripts/check-parity.mjs --tools $(subst $(eval) ,$(comma),$(TOOL_TESTS))
+
+# packages-test runs the test of every kind with make -j6 (docs/plans/status-v1.md, Verification). It refuses an empty kind list,
+# because make with no goal would run the default goal, check, from inside check.
+packages-test:
+	$(if $(KINDS),,$(error contracts/layout.json declares no kind))
+	$(MAKE) -j6 $(addprefix test-,$(KINDS))
+
+# test-npm runs the tests of packages/status-npm: the conformance cases and the persist example (docs/plans/status-v1.md, C-2).
+test-npm:
+	$(MAKE) -C packages/status-npm test
+
+# parity-npm is the owner check of the npm package: check-parity reads its record only and requires every vector case to have
+# run once and passed (docs/plans/status-v1.md, C-4 and D).
+parity-npm: test-npm
+	node scripts/check-parity.mjs --kind npm

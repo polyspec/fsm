@@ -16,9 +16,17 @@ const LAYOUT = {
   tools: ['status-compiler'],
   canonical: { files: ['README.md', 'README.ko.md', 'Makefile'], directories: ['src', 'tests', 'examples'] },
   kinds: {
-    npm: { required: ['package.json', 'tests/conformance.test.mjs', 'tests/vectors.mjs', 'examples/persist.mjs'], allowed: ['src/*.js', 'src/*.d.ts'] },
-    php: { required: ['composer.json', 'tests/ConformanceTest.php', 'tests/Vectors.php', 'examples/persist.php'], allowed: ['src/**/*.php'] },
-    'php-ext': { required: ['composer.json', 'tests/ConformanceTest.php', 'tests/Vectors.php', 'examples/persist.php', 'src/config.m4'], allowed: ['src/*.c', 'src/*.h', 'src/*.stub.php'] },
+    npm: {
+      required: ['package.json', 'tests/conformance.test.mjs', 'tests/vectors.mjs', 'examples/persist.mjs'],
+      allowed: ['src/*.js', 'src/*.d.ts'],
+      generated: ['src/**', 'tests/vectors.mjs', 'examples/model/**'],
+    },
+    php: { required: ['composer.json', 'tests/ConformanceTest.php', 'tests/Vectors.php', 'examples/persist.php'], allowed: ['src/**/*.php'], generated: ['src/**'] },
+    'php-ext': {
+      required: ['composer.json', 'tests/ConformanceTest.php', 'tests/Vectors.php', 'examples/persist.php', 'src/config.m4'],
+      allowed: ['src/*.c', 'src/*.h', 'src/*.stub.php'],
+      generated: ['src/**'],
+    },
   },
 };
 
@@ -97,6 +105,13 @@ test('layout-config: contracts/layout.json is checked against its own schema and
   assert.match(found[0].message, /\$\.kinds\.ruby is not in the schema/);
   const missingFile = tree(t, {});
   assert.deepEqual(layoutFindings(missingFile).map(entry => entry.message), ['contracts/layout.json does not exist; it declares the tools, the kinds and the canonical layout']);
+});
+
+test('layout-config: a kind without generated globs is a finding, because gen-check compares exactly the generated files', (t) => {
+  const layout = { ...LAYOUT, kinds: { npm: { required: LAYOUT.kinds.npm.required, allowed: LAYOUT.kinds.npm.allowed } } };
+  const found = layoutFindings(checkout(t, { ...npm, ...tool }, layout));
+  assert.deepEqual(found.map(entry => entry.rule), ['layout-config']);
+  assert.match(found[0].message, /generated/);
 });
 
 test('the command prints each finding and exits 1, and passes on the layout of this repository', (t) => {

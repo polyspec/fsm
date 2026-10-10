@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 5efc3b7076ad1b38165997f35ee7c597b14e15235be9c274741f351c683b5439 -->
+<!-- source-sha256: e5e124f80cd1f076563fd793691903e1b558ef6f4948d761e92040940c249304 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-09-1: npm 패키지 `packages/status-npm`은 정규 구조(`docs/plans/status-v1.md`, C-2)의 kind `npm`이다. `make gen`은 `src/`와 `tests/vectors.mjs`를 status-gen으로, `examples/model/`을 루트 `schema/persist.dbs`에서 orm-gen으로 쓴다(이 항목에서 만들며 모든 kind가 공유한다). `tests/conformance.test.mjs`는 모든 vector case를 `test_<feature>__<id>`로 생성된 함수에 대해 실행하고, `examples/persist.mjs`는 orm으로 SQLite에서 B-4 transaction을 실행하며, persist case가 실행 후 저장값을 검사한다. `contracts/layout.json`은 kind를 `generated` glob과 함께 선언한다. `check-layout`은 이를 요구하고, `gen-check`는 그 glob이 맞는 파일을 정확히 비교한다. `make test-npm`, `make parity-npm`, `make packages-test`가 이 패키지를 실행하며, lock은 검토 기록과 함께 `config/dependency-policy.json`에 있다.
 - S-09: npm backend(`packages/status-compiler/src/backends/npm.mjs`)가 machine마다 npm 패키지의 `src/` 파일을 생성한다. B-6 표기에 따라 `<machine>.js`와 `<machine>.d.ts`(동결된 `State`와 `Event`, 여덟 함수, `apply`는 `{to, changed}`를 돌려주거나 `status.Error`를 던진다), 공용 `status.js`와 `status.d.ts`(`Error`와 `Code` 상수), `index.js`와 `index.d.ts`를 만든다. `status-gen gen --kind npm --out <dir>`는 이 세트를 `writeAtomic`으로 쓰고, generated header가 있는 오래된 파일을 지우며, header가 없는 파일은 거부한다(`E_NOT_GENERATED`, 아무것도 쓰지 않음). `status-gen vectors --kind npm --out <file>`는 native 모듈 `tests/vectors.mjs`를 쓴다. `packages/status-compiler/tests/golden/npm/`의 golden 파일은 order 예시이며, 쓰기 전에 B-6과 대조해 검토했고, 테스트는 이를 byte 단위로 비교한다.
 - S-15: DB store(`packages/status-db/src/db-store.mjs`)는 정의와 lock을 orm client(v0.0.7)를 통해 `schema/status.dbs`의 여섯 테이블에 보관한다. `dbStore(db)`는 orm-gen이 `src/models/models.ts`에 생성한 model로 읽고 쓰며, `save`는 모든 행을 한 transaction 안에서 바꾸므로 쓰기가 실패하면 기존 행이 그대로 남는다. 모든 key 열은 `varchar(64)`이며(S-05-3의 상한), edge 테이블은 `state`를 향한 외래 키의 인덱스 두 개를 가진다. store는 계약 테스트(`tests/store-contract.mjs`)를 통과하고, 64자 key를 포함해 json → db → json을 바이트 단위로 같게 왕복하며, 비어 있지 않은 데이터베이스로의 copy는 `E_STORE_NOT_EMPTY`로 거부하고, 실패한 save를 되돌린다. `status-db`(`src/cli/status-db.mjs`)는 `check`, `lock`, `copy --to|--from json|mermaid --root`를 제공하며, DSN은 `status.config.json`이 이름 붙인 환경 변수의 값이다. `make db-test`가 테스트를 실행하며, 여기에는 orm-gen이 커밋된 model을 재생성하는지 확인하는 테스트가 포함된다.
 - S-06-1: store 계약이 비동기가 되었다. JSON·Mermaid store의 `load()`와 `save()`가 Promise를 돌려주고, `run`과 `copy`(`src/core/run.mjs`)도 비동기이므로 DB store가 비동기 orm client를 쓸 수 있다. `status-gen`은 명령을 await하며, 예상하지 못한 거부는 출력하고 종료 코드 1로 끝난다. validate, normalize, lock, vectors는 동기로 남는다. store 계약 테스트(`tests/store-contract.mjs`)는 모든 store에서 Promise를 await하며, store나 명령을 부르는 모든 테스트가 await한다.
