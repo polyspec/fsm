@@ -1,5 +1,5 @@
 <!-- doc-id: spec-status -->
-<!-- source-sha256: 3c5860e155a8a0b4243b27986dc6032ddc59889709ff961adb5a74b8d4bed03e -->
+<!-- source-sha256: 5212210ae50bd7f0c76587a111a3105b5e9d672505cd43cd94e24088abf18e3e -->
 # status 정의
 
 [English](status.md)
@@ -113,10 +113,11 @@ stateDiagram-v2
 
 ## B-3. code 불변 (lock)
 - code는 정체성이고 key는 이름이다. 배포된 code는 의미를 바꾸거나 재사용할 수 없다.
-- lock = `{machine: {codes: {code: key}, reserved: [code…]}}`. lock은 `lock`(손으로 편집한 정의용), `save`(GUI), `copy`(원본을 B-5 전 규칙으로 검증한 뒤 원본 lock을 그대로 쓴다)만 갱신한다. `lock`과 `save`는 같은 lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, 사라진 code → reserved)을 적용하고, 셋 모두 정의와 lock을 같은 `store.save`로 쓴다.
+- lock = `{machine: {codes: {code: key}, reserved: [code…]}}`. lock은 `lock`(손으로 편집한 정의용), `save`(GUI), `copy`(원본을 B-5 전 규칙으로 검증한 뒤 원본 lock을 그대로 쓴다)만 갱신한다. `lock`과 `save`는 같은 lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`, 사라진 code → reserved)을 적용하고, 셋 모두 정의와 lock을 같은 `store.save`로 쓴다.
 - `lock`이 거부하는 경우
   - `E_CODE_REUSED`: reserved code 재사용
   - `E_CODE_KEY_CHANGED`: 기존 code의 key 변경. 이름 변경은 `lock --rename m.old=new`로만 하며, 정의와 lock을 함께 바꾼다.
+  - `E_CODE_CHANGED`: lock이 code에 대응시킨 key를 정의가 다른 code로 주는 경우. 삭제 후 다시 추가한 key도 lock이 아직 대응시키고 있으면 포함한다. 메시지는 lock이 가진 code를 밝히며, released code는 절대 바뀌지 않는다. lock에 reserved 이력으로만 남은 key는 비교할 code가 없다(reserved에는 code만 있다).
 - 정의에서 사라진 상태의 code는 reserved로 옮긴다. 머신 전체가 사라지면 그 code를 모두 그 머신의 reserved로 옮기고 lock 항목은 남긴다(DB lock 테이블에 machine FK가 없다, 계획 C-6).
 - `gen`/`vectors`/`check`는 다음을 만족하지 않으면 `E_LOCK_MISMATCH`: 정의된 머신마다 lock `codes`가 그 상태들의 `{code: key}`와 같고 `reserved`가 그 code와 겹치지 않는다. 정의에 없는 lock 머신은 `codes`가 비어 있다.
 - 새 code의 기본값은 core `nextCode(machine, definitions, lock)` = max(정의 ∪ lock codes ∪ reserved)+1이다. 범위를 넘으면 `E_CODE_RANGE`. GUI는 이 값을 제안만 하고 규칙을 갖지 않는다.
@@ -167,7 +168,7 @@ stateDiagram-v2
   - `E_DUPLICATE_KEY`: 머신 key 중복, 한 머신 안의 상태 key 중복·이벤트 key 중복, 또는 `_`를 지웠을 때 같아지는 두 머신 key(`ab`와 `a_b`는 모두 php `<ns>\Ab`가 된다)
   - `E_KEY_RESERVED`: `docs/spec/status.md`의 고정 목록 하나이며 kind·store와 무관하게 모든 정의에 적용한다. (1) 머신 key(`_`를 지우고 비교): `status`(공용 모듈), `index`(npm `index.js`), `lib`·`main`(rust `src/lib.rs`·`src/main.rs`, go `package main`), `internal`(go internal package는 `tests/`에서 import할 수 없음), `init`(go는 `init`라는 이름으로 package를 import하지 못함), `testdata`·`vendor`(go `./...`가 건너뜀), go 사전 선언 식별자(`error`, `string`, `int`, `len`, `nil` 등. 그 이름의 package를 import하면 이를 가린다), 그리고 go·rust(고정 edition)·python·js의 keyword(이 네 언어에서는 머신 key가 그대로 모듈 이름이다). (2) pascal 형태가 enum 멤버로 거부되는 상태·이벤트 key: `self`(rust `Self`), `class`(php `Class`). (3) Mermaid 예약어(store와 무관하게 항상 적용): 상태 key `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`, 머신 key `null, true, false`(고정한 mermaid 버전 기준. 테스트는 목록의 각 단어를 모든 위치의 상태 key와 title로 쓴 정규형을 파싱하고, 각 단어가 파싱 실패나 id 충돌을 내는지 확인한다). 이름을 변형하지 않고 거부한다.
 - code·lock
-  - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`
+  - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`
 - store
   - `E_MERMAID_UNSUPPORTED`, `E_STORE_MIXED`, `E_STORE_NOT_EMPTY`, `E_STORE_NOT_CONFIGURED`
 

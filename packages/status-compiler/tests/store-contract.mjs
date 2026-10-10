@@ -1,0 +1,60 @@
+// The store contract (docs/spec/status.md, B-2): every store (json now, mermaid in S-08, db in S-15) passes the same cases.
+// storeContract(name, makeStore) registers the node:test cases. makeStore() returns { store, snapshot }: a new empty store,
+// and a function that returns every byte the store holds as one string, so that a case can compare what was written.
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+/** Two machines in name order: order (draft -next-> done) and track (one state that is initial and final). */
+const sample = () => ({
+  definitions: [
+    {
+      machine: 'order',
+      states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
+      events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
+    },
+    { machine: 'track', states: [{ key: 'only', code: 1, initial: true, final: true }], events: [] },
+  ],
+  lock: {
+    order: { codes: { 1: 'draft', 2: 'done' }, reserved: [3] },
+    track: { codes: { 1: 'only' }, reserved: [] },
+  },
+});
+
+/** A store that holds only `track`: the replacement of the sample in the replace case. */
+const replacement = () => ({
+  definitions: [{ machine: 'track', states: [{ key: 'only', code: 1, initial: true, final: true }], events: [] }],
+  lock: { track: { codes: { 1: 'only' }, reserved: [] } },
+});
+
+/** Registers the store contract cases for the store that `makeStore` creates. */
+export function storeContract(name, makeStore) {
+  test(`${name} store: load of an empty store is empty`, () => {
+    const { store } = makeStore();
+    assert.deepEqual(store.load(), { definitions: [], lock: {}, findings: [] });
+  });
+
+  test(`${name} store: save then load returns the same definitions and lock`, () => {
+    const { store } = makeStore();
+    store.save(sample());
+    assert.deepEqual(store.load(), { ...sample(), findings: [] });
+  });
+
+  test(`${name} store: save twice writes identical bytes`, () => {
+    const { store, snapshot } = makeStore();
+    store.save(sample());
+    const first = snapshot();
+    assert.notEqual(first, '');
+    store.save(sample());
+    assert.equal(snapshot(), first);
+  });
+
+  test(`${name} store: save replaces the whole set`, () => {
+    const replaced = makeStore();
+    replaced.store.save(sample());
+    replaced.store.save(replacement());
+    const fresh = makeStore();
+    fresh.store.save(replacement());
+    assert.deepEqual(replaced.store.load(), { ...replacement(), findings: [] });
+    assert.equal(replaced.snapshot(), fresh.snapshot());
+  });
+}

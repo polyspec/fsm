@@ -112,10 +112,11 @@ stateDiagram-v2
 
 ## B-3. Code immutability (lock)
 - The code is the identity; the key is the name. A released code never changes meaning and is never reused.
-- lock = `{machine: {codes: {code: key}, reserved: [code…]}}`. Only `lock` (for hand-edited definitions), `save` (GUI) and `copy` (which writes the source lock unchanged after validating the source with every rule of B-5) update the lock. `lock` and `save` apply the same lock rules (`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, a vanished code → reserved); all three write the definitions and the lock in the same `store.save`.
+- lock = `{machine: {codes: {code: key}, reserved: [code…]}}`. Only `lock` (for hand-edited definitions), `save` (GUI) and `copy` (which writes the source lock unchanged after validating the source with every rule of B-5) update the lock. `lock` and `save` apply the same lock rules (`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`, a vanished code → reserved); all three write the definitions and the lock in the same `store.save`.
 - `lock` refuses:
   - `E_CODE_REUSED`: reuse of a reserved code
   - `E_CODE_KEY_CHANGED`: a key change on an existing code. A rename happens only through `lock --rename m.old=new`, which changes the definition and the lock together.
+  - `E_CODE_CHANGED`: a key that the lock maps to a code is given another code by the definition, including a key that was deleted and re-added while the lock still maps it. The message gives the code the lock holds: a released code never changes. A key that the lock has only as reserved history has no code to compare, because reserved holds only codes.
 - The code of a state that vanished from the definition moves to reserved. When a whole machine vanishes, all its codes move to its reserved and its lock entry stays (the DB lock tables have no machine FK, plan C-6).
 - `gen`/`vectors`/`check` fail with `E_LOCK_MISMATCH` unless every defined machine's lock `codes` equals `{code: key}` of its states and its `reserved` shares no code with them, and every lock machine that is not defined has empty `codes`.
 - The default for a new code is core `nextCode(machine, definitions, lock)` = max(definition ∪ lock codes ∪ reserved)+1. Past the range it fails with `E_CODE_RANGE`. The GUI only suggests this value and owns no rule.
@@ -166,7 +167,7 @@ The unit of idempotency is **(expected, event)**. The caller remembers the state
   - `E_DUPLICATE_KEY`: a repeated machine key, a state key or an event key repeated within a machine, or two machine keys equal after removing `_` (`ab` and `a_b` both give php `<ns>\Ab`)
   - `E_KEY_RESERVED`: one fixed list in `docs/spec/status.md`, applied to every definition whatever the kind or store. (1) Machine keys, compared after removing `_`: `status` (shared module), `index` (npm `index.js`), `lib` and `main` (rust `src/lib.rs`/`src/main.rs`, go `package main`), `internal` (a go internal package cannot be imported from `tests/`), `init` (go rejects importing a package under the name `init`), `testdata` and `vendor` (skipped by go `./...`), the go predeclared identifiers (`error`, `string`, `int`, `len`, `nil` and the rest; an imported package of that name would shadow them), and the keywords of go, rust (pinned edition), python and js, because in those four the machine key is the module name as is. (2) State and event keys whose pascal form is rejected as an enum member: `self` (rust `Self`) and `class` (php `Class`). (3) Mermaid reserved words, always applied whatever the store: state keys `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`; machine keys `null, true, false` (based on the pinned mermaid version; a test parses the canonical form with each listed word as a state key in every position and as the title, and requires a parse failure or an id clash for each). Names are rejected, never altered.
 - Code and lock
-  - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`
+  - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`
 - Store
   - `E_MERMAID_UNSUPPORTED`, `E_STORE_MIXED`, `E_STORE_NOT_EMPTY`, `E_STORE_NOT_CONFIGURED`
 
