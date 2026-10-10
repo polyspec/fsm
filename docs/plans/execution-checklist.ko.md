@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: c40526ba44cdd83ef206ddfeea6de1432a1148605d8ddc4af27128bde091e0cd -->
+<!-- source-sha256: 1491bd24b0b1fb8f86b3dbd58be09e0255678bb1a2aa0cde02daf27cb0e52d23 -->
 # 실행 체크리스트
 
 ## status v1
@@ -20,6 +20,7 @@
 | S-08 | MermaidStore(정규형 parser와 writer) + json↔mermaid 왕복 | `E_MERMAID_UNSUPPORTED`·순서 위반·왕복 불일치 RED → GREEN | [o] |
 | S-09 | npm backend + `vectors --kind npm`(golden) | golden RED → GREEN | [o] |
 | S-09-1 | npm 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-npm`와 `parity-npm`(공용 `schema/persist.dbs` 생성) | 생성물 없이 `test-npm` RED → GREEN, `layout-check`와 `parity-npm` 통과 | [o] |
+| S-09-2 | npm 타입 검사: 패키지 테스트가 생성된 `.d.ts`에 대해 소비자 파일을 TypeScript strict 모드(고정 devDependency)로 컴파일해, 잘못된 선언을 수동 확인이 아니라 도구가 잡는다 | 잘못된 `.d.ts` RED → GREEN | [ ] |
 | S-10 | go backend + `vectors --kind go`(golden) | golden RED → GREEN | [ ] |
 | S-10-1 | go 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-go`와 `parity-go` | 생성물 없이 `test-go` RED → GREEN, `layout-check`와 `parity-go` 통과 | [ ] |
 | S-11 | python backend + `vectors --kind python`(golden) | golden RED → GREEN | [ ] |
