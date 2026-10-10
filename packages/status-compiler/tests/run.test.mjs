@@ -173,3 +173,38 @@ test('copy returns the load findings of the source and writes nothing', () => {
   assert.deepEqual(copy(from, to), { findings: [loadFinding] });
   assert.equal(to.writes.length, 0);
 });
+
+test('vectors returns the vectors of every machine, in the order of the store, and writes nothing', () => {
+  const pair = {
+    machine: 'pair',
+    states: [{ key: 'start', code: 1, initial: true }, { key: 'end', code: 2, final: true }],
+    events: [{ key: 'go', edges: [{ from: 'start', to: 'end' }] }],
+  };
+  const lock = { ...orderLock(), pair: { codes: { 1: 'start', 2: 'end' }, reserved: [] } };
+  const store = memory({ definitions: [order(), pair], lock });
+  const result = run('vectors', store, {});
+  assert.deepEqual(result.findings, []);
+  assert.deepEqual(result.vectors.map(entry => entry.machine), ['order', 'pair']);
+  assert.equal(result.vectors[0].cases[0].id, 'order_initial');
+  assert.equal(result.vectors[1].cases[0].id, 'pair_initial');
+  assert.equal(store.writes.length, 0);
+});
+
+test('vectors returns the check findings and no vectors when a lock does not match', () => {
+  const store = memory({ definitions: [order()] });
+  const result = run('vectors', store, {});
+  assert.deepEqual(shape(result.findings), [{ code: 'E_LOCK_MISMATCH', machine: 'order', path: '$' }]);
+  assert.equal(Object.hasOwn(result, 'vectors'), false);
+});
+
+test('vectors returns the validation findings of the definitions before any vector', () => {
+  const definition = order();
+  definition.states[1].code = 1;
+  const result = run('vectors', memory({ definitions: [definition], lock: orderLock() }), {});
+  assert.deepEqual(shape(result.findings), [{ code: 'E_DUPLICATE_CODE', machine: 'order', path: '$.states[1].code' }]);
+});
+
+test('vectors stops on the load findings of the store', () => {
+  const result = run('vectors', memory({ definitions: [order()], lock: orderLock(), findings: [loadFinding] }), {});
+  assert.deepEqual(result, { findings: [loadFinding] });
+});

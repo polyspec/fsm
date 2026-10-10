@@ -4,7 +4,7 @@
 // directory from --root, which is required. Every case runs in temporary directories that are removed when the file's tests end.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { after } from 'node:test';
@@ -253,4 +253,48 @@ test('copy --to json from a mermaid project into an empty target writes the file
     'machines/track.status.json': TRACK_TEXT,
     'status.lock.json': LOCK_TEXT,
   });
+});
+
+test('vectors writes <out>/<machine>.json in the canonical form: two spaces, a final line break and the case order', () => {
+  const root = project({ 'status.config.json': CONFIG_JSON, 'machines/order.status.json': ORDER_TEXT, 'status.lock.json': ORDER_LOCK_TEXT });
+  const out = path.join(root, 'conformance/vectors');
+  assert.deepEqual(gen(['vectors', '--project', root, '--out', out]), { status: 0, stdout: '[status-gen] vectors: ok\n', stderr: '' });
+  assert.deepEqual(readdirSync(out), ['order.json']);
+  const text = readFileSync(path.join(out, 'order.json'), 'utf8');
+  const parsed = JSON.parse(text);
+  assert.equal(parsed.machine, 'order');
+  assert.equal(text, `${JSON.stringify(parsed, null, 2)}\n`);
+  assert.deepEqual(parsed.cases.slice(0, 2).map(entry => entry.id), ['order_initial', 'order_code_s0']);
+  assert.equal(parsed.cases.length, 20);
+  assert.equal(parsed.cases.at(-1).id, 'order_persist_retry');
+});
+
+test('vectors gives each case the feature and id that scripts/check-parity.mjs reads', () => {
+  const root = project({ 'status.config.json': CONFIG_JSON, 'machines/order.status.json': ORDER_TEXT, 'status.lock.json': ORDER_LOCK_TEXT });
+  assert.equal(gen(['vectors', '--project', root, '--out', path.join(root, 'conformance/vectors')]).status, 0);
+  const { machine, cases } = JSON.parse(readFileSync(path.join(root, 'conformance/vectors/order.json'), 'utf8'));
+  for (const entry of cases) {
+    assert.equal(typeof entry.feature, 'string');
+    assert.ok(entry.id.startsWith(`${machine}_`), entry.id);
+  }
+});
+
+test('vectors without --out exits 2 with a usage line', () => {
+  const root = project({ 'status.config.json': CONFIG_JSON, 'machines/order.status.json': ORDER_TEXT, 'status.lock.json': ORDER_LOCK_TEXT });
+  for (const args of [['vectors', '--project', root], ['vectors', '--out']]) {
+    const result = gen(args);
+    assert.equal(result.status, 2, JSON.stringify(args));
+    assert.equal(result.stdout, '', JSON.stringify(args));
+    assert.equal(result.stderr.startsWith('[status-gen] usage: '), true, JSON.stringify(args));
+  }
+});
+
+test('vectors refused by a lock rule exits 1 and writes no vector file', () => {
+  const root = project({ 'status.config.json': CONFIG_JSON, 'machines/order.status.json': ORDER_TEXT });
+  const out = path.join(root, 'conformance/vectors');
+  const result = gen(['vectors', '--project', root, '--out', out]);
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr.split('\n')[0].startsWith('[status-gen] E_LOCK_MISMATCH order $: '), true, result.stderr);
+  assert.equal(existsSync(out), false);
 });

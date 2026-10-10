@@ -1,0 +1,12 @@
+{
+  "order": {
+    "codes": {
+      "1": "draft",
+      "2": "paid",
+      "3": "shipped",
+      "4": "done",
+      "5": "canceled"
+    },
+    "reserved": []
+  }
+}

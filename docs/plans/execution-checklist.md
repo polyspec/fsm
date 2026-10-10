@@ -14,7 +14,7 @@
 | S-05-2 | core name and code errors | RED per error code → GREEN | [o] |
 | S-05-3 | core key length: machine, state and event keys are at most 64 characters (E_KEY_FORMAT), so the DB store's varchar(64) holds every valid key | 64 accepted, 65 RED → GREEN | [o] |
 | S-06 | normalize/IR + lock (rename/reserved) + JsonStore + store contract + `run`/`copy` | RED per lock scenario → GREEN | [o] |
-| S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector oracle + `scripts/gen-check.mjs` + `gen-check-test` | matches the hand-written expected fixture; gen-check RED → GREEN | [ ] |
+| S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector oracle + `scripts/gen-check.mjs` + `gen-check-test` | matches the hand-written expected fixture; gen-check RED → GREEN | [o] |
 | S-08 | MermaidStore (canonical parser and writer) + json↔mermaid round trip | `E_MERMAID_UNSUPPORTED`, order violation, round-trip mismatch RED → GREEN | [o] |
 | S-09 | npm backend + `vectors --kind npm` (golden) | golden RED → GREEN | [ ] |
 | S-09-1 | npm package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-npm` and `parity-npm` (creates the shared `schema/persist.dbs`) | `test-npm` RED without generated output → GREEN; `layout-check` and `parity-npm` pass | [ ] |

@@ -69,10 +69,26 @@
     {
       "paths": [
         "packages/status-compiler/**",
-        "schema/status.schema.json"
+        "schema/status.schema.json",
+        "machines/**",
+        "status.lock.json",
+        "conformance/**",
+        "contracts/features.json",
+        "status.config.json"
       ],
       "targets": [
-        "compiler-test"
+        "compiler-test",
+        "gen-check"
+      ]
+    },
+    {
+      "paths": [
+        "scripts/gen-check.mjs",
+        "tests/gen-check/**"
+      ],
+      "targets": [
+        "gen-check-test",
+        "gen-check"
       ]
     }
   ]

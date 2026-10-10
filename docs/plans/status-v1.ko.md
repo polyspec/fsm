@@ -1,5 +1,5 @@
 <!-- doc-id: plan-status-v1 -->
-<!-- source-sha256: f05ab03752212333892009fa3efde282e819883db85248cbe80f365be48e9e21 -->
+<!-- source-sha256: 6e5644c857a5e428d960284b0e166b1612789cf10565dc2911c966c15a2d021f -->
 # status v1 계획
 
 [English](status-v1.md)
@@ -217,6 +217,8 @@ packages/status-<kind>/
 - 미정의 (state, event) → `E_INVALID_TRANSITION`
 - `from_code`: 0, 미지 code, 각 예약 code
 - `persist`: 첫 시도 / 재시도 / 충돌
+- case id: case id는 `<machine>_<suffix>`이고, suffix의 key마다 선언 index를 쓴다. 이름과 무관하게 두 id가 충돌하지 않게 하기 위해서다. state는 `s<i>`, event는 `e<j>`(둘 다 0부터 시작), 예약 code는 `r<code>`다. id는 `<m>_initial`; `<m>_code_s<i>`, `<m>_key_s<i>`, `<m>_from_code_s<i>`, `<m>_is_final_s<i>`, `<m>_events_from_s<i>`; `<m>_from_code_zero`, `<m>_from_code_unknown`, `<m>_from_code_r<code>`; `<m>_target_s<i>_e<j>`; `<m>_apply_s<i>_e<j>_s<k>`(expected, event, actual); `<m>_persist_first`, `<m>_persist_retry`, `<m>_persist_conflict`다. 케이스 데이터 필드는 key(state, event, expected, actual 등)를 그대로 쓰며, 바뀌는 것은 id뿐이다.
+- persist 케이스는 machine에 transition이 있을 때만 존재한다. `conflict`는 third state가 있을 때만 존재하므로, state가 2개인 machine은 `first`와 `retry`만 갖고, transition이 없는 machine(예: state가 1개인 machine)은 persist 케이스가 없다.
 
 ### C-5. compiler `packages/status-compiler`
 - 구성
