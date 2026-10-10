@@ -24,6 +24,7 @@
 | S-10-1 | go package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-go` and `parity-go` | `test-go` RED without generated output → GREEN; `layout-check` and `parity-go` pass | [o] |
 | S-11 | python backend + `vectors --kind python` (golden) | golden RED → GREEN | [o] |
 | S-11-1 | python package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-python` and `parity-python` | `test-python` RED without generated output → GREEN; `layout-check` and `parity-python` pass | [o] |
+| S-11-2 | python package: remove `PYTHON_COLORS=0` from packages/status-python/Makefile once kit K22 (run-tests python runs without color) is synced; removal condition: the kit release with K22 is adopted by `make kit-sync` | test-python passes with FORCE_COLOR set and no PYTHON_COLORS in the Makefile | [ ] |
 | S-12 | php backend + `vectors --kind php` (golden) | golden RED → GREEN | [o] |
 | S-12-1 | php package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-php` and `parity-php` | `test-php` RED without generated output → GREEN; `layout-check` and `parity-php` pass | [o] |
 | S-13 | rust backend + `vectors --kind rust` (golden) | golden RED → GREEN | [o] |
@@ -34,3 +35,4 @@
 | S-16 | GUI skeleton: hyper app + list and detail + Mermaid + `gui-test` + a test that parses the canonical form and every reserved state key of B-5 with the pinned mermaid package | handler RED → GREEN | [o] |
 | S-16-1 | GUI test hang: one `make gui-test` run reported "the test did not finish" for a nested Mermaid subtest with an empty event loop and no reproduction in about 20 runs; find the cause and fix it at the cause, then remove the per-call deadline if it only hid the cause | a reproduction (or a proof of the cause) RED → GREEN | [ ] |
 | S-17 | GUI editing: crudui forms + validation error display + rename | `check` passes after a save | [o] |
+| S-17-1 | GUI follow-up: a row added in the browser shows the code that core nextCode suggests (the page carries the next code), and a GUI test proves that deleting a state in the edit form moves its code to reserved | an added row without a code suggestion RED, a delete without a reserved code RED → GREEN | [ ] |
