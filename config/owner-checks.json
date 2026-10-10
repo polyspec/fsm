@@ -127,6 +127,18 @@
     },
     {
       "paths": [
+        "packages/status-go/**"
+      ],
+      "targets": [
+        "layout-check",
+        "gen-check",
+        "parity-go",
+        "dependency-policy-check",
+        "toolchain-check"
+      ]
+    },
+    {
+      "paths": [
         "schema/persist.dbs"
       ],
       "targets": [

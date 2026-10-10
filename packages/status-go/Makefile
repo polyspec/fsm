@@ -1,0 +1,27 @@
+# The go package (docs/plans/status-v1.md, C-2). gen writes the generated files: src/ and tests/vectors_test.go with the
+# status-gen of the compiler, and examples/model with orm-gen from the root schema/persist.dbs. DEST names the directory of the
+# generated files (DEST ?= .), so that gen-check can write them into var/gen-check/go and compare them with the working tree.
+# The test target runs go in this directory, where go.mod is, and names the paths of the kit runner from the checkout root.
+ROOT := ../..
+DEST ?= .
+STATUS_GEN := node $(ROOT)/packages/status-compiler/src/cli/status-gen.mjs
+MODULE := github.com/polyspec/status-go
+
+.PHONY: install gen test
+
+# install downloads the modules that go.mod and go.sum name (the orm release and orm-gen); gen and test need them.
+install:
+	go mod download
+
+gen:
+	$(STATUS_GEN) gen --project $(ROOT) --kind go --go-module $(MODULE) --out $(DEST)/src
+	$(STATUS_GEN) vectors --project $(ROOT) --kind go --out $(DEST)/tests/vectors_test.go
+	# orm-gen runs go in the module of its output directory, so the models are generated inside DEST. When DEST is another
+	# directory, it receives a copy of go.mod, go.sum and examples/persist.go, which the scan reads; its src/ is the one above.
+	mkdir -p $(DEST)/examples
+	if [ "$(abspath $(DEST))" != "$(CURDIR)" ]; then cp go.mod go.sum $(DEST)/ && cp examples/persist.go $(DEST)/examples/; fi
+	cd $(DEST) && go tool orm-gen gen --document $(CURDIR)/$(ROOT)/schema/persist.dbs --lang go --out examples/model --scan ./examples/...
+
+# test runs the conformance cases and the persist example with GOPROXY=off, so that the modules must already be downloaded.
+test:
+	GOPROXY=off node $(ROOT)/scripts/kit/run-tests.mjs go --cwd packages/status-go --results .results/go.json --inputs packages/status-go --inputs schema/persist.dbs -- ./tests

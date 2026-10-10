@@ -1,4 +1,8 @@
 {
   "schema": 1,
-  "comment": "Node.js is declared in .node-version. Each language package item (S-10 to S-14) adds the toolchain of its kind; the npm kind (S-09-1) adds none, because it runs on the Node.js of .node-version and the kit declares npm only in a root package.json, which this repository does not have."
+  "comment": "Node.js is declared in .node-version. The go package declares the Go release in packages/status-go/go.mod (its toolchain line) and the govulncheck release that the dependency review runs; the other language items (S-11 to S-14) add the toolchain of their kind. The npm kind (S-09-1) adds none, because it runs on the Node.js of .node-version and the kit declares npm only in a root package.json, which this repository does not have.",
+  "go": {
+    "mod": "packages/status-go/go.mod"
+  },
+  "govulncheck": "1.8.0"
 }

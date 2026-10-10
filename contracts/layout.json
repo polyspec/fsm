@@ -7,6 +7,11 @@
     "directories": ["src", "tests", "examples"]
   },
   "kinds": {
+    "go": {
+      "required": ["go.mod", "go.sum", "tests/conformance_test.go", "tests/vectors_test.go", "examples/persist.go"],
+      "allowed": ["src/**/*.go", "examples/model/**"],
+      "generated": ["src/**", "tests/vectors_test.go", "examples/model/**"]
+    },
     "npm": {
       "required": ["package.json", "package-lock.json", "tests/conformance.test.mjs", "tests/vectors.mjs", "examples/persist.mjs"],
       "allowed": ["src/*.js", "src/*.d.ts", "examples/model/**"],

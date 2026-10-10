@@ -17,7 +17,7 @@ KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).
 
 CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test packages-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -93,3 +93,12 @@ test-npm:
 # run once and passed (docs/plans/status-v1.md, C-4 and D).
 parity-npm: test-npm
 	node scripts/check-parity.mjs --kind npm
+
+# test-go runs the tests of packages/status-go: the conformance cases and the persist example (docs/plans/status-v1.md, C-2).
+test-go:
+	$(MAKE) -C packages/status-go test
+
+# parity-go is the owner check of the go package: check-parity reads its record only and requires every vector case to have run
+# once and passed (docs/plans/status-v1.md, C-4 and D).
+parity-go: test-go
+	node scripts/check-parity.mjs --kind go
