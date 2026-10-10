@@ -11,7 +11,7 @@ import { parse as parseYaml } from 'yaml';
 import { run } from '../../status-compiler/src/core/run.mjs';
 import { mermaidText } from '../../status-compiler/src/store-mermaid/write.mjs';
 import {
-  completeData, editData, editState, formErrorsOf, newErrorsOf, renameData, renameErrorsOf, renderEdit, renderNew,
+  completeData, editData, editState, formErrorsOf, newErrorsOf, nextCodeOf, renameData, renameErrorsOf, renderEdit, renderNew,
   renderRename, suggestCodes,
 } from './forms.mjs';
 import {
@@ -27,11 +27,11 @@ const view = ({ code, machine, path: at, message }) => ({ code, machine: machine
 /** The data of the machine list of `definitions`: one row per machine. */
 const listPage = definitions => ({ list: renderList(LIST_SPEC, definitions.map(({ machine }) => ({ machine }))) });
 
-/** The definitions that the store loads, and the findings of the project: the load findings, or else the core check. */
+/** The definitions and the lock that the store loads, and the findings of the project: the load findings, or else the core check. */
 async function project(store) {
   const loaded = await store.load();
   const checked = await run('check', store);
-  return { definitions: loaded.definitions, findings: checked.findings };
+  return { definitions: loaded.definitions, lock: loaded.lock, findings: checked.findings };
 }
 
 export const handlers = {
@@ -72,14 +72,14 @@ export const handlers = {
     'machines.edit': {
       load: async ({ request, services }) => {
         const machine = request.param('machine') ?? '';
-        const { definitions, findings } = await project(services.get('store'));
+        const { definitions, lock, findings } = await project(services.get('store'));
         const definition = definitions.find(item => item.machine === machine);
         if (definition === undefined) throw new NotFound();
         const data = editData(definition);
         return {
           machine,
           form: renderEdit(machine, data, { csrf: request.csrfToken() }),
-          state: editState(data),
+          state: editState(data, nextCodeOf(machine, definitions, lock)),
           hasFindings: findings.length > 0,
           findings: findings.map(view),
         };
@@ -107,7 +107,7 @@ export const handlers = {
         return Result.invalid({
           machine,
           form: renderEdit(machine, shown, { csrf: request.csrfToken(), errors, formErrors }),
-          state: editState(shown),
+          state: editState(shown, nextCodeOf(machine, loaded.definitions, loaded.lock)),
           hasFindings: true,
           findings: saved.findings.map(view),
         });

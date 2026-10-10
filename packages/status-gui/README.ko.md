@@ -1,5 +1,5 @@
 <!-- doc-id: status-gui-readme -->
-<!-- source-sha256: b3a8fedd53a75922219f33ae10ce9fc36fa14e79273d1355ed2dcadb719bf2e5 -->
+<!-- source-sha256: a62dd160b110f7d4308fd4e35688ab780758dfeee680e0bd1445af480cd3af05 -->
 # status GUI
 
 [English](README.md)
@@ -62,8 +62,10 @@ finding을 오류로 보여주며, 읽을 수 없는 파일의 load finding도 �
   보여준다. 필드가 없는 finding(기계 전체에 대한 finding 등)은 폼 오류다.
 - 편집 폼에서 저장된 상태의 key와 code는 읽기 전용이다. 요청을 손으로 고쳐도 core가 code 변경(`E_CODE_CHANGED`)과 key 변경
   (`E_CODE_KEY_CHANGED`)을 거부한다. key는 이름 바꾸기 화면에서만 바뀐다.
-- 새 상태는 저장할 때 core `nextCode`가 제안한 code를 받는다. 그 전까지 code는 비어 있고, 거부된 저장 뒤의 페이지가 제안을
-  보여준다.
+- 새 상태는 저장할 때 code를 받는다. 편집 페이지는 기계의 core `nextCode`가 제안한 code를 내장 폼 상태(`nextCode`)에 담고,
+  브라우저는 폼에서 추가한 상태마다 그 code와 그 뒤의 code를 순서대로 준다(`client/new-codes.ts`). 저장은 모든 code를
+  검사하며, 빈 code는 서버가 `nextCode`로 채운다. `nextCode`가 code를 내지 못하면(`E_CODE_RANGE`) 페이지는 null을 담고,
+  브라우저는 code를 주지 않으며, 저장이 그 finding을 보여준다.
 - 기계나 상태를 삭제하면 그 code는 `status.lock.json`의 `reserved`로 옮겨가므로 나중의 상태가 그 code를 받지 않는다
   (`docs/spec/status.md`, B-3). 삭제된 기계를 다시 추가하면 그 reserved code 다음부터 시작한다.
 - 저장, 이름 바꾸기, 삭제 요청은 그 요청을 보낸 페이지의 `_csrf` 토큰을 가져야 한다. 없으면 서버는 403으로 응답하고 아무것도
