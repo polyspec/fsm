@@ -1,0 +1,22 @@
+{
+  "machine": "order",
+  "states": [
+    "draft",
+    {
+      "key": "done",
+      "code": 2,
+      "final": true
+    }
+  ],
+  "events": [
+    {
+      "key": "next",
+      "edges": [
+        {
+          "from": "draft",
+          "to": "done"
+        }
+      ]
+    }
+  ]
+}

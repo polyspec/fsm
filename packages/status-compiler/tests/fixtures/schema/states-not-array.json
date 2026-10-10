@@ -1,0 +1,15 @@
+{
+  "machine": "order",
+  "states": {},
+  "events": [
+    {
+      "key": "next",
+      "edges": [
+        {
+          "from": "draft",
+          "to": "done"
+        }
+      ]
+    }
+  ]
+}
