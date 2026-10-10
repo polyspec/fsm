@@ -1,5 +1,5 @@
 <!-- doc-id: spec-status -->
-<!-- source-sha256: e66bd5485db66e64b86678a3f89cd9941cebad3047a74b2139d16df0415108f5 -->
+<!-- source-sha256: 53a389ea1420a65e4d6213fb7d5894a2b58c846dc10b98cdfaa2d68ddc05beb0 -->
 # status 정의
 
 [English](status.md)
@@ -166,7 +166,7 @@ stateDiagram-v2
 - 이름
   - `E_KEY_FORMAT`: 머신·상태·이벤트 key가 `^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$`가 아니거나 64자를 넘음(DB store는 key를 varchar(64)에 담으므로, core가 이 상한을 강제해 세 store가 같은 key를 받아들이게 한다)
   - `E_DUPLICATE_KEY`: 머신 key 중복, 한 머신 안의 상태 key 중복·이벤트 key 중복, 또는 `_`를 지웠을 때 같아지는 두 머신 key(`ab`와 `a_b`는 모두 php `<ns>\Ab`가 된다)
-  - `E_KEY_RESERVED`: `docs/spec/status.md`의 고정 목록 하나이며 kind·store와 무관하게 모든 정의에 적용한다. (1) 머신 key(`_`를 지우고 비교): `status`(공용 모듈), `index`(npm `index.js`), `lib`·`main`(rust `src/lib.rs`·`src/main.rs`, go `package main`), `internal`(go internal package는 `tests/`에서 import할 수 없음), `init`(go는 `init`라는 이름으로 package를 import하지 못함), `testdata`·`vendor`(go `./...`가 건너뜀), go 사전 선언 식별자(`error`, `string`, `int`, `len`, `nil` 등. 그 이름의 package를 import하면 이를 가린다), 그리고 go·rust(고정 edition)·python·js의 keyword(이 네 언어에서는 머신 key가 그대로 모듈 이름이다). (2) pascal 형태가 enum 멤버로 거부되는 상태·이벤트 key: `self`(rust `Self`), `class`(php `Class`). (3) Mermaid 예약어(store와 무관하게 항상 적용): 상태 key `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`, 머신 key `null, true, false`(고정한 mermaid 버전 기준. 테스트는 목록의 각 단어를 모든 위치의 상태 key와 title로 쓴 정규형을 파싱하고, 각 단어가 파싱 실패나 id 충돌을 내는지 확인한다). 이름을 변형하지 않고 거부한다.
+  - `E_KEY_RESERVED`: `docs/spec/status.md`의 고정 목록 하나이며 kind·store와 무관하게 모든 정의에 적용한다. (1) 머신 key(`_`를 지우고 비교): `status`(공용 모듈), `index`(npm `index.js`), `lib`·`main`(rust `src/lib.rs`·`src/main.rs`, go `package main`), `internal`(go internal package는 `tests/`에서 import할 수 없음), `init`(go는 `init`라는 이름으로 package를 import하지 못함), `testdata`·`vendor`(go `./...`가 건너뜀), go 사전 선언 식별자(`error`, `string`, `int`, `len`, `nil` 등. 그 이름의 package를 import하면 이를 가린다), 그리고 go·rust(고정 edition)·python·js의 keyword(이 네 언어에서는 머신 key가 그대로 모듈 이름이다). (2) pascal 형태가 enum 멤버로 거부되는 상태·이벤트 key: `self`(rust `Self`), `class`(php `Class`). (3) Mermaid 예약어(store와 무관하게 항상 적용): 상태 key `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`; 머신 key `null, true, false`(고정한 mermaid 버전 12.1.0 기준). S-16 테스트(`packages/status-gui/tests/mermaid-parse.test.mjs`)는 상태 key를 다섯 위치(설명 줄, 초기 줄, edge의 출발, edge의 도착, 최종 줄)에서 검사한다. 단어는 그 위치에서 mermaid가 다이어그램을 파싱하지 못하거나, 쓴 모델과 다른 모델로 파싱할 때 쓸 수 없다. 다른 모델은 `[*]` id와 충돌하는 id(`root_start`, `root_end`)이거나, mermaid가 버리는 줄이나 code다(설명 줄의 `state`, 설명 줄과 초기 줄의 `acctitle`·`accdescr`). 머신 단어는 mermaid의 stateDiagram이 frontmatter title을 읽지 않으므로 frontmatter의 YAML 규칙으로 검사한다. 이름은 변형하지 않고 거부한다.
 - code·lock
   - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`
 - store

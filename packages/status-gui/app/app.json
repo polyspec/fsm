@@ -1,0 +1,11 @@
+{
+  "layout": "layout.tpl",
+  "title": "title.tpl",
+  "regions": [
+    { "name": "content", "page": true }
+  ],
+  "routes": [
+    { "name": "machines.list", "path": "/", "title": "Machines", "template": "machines/list.tpl" },
+    { "name": "machines.show", "path": "/machines/{machine}", "title": "Machine", "template": "machines/show.tpl" }
+  ]
+}

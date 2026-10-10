@@ -78,7 +78,8 @@
       ],
       "targets": [
         "compiler-test",
-        "gen-check"
+        "gen-check",
+        "gui-test"
       ]
     },
     {
@@ -98,7 +99,8 @@
       ],
       "targets": [
         "db-test",
-        "dependency-policy-check"
+        "dependency-policy-check",
+        "gui-test"
       ]
     },
     {
@@ -130,6 +132,15 @@
       "targets": [
         "gen-check",
         "packages-test"
+      ]
+    },
+    {
+      "paths": [
+        "packages/status-gui/**"
+      ],
+      "targets": [
+        "gui-test",
+        "dependency-policy-check"
       ]
     }
   ]
