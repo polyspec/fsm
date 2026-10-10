@@ -1,5 +1,5 @@
 <!-- doc-id: spec-status -->
-<!-- source-sha256: 5212210ae50bd7f0c76587a111a3105b5e9d672505cd43cd94e24088abf18e3e -->
+<!-- source-sha256: f8dc783a5ead4ca2a173c8a09002a8ed9d53d90f64024dc9b13c613907a154cc -->
 # status 정의
 
 [English](status.md)
@@ -164,7 +164,7 @@ stateDiagram-v2
   - `E_UNREACHABLE`: initial에서 도달할 수 없는 상태
   - `E_DEAD_END`: 비-final인데 나가는 엣지가 없음
 - 이름
-  - `E_KEY_FORMAT`: 머신·상태·이벤트 key가 `^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$`가 아님
+  - `E_KEY_FORMAT`: 머신·상태·이벤트 key가 `^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$`가 아니거나 64자를 넘음(DB store는 key를 varchar(64)에 담으므로, core가 이 상한을 강제해 세 store가 같은 key를 받아들이게 한다)
   - `E_DUPLICATE_KEY`: 머신 key 중복, 한 머신 안의 상태 key 중복·이벤트 key 중복, 또는 `_`를 지웠을 때 같아지는 두 머신 key(`ab`와 `a_b`는 모두 php `<ns>\Ab`가 된다)
   - `E_KEY_RESERVED`: `docs/spec/status.md`의 고정 목록 하나이며 kind·store와 무관하게 모든 정의에 적용한다. (1) 머신 key(`_`를 지우고 비교): `status`(공용 모듈), `index`(npm `index.js`), `lib`·`main`(rust `src/lib.rs`·`src/main.rs`, go `package main`), `internal`(go internal package는 `tests/`에서 import할 수 없음), `init`(go는 `init`라는 이름으로 package를 import하지 못함), `testdata`·`vendor`(go `./...`가 건너뜀), go 사전 선언 식별자(`error`, `string`, `int`, `len`, `nil` 등. 그 이름의 package를 import하면 이를 가린다), 그리고 go·rust(고정 edition)·python·js의 keyword(이 네 언어에서는 머신 key가 그대로 모듈 이름이다). (2) pascal 형태가 enum 멤버로 거부되는 상태·이벤트 key: `self`(rust `Self`), `class`(php `Class`). (3) Mermaid 예약어(store와 무관하게 항상 적용): 상태 key `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`, 머신 key `null, true, false`(고정한 mermaid 버전 기준. 테스트는 목록의 각 단어를 모든 위치의 상태 key와 title로 쓴 정규형을 파싱하고, 각 단어가 파싱 실패나 id 충돌을 내는지 확인한다). 이름을 변형하지 않고 거부한다.
 - code·lock
