@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "comment": "The checks that own each tracked path, read by scripts/kit/owner-check.mjs: during an item only the owners of the changed paths run; make check runs the full suite once per tree. Each checklist item adds the rules of the paths it creates.",
+  "owners": [
+    {
+      "paths": ["scripts/kit/**", "tests/kit/**", ".kit/**", "kit.json", "config/**", "Makefile", ".gitignore", ".node-version"],
+      "targets": ["kit-check", "owner-validate", "documents-check", "commits-check", "toolchain-check", "dependency-policy-check"]
+    },
+    {
+      "paths": [".githooks/**"],
+      "targets": ["hooks-check"]
+    },
+    {
+      "paths": ["**/*.md"],
+      "targets": ["documents-check"]
+    }
+  ]
+}
