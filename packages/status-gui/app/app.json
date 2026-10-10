@@ -6,6 +6,10 @@
   ],
   "routes": [
     { "name": "machines.list", "path": "/", "title": "Machines", "template": "machines/list.tpl" },
-    { "name": "machines.show", "path": "/machines/{machine}", "title": "Machine", "template": "machines/show.tpl" }
+    { "name": "machines.show", "path": "/machines/{machine}", "title": "Machine", "template": "machines/show.tpl" },
+    { "name": "machines.edit", "path": "/machines/{machine}/edit", "title": "Edit machine", "template": "machines/edit.tpl", "post": true },
+    { "name": "machines.rename", "path": "/machines/{machine}/rename", "title": "Rename states", "template": "machines/rename.tpl", "post": true },
+    { "name": "machines.new", "path": "/new", "title": "New machine", "template": "machines/new.tpl", "post": true },
+    { "name": "machines.delete", "path": "/machines/{machine}/delete", "title": "Delete machine", "template": "machines/list.tpl", "post": true }
   ]
 }

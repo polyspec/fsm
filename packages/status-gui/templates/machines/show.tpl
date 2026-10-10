@@ -2,6 +2,8 @@
 <h1>{= machine}</h1>
 <p><a href="/">All machines</a></p>
 {+ errors.tpl}
+<p><a href="/machines/{= machine}/edit">Edit</a> · <a href="/machines/{= machine}/rename">Rename states</a></p>
+<form method="post" action="/machines/{= machine}/delete"><input type="hidden" name="_csrf" value="{= csrf}"><button type="submit">Delete machine</button></form>
 <h2>States</h2>
 <table>
 <thead><tr><th>Key</th><th>Code</th><th>Initial</th><th>Final</th></tr></thead>
