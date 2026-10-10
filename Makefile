@@ -7,10 +7,13 @@ export PATH := $(CURDIR)/var/tools/bin:$(PATH)
 include scripts/kit/kit.mk
 
 # The targets of the full suite that make check runs through the guard of scripts/kit/full-run.mjs. Each checklist item
-# appends the targets that it defines (docs/plans/status-v1.md, Verification).
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check
+# appends the targets that it defines (docs/plans/status-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
+# records parity-check requires.
+comma := ,
+TOOL_TESTS := layout-test parity-test
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test parity-check
 
-.PHONY: check layout-test layout-check
+.PHONY: check layout-test layout-check parity-test parity-check
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -24,3 +27,11 @@ layout-test:
 
 layout-check:
 	node scripts/check-layout.mjs
+
+# parity-test runs the tests of scripts/check-parity.mjs. parity-check, the last target of the full suite, requires that every
+# kind ran every vector case once and passed and that every tool test left a current record (docs/plans/status-v1.md, C-4).
+parity-test:
+	node scripts/kit/run-tests.mjs node --results .results/parity-test.json --inputs scripts/check-parity.mjs --inputs tests/check-parity -- tests/check-parity
+
+parity-check:
+	node scripts/check-parity.mjs --tools $(subst $(eval) ,$(comma),$(TOOL_TESTS))
