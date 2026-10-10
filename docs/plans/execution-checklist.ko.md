@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 9fd36ae74a8912f31abae35f53949ac53cd4bc95c2711ed70f9c140fd0da0827 -->
+<!-- source-sha256: bf118f6af3ecfa237cf55b732210c61872c4e8931329b180bdcd2f2dff6a4584 -->
 # 실행 체크리스트
 
 ## status v1
@@ -12,7 +12,7 @@
 | S-04 | `scripts/check-parity.mjs`(`--kind` 포함) + `parity-test` | fixture(결과 없음/도구 결과 없음/`--kind`는 자기 kind만 읽음/stale inputs/미실행/미등록/0케이스/fail/timeout/skip/이름 일치 0·2개/부모 id/10분 초과) RED → GREEN | [o] |
 | S-05 | core `E_SCHEMA` + schema 대응 테스트 | RED → GREEN | [o] |
 | S-05-1 | core 그래프 오류 | 오류 코드별 RED → GREEN | [o] |
-| S-05-2 | core 이름·code 오류 | 오류 코드별 RED → GREEN | [ ] |
+| S-05-2 | core 이름·code 오류 | 오류 코드별 RED → GREEN | [o] |
 | S-06 | normalize/IR + lock(rename/reserved) + JsonStore + store 계약 + `run`/`copy` | lock 시나리오별 RED → GREEN | [ ] |
 | S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector 오라클 + `scripts/gen-check.mjs` + `gen-check-test` | 수작업 기대값 fixture와 일치, gen-check RED → GREEN | [ ] |
 | S-08 | MermaidStore(정규형 parser와 writer) + json↔mermaid 왕복 | `E_MERMAID_UNSUPPORTED`·순서 위반·왕복 불일치 RED → GREEN | [ ] |

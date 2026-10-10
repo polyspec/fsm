@@ -3,6 +3,17 @@
 // machines. An empty array means that the definitions are valid. The core imports nothing from node:, so the GUI runs it
 // in a browser. Its findings are returned, never thrown, and no rule falls back to a default value.
 
+import {
+  GO_KEYWORDS, GO_PREDECLARED, JS_KEYWORDS, MACHINE_FIXED, MACHINE_LITERALS, MERMAID_STATE_KEYS, PYTHON_KEYWORDS, RUST_KEYWORDS,
+  STATE_EVENT_KEYS,
+} from './reserved.mjs';
+
+const KEY_PATTERN = /^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$/;
+const CODE_MAX = 2147483647;
+const MACHINE_RESERVED = new Set([...MACHINE_FIXED, ...GO_PREDECLARED, ...GO_KEYWORDS, ...RUST_KEYWORDS, ...PYTHON_KEYWORDS, ...JS_KEYWORDS, ...MACHINE_LITERALS]);
+const STATE_RESERVED = new Set([...STATE_EVENT_KEYS, ...MERMAID_STATE_KEYS]);
+const EVENT_RESERVED = new Set(STATE_EVENT_KEYS);
+
 const MACHINE_FIELDS = ['machine', 'states', 'events'];
 const STATE_FIELDS = ['key', 'code', 'initial', 'final'];
 const EVENT_FIELDS = ['key', 'edges'];
@@ -159,6 +170,60 @@ function positions(value) {
   return found;
 }
 
+/** The name rules of a machine whose structure is valid (B-5): the key format, the reserved keys and the repeated keys. */
+function names(definition) {
+  const found = [];
+  const { machine, states, events } = definition;
+  const report = (code, path, message) => found.push(finding(code, machine, path, message));
+  if (!KEY_PATTERN.test(machine)) report('E_KEY_FORMAT', '$.machine', `machine key ${machine} is not lower case letters and digits joined by single underscores`);
+  if (MACHINE_RESERVED.has(machine.replaceAll('_', ''))) report('E_KEY_RESERVED', '$.machine', `machine key ${machine} is reserved (docs/spec/status.md, B-5), after its underscores are removed`);
+  const stateKeys = new Set();
+  states.forEach((state, index) => {
+    const path = `$.states[${index}].key`;
+    if (!KEY_PATTERN.test(state.key)) report('E_KEY_FORMAT', path, `state key ${state.key} is not lower case letters and digits joined by single underscores`);
+    if (STATE_RESERVED.has(state.key)) report('E_KEY_RESERVED', path, `state key ${state.key} is reserved (docs/spec/status.md, B-5)`);
+    if (stateKeys.has(state.key)) report('E_DUPLICATE_KEY', path, `state key ${state.key} repeats a state of the machine`);
+    stateKeys.add(state.key);
+  });
+  const eventKeys = new Set();
+  events.forEach((event, index) => {
+    const path = `$.events[${index}].key`;
+    if (!KEY_PATTERN.test(event.key)) report('E_KEY_FORMAT', path, `event key ${event.key} is not lower case letters and digits joined by single underscores`);
+    if (EVENT_RESERVED.has(event.key)) report('E_KEY_RESERVED', path, `event key ${event.key} is reserved (docs/spec/status.md, B-5)`);
+    if (eventKeys.has(event.key)) report('E_DUPLICATE_KEY', path, `event key ${event.key} repeats an event of the machine`);
+    eventKeys.add(event.key);
+  });
+  return found;
+}
+
+/** The code rules of a machine whose structure is valid (B-5): the range and the repeated codes. */
+function codes(definition) {
+  const found = [];
+  const { machine, states } = definition;
+  const seen = new Set();
+  states.forEach((state, index) => {
+    const path = `$.states[${index}].code`;
+    if (state.code < 1 || state.code > CODE_MAX) found.push(finding('E_CODE_RANGE', machine, path, `code ${state.code} is outside 1 to ${CODE_MAX}`));
+    if (seen.has(state.code)) found.push(finding('E_DUPLICATE_CODE', machine, path, `code ${state.code} is used by another state of the machine`));
+    seen.add(state.code);
+  });
+  return found;
+}
+
+/**
+ * E_DUPLICATE_KEY of a machine whose key equals the key of an earlier machine with a valid structure, or equals it after
+ * its underscores are removed. The earlier machines with a structural error are not compared (their keys are not valid).
+ */
+function repeatedMachine(definition, earlier) {
+  const compact = key => key.replaceAll('_', '');
+  const match = earlier.find(entry => compact(entry.machine) === compact(definition.machine));
+  if (match === undefined) return [];
+  const message = match.machine === definition.machine
+    ? `machine key ${definition.machine} repeats the machine at index ${match.index}`
+    : `machine key ${definition.machine} equals machine key ${match.machine} at index ${match.index} after its underscores are removed`;
+  return [finding('E_DUPLICATE_KEY', definition.machine, '$.machine', message)];
+}
+
 /** The findings of one machine in document order. */
 function inDocumentOrder(definition, found) {
   const order = positions(definition);
@@ -172,9 +237,16 @@ function inDocumentOrder(definition, found) {
 export function validate(definitions) {
   if (!Array.isArray(definitions)) return [finding('E_SCHEMA', null, '$', `the definitions are ${kindOf(definitions)}; they must be an array of machines`)];
   const found = [];
-  definitions.forEach(definition => {
+  const valid = [];
+  definitions.forEach((definition, index) => {
     const problems = structure(definition);
-    found.push(...inDocumentOrder(definition, problems.length > 0 ? problems : graph(definition)));
+    if (problems.length > 0) {
+      found.push(...inDocumentOrder(definition, problems));
+      return;
+    }
+    const own = [...repeatedMachine(definition, valid), ...names(definition), ...codes(definition), ...graph(definition)];
+    valid.push({ machine: definition.machine, index });
+    found.push(...inDocumentOrder(definition, own));
   });
   return found;
 }

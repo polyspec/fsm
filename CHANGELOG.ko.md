@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 536b24488775826c1cf2bb490b17abec56459a6ff6759bfb8c7a5b1ece8c54e6 -->
+<!-- source-sha256: 7fc85d55017d6114b45698550aba18fb3a6698df8c3ed6053f95736e64aeb14f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-05-2: core `validate`는 B-5의 이름·code 오류 `E_KEY_FORMAT`, `E_DUPLICATE_KEY`, `E_KEY_RESERVED`(고정 목록은 `packages/status-compiler/src/core/reserved.mjs`), `E_DUPLICATE_CODE`, `E_CODE_RANGE`를 보고한다. machine key는 `_`를 뺀 뒤 비교하며, 구조 오류가 있는 machine은 다른 machine과 비교하지 않는다.
 - S-05-1: core `validate`는 B-5의 그래프 오류 `E_UNKNOWN_STATE_REF`, `E_SELF_LOOP`, `E_NONDETERMINISTIC`, `E_DUPLICATE_EDGE`, `E_INITIAL_COUNT`, `E_FINAL_OUTGOING`, `E_UNREACHABLE`, `E_DEAD_END`을 보고하며, 각 코드마다 자기 실패 케이스가 있다. 도달 가능성은 단일 initial 상태에서 시작하며, 구조 오류가 있는 machine은 `E_SCHEMA` finding만 보고한다.
 - S-05: core `validate`(`packages/status-compiler/src/core/validate.mjs`)는 정의의 구조 오류를 모두 JSON 경로와 함께 `E_SCHEMA`로 보고하고, 그 machine의 뒤 규칙은 건너뛴다. `schema/status.schema.json`은 kit `schema-validate.mjs`의 키워드만 쓰는 에디터 schema이며, 대응 테스트가 모든 fixture에서 core와 일치함을 확인한다. `make compiler-test`는 `run-tests.mjs`로 테스트를 실행하고 `.results/compiler-test.json`을 기록한다.
 - JSON store는 엣지를 쌍 대신 객체 `{from, to}`로 쓴다. 그래서 에디터 schema가 정확히 검사하고 GUI 폼은 행으로 편집한다(`docs/spec/status.md`, B-1).
