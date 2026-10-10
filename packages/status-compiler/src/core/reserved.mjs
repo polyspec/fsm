@@ -56,7 +56,7 @@ export const STATE_EVENT_KEYS = Object.freeze(['self', 'class']);
 
 /**
  * The words that a Mermaid stateDiagram-v2 state key may not be, whatever the store. The list is taken from the Mermaid
- * stateDiagram-v2 syntax; a parse test against the pinned Mermaid version checks it when the Mermaid store is added (S-08).
+ * stateDiagram-v2 syntax; a parse test against the pinned Mermaid version checks it with the GUI, which owns the pinned package (S-16).
  */
 export const MERMAID_STATE_KEYS = Object.freeze([
   'note', 'class', 'classdef', 'style', 'click', 'href', 'default', 'state', 'statediagram', 'scale', 'acctitle', 'accdescr',

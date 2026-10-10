@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 31b1e2bf51b1e7a9b950d3a17609b53f1e33227d4cdbc5d11d198208a438e1a9 -->
+<!-- source-sha256: ca152b242266e1bcdaaa1a6b9f85739336e516c6a4c44fb62a124d2b09eddf4d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-08: Mermaid store(`src/store-mermaid/`)는 `docs/spec/status.md`의 B-1 정규 형식으로 `machines/*.status.mmd`를 읽고 쓴다. `parse.mjs`는 정규 형식 밖의 모든 줄을 줄 번호와 함께 `E_MERMAID_UNSUPPORTED`로 거부하고, `write.mjs`는 정규 형식으로 쓴다. `save`는 정의되지 않은 `*.status.mmd` 파일을 지우고 store 계약(`tests/store-contract.mjs`)을 통과한다. lock 읽기·쓰기는 두 파일 store가 함께 쓰도록 `src/store-lock/lock-file.mjs`로 옮겼다. `status-gen`은 `{"store":"mermaid"}`를 받고, `copy --to json|mermaid`는 빈 대상으로 두 방향 모두 옮긴다. 모든 valid fixture는 json → mermaid → json에서 바이트 단위로 왕복한다.
 - S-05-3: core `validate`는 machine·상태·이벤트 key의 길이를 64자로 제한한다. 64자를 넘는 key는 해당 경로에서 `E_KEY_FORMAT`으로 실패하며, 메시지는 길이와 상한을 밝힌다. DB store는 key를 `varchar(64)`에 담으므로, 이 상한으로 세 store가 같은 key를 받아들인다(`docs/spec/status.md`, B-5).
 - S-06: core `normalize`는 유효한 정의의 IR을 돌려주고(`src/core/normalize.mjs`), `lockMismatch`, `nextLock`, `nextCode`, `canonicalLock`은 B-3의 code lock을 구현하며(`src/core/lock.mjs`), `nextLock`은 lock이 가진 code를 정의가 바꾸는 key를 `E_CODE_CHANGED`로 거부한다. `run`(`check`, `lock`, `save`)과 `copy`는 B-2의 명령을 store 위에서 실행한다(`src/core/run.mjs`). JSON store(`src/store-json/store.mjs`)는 `machines/*.status.json`과 `status.lock.json`을 정규 형식으로 읽고 쓰며 store 계약(`tests/store-contract.mjs`)을 통과한다. `status-gen`(`src/cli/status-gen.mjs`)은 `check`, `lock`, `copy`를 제공하고, mermaid store는 S-08 전까지 `E_STORE_NOT_CONFIGURED`로 남는다.
 - S-05-2: core `validate`는 B-5의 이름·code 오류 `E_KEY_FORMAT`, `E_DUPLICATE_KEY`, `E_KEY_RESERVED`(고정 목록은 `packages/status-compiler/src/core/reserved.mjs`), `E_DUPLICATE_CODE`, `E_CODE_RANGE`를 보고한다. machine key는 `_`를 뺀 뒤 비교하며, 구조 오류가 있는 machine은 다른 machine과 비교하지 않는다.
