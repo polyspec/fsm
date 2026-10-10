@@ -154,6 +154,43 @@
         "gui-test",
         "dependency-policy-check"
       ]
+    },
+    {
+      "paths": [
+        "packages/status-compiler/**",
+        "schema/status.schema.json",
+        "machines/**",
+        "status.lock.json",
+        "conformance/**",
+        "contracts/features.json",
+        "status.config.json"
+      ],
+      "targets": [
+        "compiler-test",
+        "gen-check"
+      ]
+    },
+    {
+      "paths": [
+        "packages/status-db/**",
+        "schema/status.dbs"
+      ],
+      "targets": [
+        "db-test",
+        "dependency-policy-check"
+      ]
+    },
+    {
+      "paths": [
+        "packages/status-php/**"
+      ],
+      "targets": [
+        "layout-check",
+        "gen-check",
+        "parity-php",
+        "dependency-policy-check",
+        "toolchain-check"
+      ]
     }
   ]
 }

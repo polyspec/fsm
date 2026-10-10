@@ -16,6 +16,11 @@
       "required": ["package.json", "package-lock.json", "tests/conformance.test.mjs", "tests/vectors.mjs", "examples/persist.mjs"],
       "allowed": ["src/*.js", "src/*.d.ts", "examples/model/**"],
       "generated": ["src/**", "tests/vectors.mjs", "examples/model/**"]
+    },
+    "php": {
+      "required": ["composer.json", "composer.lock", "tests/ConformanceTest.php", "tests/Vectors.php", "examples/persist.php"],
+      "allowed": ["src/**/*.php", "examples/model/**"],
+      "generated": ["src/**", "tests/Vectors.php", "examples/model/**"]
     }
   }
 }

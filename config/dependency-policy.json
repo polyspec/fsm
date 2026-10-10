@@ -1,6 +1,11 @@
 {
   "schema": 1,
-  "composerPlatforms": [],
+  "composerPlatforms": [
+    {
+      "manifest": "packages/status-php/composer.json",
+      "php": "8.4.0"
+    }
+  ],
   "pythonManifests": [],
   "npmLocks": [
     "packages/status-db/package-lock.json",

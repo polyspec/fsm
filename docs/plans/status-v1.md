@@ -169,7 +169,7 @@ packages/status-<kind>/
 |---|---|---|---|
 | go | go.mod | `src/order/order.go`, `src/status/status.go` (in Go a package is a directory) | `conformance_test.go`, `vectors_test.go` |
 | npm | package.json | `order.js/.d.ts`, `status.js/.d.ts`, `index.js/.d.ts` (`export * as order`) | `conformance.test.mjs`, `vectors.mjs` |
-| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Status/Error.php` | `ConformanceTest.php`, `Vectors.php` |
+| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Status/Code.php` (error code enum, its own file for PSR-4), `Status/Error.php` | `ConformanceTest.php`, `Vectors.php` |
 | php-ext | composer.json (`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `status.c` (shared `<ns>\Status\Error` and error code constants), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | tests **byte-identical** to php; `make test` builds with phpize, then runs with `--php-extension <.so>`; gen requires `--php-namespace` and `--php-ext-name` |
 | python | pyproject.toml | `polyspec_status/{__init__,order,status}.py` | `test_conformance.py` (generates methods named exactly after the cases), `vectors.py` |
 | rust | Cargo.toml (`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs` (`pub mod order; pub mod status;`), `order.rs`, `status.rs` | `conformance.rs` (`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`); persist cases are `#[tokio::test]`; generated `tests/vectors.rs` starts with `#![allow(non_snake_case)]` |

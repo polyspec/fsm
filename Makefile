@@ -17,7 +17,7 @@ KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).
 
 CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test packages-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -102,3 +102,10 @@ test-go:
 # once and passed (docs/plans/status-v1.md, C-4 and D).
 parity-go: test-go
 	node scripts/check-parity.mjs --kind go
+# test-php runs the tests of packages/status-php: the conformance cases and the persist example (docs/plans/status-v1.md, C-2).
+test-php:
+	$(MAKE) -C packages/status-php test
+# parity-php is the owner check of the php package: check-parity reads its record only and requires every vector case to have
+# run once and passed (docs/plans/status-v1.md, C-4 and D).
+parity-php: test-php
+	node scripts/check-parity.mjs --kind php
