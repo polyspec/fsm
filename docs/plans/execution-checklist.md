@@ -32,4 +32,5 @@
 | S-14-1 | php-ext package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-php-ext` and `parity-php-ext` | `test-php-ext` RED without generated output → GREEN; `layout-check` and `parity-php-ext` pass | [ ] |
 | S-15 | status-db: `schema/status.dbs` + DbStore + contract tests + copy + `db-test` | contract mismatch, `E_STORE_NOT_EMPTY`, atomicity RED → GREEN | [o] |
 | S-16 | GUI skeleton: hyper app + list and detail + Mermaid + `gui-test` + a test that parses the canonical form and every reserved state key of B-5 with the pinned mermaid package | handler RED → GREEN | [o] |
+| S-16-1 | GUI test hang: one `make gui-test` run reported "the test did not finish" for a nested Mermaid subtest with an empty event loop and no reproduction in about 20 runs; find the cause and fix it at the cause, then remove the per-call deadline if it only hid the cause | a reproduction (or a proof of the cause) RED → GREEN | [ ] |
 | S-17 | GUI editing: crudui forms + validation error display + rename | `check` passes after a save | [ ] |
