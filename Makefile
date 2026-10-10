@@ -10,10 +10,10 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/status-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test parity-check
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test parity-check
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check parity-check
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -36,7 +36,15 @@ parity-test:
 # compiler-test runs the tests of packages/status-compiler, the core validation of a definition (docs/plans/status-v1.md, C-5)
 # with the editor schema schema/status.schema.json, which the tests check against the core.
 compiler-test:
-	node scripts/kit/run-tests.mjs node --results .results/compiler-test.json --inputs packages/status-compiler --inputs schema -- packages/status-compiler/tests
+	node scripts/kit/run-tests.mjs node --results .results/compiler-test.json --inputs packages/status-compiler --inputs schema --inputs machines --inputs conformance --inputs contracts/features.json --inputs status.lock.json --inputs status.config.json -- packages/status-compiler/tests
+
+# gen-check-test runs the tests of scripts/gen-check.mjs; gen-check regenerates the generated files into var/gen-check and
+# requires them to equal the working tree (docs/plans/status-v1.md, C-5).
+gen-check-test:
+	node scripts/kit/run-tests.mjs node --results .results/gen-check-test.json --inputs scripts/gen-check.mjs --inputs tests/gen-check -- tests/gen-check
+
+gen-check:
+	node scripts/gen-check.mjs
 
 parity-check:
 	node scripts/check-parity.mjs --tools $(subst $(eval) ,$(comma),$(TOOL_TESTS))

@@ -216,6 +216,15 @@ Vectors (exhaustive; the core generates the oracle):
 - undefined (state, event) → `E_INVALID_TRANSITION`
 - `from_code`: 0, an unknown code, each reserved code
 - `persist`: first attempt / retry / conflict
+- Case ids: a case id is `<machine>_<suffix>`, and every key in the suffix is replaced by its declaration index, so that
+  no two ids can collide, whatever the names are. A state is `s<i>`, an event `e<j>` (both 0-based) and a reserved code
+  `r<code>`. The ids are `<m>_initial`; `<m>_code_s<i>`, `<m>_key_s<i>`, `<m>_from_code_s<i>`, `<m>_is_final_s<i>`,
+  `<m>_events_from_s<i>`; `<m>_from_code_zero`, `<m>_from_code_unknown`, `<m>_from_code_r<code>`; `<m>_target_s<i>_e<j>`;
+  `<m>_apply_s<i>_e<j>_s<k>` (expected, event, actual); `<m>_persist_first`, `<m>_persist_retry`, `<m>_persist_conflict`.
+  The case data fields keep the keys (state, event, expected, actual, ...); only the ids use indexes.
+- Persist cases exist only when the machine has a transition. `conflict` exists only when a third state exists, so a
+  two-state machine has `first` and `retry`, and a machine without a transition (such as a one-state machine) has no
+  persist case.
 
 ### C-5. compiler `packages/status-compiler`
 - Parts

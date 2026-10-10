@@ -1,27 +1,39 @@
-// The commands of docs/spec/status.md, B-2: run(command, store, options) for check, lock and save, and copy(from, to), the
-// migration between two stores. A store is { load() -> { definitions, lock, findings }, save({ definitions, lock }) }. Every
-// command returns { findings }; it writes only when there are no findings. The core imports nothing from node:.
+// The commands of docs/spec/status.md, B-2: run(command, store, options) for check, lock, save and vectors, and copy(from, to),
+// the migration between two stores. A store is { load() -> { definitions, lock, findings }, save({ definitions, lock }) }.
+// Every command returns { findings }; lock and save write only when there are no findings, and vectors writes nothing: it
+// returns the vectors too. The core imports nothing from node:.
 
 import { lockMismatch, nextLock } from './lock.mjs';
+import { normalize } from './normalize.mjs';
 import { validate } from './validate.mjs';
+import { vectors } from './vectors.mjs';
 
-const COMMANDS = ['check', 'lock', 'save'];
+const COMMANDS = ['check', 'lock', 'save', 'vectors'];
 
 const finding = (code, machine, path, message) => ({ code, machine, path, message });
+
+/** The findings of `definitions` with `lock` (B-5 and B-3): the validation findings, or else the lock mismatches. */
+const check = (definitions, lock) => {
+  const found = validate(definitions);
+  return found.length > 0 ? found : lockMismatch(definitions, lock);
+};
 
 /**
  * Runs `command` on `store`. The load findings of the store stop every command. `check` validates the definitions and then
  * compares the lock with them. `lock` derives the lock from the stored definitions, and `save` from `options.definitions`;
- * both apply `options.renames` and call store.save once, when there are no findings.
+ * both apply `options.renames` and call store.save once, when there are no findings. `vectors` stops on any check finding,
+ * and otherwise returns { findings: [], vectors: [{ machine, cases }] } for the definitions in the order of the store.
  */
 export function run(command, store, options = {}) {
   if (!COMMANDS.includes(command)) throw new Error(`unknown command ${command}`);
   const loaded = store.load();
   if (loaded.findings.length > 0) return { findings: loaded.findings };
   const { definitions, lock } = loaded;
-  if (command === 'check') {
-    const found = validate(definitions);
-    return { findings: found.length > 0 ? found : lockMismatch(definitions, lock) };
+  if (command === 'check') return { findings: check(definitions, lock) };
+  if (command === 'vectors') {
+    const found = check(definitions, lock);
+    if (found.length > 0) return { findings: found };
+    return { findings: [], vectors: definitions.map(definition => vectors(normalize(definition), lock)) };
   }
   if (command === 'save' && options.definitions === undefined) {
     throw new Error('save needs options.definitions, the new full set of definitions');
