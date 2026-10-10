@@ -5,6 +5,8 @@
 /packages/*/vendor/
 /packages/*/target/
 /packages/status-python/**/__pycache__/
+/packages/status-python/.venv/
+/packages/status-python/src/*.egg-info/
 /packages/status-gui/build/
 /packages/status-gui/public/assets/
 /packages/status-php*/.phpunit.result.cache

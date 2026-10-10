@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 4769253995187eb92a00194430258913974a179b43f7f0b60766049bf3a40716 -->
+<!-- source-sha256: 555a5fe4889efc7fad773278dd009ea20730a0159c7103de5d4798dbd9bc9709 -->
 # 실행 체크리스트
 
 ## status v1
@@ -24,7 +24,7 @@
 | S-10 | go backend + `vectors --kind go`(golden) | golden RED → GREEN | [o] |
 | S-10-1 | go 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-go`와 `parity-go` | 생성물 없이 `test-go` RED → GREEN, `layout-check`와 `parity-go` 통과 | [o] |
 | S-11 | python backend + `vectors --kind python`(golden) | golden RED → GREEN | [o] |
-| S-11-1 | python 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-python`와 `parity-python` | 생성물 없이 `test-python` RED → GREEN, `layout-check`와 `parity-python` 통과 | [ ] |
+| S-11-1 | python 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-python`와 `parity-python` | 생성물 없이 `test-python` RED → GREEN, `layout-check`와 `parity-python` 통과 | [o] |
 | S-12 | php backend + `vectors --kind php`(golden) | golden RED → GREEN | [o] |
 | S-12-1 | php 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-php`와 `parity-php` | 생성물 없이 `test-php` RED → GREEN, `layout-check`와 `parity-php` 통과 | [o] |
 | S-13 | rust backend + `vectors --kind rust`(golden) | golden RED → GREEN | [o] |

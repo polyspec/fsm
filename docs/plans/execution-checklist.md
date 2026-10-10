@@ -23,7 +23,7 @@
 | S-10 | go backend + `vectors --kind go` (golden) | golden RED → GREEN | [o] |
 | S-10-1 | go package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-go` and `parity-go` | `test-go` RED without generated output → GREEN; `layout-check` and `parity-go` pass | [o] |
 | S-11 | python backend + `vectors --kind python` (golden) | golden RED → GREEN | [o] |
-| S-11-1 | python package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-python` and `parity-python` | `test-python` RED without generated output → GREEN; `layout-check` and `parity-python` pass | [ ] |
+| S-11-1 | python package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-python` and `parity-python` | `test-python` RED without generated output → GREEN; `layout-check` and `parity-python` pass | [o] |
 | S-12 | php backend + `vectors --kind php` (golden) | golden RED → GREEN | [o] |
 | S-12-1 | php package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-php` and `parity-php` | `test-php` RED without generated output → GREEN; `layout-check` and `parity-php` pass | [o] |
 | S-13 | rust backend + `vectors --kind rust` (golden) | golden RED → GREEN | [o] |

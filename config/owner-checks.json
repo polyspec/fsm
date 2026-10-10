@@ -225,6 +225,29 @@
         "dependency-policy-check",
         "toolchain-check"
       ]
+    },
+    {
+      "paths": [
+        "packages/status-npm/**"
+      ],
+      "targets": [
+        "layout-check",
+        "gen-check",
+        "parity-npm",
+        "dependency-policy-check"
+      ]
+    },
+    {
+      "paths": [
+        "packages/status-python/**"
+      ],
+      "targets": [
+        "layout-check",
+        "gen-check",
+        "parity-python",
+        "dependency-policy-check",
+        "toolchain-check"
+      ]
     }
   ]
 }
