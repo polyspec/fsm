@@ -54,12 +54,21 @@ export function completeData(data) {
 }
 
 /**
- * The edit form for the browser, as the JSON text of its template and of the data it renders, with `<` escaped so that the text
- * can sit in a script element. The browser creates the instance that connectForm binds to the rendered form (client/main.ts), so
- * the data is the data the server rendered.
+ * The next code of `machine` that the edit page carries: core nextCode of the stored definitions and lock, or null when nextCode
+ * gives no code (E_CODE_RANGE). A null is not a code: the browser suggests none, and a save shows the finding of the core.
  */
-export function editState(data) {
-  return JSON.stringify({ template: EDIT_TEMPLATE, data }).replaceAll('<', '\\u003c');
+export function nextCodeOf(machine, definitions, lock) {
+  const next = nextCode(machine, definitions, lock);
+  return next.findings.length === 0 ? next.code : null;
+}
+
+/**
+ * The edit form for the browser, as the JSON text of its template, of the data it renders and of the next code of its machine,
+ * with `<` escaped so that the text can sit in a script element. The browser creates the instance that connectForm binds to the
+ * rendered form and gives each added state the next code (client/main.ts), so the data is the data the server rendered.
+ */
+export function editState(data, next) {
+  return JSON.stringify({ template: EDIT_TEMPLATE, data, nextCode: next }).replaceAll('<', '\\u003c');
 }
 
 /**

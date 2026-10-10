@@ -63,8 +63,11 @@ Every save calls core `run` with `save` (edit, new and delete) or `lock` with re
 - A stored state keeps its key and its code in the edit form, and both are read-only. The core refuses an edited code
   (`E_CODE_CHANGED`) and a changed key (`E_CODE_KEY_CHANGED`) even when a request is edited by hand. A key changes only on the
   rename screen.
-- A new state gets the code that core `nextCode` suggests when the form is saved. Until then its code is empty, and the
-  page shows the suggestion after a save that is refused.
+- A new state gets a code when the form is saved. The edit page carries the code that core `nextCode` suggests for its
+  machine in its embedded form state, and the browser gives each state added in the form the next code, then the codes
+  after it (`client/new-codes.ts`). The save checks every code, and a blank code is still filled by `nextCode` on the
+  server. When `nextCode` gives no code (`E_CODE_RANGE`), the page carries null, the browser gives none, and the save shows
+  the finding.
 - Deleting a machine, or a state, moves its codes to `reserved` in `status.lock.json`, so a later state never takes them
   (`docs/spec/status.md`, B-3). A deleted machine that is added again starts after its reserved codes.
 - Each save, rename or delete must carry the `_csrf` token of the page that it was sent from; without it the server answers
