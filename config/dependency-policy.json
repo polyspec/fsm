@@ -2,6 +2,8 @@
   "schema": 1,
   "composerPlatforms": [],
   "pythonManifests": [],
-  "npmLocks": [],
+  "npmLocks": [
+    "packages/status-db/package-lock.json"
+  ],
   "exceptions": []
 }

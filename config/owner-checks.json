@@ -90,6 +90,16 @@
         "gen-check-test",
         "gen-check"
       ]
+    },
+    {
+      "paths": [
+        "packages/status-db/**",
+        "schema/status.dbs"
+      ],
+      "targets": [
+        "db-test",
+        "dependency-policy-check"
+      ]
     }
   ]
 }

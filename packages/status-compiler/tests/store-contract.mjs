@@ -1,6 +1,7 @@
 // The store contract (docs/spec/status.md, B-2): every store (json now, mermaid in S-08, db in S-15) passes the same cases.
-// storeContract(name, makeStore) registers the node:test cases. makeStore() returns { store, snapshot }: a new empty store,
-// and a function that returns every byte the store holds as one string, so that a case can compare what was written.
+// storeContract(name, makeStore) registers the node:test cases. makeStore() (sync or async) returns { store, snapshot }: a new
+// empty store, and a function (sync or async) that returns every byte the store holds as one string, so that a case can
+// compare what was written.
 // load() and save() are async: every case checks that the call returns a Promise and awaits it.
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -44,32 +45,32 @@ async function saveOf(store, written) {
 /** Registers the store contract cases for the store that `makeStore` creates. */
 export function storeContract(name, makeStore) {
   test(`${name} store: load of an empty store is empty`, async () => {
-    const { store } = makeStore();
+    const { store } = await makeStore();
     assert.deepEqual(await loadOf(store), { definitions: [], lock: {}, findings: [] });
   });
 
   test(`${name} store: save then load returns the same definitions and lock`, async () => {
-    const { store } = makeStore();
+    const { store } = await makeStore();
     await saveOf(store, sample());
     assert.deepEqual(await loadOf(store), { ...sample(), findings: [] });
   });
 
   test(`${name} store: save twice writes identical bytes`, async () => {
-    const { store, snapshot } = makeStore();
+    const { store, snapshot } = await makeStore();
     await saveOf(store, sample());
-    const first = snapshot();
+    const first = await snapshot();
     assert.notEqual(first, '');
     await saveOf(store, sample());
-    assert.equal(snapshot(), first);
+    assert.equal(await snapshot(), first);
   });
 
   test(`${name} store: save replaces the whole set`, async () => {
-    const replaced = makeStore();
+    const replaced = await makeStore();
     await saveOf(replaced.store, sample());
     await saveOf(replaced.store, replacement());
-    const fresh = makeStore();
+    const fresh = await makeStore();
     await saveOf(fresh.store, replacement());
     assert.deepEqual(await loadOf(replaced.store), { ...replacement(), findings: [] });
-    assert.equal(replaced.snapshot(), fresh.snapshot());
+    assert.equal(await replaced.snapshot(), await fresh.snapshot());
   });
 }
