@@ -17,7 +17,7 @@ KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).
 
 CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types packages-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -119,5 +119,25 @@ parity-php: test-php
 test-rust:
 	$(MAKE) -C packages/status-rust test
 # parity-rust is the owner check of the rust package: check-parity reads its record only and requires every vector case to have
+# run once and passed (docs/plans/status-v1.md, C-4 and D).
 parity-rust: test-rust
 	node scripts/check-parity.mjs --kind rust
+# install-python installs Python 3.14 (config/toolchain.json python) with uv and links var/tools/bin/python3 to it, as install-tools
+# puts the other declared tools into var/tools. The interpreter is uv's managed install, so the link never points outside the
+# checkout's tools; no system path changes. ONLINE, because uv downloads the interpreter. The PATH above puts var/tools/bin first,
+# so toolchain-check and the python package use this python3.
+UV ?= uv
+install-python:
+	$(ONLINE) $(UV) python install 3.14
+	mkdir -p var/tools/bin
+	p="$$($(UV) python find --managed-python 3.14)" && test -x "$$p" && ln -sfn "$$p" var/tools/bin/python3
+
+# test-python runs the tests of packages/status-python: the conformance cases and the persist example, offline, with the Python 3.14
+# venv of `make -C packages/status-python install` (docs/plans/status-v1.md, C-2).
+test-python:
+	$(MAKE) -C packages/status-python test
+
+# parity-python is the owner check of the python package: check-parity reads its record only and requires every vector case to have
+# run once and passed (docs/plans/status-v1.md, C-4 and D).
+parity-python: test-python
+	node scripts/check-parity.mjs --kind python

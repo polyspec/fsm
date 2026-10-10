@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+# The python consumer test bed of status (docs/plans/status-v1.md, C-2). It is not published: the orm client is pinned to its git
+# tag (C-1), and the generated code under src/ and examples/model/ has no runtime dependency beyond the standard library.
+[project]
+name = "polyspec-status-python"
+version = "0.0.0"
+description = "python consumer test bed of status: the generated state machines, the conformance vectors and the B-4 persistence example"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    "polyspec-orm @ git+https://github.com/polyspec/orm@v0.0.7#subdirectory=packages/orm-python",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -6,7 +6,9 @@
       "php": "8.4.0"
     }
   ],
-  "pythonManifests": [],
+  "pythonManifests": [
+    "packages/status-python/pyproject.toml"
+  ],
   "npmLocks": [
     "packages/status-db/package-lock.json",
     "packages/status-gui/package-lock.json",

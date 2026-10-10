@@ -92,6 +92,23 @@
         "src/**",
         "tests/vectors.rs"
       ]
+    },
+    "python": {
+      "required": [
+        "pyproject.toml",
+        "tests/test_conformance.py",
+        "tests/vectors.py",
+        "examples/persist.py"
+      ],
+      "allowed": [
+        "src/polyspec_status/*.py",
+        "examples/model/**"
+      ],
+      "generated": [
+        "src/**",
+        "tests/vectors.py",
+        "examples/model/**"
+      ]
     }
   }
 }
