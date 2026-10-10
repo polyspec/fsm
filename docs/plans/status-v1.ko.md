@@ -1,5 +1,5 @@
 <!-- doc-id: plan-status-v1 -->
-<!-- source-sha256: 4d130bcf4e7ecd22073a820d41724c6fa3c4c659301ce0ca9e8311696ae20297 -->
+<!-- source-sha256: 410a8bd0362b994e532503b5d72f937e460879285e0232a8c101795ddc08bb4d -->
 # status v1 계획
 
 [English](status-v1.md)
@@ -306,7 +306,7 @@ packages/status-<kind>/
 |---|---|---|---|
 | S-01 | git init, kit-sync, config(toolchain은 node만, dependency-policy는 빈 목록 + `make dependency-review RECORD=1`로 만든 `config/dependency-review.json`), hooks, AGENTS.md(.ko) A절, D절의 S 행 전체를 담은 체크리스트(S-01은 `[o]`, 나머지는 `[ ]`), CHANGELOG, 이 계획, `CHECK_TARGETS`(지금까지 정의된 타깃만, 각 항목이 자기 타깃을 추가)와 `check` | `kit-check owner-validate documents-check commits-check toolchain-check hooks-check dependency-policy-check` | [ ] |
 | S-02 | `docs/spec/status.md(.ko)` B절 | `documents-check` | [ ] |
-| S-03 | `check-layout` + `layout.json`(kinds = []) + `layout-test`/`layout-check` | fixture(kinds 불일치/추가/누락/개명/php↔php-ext 불일치/형식 오류) RED | [ ] |
+| S-03 | `check-layout` + `layout.json`(kinds = {}, kind마다 required 파일과 allowed glob을 담는 객체) + `layout-test`/`layout-check` | fixture(kinds 불일치/추가/누락/개명/php↔php-ext 불일치/형식 오류) RED | [ ] |
 | S-04 | `check-parity` + `parity-test` | fixture(결과 없음/도구 결과 없음/`--kind`는 자기 kind만 읽음/stale inputs/미실행/미등록/0케이스/fail/timeout/skip/이름 일치 0·2개/부모 id/10분 초과) RED | [ ] |
 | S-05 | core `E_SCHEMA` + schema 대응 테스트 | RED | [ ] |
 | S-05-1 | core 그래프 오류 | 오류 코드별 RED | [ ] |

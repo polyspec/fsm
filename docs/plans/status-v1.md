@@ -305,7 +305,7 @@ Vectors (exhaustive; the core generates the oracle):
 |---|---|---|---|
 | S-01 | git init, kit-sync, config (toolchain: node only; dependency-policy with empty lists + `config/dependency-review.json` from `make dependency-review RECORD=1`), hooks, AGENTS.md(.ko) section A, the checklist with every S row of section D (S-01 `[o]`, the rest `[ ]`), CHANGELOG, this plan, `CHECK_TARGETS` (only the targets defined so far; each item appends its own) and `check` | `kit-check owner-validate documents-check commits-check toolchain-check hooks-check dependency-policy-check` | [ ] |
 | S-02 | `docs/spec/status.md(.ko)` section B | `documents-check` | [ ] |
-| S-03 | `check-layout` + `layout.json` (kinds = []) + `layout-test`/`layout-check` | fixtures (kinds mismatch/added/missing/renamed/php↔php-ext mismatch/malformed) RED | [ ] |
+| S-03 | `check-layout` + `layout.json` (kinds = {}, an object of each kind with its required files and allowed globs) + `layout-test`/`layout-check` | fixtures (kinds mismatch/added/missing/renamed/php↔php-ext mismatch/malformed) RED | [ ] |
 | S-04 | `check-parity` + `parity-test` | fixtures (no result/missing tool result/`--kind` reads only its kind/stale inputs/not run/unregistered/zero cases/fail/timeout/skip/0 or 2 name matches/parent id/over 10 minutes) RED | [ ] |
 | S-05 | core `E_SCHEMA` + schema correspondence test | RED | [ ] |
 | S-05-1 | core graph errors | RED per error code | [ ] |
