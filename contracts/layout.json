@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "comment": "The canonical layout of the language packages (docs/plans/status-v1.md, C-2): every kind package holds the canonical files and directories, its required files and only files that its allowed globs match. Each package item (S-09-1 to S-14-1) adds its kind.",
+  "tools": ["status-compiler", "status-db", "status-gui"],
+  "canonical": {
+    "files": ["README.md", "README.ko.md", "Makefile"],
+    "directories": ["src", "tests", "examples"]
+  },
+  "kinds": {}
+}
