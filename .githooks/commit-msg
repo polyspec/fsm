@@ -1,0 +1,4 @@
+#!/bin/sh
+# commit-msg hook: refuses a commit whose message breaks config/commits.json, or whose checklist changes break the item
+# rules (one item per commit, the changelog of a finished item), with the rule and the reason.
+exec node "$(dirname "$0")/../scripts/kit/check-commits.mjs" --message "$1"

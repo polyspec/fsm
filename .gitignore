@@ -1,0 +1,11 @@
+.DS_Store
+/var/
+/.results/
+/packages/*/node_modules/
+/packages/*/vendor/
+/packages/*/target/
+/packages/status-python/**/__pycache__/
+/packages/status-gui/build/
+/packages/status-gui/public/assets/
+/packages/status-php*/.phpunit.result.cache
+/packages/status-php*/.phpunit.cache/

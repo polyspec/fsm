@@ -1,0 +1,4 @@
+{
+  "schema": 1,
+  "comment": "Node.js is declared in .node-version. Each language package item (S-09 to S-14) adds the toolchain of its kind."
+}
