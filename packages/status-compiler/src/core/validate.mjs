@@ -85,6 +85,68 @@ function flag(value, field, path, fail) {
   if (Object.hasOwn(value, field) && value[field] !== true) fail(`${path}.${field}`, `${field} is ${JSON.stringify(value[field])}; it must be true when present, because the canonical form omits it`);
 }
 
+/**
+ * The graph rules of a machine whose structure is valid (B-5). An edge whose endpoint is not a state is reported and left
+ * out of the reachability search. Reachability is checked only when there is exactly one initial state; otherwise
+ * E_INITIAL_COUNT is the finding.
+ */
+function graph(definition) {
+  const found = [];
+  const { machine, states } = definition;
+  const report = (code, path, message) => found.push(finding(code, machine, path, message));
+  const keys = new Set(states.map(state => state.key));
+  const finals = new Set(states.filter(state => state.final === true).map(state => state.key));
+  const initials = states.filter(state => state.initial === true).map(state => state.key);
+  const outgoing = new Set();
+  const edges = [];
+  if (initials.length !== 1) report('E_INITIAL_COUNT', '$.states', `the machine has ${initials.length} initial states; it needs exactly one`);
+  definition.events.forEach((event, eventIndex) => {
+    const targets = new Map();
+    const seen = new Set();
+    const nondeterministic = new Set();
+    event.edges.forEach((edge, edgeIndex) => {
+      const at = `$.events[${eventIndex}].edges[${edgeIndex}]`;
+      const { from, to } = edge;
+      if (!keys.has(from)) report('E_UNKNOWN_STATE_REF', `${at}.from`, `${from} is not a state of the machine`);
+      if (!keys.has(to)) report('E_UNKNOWN_STATE_REF', `${at}.to`, `${to} is not a state of the machine`);
+      if (from === to) report('E_SELF_LOOP', at, `the edge of ${event.key} leaves ${from} and enters it; a self transition is not allowed`);
+      const pair = JSON.stringify([from, to]);
+      if (seen.has(pair)) {
+        report('E_DUPLICATE_EDGE', at, `the edge ${from} -> ${to} repeats an edge of event ${event.key}`);
+      } else if (!targets.has(from)) {
+        targets.set(from, to);
+      } else if (targets.get(from) !== to && !nondeterministic.has(from)) {
+        nondeterministic.add(from);
+        report('E_NONDETERMINISTIC', at, `event ${event.key} leaves ${from} for ${targets.get(from)} and for ${to}; one state and event have one target`);
+      }
+      seen.add(pair);
+      if (finals.has(from)) report('E_FINAL_OUTGOING', at, `final state ${from} has an outgoing edge of event ${event.key}`);
+      outgoing.add(from);
+      if (keys.has(from) && keys.has(to)) edges.push([from, to]);
+    });
+  });
+  if (initials.length === 1) {
+    const reached = new Set(initials);
+    const pending = [...initials];
+    while (pending.length > 0) {
+      const current = pending.pop();
+      for (const [from, to] of edges) {
+        if (from === current && !reached.has(to)) {
+          reached.add(to);
+          pending.push(to);
+        }
+      }
+    }
+    states.forEach((state, index) => {
+      if (!reached.has(state.key)) report('E_UNREACHABLE', `$.states[${index}]`, `state ${state.key} is not reachable from the initial state`);
+    });
+  }
+  states.forEach((state, index) => {
+    if (state.final !== true && !outgoing.has(state.key)) report('E_DEAD_END', `$.states[${index}]`, `state ${state.key} is not final and has no outgoing edge`);
+  });
+  return found;
+}
+
 /** The position of every JSON path of `value` in document order (pre-order, keys in their order, indexes in order). */
 function positions(value) {
   const found = new Map();
@@ -112,7 +174,7 @@ export function validate(definitions) {
   const found = [];
   definitions.forEach(definition => {
     const problems = structure(definition);
-    found.push(...inDocumentOrder(definition, problems));
+    found.push(...inDocumentOrder(definition, problems.length > 0 ? problems : graph(definition)));
   });
   return found;
 }
