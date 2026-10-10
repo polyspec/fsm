@@ -25,8 +25,9 @@ const check = (definitions, lock) => {
  * compares the lock with them. `lock` derives the lock from the stored definitions, and `save` from `options.definitions`;
  * both apply `options.renames` and call store.save once, when there are no findings. `vectors` stops on any check finding,
  * and otherwise returns { findings: [], vectors: [{ machine, cases }] } for the definitions in the order of the store.
- * `gen` takes `options.kind`, whose backend is looked up before the store is read (an unknown kind is an Error); it stops on
- * any check finding, and otherwise returns { findings: [], files: [{ path, content }] } from the backend.
+ * `gen` takes `options.kind`, whose backend is looked up before the store is read (an unknown kind is an Error), and
+ * `options.goModule`, the module path that the go backend needs; it stops on any check finding, and otherwise returns
+ * { findings: [], files: [{ path, content }] } from the backend.
  */
 export async function run(command, store, options = {}) {
   if (!COMMANDS.includes(command)) throw new Error(`unknown command ${command}`);
@@ -38,7 +39,7 @@ export async function run(command, store, options = {}) {
   if (command === 'vectors' || command === 'gen') {
     const found = check(definitions, lock);
     if (found.length > 0) return { findings: found };
-    if (command === 'gen') return { findings: [], files: backend.files(definitions.map(normalize), lock) };
+    if (command === 'gen') return { findings: [], files: backend.files(definitions.map(normalize), lock, { module: options.goModule }) };
     return { findings: [], vectors: definitions.map(definition => vectors(normalize(definition), lock)) };
   }
   if (command === 'save' && options.definitions === undefined) {

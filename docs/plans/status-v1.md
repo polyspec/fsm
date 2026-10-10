@@ -234,7 +234,7 @@ Vectors (exhaustive; the core generates the oracle):
   - `src/cli` (`status-gen`)
 - Commands
   - `lock [--rename]`
-  - `gen --kind <k> --out <dir>` (php requires `--php-namespace`; php-ext requires `--php-namespace` and `--php-ext-name`)
+  - `gen --kind <k> --out <dir>` (php requires `--php-namespace`; php-ext requires `--php-namespace` and `--php-ext-name`; go requires `--go-module <module path>`, because a generated machine imports the shared package `<module>/src/status` and the backend cannot read go.mod)
   - `vectors [--kind <k>] --out <path>`
   - `check`: validates every definition and the lock match
   - `copy --to json|mermaid --root <dir>`

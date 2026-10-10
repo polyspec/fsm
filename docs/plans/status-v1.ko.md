@@ -1,5 +1,5 @@
 <!-- doc-id: plan-status-v1 -->
-<!-- source-sha256: c1ff42e64239824cf6d35c04d696fc7d98d6af2c227c3e00c5138e7c8339fe2e -->
+<!-- source-sha256: 0a633bf35eabe6871760f72ddb95669bd4416fea5db59635248bb6601ecd7db9 -->
 # status v1 계획
 
 [English](status-v1.md)
@@ -228,7 +228,7 @@ packages/status-<kind>/
   - `src/cli` (`status-gen`)
 - 명령
   - `lock [--rename]`
-  - `gen --kind <k> --out <dir>` (php는 `--php-namespace` 필수, php-ext는 `--php-namespace`와 `--php-ext-name` 필수)
+  - `gen --kind <k> --out <dir>` (php는 `--php-namespace` 필수, php-ext는 `--php-namespace`와 `--php-ext-name` 필수, go는 `--go-module <module path>` 필수: 생성된 machine이 공용 패키지 `<module>/src/status`를 import하며 backend는 go.mod를 읽을 수 없다)
   - `vectors [--kind <k>] --out <path>`
   - `check`: 전 정의 검증 + lock 일치
   - `copy --to json|mermaid --root <dir>`
