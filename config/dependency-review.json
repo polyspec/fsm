@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mjs) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-10T22:03:04.042Z",
+  "reviewed": "2026-10-10T22:05:29.999Z",
   "locks": [
     {
       "lock": "packages/status-db/package-lock.json",
@@ -16,6 +16,11 @@
     {
       "lock": "packages/status-npm/package-lock.json",
       "sha256": "3eaa062823353e922b0a54392513d08ebc453688e580aa7c745051412f7d01b2",
+      "advisories": []
+    },
+    {
+      "lock": "packages/status-php/composer.lock",
+      "sha256": "c74a295eec79df0beb21694a9f57dc795dbef23fab831a6523ef129d746eaddb",
       "advisories": []
     },
     {
@@ -45,6 +50,20 @@
       "package": "yaml",
       "version": "2.9.1",
       "latest": "2.9.1"
+    },
+    {
+      "ecosystem": "composer",
+      "manifest": "packages/status-php/composer.json",
+      "package": "polyspec/orm",
+      "version": "0.0.7",
+      "latest": "0.0.7"
+    },
+    {
+      "ecosystem": "composer",
+      "manifest": "packages/status-php/composer.json",
+      "package": "phpunit/phpunit",
+      "version": "12.5.38",
+      "latest": "12.5.38"
     },
     {
       "ecosystem": "go",

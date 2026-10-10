@@ -1,5 +1,5 @@
 <!-- doc-id: plan-status-v1 -->
-<!-- source-sha256: 0a633bf35eabe6871760f72ddb95669bd4416fea5db59635248bb6601ecd7db9 -->
+<!-- source-sha256: e4a2e664715c472b32c765d21821ce12da8fb6323e02a2e8cf7ecbf116b2c91b -->
 # status v1 계획
 
 [English](status-v1.md)
@@ -170,7 +170,7 @@ packages/status-<kind>/
 |---|---|---|---|
 | go | go.mod | `src/order/order.go`, `src/status/status.go` (Go는 package = 디렉터리) | `conformance_test.go`, `vectors_test.go` |
 | npm | package.json | `order.js/.d.ts`, `status.js/.d.ts`, `index.js/.d.ts`(`export * as order`) | `conformance.test.mjs`, `vectors.mjs` |
-| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Status/Error.php` | `ConformanceTest.php`, `Vectors.php` |
+| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Status/Code.php` (error code enum, its own file for PSR-4), `Status/Error.php` | `ConformanceTest.php`, `Vectors.php` |
 | php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `status.c`(공용 `<ns>\Status\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | php와 **바이트 동일**한 테스트. `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
 | python | pyproject.toml | `polyspec_status/{__init__,order,status}.py` | `test_conformance.py`(케이스 이름 그대로의 메서드 생성), `vectors.py` |
 | rust | Cargo.toml(`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs`(`pub mod order; pub mod status;`), `order.rs`, `status.rs` | `conformance.rs`(`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`), persist 케이스는 `#[tokio::test]`, 생성 `tests/vectors.rs`는 `#![allow(non_snake_case)]`로 시작 |
