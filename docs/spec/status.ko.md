@@ -1,5 +1,5 @@
 <!-- doc-id: spec-status -->
-<!-- source-sha256: dbb700b934427354301b1f5e85cbaf9e2ed6f961963ea2682e43e7d1982e95e3 -->
+<!-- source-sha256: e66bd5485db66e64b86678a3f89cd9941cebad3047a74b2139d16df0415108f5 -->
 # status 정의
 
 [English](status.md)
@@ -171,6 +171,8 @@ stateDiagram-v2
   - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`
 - store
   - `E_MERMAID_UNSUPPORTED`, `E_STORE_MIXED`, `E_STORE_NOT_EMPTY`, `E_STORE_NOT_CONFIGURED`
+- 생성
+  - `E_NOT_GENERATED`: `gen`이나 `vectors --kind`가 출력 디렉터리에서 생성 헤더가 없는 파일을 찾음. 아무것도 쓰거나 지우지 않는다. 생성기는 자기가 쓴 파일만 바꾸므로, 손으로 쓴 파일을 덮어쓰거나 지우지 않는다.
 
 ## B-6. 이름 규칙 (언어 공통 규칙 1개 + 언어별 표기 변환표)
 이 문서의 `order`는 예시 머신 key(주문 생명주기)다. 생성 이름은 모두 아래 규칙에서 기계적으로 나오고, 접미사나 절충 이름(`OrderMachine`, `OrderStatus`)은 없다.
