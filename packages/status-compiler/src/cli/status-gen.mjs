@@ -3,23 +3,30 @@
 //   status-gen lock  [--project <dir>] [--rename machine.old=new]...
 //   status-gen copy  --to json|mermaid --root <dir> [--project <dir>]
 //   status-gen vectors --out <dir> [--project <dir>]
+//   status-gen vectors --kind <kind> --out <file> [--project <dir>]
+//   status-gen gen --kind <kind> --out <dir> [--project <dir>]
 // --project is the project root, the directory whose status.config.json names the store (default: the current directory).
 // For copy, the project store is the source and --root is the target directory, which is required. For vectors, --out is the
-// directory that receives <machine>.json for every machine, and it is required. A finding prints as
-// `[status-gen] <code> <machine> <path>: <message>` on stderr and exits 1. A usage error exits 2. Otherwise the command exits 0
-// with a one-line summary on stdout. The json and mermaid stores are the ones this version handles (status.config.json).
+// directory that receives <machine>.json for every machine, and it is required; with --kind it is the file of the kind's native
+// vector module. For gen, --kind names a backend (backends/index.mjs) and --out is the directory of its generated files; the
+// stale generated files there are removed, and a file without the generated header is a finding (write-generated.mjs). A finding
+// prints as `[status-gen] <code> <machine> <path>: <message>` on stderr and exits 1. A usage error exits 2. Otherwise the command
+// exits 0 with a one-line summary on stdout. The json and mermaid stores are the ones this version handles (status.config.json).
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { writeJson } from '../../../../scripts/kit/files.mjs';
+import { KINDS, backendOf } from '../backends/index.mjs';
 import { copy, run } from '../core/run.mjs';
 import { jsonStore } from '../store-json/store.mjs';
 import { mermaidStore } from '../store-mermaid/store.mjs';
+import { writeGenerated, writeGeneratedFile } from './write-generated.mjs';
 
 const USAGE = 'usage: status-gen check [--project <dir>]\n'
   + '       status-gen lock [--project <dir>] [--rename machine.old=new]...\n'
   + '       status-gen copy --to json|mermaid --root <dir> [--project <dir>]\n'
-  + '       status-gen vectors --out <dir> [--project <dir>]';
+  + '       status-gen vectors [--kind <kind>] --out <dir|file> [--project <dir>]\n'
+  + `       status-gen gen --kind <kind> --out <dir> [--project <dir>]   (kind: ${KINDS.join(', ')})`;
 const RENAME = /^([^.=]+)\.([^.=]+)=([^.=]+)$/;
 
 const notConfigured = (path, message) => ({ code: 'E_STORE_NOT_CONFIGURED', machine: null, path, message });
@@ -28,11 +35,17 @@ const isObject = value => typeof value === 'object' && value !== null && !Array.
 /** The options of the arguments, or { usage } with the reason when they are not a valid command line. */
 function parse(argv) {
   const [command, ...rest] = argv;
-  if (!['check', 'lock', 'copy', 'vectors'].includes(command)) return { usage: `unknown command ${command ?? '(none)'}` };
+  if (!['check', 'lock', 'copy', 'vectors', 'gen'].includes(command)) return { usage: `unknown command ${command ?? '(none)'}` };
   const allowed = {
-    check: ['--project'], lock: ['--project', '--rename'], copy: ['--project', '--root', '--to'], vectors: ['--project', '--out'],
+    check: ['--project'],
+    lock: ['--project', '--rename'],
+    copy: ['--project', '--root', '--to'],
+    vectors: ['--project', '--out', '--kind'],
+    gen: ['--project', '--out', '--kind'],
   }[command];
-  const options = { command, project: process.cwd(), renames: [], to: undefined, root: undefined, out: undefined };
+  const options = {
+    command, project: process.cwd(), renames: [], to: undefined, root: undefined, out: undefined, kind: undefined,
+  };
   for (let index = 0; index < rest.length; index += 1) {
     const flag = rest[index];
     if (!allowed.includes(flag)) return { usage: `${flag ?? 'argument'} is not an option of ${command}` };
@@ -45,6 +58,9 @@ function parse(argv) {
       options.root = path.resolve(value);
     } else if (flag === '--out') {
       options.out = path.resolve(value);
+    } else if (flag === '--kind') {
+      if (!KINDS.includes(value)) return { usage: `--kind takes one of ${KINDS.join(', ')}` };
+      options.kind = value;
     } else if (flag === '--to') {
       if (!['json', 'mermaid'].includes(value)) return { usage: '--to takes json or mermaid' };
       options.to = value;
@@ -58,6 +74,9 @@ function parse(argv) {
     return { usage: 'copy needs --to json|mermaid and --root <dir>' };
   }
   if (command === 'vectors' && options.out === undefined) return { usage: 'vectors needs --out <dir>' };
+  if (command === 'gen' && (options.kind === undefined || options.out === undefined)) {
+    return { usage: 'gen needs --kind <kind> and --out <dir>' };
+  }
   return options;
 }
 
@@ -84,16 +103,25 @@ function storeOf(kind, root) {
   return kind === 'mermaid' ? mermaidStore(root) : jsonStore(root);
 }
 
-/** The findings of the command. vectors writes <out>/<machine>.json for every machine and no file when it has findings. */
-async function execute({ command, project, renames, to, root, out }) {
+/**
+ * The findings of the command. vectors writes <out>/<machine>.json for every machine, or with --kind the native vector module
+ * of the kind to <out>; gen writes the generated files of the kind under <out>. Nothing is written when there are findings.
+ */
+async function execute({ command, project, renames, to, root, out, kind }) {
   const configured = configuredStore(project);
   if (!configured.ok) return configured.findings;
   if (command === 'copy') return (await copy(configured.store, storeOf(to, root))).findings;
   if (command === 'vectors') {
     const result = await run('vectors', configured.store, {});
     if (result.findings.length > 0) return result.findings;
+    if (kind !== undefined) return writeGeneratedFile(out, backendOf(kind).vectorsFile(result.vectors));
     for (const generated of result.vectors) writeJson(path.join(out, `${generated.machine}.json`), generated);
     return [];
+  }
+  if (command === 'gen') {
+    const result = await run('gen', configured.store, { kind });
+    if (result.findings.length > 0) return result.findings;
+    return writeGenerated(out, result.files);
   }
   return (await run(command, configured.store, { renames })).findings;
 }
