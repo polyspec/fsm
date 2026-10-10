@@ -10,10 +10,10 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/status-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check parity-check
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check parity-check
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test parity-check
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -45,6 +45,16 @@ gen-check-test:
 
 gen-check:
 	node scripts/gen-check.mjs
+
+# db-deps installs the packages of packages/status-db (orm and ordered-json from their release tarballs, pinned in its
+# package-lock.json). db-test runs the tests of packages/status-db: the DB store against the store contract, the round trips
+# of json and db, the atomicity of save, the CLI, and the generated models, which orm-gen must reproduce from schema/status.dbs
+# (docs/plans/status-v1.md, C-6).
+db-deps:
+	cd packages/status-db && npm ci --no-audit --no-fund
+
+db-test: db-deps
+	node scripts/kit/run-tests.mjs node --results .results/db-test.json --inputs packages/status-db/src --inputs packages/status-db/tests --inputs packages/status-db/package.json --inputs packages/status-db/package-lock.json --inputs packages/status-compiler --inputs schema/status.dbs -- packages/status-db/tests
 
 parity-check:
 	node scripts/check-parity.mjs --tools $(subst $(eval) ,$(comma),$(TOOL_TESTS))

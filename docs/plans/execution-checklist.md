@@ -29,6 +29,6 @@
 | S-13-1 | rust package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-rust` and `parity-rust` | `test-rust` RED without generated output → GREEN; `layout-check` and `parity-rust` pass | [ ] |
 | S-14 | php-ext backend + `vectors --kind php-ext` (golden) | golden RED → GREEN | [ ] |
 | S-14-1 | php-ext package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-php-ext` and `parity-php-ext` | `test-php-ext` RED without generated output → GREEN; `layout-check` and `parity-php-ext` pass | [ ] |
-| S-15 | status-db: `schema/status.dbs` + DbStore + contract tests + copy + `db-test` | contract mismatch, `E_STORE_NOT_EMPTY`, atomicity RED → GREEN | [ ] |
+| S-15 | status-db: `schema/status.dbs` + DbStore + contract tests + copy + `db-test` | contract mismatch, `E_STORE_NOT_EMPTY`, atomicity RED → GREEN | [o] |
 | S-16 | GUI skeleton: hyper app + list and detail + Mermaid + `gui-test` + a test that parses the canonical form and every reserved state key of B-5 with the pinned mermaid package | handler RED → GREEN | [ ] |
 | S-17 | GUI editing: crudui forms + validation error display + rename | `check` passes after a save | [ ] |

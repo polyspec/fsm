@@ -1,0 +1,54 @@
+dbspec 1 status
+
+table machine {
+  name varchar(64)
+  primary key (name)
+}
+
+table state {
+  machine varchar(64)
+  key varchar(64)
+  code i32
+  position i32
+  initial bool
+  final bool
+  primary key (machine, key)
+  unique uq_state_code (machine, code)
+  unique uq_state_position (machine, position)
+  foreign key fk_state_machine (machine) references machine (name) on delete restrict on update restrict
+}
+
+table event {
+  machine varchar(64)
+  key varchar(64)
+  position i32
+  primary key (machine, key)
+  foreign key fk_event_machine (machine) references machine (name) on delete restrict on update restrict
+}
+
+table edge {
+  machine varchar(64)
+  event varchar(64)
+  from varchar(64)
+  to varchar(64)
+  position i32
+  primary key (machine, event, from)
+  index ix_edge_machine_from (machine, from)
+  index ix_edge_machine_to (machine, to)
+  foreign key fk_edge_event (machine, event) references event (machine, key) on delete restrict on update restrict
+  foreign key fk_edge_from (machine, from) references state (machine, key) on delete restrict on update restrict
+  foreign key fk_edge_to (machine, to) references state (machine, key) on delete restrict on update restrict
+}
+
+table lock_code {
+  machine varchar(64)
+  code i32
+  key varchar(64)
+  primary key (machine, code)
+}
+
+table lock_reserved {
+  machine varchar(64)
+  code i32
+  primary key (machine, code)
+}
