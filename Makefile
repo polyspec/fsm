@@ -10,14 +10,14 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/status-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test packages-test parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test packages-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test parity-check packages-test test-npm parity-npm
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -59,6 +59,22 @@ db-deps:
 
 db-test: db-deps
 	node scripts/kit/run-tests.mjs node --results .results/db-test.json --inputs packages/status-db/src --inputs packages/status-db/tests --inputs packages/status-db/package.json --inputs packages/status-db/package-lock.json --inputs packages/status-compiler --inputs schema/status.dbs -- packages/status-db/tests
+
+# gui-deps installs the packages of packages/status-gui (hyper v0.0.11, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
+# yaml, pinned in its package.json and package-lock.json; docs/plans/status-v1.md, C-1). The db store of the GUI is the one of
+# packages/status-db, whose orm packages db-deps installs first.
+gui-deps: db-deps
+	cd packages/status-gui && npm ci --no-audit --no-fund
+
+# gui-build builds the browser assets of the GUI with the hyper v0.0.11 asset build: the templates, the client bundle that holds
+# mermaid, build/templates.index.json and build/manifest.json (docs/plans/status-v1.md, C-7). gui-test runs it first.
+gui-build: gui-deps
+	cd packages/status-gui && node_modules/.bin/hyper-build-assets --app . --api /api --output build
+
+# gui-test runs the tests of packages/status-gui (docs/plans/status-v1.md, C-7): the handlers and the server entry through the
+# built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI.
+gui-test: gui-build
+	node scripts/kit/run-tests.mjs node --results .results/gui-test.json --inputs packages/status-gui --inputs packages/status-compiler/src --inputs packages/status-db --inputs schema/status.dbs -- packages/status-gui/tests
 
 parity-check:
 	node scripts/check-parity.mjs --tools $(subst $(eval) ,$(comma),$(TOOL_TESTS))

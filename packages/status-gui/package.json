@@ -1,0 +1,36 @@
+{
+  "name": "@polyspec/status-gui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "GUI of status: hyper server, crudui list and detail, Mermaid display (docs/plans/status-v1.md, C-7)",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=26"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  },
+  "scripts": {
+    "build": "hyper-build-assets --app . --api /api --output build",
+    "start": "node src/main.mjs"
+  },
+  "dependencies": {
+    "@polyspec/crudui-generator-core": "https://github.com/polyspec/crudui/releases/download/v0.0.5/polyspec-crudui-generator-core-npm-0.0.5.tgz",
+    "@polyspec/crudui-generator-html": "https://github.com/polyspec/crudui/releases/download/v0.0.5/polyspec-crudui-generator-html-npm-0.0.5.tgz",
+    "@polyspec/hyper-build": "https://github.com/polyspec/hyper/releases/download/v0.0.11/polyspec-hyper-build-npm-0.0.11.tgz",
+    "@polyspec/hyper-client": "https://github.com/polyspec/hyper/releases/download/v0.0.11/polyspec-hyper-client-npm-0.0.11.tgz",
+    "@polyspec/hyper-server": "https://github.com/polyspec/hyper/releases/download/v0.0.11/polyspec-hyper-server-npm-0.0.11.tgz",
+    "@polyspec/template": "https://github.com/polyspec/template/releases/download/v0.0.5/polyspec-template-npm-0.0.5.tgz",
+    "htmx.org": "4.0.0",
+    "mermaid": "12.1.0",
+    "yaml": "2.9.1"
+  },
+  "overrides": {
+    "@polyspec/crudui-generator-core": "https://github.com/polyspec/crudui/releases/download/v0.0.5/polyspec-crudui-generator-core-npm-0.0.5.tgz",
+    "@polyspec/crudui-validator": "https://github.com/polyspec/crudui/releases/download/v0.0.5/polyspec-crudui-validator-npm-0.0.5.tgz",
+    "@polyspec/hyper-client": "https://github.com/polyspec/hyper/releases/download/v0.0.11/polyspec-hyper-client-npm-0.0.11.tgz",
+    "@polyspec/template": "https://github.com/polyspec/template/releases/download/v0.0.5/polyspec-template-npm-0.0.5.tgz",
+    "@polyspec/template-compiler": "https://github.com/polyspec/template/releases/download/v0.0.5/polyspec-template-compiler-npm-0.0.5.tgz"
+  }
+}
