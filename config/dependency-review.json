@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mjs) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-10T21:57:38.554Z",
+  "reviewed": "2026-10-10T22:03:04.042Z",
   "locks": [
     {
       "lock": "packages/status-db/package-lock.json",
@@ -16,6 +16,11 @@
     {
       "lock": "packages/status-npm/package-lock.json",
       "sha256": "3eaa062823353e922b0a54392513d08ebc453688e580aa7c745051412f7d01b2",
+      "advisories": []
+    },
+    {
+      "lock": "packages/status-go/go.sum",
+      "sha256": "48b4d86e577e858d1d53f5ffd72dfa61d464906f43924cf874b1bb93203c4d61",
       "advisories": []
     }
   ],
@@ -40,6 +45,13 @@
       "package": "yaml",
       "version": "2.9.1",
       "latest": "2.9.1"
+    },
+    {
+      "ecosystem": "go",
+      "manifest": "packages/status-go/go.mod",
+      "package": "github.com/polyspec/orm",
+      "version": "v0.0.7",
+      "latest": "v0.0.7"
     }
   ]
 }
