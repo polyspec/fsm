@@ -12,7 +12,7 @@
 | S-05 | core `E_SCHEMA` + the schema correspondence test | RED → GREEN | [o] |
 | S-05-1 | core graph errors | RED per error code → GREEN | [o] |
 | S-05-2 | core name and code errors | RED per error code → GREEN | [o] |
-| S-06 | normalize/IR + lock (rename/reserved) + JsonStore + store contract + `run`/`copy` | RED per lock scenario → GREEN | [ ] |
+| S-06 | normalize/IR + lock (rename/reserved) + JsonStore + store contract + `run`/`copy` | RED per lock scenario → GREEN | [o] |
 | S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector oracle + `scripts/gen-check.mjs` + `gen-check-test` | matches the hand-written expected fixture; gen-check RED → GREEN | [ ] |
 | S-08 | MermaidStore (canonical parser and writer) + json↔mermaid round trip | `E_MERMAID_UNSUPPORTED`, order violation, round-trip mismatch RED → GREEN | [ ] |
 | S-09 | npm backend + `vectors --kind npm` (golden) | golden RED → GREEN | [ ] |
