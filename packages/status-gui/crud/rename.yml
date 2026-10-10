@@ -1,0 +1,16 @@
+# The crudui form of the rename screen (docs/plans/status-v1.md, C-7). Each stored state is a row that shows its key and takes
+# a new key in `to`; the rows are fixed (`multiple: only`), so the screen renames keys and adds or removes no state. It holds no
+# validation rule: the core checks every new key (docs/spec/status.md, B-3 and B-5), and a rename keeps the code of its state.
+type: group
+properties:
+  states:
+    type: group
+    label: States
+    multiple: only
+    properties:
+      key:
+        type: dummy-input
+        label: Key
+      to:
+        type: text
+        label: New key
