@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-05-2: core `validate` reports the name and code errors of B-5, `E_KEY_FORMAT`, `E_DUPLICATE_KEY`, `E_KEY_RESERVED` (the fixed lists are in `packages/status-compiler/src/core/reserved.mjs`), `E_DUPLICATE_CODE` and `E_CODE_RANGE`. A machine key is compared after its underscores are removed, and a machine with a structural error is not compared with the other machines.
 - S-05-1: core `validate` reports the graph errors of B-5, `E_UNKNOWN_STATE_REF`, `E_SELF_LOOP`, `E_NONDETERMINISTIC`, `E_DUPLICATE_EDGE`, `E_INITIAL_COUNT`, `E_FINAL_OUTGOING`, `E_UNREACHABLE` and `E_DEAD_END`, each with its own failing case. Reachability starts from the single initial state, and a machine with a structural error reports only its `E_SCHEMA` findings.
 - S-05: core `validate` (`packages/status-compiler/src/core/validate.mjs`) reports every structural error of a definition as `E_SCHEMA` with its JSON path and skips the later rules of that machine. `schema/status.schema.json` is the editor schema, written with the keywords of kit `schema-validate.mjs`; the correspondence test checks that it and the core agree on every fixture. `make compiler-test` runs the tests through `run-tests.mjs` and records `.results/compiler-test.json`.
 - The JSON store writes an edge as the object `{from, to}` instead of a pair, so the editor schema checks it exactly and a GUI form edits it as a row (`docs/spec/status.md`, B-1).

@@ -11,7 +11,7 @@
 | S-04 | `scripts/check-parity.mjs` (with `--kind`) + `parity-test` | fixtures (no result/missing tool result/`--kind` reads only its kind/stale inputs/not run/unregistered/zero cases/fail/timeout/skip/0 or 2 name matches/parent id/over 10 minutes) RED → GREEN | [o] |
 | S-05 | core `E_SCHEMA` + the schema correspondence test | RED → GREEN | [o] |
 | S-05-1 | core graph errors | RED per error code → GREEN | [o] |
-| S-05-2 | core name and code errors | RED per error code → GREEN | [ ] |
+| S-05-2 | core name and code errors | RED per error code → GREEN | [o] |
 | S-06 | normalize/IR + lock (rename/reserved) + JsonStore + store contract + `run`/`copy` | RED per lock scenario → GREEN | [ ] |
 | S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector oracle + `scripts/gen-check.mjs` + `gen-check-test` | matches the hand-written expected fixture; gen-check RED → GREEN | [ ] |
 | S-08 | MermaidStore (canonical parser and writer) + json↔mermaid round trip | `E_MERMAID_UNSUPPORTED`, order violation, round-trip mismatch RED → GREEN | [ ] |
