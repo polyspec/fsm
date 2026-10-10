@@ -4,6 +4,10 @@
     {
       "manifest": "packages/status-php/composer.json",
       "php": "8.4.0"
+    },
+    {
+      "manifest": "packages/status-php-ext/composer.json",
+      "php": "8.4.0"
     }
   ],
   "pythonManifests": [

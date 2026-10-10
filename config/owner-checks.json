@@ -248,6 +248,18 @@
         "dependency-policy-check",
         "toolchain-check"
       ]
+    },
+    {
+      "paths": [
+        "packages/status-php-ext/**"
+      ],
+      "targets": [
+        "layout-check",
+        "gen-check",
+        "parity-php-ext",
+        "dependency-policy-check",
+        "toolchain-check"
+      ]
     }
   ]
 }
