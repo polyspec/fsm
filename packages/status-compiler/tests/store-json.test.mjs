@@ -2,44 +2,15 @@
 // findings, the canonical bytes of save, the deletion of undefined machine files and the round trip of a canonical checkout.
 // Every case runs in its own temporary directory, which is removed when the file's tests end.
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test, { after } from 'node:test';
 import { jsonStore } from '../src/store-json/store.mjs';
 import { LOCK_TEXT, ORDER_LOCK_TEXT, ORDER_TEXT, TRACK_TEXT } from './canonical-texts.mjs';
+import { bytesOf, removeRoots, tempRoot, write } from './checkout.mjs';
 import { storeContract } from './store-contract.mjs';
 
-const roots = [];
-
-/** A new empty temporary directory, removed when the file's tests end. */
-function tempRoot() {
-  const root = mkdtempSync(path.join(tmpdir(), 'status-json-'));
-  roots.push(root);
-  return root;
-}
-
-after(() => {
-  for (const root of roots) rmSync(root, { recursive: true, force: true });
-});
-
-/** Writes `text` to `relative` under `root`, creating the directories. */
-function write(root, relative, text) {
-  mkdirSync(path.dirname(path.join(root, relative)), { recursive: true });
-  writeFileSync(path.join(root, relative), text);
-}
-
-/** The bytes of a JSON checkout: the machine files in name order, then the lock file when it exists. */
-function bytesOf(root) {
-  const parts = [];
-  const machines = path.join(root, 'machines');
-  if (existsSync(machines)) {
-    for (const name of readdirSync(machines).sort()) parts.push(`${name}\n${readFileSync(path.join(machines, name), 'utf8')}`);
-  }
-  const lock = path.join(root, 'status.lock.json');
-  if (existsSync(lock)) parts.push(`status.lock.json\n${readFileSync(lock, 'utf8')}`);
-  return parts.join('---\n');
-}
+after(removeRoots);
 
 /** The findings as {code, machine, path}. */
 const shape = findings => findings.map(({ code, machine, path }) => ({ code, machine, path }));

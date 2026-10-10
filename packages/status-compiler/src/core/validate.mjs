@@ -8,7 +8,8 @@ import {
   STATE_EVENT_KEYS,
 } from './reserved.mjs';
 
-const KEY_PATTERN = /^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$/;
+/** The key format of a machine, state and event (B-5): lower case letters and digits joined by single underscores. */
+export const KEY_PATTERN = /^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$/;
 const KEY_MAX = 64;
 const CODE_MAX = 2147483647;
 const MACHINE_RESERVED = new Set([...MACHINE_FIXED, ...GO_PREDECLARED, ...GO_KEYWORDS, ...RUST_KEYWORDS, ...PYTHON_KEYWORDS, ...JS_KEYWORDS, ...MACHINE_LITERALS]);

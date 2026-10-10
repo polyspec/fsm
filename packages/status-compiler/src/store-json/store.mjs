@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { jsonText, writeAtomic } from '../../../../scripts/kit/files.mjs';
-import { canonicalLock } from '../core/lock.mjs';
+import { readLockFile, writeLockFile } from '../store-lock/lock-file.mjs';
 
 /** The $schema of every machine file: the editor schema, relative to machines/. */
 const SCHEMA = '../schema/status.schema.json';
@@ -21,27 +21,6 @@ function readJson(file) {
   } catch (error) {
     return { ok: false, message: error.message };
   }
-}
-
-/** The findings of a lock that does not have the shape { machine: { codes: { code: key }, reserved: [code] } }. */
-function lockShape(lock) {
-  if (!isObject(lock)) return [finding('E_SCHEMA', null, '$', 'status.lock.json is not a JSON object')];
-  const found = [];
-  for (const machine of Object.keys(lock)) {
-    const entry = lock[machine];
-    const at = `$.${machine}`;
-    if (!isObject(entry) || Object.keys(entry).sort().join() !== 'codes,reserved') {
-      found.push(finding('E_SCHEMA', machine, at, 'an entry of the lock has exactly the fields codes and reserved'));
-      continue;
-    }
-    const codesOk = isObject(entry.codes)
-      && Object.entries(entry.codes).every(([code, key]) => /^[1-9]\d*$/.test(code) && typeof key === 'string');
-    if (!codesOk) found.push(finding('E_SCHEMA', machine, `${at}.codes`, 'codes must map canonical positive integers to keys'));
-    if (!Array.isArray(entry.reserved) || !entry.reserved.every(code => Number.isInteger(code))) {
-      found.push(finding('E_SCHEMA', machine, `${at}.reserved`, 'reserved must be an array of integers'));
-    }
-  }
-  return found;
 }
 
 /** The canonical object of a machine file: the key order of docs/spec/status.md, and initial and final only when true. */
@@ -65,7 +44,6 @@ function canonicalDefinition({ machine, states, events }) {
 /** The JSON store of the root directory `root`: { load() -> { definitions, lock, findings }, save({ definitions, lock }) }. */
 export function jsonStore(root) {
   const machines = path.join(root, 'machines');
-  const lockFile = path.join(root, 'status.lock.json');
 
   function load() {
     const findings = [];
@@ -99,17 +77,9 @@ export function jsonStore(root) {
         definitions.push(definition);
       }
     }
-    let lock = {};
-    if (existsSync(lockFile)) {
-      const parsed = readJson(lockFile);
-      if (!parsed.ok) {
-        findings.push(finding('E_SCHEMA', null, '$', `status.lock.json is not valid JSON: ${parsed.message}`));
-      } else {
-        findings.push(...lockShape(parsed.value));
-        if (isObject(parsed.value)) lock = parsed.value;
-      }
-    }
-    return { definitions, lock, findings };
+    const read = readLockFile(root);
+    findings.push(...read.findings);
+    return { definitions, lock: read.lock, findings };
   }
 
   function save({ definitions, lock }) {
@@ -124,7 +94,7 @@ export function jsonStore(root) {
     for (const definition of definitions) {
       writeAtomic(path.join(machines, `${definition.machine}.status.json`), jsonText(canonicalDefinition(definition)));
     }
-    writeAtomic(lockFile, jsonText(canonicalLock(lock)));
+    writeLockFile(root, lock);
   }
 
   return { load, save };

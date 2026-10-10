@@ -5,17 +5,17 @@
 // --project is the project root, the directory whose status.config.json names the store (default: the current directory).
 // For copy, the project store is the source and --root is the target directory, which is required. A finding prints as
 // `[status-gen] <code> <machine> <path>: <message>` on stderr and exits 1. A usage error exits 2. Otherwise the command exits 0
-// with a one-line summary on stdout. The json store is the only one this version handles.
+// with a one-line summary on stdout. The json and mermaid stores are the ones this version handles (status.config.json).
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { copy, run } from '../core/run.mjs';
 import { jsonStore } from '../store-json/store.mjs';
+import { mermaidStore } from '../store-mermaid/store.mjs';
 
 const USAGE = 'usage: status-gen check [--project <dir>]\n'
   + '       status-gen lock [--project <dir>] [--rename machine.old=new]...\n'
   + '       status-gen copy --to json|mermaid --root <dir> [--project <dir>]';
-const MERMAID = 'the mermaid store arrives with S-08';
 const RENAME = /^([^.=]+)\.([^.=]+)=([^.=]+)$/;
 
 const notConfigured = (path, message) => ({ code: 'E_STORE_NOT_CONFIGURED', machine: null, path, message });
@@ -66,18 +66,20 @@ function configuredStore(project) {
   }
   const store = isObject(config) ? config.store : undefined;
   if (store === 'json') return { ok: true, store: jsonStore(project) };
-  if (store === 'mermaid') return { ok: false, findings: [notConfigured('$', MERMAID)] };
-  return { ok: false, findings: [notConfigured('$.store', `status-gen handles the json store only; the configured store is ${JSON.stringify(store)}`)] };
+  if (store === 'mermaid') return { ok: true, store: mermaidStore(project) };
+  return { ok: false, findings: [notConfigured('$.store', `status-gen handles the json and mermaid stores only; the configured store is ${JSON.stringify(store)}`)] };
+}
+
+/** The store of the kind `kind` (json or mermaid) under the root directory `root`. */
+function storeOf(kind, root) {
+  return kind === 'mermaid' ? mermaidStore(root) : jsonStore(root);
 }
 
 /** The findings of the command. */
 function execute({ command, project, renames, to, root }) {
   const configured = configuredStore(project);
   if (!configured.ok) return configured.findings;
-  if (command === 'copy') {
-    if (to === 'mermaid') return [notConfigured('$', MERMAID)];
-    return copy(configured.store, jsonStore(root)).findings;
-  }
+  if (command === 'copy') return copy(configured.store, storeOf(to, root)).findings;
   return run(command, configured.store, { renames }).findings;
 }
 

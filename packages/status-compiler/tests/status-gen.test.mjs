@@ -4,16 +4,22 @@
 // directory from --root, which is required. Every case runs in temporary directories that are removed when the file's tests end.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { LOCK_TEXT, ORDER_LOCK_TEXT, ORDER_TEXT, TRACK_TEXT } from './canonical-texts.mjs';
+import { jsonStore } from '../src/store-json/store.mjs';
+import { mermaidStore } from '../src/store-mermaid/store.mjs';
+import {
+  LOCK_TEXT, ORDER_LOCK_TEXT, ORDER_MMD_TEXT, ORDER_TEXT, TRACK_MMD_TEXT, TRACK_TEXT,
+} from './canonical-texts.mjs';
+import { filesOf } from './checkout.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(HERE, '../src/cli/status-gen.mjs');
 const CONFIG_JSON = '{ "store": "json" }\n';
+const MERMAID_CONFIG = '{ "store": "mermaid" }\n';
 const roots = [];
 
 /** A new temporary directory with the files of `files` (path -> text), removed when the file's tests end. */
@@ -31,19 +37,6 @@ function project(files = {}) {
 function gen(args, cwd = HERE) {
   const result = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', cwd });
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };
-}
-
-/** The bytes of the machine files and the lock under `root`, as a map of relative path to text. */
-function filesOf(root) {
-  const out = {};
-  const machines = path.join(root, 'machines');
-  if (existsSync(machines)) {
-    for (const name of ['order.status.json', 'track.status.json']) {
-      if (existsSync(path.join(machines, name))) out[`machines/${name}`] = readFileSync(path.join(machines, name), 'utf8');
-    }
-  }
-  if (existsSync(path.join(root, 'status.lock.json'))) out['status.lock.json'] = readFileSync(path.join(root, 'status.lock.json'), 'utf8');
-  return out;
 }
 
 after(() => {
@@ -83,13 +76,30 @@ test('a store other than json or mermaid exits 1 with E_STORE_NOT_CONFIGURED at 
   assert.equal(result.stderr.split('\n')[0].startsWith('[status-gen] E_STORE_NOT_CONFIGURED - $.store: '), true, result.stderr);
 });
 
-test('the mermaid store exits 1 with E_STORE_NOT_CONFIGURED until S-08', () => {
-  const root = project({ 'status.config.json': '{ "store": "mermaid" }\n' });
-  assert.deepEqual(gen(['check', '--project', root]), {
-    status: 1,
-    stdout: '',
-    stderr: '[status-gen] E_STORE_NOT_CONFIGURED - $: the mermaid store arrives with S-08\n',
-  });
+test('check of a canonical mermaid project exits 0 with a one-line summary', () => {
+  const root = project({ 'status.config.json': MERMAID_CONFIG, 'machines/order.status.mmd': ORDER_MMD_TEXT, 'status.lock.json': ORDER_LOCK_TEXT });
+  assert.deepEqual(gen(['check', '--project', root]), { status: 0, stdout: '[status-gen] check: ok\n', stderr: '' });
+});
+
+test('check of a mermaid project whose lock does not match exits 1 with E_LOCK_MISMATCH', () => {
+  const root = project({ 'status.config.json': MERMAID_CONFIG, 'machines/order.status.mmd': ORDER_MMD_TEXT });
+  const result = gen(['check', '--project', root]);
+  assert.equal(result.status, 1);
+  assert.equal(result.stderr.startsWith('[status-gen] E_LOCK_MISMATCH order $: '), true, result.stderr);
+});
+
+test('check of a mermaid project with a json machine file exits 1 with E_STORE_MIXED', () => {
+  const root = project({ 'status.config.json': MERMAID_CONFIG, 'machines/order.status.mmd': ORDER_MMD_TEXT, 'machines/track.status.json': TRACK_TEXT });
+  const result = gen(['check', '--project', root]);
+  assert.equal(result.status, 1);
+  assert.equal(result.stderr.startsWith('[status-gen] E_STORE_MIXED - $: '), true, result.stderr);
+});
+
+test('a mermaid line outside the canonical form exits 1 with E_MERMAID_UNSUPPORTED and its line', () => {
+  const root = project({ 'status.config.json': MERMAID_CONFIG, 'machines/order.status.mmd': ORDER_MMD_TEXT.replace('    done : 2', '    done : 02') });
+  const result = gen(['check', '--project', root]);
+  assert.equal(result.status, 1);
+  assert.equal(result.stderr.startsWith('[status-gen] E_MERMAID_UNSUPPORTED order $: line 6 '), true, result.stderr);
 });
 
 test('lock writes the lock of the definitions, and check then passes', () => {
@@ -186,13 +196,61 @@ test('copy --to json into a non-empty target exits 1 with E_STORE_NOT_EMPTY and 
   assert.deepEqual(filesOf(target), before);
 });
 
-test('copy --to mermaid exits 1 with E_STORE_NOT_CONFIGURED until S-08', () => {
-  const source = project({ 'status.config.json': CONFIG_JSON, 'machines/order.status.json': ORDER_TEXT });
+test('copy --to mermaid into an empty target writes the files that the mermaid store writes for the same definitions', () => {
+  const source = project({
+    'status.config.json': CONFIG_JSON,
+    'machines/order.status.json': ORDER_TEXT,
+    'machines/track.status.json': TRACK_TEXT,
+    'status.lock.json': LOCK_TEXT,
+  });
   const target = path.join(project(), 'empty-target');
   assert.deepEqual(gen(['copy', '--to', 'mermaid', '--project', source, '--root', target]), {
-    status: 1,
-    stdout: '',
-    stderr: '[status-gen] E_STORE_NOT_CONFIGURED - $: the mermaid store arrives with S-08\n',
+    status: 0,
+    stdout: '[status-gen] copy: ok\n',
+    stderr: '',
   });
-  assert.equal(existsSync(target), false);
+  const expected = project();
+  const loaded = jsonStore(source).load();
+  mermaidStore(expected).save({ definitions: loaded.definitions, lock: loaded.lock });
+  assert.deepEqual(filesOf(target), filesOf(expected));
+  assert.deepEqual(filesOf(target), {
+    'machines/order.status.mmd': ORDER_MMD_TEXT,
+    'machines/track.status.mmd': TRACK_MMD_TEXT,
+    'status.lock.json': LOCK_TEXT,
+  });
+});
+
+test('copy --to mermaid into a non-empty target exits 1 with E_STORE_NOT_EMPTY and writes nothing', () => {
+  const source = project({ 'status.config.json': CONFIG_JSON, 'machines/order.status.json': ORDER_TEXT, 'status.lock.json': ORDER_LOCK_TEXT });
+  const target = project({ 'machines/order.status.mmd': ORDER_MMD_TEXT });
+  const before = filesOf(target);
+  const result = gen(['copy', '--to', 'mermaid', '--project', source, '--root', target]);
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr.startsWith('[status-gen] E_STORE_NOT_EMPTY - $: '), true, result.stderr);
+  assert.deepEqual(filesOf(target), before);
+});
+
+test('copy --to json from a mermaid project into an empty target writes the files that the json store writes for the same definitions', () => {
+  const source = project({
+    'status.config.json': MERMAID_CONFIG,
+    'machines/order.status.mmd': ORDER_MMD_TEXT,
+    'machines/track.status.mmd': TRACK_MMD_TEXT,
+    'status.lock.json': LOCK_TEXT,
+  });
+  const target = path.join(project(), 'empty-target');
+  assert.deepEqual(gen(['copy', '--to', 'json', '--project', source, '--root', target]), {
+    status: 0,
+    stdout: '[status-gen] copy: ok\n',
+    stderr: '',
+  });
+  const expected = project();
+  const loaded = mermaidStore(source).load();
+  jsonStore(expected).save({ definitions: loaded.definitions, lock: loaded.lock });
+  assert.deepEqual(filesOf(target), filesOf(expected));
+  assert.deepEqual(filesOf(target), {
+    'machines/order.status.json': ORDER_TEXT,
+    'machines/track.status.json': TRACK_TEXT,
+    'status.lock.json': LOCK_TEXT,
+  });
 });
