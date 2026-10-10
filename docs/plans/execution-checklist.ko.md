@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: a6e515edea145e37fd672249acbc53ea3b8405d1934e35b58903e5fb288f9db8 -->
+<!-- source-sha256: 30cff583709431a15b578844cba1185ee5e033a349a48425bb3c66d3490a991a -->
 # 실행 체크리스트
 
 ## status v1
@@ -28,7 +28,7 @@
 | S-12 | php backend + `vectors --kind php`(golden) | golden RED → GREEN | [o] |
 | S-12-1 | php 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-php`와 `parity-php` | 생성물 없이 `test-php` RED → GREEN, `layout-check`와 `parity-php` 통과 | [o] |
 | S-13 | rust backend + `vectors --kind rust`(golden) | golden RED → GREEN | [o] |
-| S-13-1 | rust 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-rust`와 `parity-rust` | 생성물 없이 `test-rust` RED → GREEN, `layout-check`와 `parity-rust` 통과 | [ ] |
+| S-13-1 | rust 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-rust`와 `parity-rust` | 생성물 없이 `test-rust` RED → GREEN, `layout-check`와 `parity-rust` 통과 | [o] |
 | S-14 | php-ext backend + `vectors --kind php-ext`(golden) | golden RED → GREEN | [ ] |
 | S-14-1 | php-ext 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-php-ext`와 `parity-php-ext` | 생성물 없이 `test-php-ext` RED → GREEN, `layout-check`와 `parity-php-ext` 통과 | [ ] |
 | S-15 | status-db: `schema/status.dbs` + DbStore + 계약 테스트 + copy + `db-test` | 계약 불일치·`E_STORE_NOT_EMPTY`·원자성 RED → GREEN | [o] |

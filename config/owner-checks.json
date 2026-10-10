@@ -191,6 +191,39 @@
         "dependency-policy-check",
         "toolchain-check"
       ]
+    },
+    {
+      "paths": [
+        "scripts/kit/**",
+        "tests/kit/**",
+        ".kit/**",
+        "kit.json",
+        "config/**",
+        "Makefile",
+        ".gitignore",
+        ".node-version",
+        "rust-toolchain.toml"
+      ],
+      "targets": [
+        "kit-check",
+        "owner-validate",
+        "documents-check",
+        "commits-check",
+        "toolchain-check",
+        "dependency-policy-check"
+      ]
+    },
+    {
+      "paths": [
+        "packages/status-rust/**"
+      ],
+      "targets": [
+        "layout-check",
+        "gen-check",
+        "parity-rust",
+        "dependency-policy-check",
+        "toolchain-check"
+      ]
     }
   ]
 }

@@ -27,7 +27,7 @@
 | S-12 | php backend + `vectors --kind php` (golden) | golden RED → GREEN | [o] |
 | S-12-1 | php package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-php` and `parity-php` | `test-php` RED without generated output → GREEN; `layout-check` and `parity-php` pass | [o] |
 | S-13 | rust backend + `vectors --kind rust` (golden) | golden RED → GREEN | [o] |
-| S-13-1 | rust package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-rust` and `parity-rust` | `test-rust` RED without generated output → GREEN; `layout-check` and `parity-rust` pass | [ ] |
+| S-13-1 | rust package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-rust` and `parity-rust` | `test-rust` RED without generated output → GREEN; `layout-check` and `parity-rust` pass | [o] |
 | S-14 | php-ext backend + `vectors --kind php-ext` (golden) | golden RED → GREEN | [ ] |
 | S-14-1 | php-ext package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-php-ext` and `parity-php-ext` | `test-php-ext` RED without generated output → GREEN; `layout-check` and `parity-php-ext` pass | [ ] |
 | S-15 | status-db: `schema/status.dbs` + DbStore + contract tests + copy + `db-test` | contract mismatch, `E_STORE_NOT_EMPTY`, atomicity RED → GREEN | [o] |
