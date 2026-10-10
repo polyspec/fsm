@@ -14,6 +14,7 @@
 | S-05-2 | core name and code errors | RED per error code → GREEN | [o] |
 | S-05-3 | core key length: machine, state and event keys are at most 64 characters (E_KEY_FORMAT), so the DB store's varchar(64) holds every valid key | 64 accepted, 65 RED → GREEN | [o] |
 | S-06 | normalize/IR + lock (rename/reserved) + JsonStore + store contract + `run`/`copy` | RED per lock scenario → GREEN | [o] |
+| S-06-1 | async store contract: load() and save() of every store and core run/copy return Promises, so the DB store can use the async orm client; validate, normalize, lock and vectors stay synchronous | the contract tests await a Promise from every store RED → GREEN | [o] |
 | S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector oracle + `scripts/gen-check.mjs` + `gen-check-test` | matches the hand-written expected fixture; gen-check RED → GREEN | [o] |
 | S-08 | MermaidStore (canonical parser and writer) + json↔mermaid round trip | `E_MERMAID_UNSUPPORTED`, order violation, round-trip mismatch RED → GREEN | [o] |
 | S-09 | npm backend + `vectors --kind npm` (golden) | golden RED → GREEN | [ ] |

@@ -1,5 +1,5 @@
 <!-- doc-id: spec-status -->
-<!-- source-sha256: f8dc783a5ead4ca2a173c8a09002a8ed9d53d90f64024dc9b13c613907a154cc -->
+<!-- source-sha256: dbb700b934427354301b1f5e85cbaf9e2ed6f961963ea2682e43e7d1982e95e3 -->
 # status 정의
 
 [English](status.md)
@@ -94,16 +94,16 @@ stateDiagram-v2
 | `mermaid` | `machines/*.status.mmd` | `status.lock.json` | status-compiler |
 | `db` | orm 정의 테이블 | orm lock 테이블 | status-db |
 
-- store 계약은 `{load() → {definitions, lock}, save({definitions, lock})}`이다.
+- store 계약은 `{load() → Promise<{definitions, lock}>, save({definitions, lock}) → Promise}`이다. DB store의 orm client가 비동기이므로 store 계약, `run`, `copy`는 비동기이고, 순수 함수(validate, normalize, lock, vectors)는 동기로 남아 GUI가 직접 호출한다.
   - store는 변환과 원자적 쓰기만 하고 검증하지 않는다.
   - 쓰기: json·mermaid는 파일별 임시파일+rename(파일 단위 원자성만), db는 한 transaction 안에서 전체 교체. 파일 store가 중간에 중단되면 다음 `gen`/`vectors`/`check`가 `E_LOCK_MISMATCH`로 드러내고 복구는 git으로 한다.
-- 명령(`lock`, `save`, `gen`, `vectors`, `check`)은 core `run(command, store, options)` 하나로 실행한다.
+- 명령(`lock`, `save`, `gen`, `vectors`, `check`)은 core `run(command, store, options)` 하나로 실행한다(비동기, Promise를 돌려준다).
   - `save`(GUI 저장, 저장 1회에 머신 1개)와 `lock`은 새 정의가 `E_LOCK_MISMATCH`를 뺀 B-5의 모든 규칙을 통과하고, 저장된 lock과 새 정의 사이에서 lock 규칙을 통과한 뒤에만 `store.save`를 한 번 부른다. 쓰는 lock은 새 정의에서 만들므로 정의와 항상 일치한다.
 - 원본 store는 프로젝트 루트의 `status.config.json` 하나가 정한다.
   - 형식: `{"store":"json"|"mermaid"}` 또는 `{"store":"db","dsnEnv":"STATUS_DSN"}`
   - status-gen, status-db, status-gui는 이 파일을 읽는다. 설정된 store를 그 도구가 다루지 못하면(예: status-gen + `db`) `E_STORE_NOT_CONFIGURED`.
   - `machines/`에 설정과 다른 형식의 파일이 있으면 `E_STORE_MIXED`.
-- `copy(from, to)`는 `run` 밖의 core 이관 함수다(`to.save(from.load())`). CLI는 `copy --to json|mermaid --root <dir>` 또는 `copy --to db`(DSN은 `--dsn-env`가 가리키는 환경 변수)이며, 대상 루트에 `machines/`나 `status.lock.json`(db면 정의·lock 행)이 있으면 `E_STORE_NOT_EMPTY`.
+- `copy(from, to)`는 `run` 밖의 비동기 core 이관 함수다(`await to.save(await from.load())`). CLI는 `copy --to json|mermaid --root <dir>` 또는 `copy --to db`(DSN은 `--dsn-env`가 가리키는 환경 변수)이며, 대상 루트에 `machines/`나 `status.lock.json`(db면 정의·lock 행)이 있으면 `E_STORE_NOT_EMPTY`.
   - status-gen은 json↔mermaid 이관을 제공한다(의존성 0 유지).
   - status-db는 db↔json/mermaid 이관을 제공한다.
   - 이관 뒤 `status.config.json`을 바꾸는 것은 사람이 결정한다.

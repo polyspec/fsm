@@ -15,11 +15,11 @@ const SUFFIX = '.status.mmd';
 const finding = (code, machine, path, message) => ({ code, machine, path, message });
 const compare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
-/** The Mermaid store of the root directory `root`: { load() -> { definitions, lock, findings }, save({ definitions, lock }) }. */
+/** The Mermaid store of the root directory `root`: { load() -> Promise<{ definitions, lock, findings }>, save({ definitions, lock }) -> Promise }. */
 export function mermaidStore(root) {
   const machines = path.join(root, 'machines');
 
-  function load() {
+  async function load() {
     const findings = [];
     const definitions = [];
     if (existsSync(machines)) {
@@ -59,7 +59,7 @@ export function mermaidStore(root) {
   }
 
   /** Writes the definitions in canonical form, deletes the *.status.mmd files that are not defined, and writes the lock. */
-  function save({ definitions, lock }) {
+  async function save({ definitions, lock }) {
     const files = definitions.map(definition => [`${definition.machine}${SUFFIX}`, mermaidText(definition)]);
     const wanted = new Set(files.map(([name]) => name));
     if (existsSync(machines)) {

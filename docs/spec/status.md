@@ -93,16 +93,16 @@ stateDiagram-v2
 | `mermaid` | `machines/*.status.mmd` | `status.lock.json` | status-compiler |
 | `db` | orm definition tables | orm lock tables | status-db |
 
-- The store contract is `{load() → {definitions, lock}, save({definitions, lock})}`.
+- The store contract is `{load() → Promise<{definitions, lock}>, save({definitions, lock}) → Promise}`. The orm client of the DB store is async, so the store contract, `run` and `copy` are async; the pure functions (validate, normalize, lock, vectors) stay synchronous, so the GUI calls them directly.
   - A store converts and writes atomically. It does not validate.
   - Writes: json and mermaid use a temporary file + rename per file (per-file atomicity only); db replaces everything inside one transaction. If a file store write stops halfway, the next `gen`/`vectors`/`check` reports `E_LOCK_MISMATCH`, and recovery is through git.
-- The commands (`lock`, `save`, `gen`, `vectors`, `check`) run through one core function `run(command, store, options)`.
+- The commands (`lock`, `save`, `gen`, `vectors`, `check`) run through one core function `run(command, store, options)`, which is async.
   - `save` (GUI save, one machine per save) and `lock` call `store.save` once, and only after the new definitions pass every rule of B-5 except `E_LOCK_MISMATCH` and the lock rules pass between the stored lock and the new definitions. The lock they write is derived from the new definitions, so it matches them by construction.
 - One file at the project root, `status.config.json`, names the source store.
   - Format: `{"store":"json"|"mermaid"}` or `{"store":"db","dsnEnv":"STATUS_DSN"}`
   - status-gen, status-db and status-gui read this file. If a tool cannot handle the configured store (for example status-gen with `db`), it fails with `E_STORE_NOT_CONFIGURED`.
   - A file in `machines/` whose format differs from the configuration fails with `E_STORE_MIXED`.
-- `copy(from, to)` is a core migration function outside `run` (`to.save(from.load())`). The CLI is `copy --to json|mermaid --root <dir>` or `copy --to db` (the DSN comes from the environment variable named by `--dsn-env`). If the target root already holds `machines/` or `status.lock.json` (for db: definition or lock rows), it fails with `E_STORE_NOT_EMPTY`.
+- `copy(from, to)` is an async core migration function outside `run` (`await to.save(await from.load())`). The CLI is `copy --to json|mermaid --root <dir>` or `copy --to db` (the DSN comes from the environment variable named by `--dsn-env`). If the target root already holds `machines/` or `status.lock.json` (for db: definition or lock rows), it fails with `E_STORE_NOT_EMPTY`.
   - status-gen provides json↔mermaid migration (keeping zero dependencies).
   - status-db provides db↔json/mermaid migration.
   - Changing `status.config.json` after a migration is a human decision.

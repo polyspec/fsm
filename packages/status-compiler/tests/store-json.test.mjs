@@ -20,64 +20,64 @@ storeContract('json', () => {
   return { store: jsonStore(root), snapshot: () => bytesOf(root) };
 });
 
-test('json store: a missing lock file is the empty lock', () => {
+test('json store: a missing lock file is the empty lock', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.json', ORDER_TEXT);
-  const loaded = jsonStore(root).load();
+  const loaded = await (await jsonStore(root).load());
   assert.deepEqual(loaded.lock, {});
   assert.deepEqual(shape(loaded.findings), []);
   assert.equal(loaded.definitions.length, 1);
 });
 
-test('json store: load strips the top-level $schema', () => {
+test('json store: load strips the top-level $schema', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.json', ORDER_TEXT);
-  const [definition] = jsonStore(root).load().definitions;
+  const [definition] = (await (await jsonStore(root).load())).definitions;
   assert.equal(Object.hasOwn(definition, '$schema'), false);
   assert.equal(definition.machine, 'order');
 });
 
-test('json store: load reads the machine files in name order', () => {
+test('json store: load reads the machine files in name order', async () => {
   const root = tempRoot();
   write(root, 'machines/track.status.json', TRACK_TEXT);
   write(root, 'machines/order.status.json', ORDER_TEXT);
-  assert.deepEqual(jsonStore(root).load().definitions.map(definition => definition.machine), ['order', 'track']);
+  assert.deepEqual((await (await jsonStore(root).load())).definitions.map(definition => definition.machine), ['order', 'track']);
 });
 
-test('json store: a file whose name is not <machine>.status.json fails E_SCHEMA at $.machine', () => {
+test('json store: a file whose name is not <machine>.status.json fails E_SCHEMA at $.machine', async () => {
   const root = tempRoot();
   write(root, 'machines/wrong.status.json', ORDER_TEXT);
-  assert.deepEqual(shape(jsonStore(root).load().findings), [{ code: 'E_SCHEMA', machine: 'order', path: '$.machine' }]);
+  assert.deepEqual(shape((await (await jsonStore(root).load())).findings), [{ code: 'E_SCHEMA', machine: 'order', path: '$.machine' }]);
 });
 
-test('json store: a file in machines that is not a status file fails E_SCHEMA', () => {
+test('json store: a file in machines that is not a status file fails E_SCHEMA', async () => {
   const root = tempRoot();
   write(root, 'machines/notes.txt', 'not a machine');
-  assert.deepEqual(shape(jsonStore(root).load().findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
+  assert.deepEqual(shape((await (await jsonStore(root).load())).findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
 });
 
-test('json store: a *.status.mmd file in machines fails E_STORE_MIXED', () => {
+test('json store: a *.status.mmd file in machines fails E_STORE_MIXED', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.mmd', '---\ntitle: order\n---\n');
-  assert.deepEqual(shape(jsonStore(root).load().findings), [{ code: 'E_STORE_MIXED', machine: null, path: '$' }]);
+  assert.deepEqual(shape((await (await jsonStore(root).load())).findings), [{ code: 'E_STORE_MIXED', machine: null, path: '$' }]);
 });
 
-test('json store: a machine file that is not valid JSON fails E_SCHEMA', () => {
+test('json store: a machine file that is not valid JSON fails E_SCHEMA', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.json', '{ "machine": ');
-  assert.deepEqual(shape(jsonStore(root).load().findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
+  assert.deepEqual(shape((await (await jsonStore(root).load())).findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
 });
 
-test('json store: a lock whose entries do not have the lock shape fails E_SCHEMA at the entry', () => {
+test('json store: a lock whose entries do not have the lock shape fails E_SCHEMA at the entry', async () => {
   const codes = tempRoot();
   write(codes, 'status.lock.json', '{ "order": { "codes": { "x": "draft" }, "reserved": [] } }');
-  assert.deepEqual(shape(jsonStore(codes).load().findings), [{ code: 'E_SCHEMA', machine: 'order', path: '$.order.codes' }]);
+  assert.deepEqual(shape((await (await jsonStore(codes).load())).findings), [{ code: 'E_SCHEMA', machine: 'order', path: '$.order.codes' }]);
   const reserved = tempRoot();
   write(reserved, 'status.lock.json', '{ "order": { "codes": {}, "reserved": ["3"] } }');
-  assert.deepEqual(shape(jsonStore(reserved).load().findings), [{ code: 'E_SCHEMA', machine: 'order', path: '$.order.reserved' }]);
+  assert.deepEqual(shape((await (await jsonStore(reserved).load())).findings), [{ code: 'E_SCHEMA', machine: 'order', path: '$.order.reserved' }]);
 });
 
-test('json store: save writes the canonical bytes whatever the key order of the input', () => {
+test('json store: save writes the canonical bytes whatever the key order of the input', async () => {
   const root = tempRoot();
   const definitions = [
     {
@@ -88,38 +88,38 @@ test('json store: save writes the canonical bytes whatever the key order of the 
     { machine: 'track', states: [{ final: true, initial: true, code: 1, key: 'only' }], events: [] },
   ];
   const lock = { track: { reserved: [], codes: { 1: 'only' } }, order: { reserved: [3], codes: { 2: 'done', 1: 'draft' } } };
-  jsonStore(root).save({ definitions, lock });
+  await jsonStore(root).save({ definitions, lock });
   assert.equal(readFileSync(path.join(root, 'machines/order.status.json'), 'utf8'), ORDER_TEXT);
   assert.equal(readFileSync(path.join(root, 'machines/track.status.json'), 'utf8'), TRACK_TEXT);
   assert.equal(readFileSync(path.join(root, 'status.lock.json'), 'utf8'), LOCK_TEXT);
 });
 
-test('json store: save deletes the machine files that are no longer defined', () => {
+test('json store: save deletes the machine files that are no longer defined', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.json', ORDER_TEXT);
   write(root, 'machines/track.status.json', TRACK_TEXT);
   const track = { machine: 'track', states: [{ key: 'only', code: 1, initial: true, final: true }], events: [] };
-  jsonStore(root).save({ definitions: [track], lock: { track: { codes: { 1: 'only' }, reserved: [] } } });
+  await jsonStore(root).save({ definitions: [track], lock: { track: { codes: { 1: 'only' }, reserved: [] } } });
   assert.equal(existsSync(path.join(root, 'machines/order.status.json')), false);
   assert.equal(readFileSync(path.join(root, 'machines/track.status.json'), 'utf8'), TRACK_TEXT);
 });
 
-test('json store: a canonical checkout changes no byte on save(load())', () => {
+test('json store: a canonical checkout changes no byte on save(load())', async () => {
   const root = tempRoot();
   write(root, 'machines/order.status.json', ORDER_TEXT);
   write(root, 'machines/track.status.json', TRACK_TEXT);
   write(root, 'status.lock.json', LOCK_TEXT);
   const before = bytesOf(root);
   const store = jsonStore(root);
-  const loaded = store.load();
+  const loaded = await (await store.load());
   assert.deepEqual(shape(loaded.findings), []);
-  store.save({ definitions: loaded.definitions, lock: loaded.lock });
+  await store.save({ definitions: loaded.definitions, lock: loaded.lock });
   assert.equal(bytesOf(root), before);
 });
 
-test('json store: the lock of a single machine is written as ORDER_LOCK_TEXT', () => {
+test('json store: the lock of a single machine is written as ORDER_LOCK_TEXT', async () => {
   const root = tempRoot();
-  jsonStore(root).save({
+  await jsonStore(root).save({
     definitions: [{ machine: 'order', states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }], events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }] }],
     lock: { order: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },
   });

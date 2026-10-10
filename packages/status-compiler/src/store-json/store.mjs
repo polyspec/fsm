@@ -41,11 +41,11 @@ function canonicalDefinition({ machine, states, events }) {
   };
 }
 
-/** The JSON store of the root directory `root`: { load() -> { definitions, lock, findings }, save({ definitions, lock }) }. */
+/** The JSON store of the root directory `root`: { load() -> Promise<{ definitions, lock, findings }>, save({ definitions, lock }) -> Promise }. */
 export function jsonStore(root) {
   const machines = path.join(root, 'machines');
 
-  function load() {
+  async function load() {
     const findings = [];
     const definitions = [];
     if (existsSync(machines)) {
@@ -82,7 +82,7 @@ export function jsonStore(root) {
     return { definitions, lock: read.lock, findings };
   }
 
-  function save({ definitions, lock }) {
+  async function save({ definitions, lock }) {
     const wanted = new Set(definitions.map(definition => `${definition.machine}.status.json`));
     if (existsSync(machines)) {
       for (const entry of readdirSync(machines, { withFileTypes: true })) {

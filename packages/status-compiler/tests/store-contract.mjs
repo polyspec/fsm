@@ -1,6 +1,7 @@
 // The store contract (docs/spec/status.md, B-2): every store (json now, mermaid in S-08, db in S-15) passes the same cases.
 // storeContract(name, makeStore) registers the node:test cases. makeStore() returns { store, snapshot }: a new empty store,
 // and a function that returns every byte the store holds as one string, so that a case can compare what was written.
+// load() and save() are async: every case checks that the call returns a Promise and awaits it.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -26,35 +27,49 @@ const replacement = () => ({
   lock: { track: { codes: { 1: 'only' }, reserved: [] } },
 });
 
+/** The result of store.load(), which must be a Promise. */
+async function loadOf(store) {
+  const pending = store.load();
+  assert.ok(pending instanceof Promise, 'load() must return a Promise');
+  return pending;
+}
+
+/** The result of store.save(written), which must be a Promise. */
+async function saveOf(store, written) {
+  const pending = store.save(written);
+  assert.ok(pending instanceof Promise, 'save() must return a Promise');
+  return pending;
+}
+
 /** Registers the store contract cases for the store that `makeStore` creates. */
 export function storeContract(name, makeStore) {
-  test(`${name} store: load of an empty store is empty`, () => {
+  test(`${name} store: load of an empty store is empty`, async () => {
     const { store } = makeStore();
-    assert.deepEqual(store.load(), { definitions: [], lock: {}, findings: [] });
+    assert.deepEqual(await loadOf(store), { definitions: [], lock: {}, findings: [] });
   });
 
-  test(`${name} store: save then load returns the same definitions and lock`, () => {
+  test(`${name} store: save then load returns the same definitions and lock`, async () => {
     const { store } = makeStore();
-    store.save(sample());
-    assert.deepEqual(store.load(), { ...sample(), findings: [] });
+    await saveOf(store, sample());
+    assert.deepEqual(await loadOf(store), { ...sample(), findings: [] });
   });
 
-  test(`${name} store: save twice writes identical bytes`, () => {
+  test(`${name} store: save twice writes identical bytes`, async () => {
     const { store, snapshot } = makeStore();
-    store.save(sample());
+    await saveOf(store, sample());
     const first = snapshot();
     assert.notEqual(first, '');
-    store.save(sample());
+    await saveOf(store, sample());
     assert.equal(snapshot(), first);
   });
 
-  test(`${name} store: save replaces the whole set`, () => {
+  test(`${name} store: save replaces the whole set`, async () => {
     const replaced = makeStore();
-    replaced.store.save(sample());
-    replaced.store.save(replacement());
+    await saveOf(replaced.store, sample());
+    await saveOf(replaced.store, replacement());
     const fresh = makeStore();
-    fresh.store.save(replacement());
-    assert.deepEqual(replaced.store.load(), { ...replacement(), findings: [] });
+    await saveOf(fresh.store, replacement());
+    assert.deepEqual(await loadOf(replaced.store), { ...replacement(), findings: [] });
     assert.equal(replaced.snapshot(), fresh.snapshot());
   });
 }

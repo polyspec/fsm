@@ -1,7 +1,8 @@
 // The commands of docs/spec/status.md, B-2: run(command, store, options) for check, lock, save and vectors, and copy(from, to),
-// the migration between two stores. A store is { load() -> { definitions, lock, findings }, save({ definitions, lock }) }.
-// Every command returns { findings }; lock and save write only when there are no findings, and vectors writes nothing: it
-// returns the vectors too. The core imports nothing from node:.
+// the migration between two stores. A store is { load() -> Promise<{ definitions, lock, findings }>, save({ definitions, lock })
+// -> Promise }. The stores are async, so run and copy are async and return a Promise of { findings }; the pure functions
+// (validate, normalize, lock, vectors) stay synchronous. lock and save write only when there are no findings, and vectors
+// writes nothing: it returns the vectors too. The core imports nothing from node:.
 
 import { lockMismatch, nextLock } from './lock.mjs';
 import { normalize } from './normalize.mjs';
@@ -24,9 +25,9 @@ const check = (definitions, lock) => {
  * both apply `options.renames` and call store.save once, when there are no findings. `vectors` stops on any check finding,
  * and otherwise returns { findings: [], vectors: [{ machine, cases }] } for the definitions in the order of the store.
  */
-export function run(command, store, options = {}) {
+export async function run(command, store, options = {}) {
   if (!COMMANDS.includes(command)) throw new Error(`unknown command ${command}`);
-  const loaded = store.load();
+  const loaded = await store.load();
   if (loaded.findings.length > 0) return { findings: loaded.findings };
   const { definitions, lock } = loaded;
   if (command === 'check') return { findings: check(definitions, lock) };
@@ -43,7 +44,7 @@ export function run(command, store, options = {}) {
   if (found.length > 0) return { findings: found };
   const next = nextLock(source, lock, { renames: options.renames ?? [] });
   if (next.findings.length > 0) return { findings: next.findings };
-  store.save({ definitions: next.definitions, lock: next.lock });
+  await store.save({ definitions: next.definitions, lock: next.lock });
   return { findings: [] };
 }
 
@@ -51,17 +52,17 @@ export function run(command, store, options = {}) {
  * Copies the definitions and the lock of `from` into `to`. The target must be empty (no definition, no lock machine and no
  * load finding), and the source must pass validate and lockMismatch; otherwise the findings are returned and nothing is written.
  */
-export function copy(from, to) {
-  const target = to.load();
+export async function copy(from, to) {
+  const target = await to.load();
   if (target.definitions.length > 0 || Object.keys(target.lock).length > 0 || target.findings.length > 0) {
     return { findings: [finding('E_STORE_NOT_EMPTY', null, '$', 'the target store is not empty, so copy writes nothing')] };
   }
-  const source = from.load();
+  const source = await from.load();
   if (source.findings.length > 0) return { findings: source.findings };
   const found = validate(source.definitions);
   if (found.length > 0) return { findings: found };
   const mismatch = lockMismatch(source.definitions, source.lock);
   if (mismatch.length > 0) return { findings: mismatch };
-  to.save({ definitions: source.definitions, lock: source.lock });
+  await to.save({ definitions: source.definitions, lock: source.lock });
   return { findings: [] };
 }
