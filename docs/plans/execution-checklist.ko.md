@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: d9d9b6ead75f4dc0a160be5a86950f3a6480a34cc9e7c6170c6492d5956367f6 -->
+<!-- source-sha256: b639597cbe12e86a6d53242a3e99c3b961700f4092ae08dfd36d1a0335a1a1fe -->
 # 실행 체크리스트
 
 ## status v1
@@ -7,7 +7,7 @@
 | ID | 작업 | RED → GREEN | 상태 |
 |---|---|---|---|
 | S-01 | git init, kit v0.0.14, config(toolchain은 Node.js만, dependency policy는 빈 목록과 review 기록), hook, AGENTS.md(.ko), 이 체크리스트, CHANGELOG, 계획, `CHECK_TARGETS`와 `check` | `kit-check owner-validate documents-check commits-check toolchain-check hooks-check dependency-policy-check` 통과 | [o] |
-| S-02 | `docs/spec/status.md(.ko)`: 계획 B절을 고정한 정의 | `documents-check`가 쌍 없이 실패, 있으면 통과 | [ ] |
+| S-02 | `docs/spec/status.md(.ko)`: 계획 B절을 고정한 정의 | `documents-check`가 쌍 없이 실패, 있으면 통과 | [o] |
 | S-03 | `scripts/check-layout.mjs` + `contracts/layout.json`(tools, kinds = []) + `layout-test`/`layout-check` | fixture(kinds 불일치/추가/누락/개명/php↔php-ext 불일치/형식 오류) RED → GREEN | [ ] |
 | S-04 | `scripts/check-parity.mjs`(`--kind` 포함) + `parity-test` | fixture(결과 없음/도구 결과 없음/`--kind`는 자기 kind만 읽음/stale inputs/미실행/미등록/0케이스/fail/timeout/skip/이름 일치 0·2개/부모 id/10분 초과) RED → GREEN | [ ] |
 | S-05 | core `E_SCHEMA` + schema 대응 테스트 | RED → GREEN | [ ] |
