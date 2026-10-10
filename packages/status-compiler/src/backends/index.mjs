@@ -3,8 +3,9 @@
 import * as go from './go.mjs';
 import * as npm from './npm.mjs';
 import * as php from './php.mjs';
+import * as rust from './rust.mjs';
 
-const BACKENDS = Object.freeze({ go, npm, php });
+const BACKENDS = Object.freeze({ go, npm, php, rust });
 
 /** The kinds that the compiler generates, in the order of this table. */
 export const KINDS = Object.freeze(Object.keys(BACKENDS));
