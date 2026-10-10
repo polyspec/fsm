@@ -25,7 +25,7 @@
 A definition has only three parts:
 - the machine name
 - states: key, code, initial, final
-- events: key, list of edges `[from, to]…`
+- events: key, list of edges `{from, to}`…
 
 | Concept | JSON | Mermaid (official syntax) | DB (orm) |
 |---|---|---|---|
@@ -33,7 +33,7 @@ A definition has only three parts:
 | State·code | `{"key":"draft","code":1}` | `draft : 1` (state description) | `state(machine, key, code, initial, final, position)` |
 | initial | `"initial": true` | `[*] --> draft` | `initial` |
 | final | `"final": true` | `done --> [*]` | `final` |
-| Edge | `{"key":"next","edges":[["draft","paid"],…]}` | `draft --> paid : next` | `edge(machine, event, from, to, position)` + `event(machine, key, position)` |
+| Edge | `{"key":"next","edges":[{"from":"draft","to":"paid"},…]}` | `draft --> paid : next` | `edge(machine, event, from, to, position)` + `event(machine, key, position)` |
 
 Example (`order`, an order lifecycle, is only an example machine key):
 ```json
@@ -46,9 +46,9 @@ Example (`order`, an order lifecycle, is only an example machine key):
     { "key": "canceled", "code": 5, "final": true }
   ],
   "events": [
-    { "key": "next",   "edges": [["draft", "paid"], ["paid", "shipped"], ["shipped", "done"]] },
-    { "key": "prev",   "edges": [["paid", "draft"], ["shipped", "paid"]] },
-    { "key": "cancel", "edges": [["draft", "canceled"], ["paid", "canceled"]] }
+    { "key": "next",   "edges": [{ "from": "draft", "to": "paid" }, { "from": "paid", "to": "shipped" }, { "from": "shipped", "to": "done" }] },
+    { "key": "prev",   "edges": [{ "from": "paid", "to": "draft" }, { "from": "shipped", "to": "paid" }] },
+    { "key": "cancel", "edges": [{ "from": "draft", "to": "canceled" }, { "from": "paid", "to": "canceled" }] }
   ]
 }
 ```
@@ -79,6 +79,7 @@ stateDiagram-v2
 - Order rules
   - State order and event order are declaration order. They drive `events_from` and generation order.
   - Code and declaration order are independent.
+- An edge is the object `{from, to}`, not a pair: the object names its fields, so the editor schema checks it exactly with the keywords of kit `schema-validate.mjs` (which has no maximum item count) and a GUI form edits it as a row with a from and a to field.
 - IR = `δ: (state, event) → to`.
 - The code range is `1..2147483647`, the same 32-bit range in every target. 0 means unset.
 - `schema/status.schema.json` serves editors and uses only the keywords that kit `schema-validate.mjs` supports. The authority is core validate.

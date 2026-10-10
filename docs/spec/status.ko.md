@@ -1,5 +1,5 @@
 <!-- doc-id: spec-status -->
-<!-- source-sha256: 3c1ed3713dc2d218e46f1a159d3aab158823941e21ea8bccbae17a5b179477ca -->
+<!-- source-sha256: 51058e559d88a6a818eb2b83f88100a17a5bb4f44378528e9a5702283e3b617f -->
 # status 정의
 
 [English](status.md)
@@ -26,7 +26,7 @@
 정의는 세 가지로만 이루어진다.
 - 머신 이름
 - 상태: key, code, initial, final
-- 이벤트: key, 엣지 목록 `[from, to]…`
+- 이벤트: key, 엣지 목록 `{from, to}`…
 
 | 개념 | JSON | Mermaid(공식 문법) | DB(orm) |
 |---|---|---|---|
@@ -34,7 +34,7 @@
 | 상태·code | `{"key":"draft","code":1}` | `draft : 1` (state description) | `state(machine, key, code, initial, final, position)` |
 | initial | `"initial": true` | `[*] --> draft` | `initial` |
 | final | `"final": true` | `done --> [*]` | `final` |
-| 엣지 | `{"key":"next","edges":[["draft","paid"],…]}` | `draft --> paid : next` | `edge(machine, event, from, to, position)` + `event(machine, key, position)` |
+| 엣지 | `{"key":"next","edges":[{"from":"draft","to":"paid"},…]}` | `draft --> paid : next` | `edge(machine, event, from, to, position)` + `event(machine, key, position)` |
 
 예시(`order`는 주문 생명주기를 뜻하는 예시 머신 key일 뿐이다):
 ```json
@@ -47,9 +47,9 @@
     { "key": "canceled", "code": 5, "final": true }
   ],
   "events": [
-    { "key": "next",   "edges": [["draft", "paid"], ["paid", "shipped"], ["shipped", "done"]] },
-    { "key": "prev",   "edges": [["paid", "draft"], ["shipped", "paid"]] },
-    { "key": "cancel", "edges": [["draft", "canceled"], ["paid", "canceled"]] }
+    { "key": "next",   "edges": [{ "from": "draft", "to": "paid" }, { "from": "paid", "to": "shipped" }, { "from": "shipped", "to": "done" }] },
+    { "key": "prev",   "edges": [{ "from": "paid", "to": "draft" }, { "from": "shipped", "to": "paid" }] },
+    { "key": "cancel", "edges": [{ "from": "draft", "to": "canceled" }, { "from": "paid", "to": "canceled" }] }
   ]
 }
 ```
@@ -80,6 +80,7 @@ stateDiagram-v2
 - 순서 규칙
   - 상태 순서와 이벤트 순서는 선언 순서다. 순서는 `events_from`과 생성 순서에 쓰인다.
   - code와 선언 순서는 서로 독립이다.
+- 엣지는 쌍이 아니라 객체 `{from, to}`다. 객체는 필드에 이름이 있어 에디터 schema가 kit `schema-validate.mjs`의 키워드(최대 원소 수가 없다)만으로 정확히 검사하고, GUI 폼은 from과 to 필드를 가진 행으로 편집한다.
 - IR = `δ: (state, event) → to`.
 - code 범위는 `1..2147483647`(모든 타깃에서 같은 32비트 범위)이다. 0은 미설정이다.
 - `schema/status.schema.json`은 에디터용이며 kit `schema-validate.mjs`가 지원하는 키워드만 쓴다. 판정 권위는 core validate다.
