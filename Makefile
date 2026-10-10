@@ -10,14 +10,14 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/status-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test packages-test parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types packages-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -88,6 +88,12 @@ packages-test:
 # test-npm runs the tests of packages/status-npm: the conformance cases and the persist example (docs/plans/status-v1.md, C-2).
 test-npm:
 	$(MAKE) -C packages/status-npm test
+
+# npm-types runs tests/types.test.mjs of packages/status-npm: tsc compiles tests/types/consumer.ts against the generated
+# declarations in strict mode, so a wrong declaration fails (docs/plans/execution-checklist.md, S-09-2). It is a tool test with
+# its own record, so the record of the npm kind holds only vector cases for check-parity.
+npm-types:
+	node scripts/kit/run-tests.mjs node --results .results/npm-types.json --inputs packages/status-npm -- packages/status-npm/tests/types.test.mjs
 
 # parity-npm is the owner check of the npm package: check-parity reads its record only and requires every vector case to have
 # run once and passed (docs/plans/status-v1.md, C-4 and D).

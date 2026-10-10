@@ -48,7 +48,9 @@
       "allowed": [
         "src/*.js",
         "src/*.d.ts",
-        "examples/model/**"
+        "examples/model/**",
+        "tests/types.test.mjs",
+        "tests/types/**"
       ],
       "generated": [
         "src/**",

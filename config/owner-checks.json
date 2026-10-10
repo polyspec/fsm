@@ -122,6 +122,7 @@
         "layout-check",
         "gen-check",
         "parity-npm",
+        "npm-types",
         "dependency-policy-check"
       ]
     },

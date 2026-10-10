@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b048bf0b8faf6c7f0615bfd65e52934fde2abed1c91ce1d3fe9cf71a0e0e1bec -->
+<!-- source-sha256: ae498f01a26ecea680fde143fead7ffc713acb98bce6348e9443d734f677db3a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-09-2: `make npm-types`(`packages/status-npm/tests/types.test.mjs`)는 `packages/status-npm`의 고정 devDependency인 `typescript` 7.0.2로 `tests/types/consumer.ts`를 strict 모드에서 출력 없이(`--noEmit`), 생성된 `src/*.d.ts`에 대해 컴파일한다. 소비자 파일은 B-6의 모든 공개 이름을 쓰고, 컴파일되지 않아야 하는 `@ts-expect-error` 줄 세 개를 가진다. 그래서 너무 느슨한 선언은 지시문을 쓰이지 않은 채로 만들어 테스트를 실패시킨다. 이 테스트는 자기 기록인 `.results/npm-types.json`에서 실행된다. `make test-npm`은 conformance 파일만 지정하므로 npm 기록에는 vector case만 남아 `parity-npm`을 통과한다. `contracts/layout.json`은 두 테스트 경로를 허용한다.
 - S-13-1: rust 패키지 `packages/status-rust`는 정규 구조(`docs/plans/status-v1.md`, C-2)의 kind `rust`다. `make gen`은 `src/`와 `tests/vectors.rs`를 status-gen으로 쓴다. `build.rs`는 루트 `schema/persist.dbs`의 orm model을 `OUT_DIR`에 생성하므로, 이 패키지에는 `examples/model/`이 없다(`contracts/layout.json`에 선언된 rust의 차이). `tests/conformance.rs`는 check 함수를 담으며, vector case 89개가 `test_<feature>__<id>`로 실행된다. `examples/persist.rs`는 orm(`v0.0.7`, tag로 고정)으로 SQLite에서 B-4 transaction을 실행하며, persist case가 실행 후 저장된 code를 검사한다. `rust-toolchain.toml`은 루트에서 Rust 1.98.0을 선언하고, `config/toolchain.json`은 `Cargo.lock`의 의존 검토를 위해 `cargoAudit` 0.22.2를 선언한다. `make test-rust`와 `make parity-rust`가 이 패키지를 실행하며, `make packages-test`는 다른 kind와 함께 실행한다.
 - S-13: rust backend(`packages/status-compiler/src/backends/rust.mjs`)가 machine마다 rust 패키지의 `src/` 파일을 생성한다. B-6 표기에 따라 `<machine>.rs`(`#[repr(i32)]`의 `State`와 `Event`, `Step` struct, 여덟 함수, `i64`를 받는 `from_code`, `Result<Step, Error>`를 돌려주는 `apply`), 공용 `status.rs`(`Code`와 `Error`)와 `lib.rs`를 만든다. `status-gen vectors --kind rust --out <file>`는 `tests/vectors.rs`를 쓰며, case마다 `#[test]`(persist case는 `#[tokio::test]`) 하나를 두어 `tests/conformance.rs`의 check 함수를 호출한다. `packages/status-compiler/tests/golden/rust/`의 golden 파일은 order 예시이며, 쓰기 전에 B-6과 대조해 검토했고, 테스트는 이를 byte 단위로 비교한다.
 - S-12-1: php 패키지 `packages/status-php`는 정규 구조(`docs/plans/status-v1.md`, C-2)의 kind `php`다. `make gen`은 `src/`와 `tests/Vectors.php`를 status-gen(`--php-namespace 'Polyspec\StatusTest'`)으로, `examples/model/`을 루트 `schema/persist.dbs`에서 orm-gen으로 쓴다. `tests/ConformanceTest.php`는 89개 vector case 각각을 PHPUnit data set `test_<feature>__<id>`로 실행하며, `check-parity`는 id마다 case 이름 하나를 읽는다. 생성된 namespace의 공개 API만 쓴다. persist case는 polyspec orm v0.0.7(release zip, `composer.json`에 sha1을 고정, ordered-json v0.0.7과 함께)로 SQLite에서 B-4 transaction을 실행하고 실행마다 저장된 state를 확인한다. `composer.json`은 PHPUnit 12.5.38(검토 시점의 최신 stable)과 `config.platform.php` 8.4.0을 고정하고, `config/toolchain.json`은 PHP 8.5와 Composer 2.10.3을 선언하며, `config/dependency-review.json`은 검토 기록이다. `make test-php`와 `make parity-php`가 패키지를 실행한다.
