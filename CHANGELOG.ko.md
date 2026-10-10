@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4fe24f2fb092b83992aa0a2de5587de6b45b86beb3cfe44a94f49636c0d0ac05 -->
+<!-- source-sha256: f3f976a789253b001f71bb3f3b5bde2a50b2e7ecd6dd4c57fb04b89f43b71cdc -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-14-1: php-ext 패키지 `packages/status-php-ext`는 정규 구조(`docs/plans/status-v1.md`, C-2)의 kind `php-ext`다. `make gen`은 `src/`와 `tests/Vectors.php`를 status-gen(`--php-namespace 'Polyspec\StatusTest' --php-ext-name polyspec_status_test`)으로 쓰고, php 패키지의 `tests/ConformanceTest.php`와 `examples/persist.php`를 복사하며(gen-check가 같은 byte임을 확인한다), `examples/model/`을 루트 `schema/persist.dbs`에서 orm-gen으로 쓴다. `make test`는 `src/`에서 phpize, `./configure`, `make`로 extension을 빌드하고 `--php-extension`으로 vector case 89개를 실행하며, `make parity-php-ext`가 이를 확인한다. `composer.lock`은 php 패키지와 같은 30개 패키지(polyspec/orm 0.0.7과 PHPUnit 12.5.38)를 고정하며, `config/dependency-policy.json`과 `config/dependency-review.json`이 php-ext manifest와 lock을 기록한다. `contracts/layout.json`은 생성 glob과 함께 kind를 선언한다. toolchain은 `config/toolchain.json`의 php와 composer 선언이며, 다시 선언하지 않았다.
 - S-14-2: php-ext backend의 C 출력을 첫 build 뒤에 고쳤다. 객체 인자는 `zval *`이다. `Z_PARAM_OBJECT_OF_CLASS`가 `zval *`을 쓰기 때문이다. Error method 표는 생성자 뒤에 둔다. `ZEND_LONG_FMT`의 format에는 `%`를 더 붙이지 않는다. `Step` property의 class 타입은 영구 class 이름 문자열의 `ZEND_TYPE_INIT_CLASS`이다. literal 이름은 property에서 해석되지 않기 때문이다. `Code` enum 값은 영구 interned 문자열이어서 shutdown에서 해제되지 않는다. `.gitignore`는 `packages/status-php-ext/src/`의 phpize 출력을 정확히 고정된 anchored 패턴으로 적는다. `config.m4`와 생성된 소스는 추적된 채로 남는다. golden 파일을 다시 썼다.
 - S-14: php-ext backend(`packages/status-compiler/src/backends/php-ext.mjs`)가 machine마다 php-ext 패키지의 `src/` 파일을 생성한다. `<machine>.c`는 `zend_register_internal_enum`으로 enum `State`와 `Event`를, `ZEND_NS_NAMED_FE`로 B-6의 namespace 함수와 final class `Step`을 등록하며, `apply`와 `target`은 `status_throw`로 B-4 code를 던진다. `status.c`는 enum `Status\Code`, exception `Status\Error`와 module entry를 담고, module entry는 정의 순서대로 모든 machine을 초기화한다. `php_<ext>.h`, `<ext>_arginfo.h`(arginfo는 gen_stub 없이 직접 쓴다), `<ext>.stub.php`(편집기용 선언)와 `config.m4`가 나머지 집합이다. `status-gen gen --kind php-ext`는 `--php-namespace`와 `--php-ext-name`을 요구하고, `vectors --kind php-ext`는 php kind의 `Vectors.php`와 byte 단위로 같은 test module을 쓴다. `packages/status-compiler/tests/golden/php-ext/`의 golden 파일은 order 예시이며, 쓰기 전에 B-6과 대조해 검토했다. `write-generated.mjs`는 `config.m4`의 `dnl` header를 받는다.
 - S-17-1: 편집 페이지가 기계의 다음 code를 담는다. 내장 폼 상태에 core `nextCode(machine, definitions, lock)`를 `nextCode`로 담고(`src/forms.mjs`의 `nextCodeOf`와 `editState`), `client/main.ts`는 브라우저에서 추가한 상태 행마다 다음 code와 그 뒤의 code를 준다(`client/new-codes.ts`의 `codesOfAddedRows`). 저장은 여전히 모든 code를 검사하며, 빈 code는 `nextCode`로 채운다. `tests/edit-next-code.test.mjs`는 json, mermaid, db 저장소에서 내장 code를, 삭제 뒤의 code를 포함해 검사하고, `tests/delete-state.test.mjs`는 편집 폼에서 상태를 지우면 그 code가 세 저장소 모두에서 `codes`에서 빠지고 `reserved`로 옮겨짐을 보인다. `make gui-test`는 210개 테스트를 실행한다.

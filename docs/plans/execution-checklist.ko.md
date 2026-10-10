@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: ac6934428641d61c99ea281df0228eee37855d9ed9f1276fba6c79a086c5492e -->
+<!-- source-sha256: 33d8852a0efead06c2bffde1db2b29312d3f39bb5a01dea3a41c67c313031f1d -->
 # 실행 체크리스트
 
 ## status v1
@@ -31,7 +31,7 @@
 | S-13 | rust backend + `vectors --kind rust`(golden) | golden RED → GREEN | [o] |
 | S-13-1 | rust 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-rust`와 `parity-rust` | 생성물 없이 `test-rust` RED → GREEN, `layout-check`와 `parity-rust` 통과 | [o] |
 | S-14 | php-ext backend + `vectors --kind php-ext`(golden) | golden RED → GREEN | [o] |
-| S-14-1 | php-ext 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-php-ext`와 `parity-php-ext` | 생성물 없이 `test-php-ext` RED → GREEN, `layout-check`와 `parity-php-ext` 통과 | [ ] |
+| S-14-1 | php-ext 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-php-ext`와 `parity-php-ext` | 생성물 없이 `test-php-ext` RED → GREEN, `layout-check`와 `parity-php-ext` 통과 | [o] |
 | S-14-2 | php-ext backend: 첫 build에서 드러난 C 출력(객체 인자를 zval로, Error method 표를 생성자 뒤로, format macro, class 타입 property, 영구 Code 값), C-1이 S-14에 배정한 phpize 무시 패턴 | golden 파일을 다시 쓰고 compiler test 통과; 패키지 build는 S-14-1이 확인 | [o] |
 | S-15 | status-db: `schema/status.dbs` + DbStore + 계약 테스트 + copy + `db-test` | 계약 불일치·`E_STORE_NOT_EMPTY`·원자성 RED → GREEN | [o] |
 | S-16 | GUI 골격: hyper app + 목록·상세 + Mermaid + `gui-test` + 고정 버전 mermaid 패키지로 정규형과 B-5의 모든 예약 상태 key를 파싱하는 테스트 | handler RED → GREEN | [o] |

@@ -109,6 +109,26 @@
         "tests/vectors.py",
         "examples/model/**"
       ]
+    },
+    "php-ext": {
+      "required": [
+        "composer.json",
+        "composer.lock",
+        "tests/ConformanceTest.php",
+        "tests/Vectors.php",
+        "examples/persist.php"
+      ],
+      "allowed": [
+        "src/**",
+        "examples/model/**"
+      ],
+      "generated": [
+        "src/**",
+        "tests/ConformanceTest.php",
+        "tests/Vectors.php",
+        "examples/persist.php",
+        "examples/model/**"
+      ]
     }
   }
 }
