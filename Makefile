@@ -17,7 +17,7 @@ KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).
 
 CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test packages-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -109,3 +109,9 @@ test-php:
 # run once and passed (docs/plans/status-v1.md, C-4 and D).
 parity-php: test-php
 	node scripts/check-parity.mjs --kind php
+# test-rust runs the tests of packages/status-rust: the conformance cases and the persist example (docs/plans/status-v1.md, C-2).
+test-rust:
+	$(MAKE) -C packages/status-rust test
+# parity-rust is the owner check of the rust package: check-parity reads its record only and requires every vector case to have
+parity-rust: test-rust
+	node scripts/check-parity.mjs --kind rust
