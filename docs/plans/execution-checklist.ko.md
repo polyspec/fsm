@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: a129b6ea299ffa0f0ba9630e4fc96a70377af75e0280941bced37f326b528add -->
+<!-- source-sha256: aeef1f37294890a5e75d7ee96d43cf4f0866e701b25dff68edb07b9854f277bf -->
 # 실행 체크리스트
 
 ## status v1
@@ -13,6 +13,7 @@
 | S-05 | core `E_SCHEMA` + schema 대응 테스트 | RED → GREEN | [o] |
 | S-05-1 | core 그래프 오류 | 오류 코드별 RED → GREEN | [o] |
 | S-05-2 | core 이름·code 오류 | 오류 코드별 RED → GREEN | [o] |
+| S-05-3 | core key 길이: machine·상태·이벤트 key는 64자 이하(E_KEY_FORMAT)이며, DB store의 varchar(64)가 모든 유효 key를 담는다 | 64 통과, 65 RED → GREEN | [o] |
 | S-06 | normalize/IR + lock(rename/reserved) + JsonStore + store 계약 + `run`/`copy` | lock 시나리오별 RED → GREEN | [o] |
 | S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector 오라클 + `scripts/gen-check.mjs` + `gen-check-test` | 수작업 기대값 fixture와 일치, gen-check RED → GREEN | [ ] |
 | S-08 | MermaidStore(정규형 parser와 writer) + json↔mermaid 왕복 | `E_MERMAID_UNSUPPORTED`·순서 위반·왕복 불일치 RED → GREEN | [ ] |

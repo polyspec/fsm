@@ -155,3 +155,29 @@ test('every entry of the state and event lists is rejected as a state or event k
     assert.ok(names(d => { d.events[0].key = key; }).some(item => item.code === 'E_KEY_RESERVED'), key);
   }
 });
+
+test('a machine, state or event key of 64 characters passes', () => {
+  const key = 'a1'.repeat(32);
+  assert.equal(key.length, 64);
+  assert.deepEqual(names(d => { d.machine = key; }), []);
+  assert.deepEqual(names(d => renameState(d, 'paid', key)), []);
+  assert.deepEqual(names(d => { d.events[0].key = key; }), []);
+});
+
+test('a machine, state or event key of 65 characters fails E_KEY_FORMAT at its path, naming 65 and the maximum 64', () => {
+  const key = 'a1'.repeat(32) + 'a';
+  assert.equal(key.length, 65);
+  const cases = [
+    [d => { d.machine = key; }, at('E_KEY_FORMAT', key, '$.machine')],
+    [d => renameState(d, 'paid', key), at('E_KEY_FORMAT', 'order', '$.states[1].key')],
+    [d => { d.events[0].key = key; }, at('E_KEY_FORMAT', 'order', '$.events[0].key')],
+  ];
+  for (const [change, expected] of cases) {
+    assert.deepEqual(names(change), [expected], expected.path);
+    const definition = base();
+    change(definition);
+    const [finding] = validate([definition]);
+    assert.match(finding.message, /65/, expected.path);
+    assert.match(finding.message, /64/, expected.path);
+  }
+});
