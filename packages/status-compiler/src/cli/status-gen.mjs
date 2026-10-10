@@ -4,8 +4,9 @@
 //   status-gen copy  --to json|mermaid --root <dir> [--project <dir>]
 //   status-gen vectors --out <dir> [--project <dir>]
 //   status-gen vectors --kind <kind> --out <file> [--project <dir>]
-//   status-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>]
-//   (go only: --go-module, required for gen; php only: --php-namespace <ns>, required, such as Polyspec\StatusTest, for gen and vectors --kind php)
+//   status-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]
+//   (go only: --go-module, required for gen; php and php-ext: --php-namespace <ns>, required, such as Polyspec\StatusTest, for gen and
+//   vectors --kind php or php-ext; php-ext only: --php-ext-name <name>, required for gen, such as polyspec_status_test)
 // --project is the project root, the directory whose status.config.json names the store (default: the current directory).
 // For copy, the project store is the source and --root is the target directory, which is required. For vectors, --out is the
 // directory that receives <machine>.json for every machine, and it is required; with --kind it is the file of the kind's native
@@ -13,7 +14,8 @@
 // stale generated files there are removed, and a file without the generated header is a finding (write-generated.mjs). A finding
 // prints as `[status-gen] <code> <machine> <path>: <message>` on stderr and exits 1. A usage error exits 2. Otherwise the command
 // exits 0 with a one-line summary on stdout. The json and mermaid stores are the ones this version handles (status.config.json).
-// --php-namespace is the namespace of the php kind (backends/php.mjs): it is required for php and refused for every other kind.
+// --php-namespace is the namespace of the php and php-ext kinds (backends/php.mjs, backends/php-ext.mjs): it is required for them
+// and refused for every other kind. --php-ext-name is the name of the php-ext extension and is an option of gen --kind php-ext.
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -28,9 +30,11 @@ const USAGE = 'usage: status-gen check [--project <dir>]\n'
   + '       status-gen lock [--project <dir>] [--rename machine.old=new]...\n'
   + '       status-gen copy --to json|mermaid --root <dir> [--project <dir>]\n'
   + '       status-gen vectors [--kind <kind>] --out <dir|file> [--project <dir>] [--php-namespace <ns>]\n'
-  + `       status-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>]   (kind: ${KINDS.join(', ')})`;
+  + `       status-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]   (kind: ${KINDS.join(', ')})`;
 const RENAME = /^([^.=]+)\.([^.=]+)=([^.=]+)$/;
 const PHP_NAMESPACE = /^[A-Za-z][A-Za-z0-9]*(\\[A-Za-z][A-Za-z0-9]*)*$/;
+const PHP_EXTENSION = /^[a-z][a-z0-9_]*$/;
+const PHP_KINDS = ['php', 'php-ext'];
 
 const notConfigured = (path, message) => ({ code: 'E_STORE_NOT_CONFIGURED', machine: null, path, message });
 const isObject = value => typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -44,10 +48,10 @@ function parse(argv) {
     lock: ['--project', '--rename'],
     copy: ['--project', '--root', '--to'],
     vectors: ['--project', '--out', '--kind', '--php-namespace'],
-    gen: ['--project', '--out', '--kind', '--go-module', '--php-namespace'],
+    gen: ['--project', '--out', '--kind', '--go-module', '--php-namespace', '--php-ext-name'],
   }[command];
   const options = {
-    command, project: process.cwd(), renames: [], to: undefined, root: undefined, out: undefined, kind: undefined, goModule: undefined, phpNamespace: undefined,
+    command, project: process.cwd(), renames: [], to: undefined, root: undefined, out: undefined, kind: undefined, goModule: undefined, phpNamespace: undefined, phpExtName: undefined,
   };
   for (let index = 0; index < rest.length; index += 1) {
     const flag = rest[index];
@@ -69,6 +73,9 @@ function parse(argv) {
     } else if (flag === '--php-namespace') {
       if (!PHP_NAMESPACE.test(value)) return { usage: '--php-namespace takes letters and digits separated by single backslashes, such as Polyspec\\StatusTest' };
       options.phpNamespace = value;
+    } else if (flag === '--php-ext-name') {
+      if (!PHP_EXTENSION.test(value)) return { usage: '--php-ext-name takes lowercase letters, digits and underscores, starting with a letter, such as polyspec_status_test' };
+      options.phpExtName = value;
     } else if (flag === '--to') {
       if (!['json', 'mermaid'].includes(value)) return { usage: '--to takes json or mermaid' };
       options.to = value;
@@ -90,8 +97,13 @@ function parse(argv) {
   }
   if (options.goModule !== undefined && options.kind !== 'go') return { usage: '--go-module is an option of gen --kind go' };
   if (command === 'gen' || command === 'vectors') {
-    if (options.kind === 'php' && options.phpNamespace === undefined) return { usage: `${command} needs --php-namespace for the php kind` };
-    if (options.kind !== 'php' && options.phpNamespace !== undefined) return { usage: '--php-namespace is an option of the php kind' };
+    const usesNamespace = PHP_KINDS.includes(options.kind);
+    if (usesNamespace && options.phpNamespace === undefined) return { usage: `${command} needs --php-namespace for the ${options.kind} kind` };
+    if (!usesNamespace && options.phpNamespace !== undefined) return { usage: '--php-namespace is an option of the php and php-ext kinds' };
+  }
+  if (options.phpExtName !== undefined && options.kind !== 'php-ext') return { usage: '--php-ext-name is an option of gen --kind php-ext' };
+  if (command === 'gen' && options.kind === 'php-ext' && options.phpExtName === undefined) {
+    return { usage: 'gen --kind php-ext needs --php-ext-name <name>, the name of the extension, such as polyspec_status_test' };
   }
   return options;
 }
@@ -123,7 +135,7 @@ function storeOf(kind, root) {
  * The findings of the command. vectors writes <out>/<machine>.json for every machine, or with --kind the native vector module
  * of the kind to <out>; gen writes the generated files of the kind under <out>. Nothing is written when there are findings.
  */
-async function execute({ command, project, renames, to, root, out, kind, goModule, phpNamespace }) {
+async function execute({ command, project, renames, to, root, out, kind, goModule, phpNamespace, phpExtName }) {
   const configured = configuredStore(project);
   if (!configured.ok) return configured.findings;
   if (command === 'copy') return (await copy(configured.store, storeOf(to, root))).findings;
@@ -135,7 +147,7 @@ async function execute({ command, project, renames, to, root, out, kind, goModul
     return [];
   }
   if (command === 'gen') {
-    const result = await run('gen', configured.store, { kind, goModule, phpNamespace });
+    const result = await run('gen', configured.store, { kind, goModule, phpNamespace, phpExtName });
     if (result.findings.length > 0) return result.findings;
     return writeGenerated(out, result.files);
   }

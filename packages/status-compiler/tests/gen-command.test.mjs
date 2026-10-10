@@ -118,7 +118,7 @@ test('gen --kind php without --php-namespace, or --php-namespace with another ki
   assert.match(missing.stderr, /usage: .*--php-namespace/);
   const wrongKind = gen(['gen', '--project', ROOT, '--kind', 'npm', '--php-namespace', PHP_NAMESPACE, '--out', out]);
   assert.equal(wrongKind.status, 2);
-  assert.match(wrongKind.stderr, /--php-namespace is an option of the php kind/);
+  assert.match(wrongKind.stderr, /--php-namespace is an option of the php and php-ext kinds/);
   const malformed = gen(['gen', '--project', ROOT, '--kind', 'php', '--php-namespace', 'Bad Name', '--out', out]);
   assert.equal(malformed.status, 2);
   assert.equal(existsSync(out), false);
