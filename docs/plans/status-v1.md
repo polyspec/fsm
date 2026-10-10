@@ -198,12 +198,12 @@ Fails when (no exemptions):
 - a feature in features.json has zero vector cases
 - a case has any status other than `pass` (`fail`, `timeout` and `skip` all fail)
 - a result id yields two or more distinct case names, or yields none and is not the parent of a matched id (an id that a matched id extends with ` › `, such as the Go test function that runs the cases as subtests)
-- without `--kind`: `.results/<target>.json` of compiler-test, db-test or gui-test is missing
+- without `--kind`: the record `.results/<target>.json` of a tool test named by `--tools` (`TOOL_TESTS` of the Makefile: layout-test, parity-test, gen-check-test, compiler-test, db-test, gui-test as their items add them) is missing, stale or holds a case that is not `pass`
 - `elapsedMs > 600000` in any `.results/*.json` (with `--kind`: only that kind's result)
 
 Case name extraction: `/\btest_[a-z][a-z0-9]*(?:_[a-z0-9]+)*__[a-z][a-z0-9]*(?:_[a-z0-9]+)*\b/` is applied to each result id. An id with exactly one distinct match is that case; an id with zero or with two or more distinct matches is judged by the result-id bullet above. There are no per-tool rules.
 
-`contracts/features.json` = `initial`, `code`, `key`, `from_code`, `is_final`, `events_from`, `target`, `apply`, `persist`.
+`contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. A vector file is `conformance/vectors/<machine>.json` = `{machine, cases: [{feature, id, …}]}`; the case name is `test_<feature>__<id>`.
 
 Vectors (exhaustive; the core generates the oracle):
 - `initial`

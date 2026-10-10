@@ -8,7 +8,7 @@
 | S-01 | git init, kit v0.0.14, config (toolchain: Node.js only; dependency policy with empty lists and its review record), hooks, AGENTS.md(.ko), this checklist, CHANGELOG, the plan, `CHECK_TARGETS` and `check` | `kit-check owner-validate documents-check commits-check toolchain-check hooks-check dependency-policy-check` pass | [o] |
 | S-02 | `docs/spec/status.md(.ko)`: section B of the plan as the fixed definition | `documents-check` fails without the pair, passes with it | [o] |
 | S-03 | `scripts/check-layout.mjs` + `contracts/layout.json` (tools, kinds = {}, an object of each kind with its required files and allowed globs) + `layout-test`/`layout-check` | fixtures (kinds mismatch/added/missing/renamed/php↔php-ext mismatch/malformed) RED → GREEN | [o] |
-| S-04 | `scripts/check-parity.mjs` (with `--kind`) + `parity-test` | fixtures (no result/missing tool result/`--kind` reads only its kind/stale inputs/not run/unregistered/zero cases/fail/timeout/skip/0 or 2 name matches/parent id/over 10 minutes) RED → GREEN | [ ] |
+| S-04 | `scripts/check-parity.mjs` (with `--kind`) + `parity-test` | fixtures (no result/missing tool result/`--kind` reads only its kind/stale inputs/not run/unregistered/zero cases/fail/timeout/skip/0 or 2 name matches/parent id/over 10 minutes) RED → GREEN | [o] |
 | S-05 | core `E_SCHEMA` + the schema correspondence test | RED → GREEN | [ ] |
 | S-05-1 | core graph errors | RED per error code → GREEN | [ ] |
 | S-05-2 | core name and code errors | RED per error code → GREEN | [ ] |

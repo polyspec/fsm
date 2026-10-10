@@ -1,5 +1,5 @@
 <!-- doc-id: plan-status-v1 -->
-<!-- source-sha256: 410a8bd0362b994e532503b5d72f937e460879285e0232a8c101795ddc08bb4d -->
+<!-- source-sha256: f05ab03752212333892009fa3efde282e819883db85248cbe80f365be48e9e21 -->
 # status v1 계획
 
 [English](status-v1.md)
@@ -199,12 +199,12 @@ packages/status-<kind>/
 - features.json의 기능 중 벡터 케이스가 0개인 기능이 있음
 - 상태가 `pass`가 아닌 케이스가 있음(`fail`, `timeout`, `skip` 모두 실패)
 - 결과 id 하나에서 서로 다른 케이스 이름이 2개 이상 나오거나, 하나도 나오지 않는데 일치한 id의 부모(일치한 id가 ` › `로 이어 붙이는 id. 예: 케이스를 subtest로 실행하는 Go 테스트 함수)가 아님
-- `--kind`가 없을 때: compiler-test, db-test, gui-test의 `.results/<target>.json`이 없음
+- `--kind`가 없을 때: `--tools`가 가리키는 도구 테스트(Makefile의 `TOOL_TESTS`: layout-test, parity-test, gen-check-test, compiler-test, db-test, gui-test를 각 항목이 추가)의 기록 `.results/<target>.json`이 없거나, stale이거나, `pass`가 아닌 케이스를 가짐
 - 어느 `.results/*.json`이든 `elapsedMs > 600000`(`--kind`이면 그 kind의 결과만)
 
 케이스 이름 추출: `/\btest_[a-z][a-z0-9]*(?:_[a-z0-9]+)*__[a-z][a-z0-9]*(?:_[a-z0-9]+)*\b/`를 결과 id마다 적용한다. 서로 다른 일치가 정확히 1개인 id가 그 케이스이고, 0개 또는 2개 이상인 id는 위 결과 id 항목으로 판정한다. 도구별 규칙은 없다.
 
-`contracts/features.json` = `initial`, `code`, `key`, `from_code`, `is_final`, `events_from`, `target`, `apply`, `persist`.
+`contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. vector 파일은 `conformance/vectors/<machine>.json` = `{machine, cases: [{feature, id, …}]}`이고, 케이스 이름은 `test_<feature>__<id>`다.
 
 벡터(전수, 오라클은 core가 생성):
 - `initial`

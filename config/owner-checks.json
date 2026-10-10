@@ -56,6 +56,15 @@
         "layout-test",
         "layout-check"
       ]
+    },
+    {
+      "paths": [
+        "scripts/check-parity.mjs",
+        "tests/check-parity/**"
+      ],
+      "targets": [
+        "parity-test"
+      ]
     }
   ]
 }
