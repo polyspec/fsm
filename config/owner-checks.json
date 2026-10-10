@@ -65,6 +65,15 @@
       "targets": [
         "parity-test"
       ]
+    },
+    {
+      "paths": [
+        "packages/status-compiler/**",
+        "schema/status.schema.json"
+      ],
+      "targets": [
+        "compiler-test"
+      ]
     }
   ]
 }

@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 65ba061f70f0852005496bec9993696639095b50a21bf48c244d775b88114635 -->
+<!-- source-sha256: 531fecf7c15172581d1efde4739709781b0b19a3dd171ea245692b09584341d6 -->
 # 실행 체크리스트
 
 ## status v1
@@ -10,7 +10,7 @@
 | S-02 | `docs/spec/status.md(.ko)`: 계획 B절을 고정한 정의 | `documents-check`가 쌍 없이 실패, 있으면 통과 | [o] |
 | S-03 | `scripts/check-layout.mjs` + `contracts/layout.json`(tools, kinds = {}, kind마다 required 파일과 allowed glob을 담는 객체) + `layout-test`/`layout-check` | fixture(kinds 불일치/추가/누락/개명/php↔php-ext 불일치/형식 오류) RED → GREEN | [o] |
 | S-04 | `scripts/check-parity.mjs`(`--kind` 포함) + `parity-test` | fixture(결과 없음/도구 결과 없음/`--kind`는 자기 kind만 읽음/stale inputs/미실행/미등록/0케이스/fail/timeout/skip/이름 일치 0·2개/부모 id/10분 초과) RED → GREEN | [o] |
-| S-05 | core `E_SCHEMA` + schema 대응 테스트 | RED → GREEN | [ ] |
+| S-05 | core `E_SCHEMA` + schema 대응 테스트 | RED → GREEN | [o] |
 | S-05-1 | core 그래프 오류 | 오류 코드별 RED → GREEN | [ ] |
 | S-05-2 | core 이름·code 오류 | 오류 코드별 RED → GREEN | [ ] |
 | S-06 | normalize/IR + lock(rename/reserved) + JsonStore + store 계약 + `run`/`copy` | lock 시나리오별 RED → GREEN | [ ] |

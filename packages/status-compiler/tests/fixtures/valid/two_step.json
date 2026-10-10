@@ -1,0 +1,26 @@
+{
+  "machine": "two_step",
+  "states": [
+    {
+      "key": "start",
+      "code": 1,
+      "initial": true
+    },
+    {
+      "key": "end",
+      "code": 2,
+      "final": true
+    }
+  ],
+  "events": [
+    {
+      "key": "go",
+      "edges": [
+        {
+          "from": "start",
+          "to": "end"
+        }
+      ]
+    }
+  ]
+}

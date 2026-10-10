@@ -1,0 +1,74 @@
+{
+  "$schema": "../../../../../schema/status.schema.json",
+  "machine": "order",
+  "states": [
+    {
+      "key": "draft",
+      "code": 1,
+      "initial": true
+    },
+    {
+      "key": "paid",
+      "code": 2
+    },
+    {
+      "key": "shipped",
+      "code": 3
+    },
+    {
+      "key": "done",
+      "code": 4,
+      "final": true
+    },
+    {
+      "key": "canceled",
+      "code": 5,
+      "final": true
+    }
+  ],
+  "events": [
+    {
+      "key": "next",
+      "edges": [
+        {
+          "from": "draft",
+          "to": "paid"
+        },
+        {
+          "from": "paid",
+          "to": "shipped"
+        },
+        {
+          "from": "shipped",
+          "to": "done"
+        }
+      ]
+    },
+    {
+      "key": "prev",
+      "edges": [
+        {
+          "from": "paid",
+          "to": "draft"
+        },
+        {
+          "from": "shipped",
+          "to": "paid"
+        }
+      ]
+    },
+    {
+      "key": "cancel",
+      "edges": [
+        {
+          "from": "draft",
+          "to": "canceled"
+        },
+        {
+          "from": "paid",
+          "to": "canceled"
+        }
+      ]
+    }
+  ]
+}

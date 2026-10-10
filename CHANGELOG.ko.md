@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: dece762c1d7d1d7f820ae40398c6600d09eeb0ff772bc4fdd88560b88f33fdff -->
+<!-- source-sha256: b7538bea0bdf2bb8aa4f62d196641ac569896503f051434ae3fe323a723d5240 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-05: core `validate`(`packages/status-compiler/src/core/validate.mjs`)는 정의의 구조 오류를 모두 JSON 경로와 함께 `E_SCHEMA`로 보고하고, 그 machine의 뒤 규칙은 건너뛴다. `schema/status.schema.json`은 kit `schema-validate.mjs`의 키워드만 쓰는 에디터 schema이며, 대응 테스트가 모든 fixture에서 core와 일치함을 확인한다. `make compiler-test`는 `run-tests.mjs`로 테스트를 실행하고 `.results/compiler-test.json`을 기록한다.
 - JSON store는 엣지를 쌍 대신 객체 `{from, to}`로 쓴다. 그래서 에디터 schema가 정확히 검사하고 GUI 폼은 행으로 편집한다(`docs/spec/status.md`, B-1).
 - S-04: `scripts/check-parity.mjs`(`make parity-check`, `--kind`를 쓰는 `make parity-<kind>`)는 다음을 만족하지 않으면 실패한다: 모든 kind가 자기 패키지를 덮는 최신 기록에서 `conformance/vectors`의 모든 케이스를 한 번씩 실행해 통과하고, `contracts/features.json`의 모든 기능이 vector 케이스를 가지며, 모든 test id가 케이스 하나를 가리키거나 그 부모이고, `TOOL_TESTS`의 모든 도구 테스트가 통과한 최신 기록을 남기고, 10분을 넘긴 기록이 없다. 면제는 없다.
 - S-03: `scripts/check-layout.mjs`(`make layout-check`)가 언어 패키지를 `contracts/layout.json`과 대조한다: 패키지 디렉터리는 정확히 tools와 kinds이고, kind의 모든 파일은 정규 layout에 맞으며, 정규·필수 파일이 모두 있고, php와 php-ext의 테스트는 바이트가 같다. `make layout-test`는 그 테스트를 `run-tests.mjs`로 실행하고 `.results/layout-test.json`을 기록한다.

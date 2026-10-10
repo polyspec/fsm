@@ -10,10 +10,10 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/status-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test parity-check
+TOOL_TESTS := layout-test parity-test compiler-test
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test parity-check
 
-.PHONY: check layout-test layout-check parity-test parity-check
+.PHONY: check layout-test layout-check parity-test compiler-test parity-check
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -32,6 +32,11 @@ layout-check:
 # kind ran every vector case once and passed and that every tool test left a current record (docs/plans/status-v1.md, C-4).
 parity-test:
 	node scripts/kit/run-tests.mjs node --results .results/parity-test.json --inputs scripts/check-parity.mjs --inputs tests/check-parity -- tests/check-parity
+
+# compiler-test runs the tests of packages/status-compiler, the core validation of a definition (docs/plans/status-v1.md, C-5)
+# with the editor schema schema/status.schema.json, which the tests check against the core.
+compiler-test:
+	node scripts/kit/run-tests.mjs node --results .results/compiler-test.json --inputs packages/status-compiler --inputs schema -- packages/status-compiler/tests
 
 parity-check:
 	node scripts/check-parity.mjs --tools $(subst $(eval) ,$(comma),$(TOOL_TESTS))
