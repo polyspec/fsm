@@ -12,25 +12,51 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const VECTOR = 'conformance/vectors/order.json';
 
-/** A temporary git checkout with the files of this repository that gen-check reads, every file tracked; removed with `t.after`. */
-function checkout(t) {
-  const root = mkdtempSync(path.join(tmpdir(), 'gen-check-'));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
-  cpSync(path.join(ROOT, 'scripts'), path.join(root, 'scripts'), { recursive: true });
-  cpSync(path.join(ROOT, 'packages/status-compiler/src'), path.join(root, 'packages/status-compiler/src'), { recursive: true });
-  for (const entry of ['contracts', 'machines', 'conformance', 'status.config.json', 'status.lock.json']) {
-    cpSync(path.join(ROOT, entry), path.join(root, entry), { recursive: true });
-  }
-  spawnSync('git', ['init', '--quiet'], { cwd: root });
-  spawnSync('git', ['add', '--all'], { cwd: root });
-  return root;
-}
-
 /** Writes `text` to `file` below `root`, creating its directories. */
 function write(root, file, text) {
   mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
   writeFileSync(path.join(root, file), text);
 }
+
+/**
+ * A temporary git checkout with the files of this repository that gen-check reads, the given layout (contracts/layout.json)
+ * and files ({ path: text }), every file tracked; removed with `t.after`. The layout gives the kinds, and each kind's generated
+ * globs say which files gen-check compares. The real kinds are checked by `make gen-check`; these cases use their own layout.
+ */
+function fixture(t, layout, files) {
+  const root = mkdtempSync(path.join(tmpdir(), 'gen-check-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  cpSync(path.join(ROOT, 'scripts'), path.join(root, 'scripts'), { recursive: true });
+  cpSync(path.join(ROOT, 'packages/status-compiler/src'), path.join(root, 'packages/status-compiler/src'), { recursive: true });
+  for (const entry of ['machines', 'conformance', 'status.config.json', 'status.lock.json']) {
+    cpSync(path.join(ROOT, entry), path.join(root, entry), { recursive: true });
+  }
+  write(root, 'contracts/layout.json', `${JSON.stringify(layout, null, 2)}\n`);
+  for (const [file, text] of Object.entries(files)) write(root, file, text);
+  spawnSync('git', ['init', '--quiet'], { cwd: root });
+  spawnSync('git', ['add', '--all'], { cwd: root });
+  return root;
+}
+
+/** The layout of a checkout without kinds: only the vector files are compared. */
+const NO_KINDS = { schema: 1, tools: [], canonical: { files: [], directories: [] }, kinds: {} };
+
+/** A checkout of this repository with no kinds, so that its vector files are the only generated files. */
+const checkout = t => fixture(t, NO_KINDS, {});
+
+/** A kind `fake` whose package generates gen/a.txt, with the generated glob `gen/**`, which the fixed patterns never covered. */
+const FAKE_LAYOUT = {
+  schema: 1,
+  tools: [],
+  canonical: { files: [], directories: [] },
+  kinds: { fake: { required: [], allowed: ['**'], generated: ['gen/**'] } },
+};
+const FAKE_FILES = {
+  // gen is phony: the directory gen/ would otherwise make the target up to date.
+  'packages/status-fake/Makefile': '.PHONY: gen\ngen:\n\tmkdir -p $(DEST)/gen\n\tprintf \'a\\n\' > $(DEST)/gen/a.txt\n',
+  'packages/status-fake/gen/a.txt': 'a\n',
+  'packages/status-fake/readme.txt': 'not generated\n',
+};
 
 /** Runs scripts/gen-check.mjs in `root` and returns its status and stderr. */
 function genCheck(root) {
@@ -74,4 +100,33 @@ test('an ignored file in the compared directory is not read, so it is no finding
   write(root, '.gitignore', '*.tmp\n');
   write(root, 'conformance/vectors/scratch.tmp', 'not a vector\n');
   assert.deepEqual(genCheck(root), { status: 0, stderr: '' });
+});
+
+test('the files compared for a kind are exactly the files that its generated globs match', (t) => {
+  const root = fixture(t, FAKE_LAYOUT, FAKE_FILES);
+  assert.deepEqual(genCheck(root), { status: 0, stderr: '' });
+  writeFileSync(path.join(root, 'packages/status-fake/gen/a.txt'), 'changed\n');
+  const changed = genCheck(root);
+  assert.equal(changed.status, 1);
+  assert.match(changed.stderr, /^\[gen-check\] differs packages\/status-fake\/gen\/a\.txt: /m);
+});
+
+test('a file that no generated glob of its kind matches is not compared, so changing it is no finding', (t) => {
+  const root = fixture(t, FAKE_LAYOUT, FAKE_FILES);
+  writeFileSync(path.join(root, 'packages/status-fake/readme.txt'), 'edited by hand\n');
+  assert.deepEqual(genCheck(root), { status: 0, stderr: '' });
+});
+
+test('a tracked file that a generated glob matches but the generator does not write is an extra finding', (t) => {
+  const root = fixture(t, FAKE_LAYOUT, { ...FAKE_FILES, 'packages/status-fake/gen/extra.txt': 'hand\n' });
+  const result = genCheck(root);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /^\[gen-check\] extra packages\/status-fake\/gen\/extra\.txt: /m);
+});
+
+test('a kind without generated globs is a layout-config finding, because gen-check cannot tell what to compare', (t) => {
+  const layout = { ...FAKE_LAYOUT, kinds: { fake: { required: [], allowed: ['**'] } } };
+  const result = genCheck(fixture(t, layout, FAKE_FILES));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /^\[gen-check\] layout-config contracts\/layout\.json: .*generated/m);
 });

@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 918638cf04ddf8ad3e3741847d9de61540c7d698ef4fff4e12826f1552ceba11 -->
+<!-- source-sha256: c40526ba44cdd83ef206ddfeea6de1432a1148605d8ddc4af27128bde091e0cd -->
 # 실행 체크리스트
 
 ## status v1
@@ -19,7 +19,7 @@
 | S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector 오라클 + `scripts/gen-check.mjs` + `gen-check-test` | 수작업 기대값 fixture와 일치, gen-check RED → GREEN | [o] |
 | S-08 | MermaidStore(정규형 parser와 writer) + json↔mermaid 왕복 | `E_MERMAID_UNSUPPORTED`·순서 위반·왕복 불일치 RED → GREEN | [o] |
 | S-09 | npm backend + `vectors --kind npm`(golden) | golden RED → GREEN | [o] |
-| S-09-1 | npm 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-npm`와 `parity-npm`(공용 `schema/persist.dbs` 생성) | 생성물 없이 `test-npm` RED → GREEN, `layout-check`와 `parity-npm` 통과 | [ ] |
+| S-09-1 | npm 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-npm`와 `parity-npm`(공용 `schema/persist.dbs` 생성) | 생성물 없이 `test-npm` RED → GREEN, `layout-check`와 `parity-npm` 통과 | [o] |
 | S-10 | go backend + `vectors --kind go`(golden) | golden RED → GREEN | [ ] |
 | S-10-1 | go 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-go`와 `parity-go` | 생성물 없이 `test-go` RED → GREEN, `layout-check`와 `parity-go` 통과 | [ ] |
 | S-11 | python backend + `vectors --kind python`(golden) | golden RED → GREEN | [ ] |

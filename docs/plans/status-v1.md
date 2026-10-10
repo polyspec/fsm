@@ -163,7 +163,7 @@ packages/status-<kind>/
   examples/persist.<ext>    # B-4 orm persistence; tests run it with the persist vectors
   examples/model/           # orm-generated model from the root schema/persist.dbs (committed, covered by gen-check); rust uses build.rs as an allowed difference
 ```
-- `make gen` produces the status-gen output and the orm-gen output together.
+- `make gen` produces the status-gen output and the orm-gen output together; the `generated` globs of the kind in `contracts/layout.json` name the files it writes, and `gen-check` compares exactly those files.
 
 | kind | manifest | src | tests |
 |---|---|---|---|
@@ -241,7 +241,7 @@ Vectors (exhaustive; the core generates the oracle):
 - Root `gen-check`
   1. Run `status-gen vectors --out var/gen-check/conformance/vectors`.
   2. In each package of `kinds`, run `make gen DEST=$(CURDIR)/var/gen-check/<kind>`.
-  3. `scripts/gen-check.mjs` compares with the working tree through kit `trackedFiles` (tracked and non-ignored files only, so ignored outputs such as `__pycache__/` and the phpize output in php-ext `src/` are not read). `conformance/vectors` and each package's `src/`, `tests/vectors.<ext>` and `examples/model/` (except rust) must hold the same file set with byte-identical content.
+  3. `scripts/gen-check.mjs` compares with the working tree through kit `trackedFiles` (tracked and non-ignored files only, so ignored outputs such as `__pycache__/` and the phpize output in php-ext `src/` are not read). `conformance/vectors` and each package's `src/`, `tests/vectors.<ext>` and `examples/model/` (except rust) must hold the same file set with byte-identical content; the compared files of each package are the ones matched by its kind's `generated` globs in `contracts/layout.json`, and a kind without them is a `layout-config` finding.
   - `gen-check-test` (`tests/gen-check/`) RED: a one-byte change fixture, an added file fixture, an ignored file that must not be read
 
 ### C-6. status-db `packages/status-db`

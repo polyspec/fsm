@@ -6,5 +6,11 @@
     "files": ["README.md", "README.ko.md", "Makefile"],
     "directories": ["src", "tests", "examples"]
   },
-  "kinds": {}
+  "kinds": {
+    "npm": {
+      "required": ["package.json", "package-lock.json", "tests/conformance.test.mjs", "tests/vectors.mjs", "examples/persist.mjs"],
+      "allowed": ["src/*.js", "src/*.d.ts", "examples/model/**"],
+      "generated": ["src/**", "tests/vectors.mjs", "examples/model/**"]
+    }
+  }
 }

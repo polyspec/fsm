@@ -18,7 +18,7 @@
 | S-07 | `status.config.json` + `machines/order.status.json` + `status.lock.json` + `contracts/features.json` + vector oracle + `scripts/gen-check.mjs` + `gen-check-test` | matches the hand-written expected fixture; gen-check RED → GREEN | [o] |
 | S-08 | MermaidStore (canonical parser and writer) + json↔mermaid round trip | `E_MERMAID_UNSUPPORTED`, order violation, round-trip mismatch RED → GREEN | [o] |
 | S-09 | npm backend + `vectors --kind npm` (golden) | golden RED → GREEN | [o] |
-| S-09-1 | npm package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-npm` and `parity-npm` (creates the shared `schema/persist.dbs`) | `test-npm` RED without generated output → GREEN; `layout-check` and `parity-npm` pass | [ ] |
+| S-09-1 | npm package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-npm` and `parity-npm` (creates the shared `schema/persist.dbs`) | `test-npm` RED without generated output → GREEN; `layout-check` and `parity-npm` pass | [o] |
 | S-10 | go backend + `vectors --kind go` (golden) | golden RED → GREEN | [ ] |
 | S-10-1 | go package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-go` and `parity-go` | `test-go` RED without generated output → GREEN; `layout-check` and `parity-go` pass | [ ] |
 | S-11 | python backend + `vectors --kind python` (golden) | golden RED → GREEN | [ ] |
