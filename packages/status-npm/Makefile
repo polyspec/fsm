@@ -2,7 +2,9 @@
 # of the compiler, and examples/model with orm-gen from the root schema/persist.dbs. DEST names the directory of the generated
 # files (DEST ?= .), so that gen-check can write them into var/gen-check/npm and compare them with the working tree. The test
 # target runs node from the checkout root with root-relative paths: node names each file relative to its working directory, and
-# the kit reporter matches the file group by that name, so a working directory other than the root would be misread.
+# the kit reporter matches the file group by that name, so a working directory other than the root would be misread. The test
+# target names the conformance file only: the type check of tests/types.test.mjs has its own record (make npm-types), and the
+# record of this kind must hold vector cases alone for check-parity.
 ROOT := ../..
 DEST ?= .
 STATUS_GEN := node $(ROOT)/packages/status-compiler/src/cli/status-gen.mjs
@@ -19,4 +21,4 @@ gen:
 	./node_modules/.bin/orm-gen gen --schema $(ROOT)/schema/persist.dbs --out $(DEST)/examples/model
 
 test:
-	node $(ROOT)/scripts/kit/run-tests.mjs node --results .results/npm.json --inputs packages/status-npm --inputs schema/persist.dbs -- packages/status-npm/tests
+	node $(ROOT)/scripts/kit/run-tests.mjs node --results .results/npm.json --inputs packages/status-npm --inputs schema/persist.dbs -- packages/status-npm/tests/conformance.test.mjs
