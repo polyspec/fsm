@@ -2,8 +2,9 @@
 // its package for the IRs and the lock. A kind that has no backend is an Error, so no command runs an unknown kind.
 import * as go from './go.mjs';
 import * as npm from './npm.mjs';
+import * as php from './php.mjs';
 
-const BACKENDS = Object.freeze({ go, npm });
+const BACKENDS = Object.freeze({ go, npm, php });
 
 /** The kinds that the compiler generates, in the order of this table. */
 export const KINDS = Object.freeze(Object.keys(BACKENDS));
