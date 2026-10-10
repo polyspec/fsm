@@ -11,3 +11,26 @@
 /packages/status-gui/public/assets/
 /packages/status-php*/.phpunit.result.cache
 /packages/status-php*/.phpunit.cache/
+# phpize output of the php-ext package, built in its src/ (docs/plans/status-v1.md, C-1): config.m4 and the generated sources stay tracked.
+/packages/status-php-ext/src/Makefile
+/packages/status-php-ext/src/Makefile.fragments
+/packages/status-php-ext/src/Makefile.objects
+/packages/status-php-ext/src/*.dep
+/packages/status-php-ext/src/*.la
+/packages/status-php-ext/src/*.lo
+/packages/status-php-ext/src/*.o
+/packages/status-php-ext/src/.libs/
+/packages/status-php-ext/src/autom4te.cache/
+/packages/status-php-ext/src/build/
+/packages/status-php-ext/src/config.h
+/packages/status-php-ext/src/config.h.in
+/packages/status-php-ext/src/config.h.in~
+/packages/status-php-ext/src/config.log
+/packages/status-php-ext/src/config.nice
+/packages/status-php-ext/src/config.status
+/packages/status-php-ext/src/configure
+/packages/status-php-ext/src/configure.ac
+/packages/status-php-ext/src/configure~
+/packages/status-php-ext/src/libtool
+/packages/status-php-ext/src/modules/
+/packages/status-php-ext/src/run-tests.php

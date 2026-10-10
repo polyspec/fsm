@@ -47,7 +47,7 @@ static zend_long order_event_index(zend_object *event)
 /* Leaves the E_UNKNOWN_CODE of a code that is no state of the machine pending. */
 static void order_no_state(zend_long code)
 {
-	zend_string *message = zend_strpprintf(0, "order: %" ZEND_LONG_FMT " is not a state of order", code);
+	zend_string *message = zend_strpprintf(0, "order: " ZEND_LONG_FMT " is not a state of order", code);
 
 	status_throw("E_UNKNOWN_CODE", message, NULL, NULL, NULL);
 	zend_string_release(message);
@@ -149,7 +149,7 @@ static zend_long order_target(zend_long expected, zend_long event)
 
 	ZVAL_LONG(&expected_value, expected);
 	ZVAL_LONG(&event_value, event);
-	message = zend_strpprintf(0, "order: the event %" ZEND_LONG_FMT " has no edge from %" ZEND_LONG_FMT, event, expected);
+	message = zend_strpprintf(0, "order: the event " ZEND_LONG_FMT " has no edge from " ZEND_LONG_FMT, event, expected);
 	status_throw("E_INVALID_TRANSITION", message, &expected_value, NULL, &event_value);
 	zend_string_release(message);
 	return 0;
@@ -164,22 +164,22 @@ ZEND_NAMED_FUNCTION(zif_order_initial)
 
 ZEND_NAMED_FUNCTION(zif_order_code)
 {
-	zend_object *state;
+	zval *state;
 
 	ZEND_PARSE_PARAMETERS_START(1, 1)
 		Z_PARAM_OBJECT_OF_CLASS(state, order_state_ce)
 	ZEND_PARSE_PARAMETERS_END();
-	RETURN_LONG(order_state_code(state));
+	RETURN_LONG(order_state_code(Z_OBJ_P(state)));
 }
 
 ZEND_NAMED_FUNCTION(zif_order_key)
 {
-	zend_object *state;
+	zval *state;
 
 	ZEND_PARSE_PARAMETERS_START(1, 1)
 		Z_PARAM_OBJECT_OF_CLASS(state, order_state_ce)
 	ZEND_PARSE_PARAMETERS_END();
-	zend_long code = order_state_code(state);
+	zend_long code = order_state_code(Z_OBJ_P(state));
 
 	switch (code) {
 		case 1:
@@ -222,7 +222,7 @@ ZEND_NAMED_FUNCTION(zif_order_from_code)
 			order_return_state(return_value, 5);
 			return;
 		default: {
-			zend_string *message = zend_strpprintf(0, "order: %" ZEND_LONG_FMT " is not a state of order", value);
+			zend_string *message = zend_strpprintf(0, "order: " ZEND_LONG_FMT " is not a state of order", value);
 
 			status_throw("E_UNKNOWN_CODE", message, NULL, NULL, NULL);
 			zend_string_release(message);
@@ -233,12 +233,12 @@ ZEND_NAMED_FUNCTION(zif_order_from_code)
 
 ZEND_NAMED_FUNCTION(zif_order_is_final)
 {
-	zend_object *state;
+	zval *state;
 
 	ZEND_PARSE_PARAMETERS_START(1, 1)
 		Z_PARAM_OBJECT_OF_CLASS(state, order_state_ce)
 	ZEND_PARSE_PARAMETERS_END();
-	zend_long code = order_state_code(state);
+	zend_long code = order_state_code(Z_OBJ_P(state));
 
 	switch (code) {
 		case 1:
@@ -259,12 +259,12 @@ ZEND_NAMED_FUNCTION(zif_order_is_final)
 
 ZEND_NAMED_FUNCTION(zif_order_events_from)
 {
-	zend_object *state;
+	zval *state;
 
 	ZEND_PARSE_PARAMETERS_START(1, 1)
 		Z_PARAM_OBJECT_OF_CLASS(state, order_state_ce)
 	ZEND_PARSE_PARAMETERS_END();
-	zend_long code = order_state_code(state);
+	zend_long code = order_state_code(Z_OBJ_P(state));
 
 	switch (code) {
 		case 1:
@@ -297,13 +297,13 @@ ZEND_NAMED_FUNCTION(zif_order_events_from)
 
 ZEND_NAMED_FUNCTION(zif_order_target)
 {
-	zend_object *expected, *event;
+	zval *expected, *event;
 
 	ZEND_PARSE_PARAMETERS_START(2, 2)
 		Z_PARAM_OBJECT_OF_CLASS(expected, order_state_ce)
 		Z_PARAM_OBJECT_OF_CLASS(event, order_event_ce)
 	ZEND_PARSE_PARAMETERS_END();
-	zend_long to = order_target(order_state_code(expected), order_event_index(event));
+	zend_long to = order_target(order_state_code(Z_OBJ_P(expected)), order_event_index(Z_OBJ_P(event)));
 
 	if (to == 0) {
 		RETURN_THROWS();
@@ -313,16 +313,16 @@ ZEND_NAMED_FUNCTION(zif_order_target)
 
 ZEND_NAMED_FUNCTION(zif_order_apply)
 {
-	zend_object *expected, *event, *actual;
+	zval *expected, *event, *actual;
 
 	ZEND_PARSE_PARAMETERS_START(3, 3)
 		Z_PARAM_OBJECT_OF_CLASS(expected, order_state_ce)
 		Z_PARAM_OBJECT_OF_CLASS(event, order_event_ce)
 		Z_PARAM_OBJECT_OF_CLASS(actual, order_state_ce)
 	ZEND_PARSE_PARAMETERS_END();
-	zend_long expected_code = order_state_code(expected);
-	zend_long event_index = order_event_index(event);
-	zend_long actual_code = order_state_code(actual);
+	zend_long expected_code = order_state_code(Z_OBJ_P(expected));
+	zend_long event_index = order_event_index(Z_OBJ_P(event));
+	zend_long actual_code = order_state_code(Z_OBJ_P(actual));
 	zend_long to = order_target(expected_code, event_index);
 	zval expected_value, actual_value, event_value;
 	zend_string *message;
@@ -341,7 +341,7 @@ ZEND_NAMED_FUNCTION(zif_order_apply)
 	ZVAL_LONG(&expected_value, expected_code);
 	ZVAL_LONG(&actual_value, actual_code);
 	ZVAL_LONG(&event_value, event_index);
-	message = zend_strpprintf(0, "order: the stored state %" ZEND_LONG_FMT " is neither %" ZEND_LONG_FMT " nor %" ZEND_LONG_FMT, actual_code, expected_code, to);
+	message = zend_strpprintf(0, "order: the stored state " ZEND_LONG_FMT " is neither " ZEND_LONG_FMT " nor " ZEND_LONG_FMT, actual_code, expected_code, to);
 	status_throw("E_CONFLICT", message, &expected_value, &actual_value, &event_value);
 	zend_string_release(message);
 	RETURN_THROWS();
@@ -349,14 +349,14 @@ ZEND_NAMED_FUNCTION(zif_order_apply)
 
 ZEND_METHOD(Polyspec_StatusTest_Order_Step, __construct)
 {
-	zend_object *to;
+	zval *to;
 	bool changed;
 
 	ZEND_PARSE_PARAMETERS_START(2, 2)
 		Z_PARAM_OBJECT_OF_CLASS(to, order_state_ce)
 		Z_PARAM_BOOL(changed)
 	ZEND_PARSE_PARAMETERS_END();
-	order_step_init(Z_OBJ_P(ZEND_THIS), to, changed);
+	order_step_init(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(to), changed);
 }
 
 static const zend_function_entry order_state_methods[] = {
@@ -389,6 +389,7 @@ zend_result order_minit(void)
 	zend_class_entry ce;
 	zval value;
 	zval undef;
+	zend_string *state_name = zend_string_init_interned("Polyspec\\StatusTest\\Order\\State", sizeof("Polyspec\\StatusTest\\Order\\State") - 1, 1);
 
 	order_state_ce = zend_register_internal_enum("Polyspec\\StatusTest\\Order\\State", IS_LONG, order_state_methods);
 	ZVAL_LONG(&value, 1);
@@ -414,7 +415,7 @@ zend_result order_minit(void)
 	order_step_ce = zend_register_internal_class(&ce);
 	order_step_ce->ce_flags |= ZEND_ACC_FINAL;
 	ZVAL_UNDEF(&undef);
-	zend_declare_typed_property(order_step_ce, zend_string_init("to", sizeof("to") - 1, 1), &undef, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, NULL, (zend_type) ZEND_TYPE_INIT_CE(order_state_ce, 0, 0));
+	zend_declare_typed_property(order_step_ce, zend_string_init("to", sizeof("to") - 1, 1), &undef, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, NULL, (zend_type) ZEND_TYPE_INIT_CLASS(state_name, 0, 0));
 	zend_declare_typed_property(order_step_ce, zend_string_init("changed", sizeof("changed") - 1, 1), &undef, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, NULL, (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_BOOL));
 
 	return zend_register_functions(NULL, order_functions, NULL, MODULE_PERSISTENT);
