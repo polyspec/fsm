@@ -57,7 +57,7 @@ const loadFinding = {
 };
 
 test('an unknown command throws', async () => {
-  await assert.rejects(runOf('gen', memory()), { message: 'unknown command gen' });
+  await assert.rejects(runOf('deploy', memory()), { message: 'unknown command deploy' });
 });
 
 test('check of a matching store has no findings', async () => {

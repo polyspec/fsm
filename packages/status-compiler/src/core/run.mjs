@@ -1,15 +1,16 @@
-// The commands of docs/spec/status.md, B-2: run(command, store, options) for check, lock, save and vectors, and copy(from, to),
+// The commands of docs/spec/status.md, B-2: run(command, store, options) for check, lock, save, vectors and gen, and copy(from, to),
 // the migration between two stores. A store is { load() -> Promise<{ definitions, lock, findings }>, save({ definitions, lock })
 // -> Promise }. The stores are async, so run and copy are async and return a Promise of { findings }; the pure functions
 // (validate, normalize, lock, vectors) stay synchronous. lock and save write only when there are no findings, and vectors
 // writes nothing: it returns the vectors too. The core imports nothing from node:.
 
+import { backendOf } from '../backends/index.mjs';
 import { lockMismatch, nextLock } from './lock.mjs';
 import { normalize } from './normalize.mjs';
 import { validate } from './validate.mjs';
 import { vectors } from './vectors.mjs';
 
-const COMMANDS = ['check', 'lock', 'save', 'vectors'];
+const COMMANDS = ['check', 'lock', 'save', 'vectors', 'gen'];
 
 const finding = (code, machine, path, message) => ({ code, machine, path, message });
 
@@ -24,16 +25,20 @@ const check = (definitions, lock) => {
  * compares the lock with them. `lock` derives the lock from the stored definitions, and `save` from `options.definitions`;
  * both apply `options.renames` and call store.save once, when there are no findings. `vectors` stops on any check finding,
  * and otherwise returns { findings: [], vectors: [{ machine, cases }] } for the definitions in the order of the store.
+ * `gen` takes `options.kind`, whose backend is looked up before the store is read (an unknown kind is an Error); it stops on
+ * any check finding, and otherwise returns { findings: [], files: [{ path, content }] } from the backend.
  */
 export async function run(command, store, options = {}) {
   if (!COMMANDS.includes(command)) throw new Error(`unknown command ${command}`);
+  const backend = command === 'gen' ? backendOf(options.kind) : undefined;
   const loaded = await store.load();
   if (loaded.findings.length > 0) return { findings: loaded.findings };
   const { definitions, lock } = loaded;
   if (command === 'check') return { findings: check(definitions, lock) };
-  if (command === 'vectors') {
+  if (command === 'vectors' || command === 'gen') {
     const found = check(definitions, lock);
     if (found.length > 0) return { findings: found };
+    if (command === 'gen') return { findings: [], files: backend.files(definitions.map(normalize), lock) };
     return { findings: [], vectors: definitions.map(definition => vectors(normalize(definition), lock)) };
   }
   if (command === 'save' && options.definitions === undefined) {
