@@ -1,5 +1,5 @@
 <!-- doc-id: spec-status -->
-<!-- source-sha256: 51058e559d88a6a818eb2b83f88100a17a5bb4f44378528e9a5702283e3b617f -->
+<!-- source-sha256: 3c5860e155a8a0b4243b27986dc6032ddc59889709ff961adb5a74b8d4bed03e -->
 # status 정의
 
 [English](status.md)
@@ -151,6 +151,7 @@ stateDiagram-v2
   ```
 
 ## B-5. 검증 규칙 (오류 코드 1개 = RED 케이스 1개, warning 없음)
+- finding: core `validate(definitions)`는 모든 finding을 `{code, machine, path, message}`로 돌려준다. `path`는 머신 객체 안의 JSON 경로(`$.states[1].code`), `machine`은 그 key이며, 정의에 문자열 key가 없으면 null이다. finding은 머신 안에서는 문서 순서, 머신 사이에서는 입력 순서를 따른다. `E_SCHEMA` finding이 있는 머신은 다른 finding을 받지 않는다. GUI는 `path`를 폼 필드에 연결하고, 필드가 없는 finding은 폼 오류로 보인다.
 - 구조
   - `E_SCHEMA`: 필수 필드 누락, 미지 필드, 타입 위반, 빈 `edges`(이벤트는 엣지 1개 이상), 파일 이름 ≠ `<machine>.status.json|mmd` (JSON 경로 포함)
 - 그래프

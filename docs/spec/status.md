@@ -150,6 +150,7 @@ The unit of idempotency is **(expected, event)**. The caller remembers the state
   ```
 
 ## B-5. Validation rules (one error code = one RED case, no warnings)
+- Findings: core `validate(definitions)` returns every finding as `{code, machine, path, message}`. `path` is the JSON path within the machine object (`$.states[1].code`) and `machine` its key, or null when the definition has no string key. Findings follow document order within a machine and input order across machines; a machine with an `E_SCHEMA` finding gets no other finding. The GUI maps `path` to a form field and shows a finding without a field as a form error.
 - Structure
   - `E_SCHEMA`: a missing required field, an unknown field, a type violation, empty `edges` (an event has at least one edge), file name ≠ `<machine>.status.json|mmd` (with the JSON path)
 - Graph
