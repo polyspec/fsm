@@ -15,11 +15,6 @@ static const zend_function_entry status_code_methods[] = {
 	ZEND_FE_END
 };
 
-static const zend_function_entry status_error_methods[] = {
-	ZEND_ME(Polyspec_StatusTest_Status_Error, __construct, arginfo_status_error___construct, ZEND_ACC_PUBLIC)
-	ZEND_FE_END
-};
-
 /* A nullable int of the Error: NULL is the null of the property. */
 static zval *status_long_or_null(zval *item, bool is_null, zend_long value)
 {
@@ -73,7 +68,7 @@ void status_throw_text(const char *code, const char *message)
 
 ZEND_METHOD(Polyspec_StatusTest_Status_Error, __construct)
 {
-	zend_object *code;
+	zval *code;
 	zend_string *message;
 	zend_long expected = 0, actual = 0, event = 0;
 	bool expected_is_null = true, actual_is_null = true, event_is_null = true;
@@ -88,11 +83,16 @@ ZEND_METHOD(Polyspec_StatusTest_Status_Error, __construct)
 	ZEND_PARSE_PARAMETERS_END();
 
 	zval rv, expected_value, actual_value, event_value;
-	zval *code_value = zend_read_property(status_code_ce, code, "value", sizeof("value") - 1, 1, &rv);
+	zval *code_value = zend_read_property(status_code_ce, Z_OBJ_P(code), "value", sizeof("value") - 1, 1, &rv);
 
 	status_error_init(Z_OBJ_P(ZEND_THIS), code_value, message, status_long_or_null(&expected_value, expected_is_null, expected),
 		status_long_or_null(&actual_value, actual_is_null, actual), status_long_or_null(&event_value, event_is_null, event));
 }
+
+static const zend_function_entry status_error_methods[] = {
+	ZEND_ME(Polyspec_StatusTest_Status_Error, __construct, arginfo_status_error___construct, ZEND_ACC_PUBLIC)
+	ZEND_FE_END
+};
 
 zend_result status_minit(void)
 {
@@ -101,13 +101,13 @@ zend_result status_minit(void)
 	zval undef;
 
 	status_code_ce = zend_register_internal_enum("Polyspec\\StatusTest\\Status\\Code", IS_STRING, status_code_methods);
-	ZVAL_STRINGL_FAST(&value, "E_CONFLICT", sizeof("E_CONFLICT") - 1);
+	ZVAL_STR(&value, zend_string_init_interned("E_CONFLICT", sizeof("E_CONFLICT") - 1, 1));
 	zend_enum_add_case_cstr(status_code_ce, "Conflict", &value);
-	ZVAL_STRINGL_FAST(&value, "E_INVALID_TRANSITION", sizeof("E_INVALID_TRANSITION") - 1);
+	ZVAL_STR(&value, zend_string_init_interned("E_INVALID_TRANSITION", sizeof("E_INVALID_TRANSITION") - 1, 1));
 	zend_enum_add_case_cstr(status_code_ce, "InvalidTransition", &value);
-	ZVAL_STRINGL_FAST(&value, "E_UNKNOWN_CODE", sizeof("E_UNKNOWN_CODE") - 1);
+	ZVAL_STR(&value, zend_string_init_interned("E_UNKNOWN_CODE", sizeof("E_UNKNOWN_CODE") - 1, 1));
 	zend_enum_add_case_cstr(status_code_ce, "UnknownCode", &value);
-	ZVAL_STRINGL_FAST(&value, "E_RESERVED_CODE", sizeof("E_RESERVED_CODE") - 1);
+	ZVAL_STR(&value, zend_string_init_interned("E_RESERVED_CODE", sizeof("E_RESERVED_CODE") - 1, 1));
 	zend_enum_add_case_cstr(status_code_ce, "ReservedCode", &value);
 
 	INIT_NS_CLASS_ENTRY(ce, "Polyspec\\StatusTest\\Status", "Error", status_error_methods);
