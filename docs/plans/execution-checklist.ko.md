@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 3219aa64f1c8c54388a1179ab9a6a34971c8bb4a8b3b84fe12c144d7ed16a69e -->
+<!-- source-sha256: b77ade0c2f83d32b9c3df0aca38e6e4d4a143f8e50afd92a662efaf2b7341a08 -->
 # 실행 체크리스트
 
 ## status v1
@@ -30,7 +30,7 @@
 | S-12-1 | php 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-php`와 `parity-php` | 생성물 없이 `test-php` RED → GREEN, `layout-check`와 `parity-php` 통과 | [o] |
 | S-13 | rust backend + `vectors --kind rust`(golden) | golden RED → GREEN | [o] |
 | S-13-1 | rust 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-rust`와 `parity-rust` | 생성물 없이 `test-rust` RED → GREEN, `layout-check`와 `parity-rust` 통과 | [o] |
-| S-14 | php-ext backend + `vectors --kind php-ext`(golden) | golden RED → GREEN | [ ] |
+| S-14 | php-ext backend + `vectors --kind php-ext`(golden) | golden RED → GREEN | [o] |
 | S-14-1 | php-ext 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-php-ext`와 `parity-php-ext` | 생성물 없이 `test-php-ext` RED → GREEN, `layout-check`와 `parity-php-ext` 통과 | [ ] |
 | S-15 | status-db: `schema/status.dbs` + DbStore + 계약 테스트 + copy + `db-test` | 계약 불일치·`E_STORE_NOT_EMPTY`·원자성 RED → GREEN | [o] |
 | S-16 | GUI 골격: hyper app + 목록·상세 + Mermaid + `gui-test` + 고정 버전 mermaid 패키지로 정규형과 B-5의 모든 예약 상태 key를 파싱하는 테스트 | handler RED → GREEN | [o] |
