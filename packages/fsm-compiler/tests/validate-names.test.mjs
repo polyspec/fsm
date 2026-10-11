@@ -62,6 +62,18 @@ test('a machine key on the fixed lists fails E_KEY_RESERVED at machine', () => {
   }
 });
 
+test('a machine key that a go test file of packages/fsm-go imports or declares fails E_KEY_RESERVED (B-5, measured by S-39)', () => {
+  // tests/vectors_test.go imports the persist example as `examples` and declares `vectors` and `machines`; tests/conformance_test.go
+  // declares `expectation` and `lookup`. A machine of any of these names breaks `go test ./...` (measured with go 1.27.2).
+  for (const key of ['examples', 'vectors', 'machines', 'expectation', 'lookup']) {
+    assert.deepEqual(names(d => { d.machine = key; }), [at('E_KEY_RESERVED', key, '$.machine')], key);
+  }
+});
+
+test('the machine key tests is not reserved: a machine of that name builds with the go test files (measured by S-39)', () => {
+  assert.deepEqual(names(d => { d.machine = 'tests'; }), []);
+});
+
 test('a machine key is compared after its underscores are removed', () => {
   assert.deepEqual(names(d => { d.machine = 'te_stdata'; }), [at('E_KEY_RESERVED', 'te_stdata', '$.machine')]);
   assert.deepEqual(names(d => { d.machine = 'in_it'; }), [at('E_KEY_RESERVED', 'in_it', '$.machine')]);

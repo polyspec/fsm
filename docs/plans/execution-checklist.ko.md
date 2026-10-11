@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: f0e3031f2272b83bc05ade70de23ddd72bb83d1a7a558af5d28819d27b2b2e16 -->
+<!-- source-sha256: 97257f7ed1bb6032b7a78716562505a3e9e89dd4fe2f0aafc28ef6b76d601285 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -73,5 +73,5 @@
 | S-36 | fsm-db CLI를 문서의 모든 명령에 대해 process로 테스트한다: `lock --rename`과 `copy --to mermaid` / `copy --from mermaid`(감사 20) | 문서의 출력이 단언되지 않음 RED → GREEN | [o] |
 | S-37 | 영속화와 DB store를 문서가 이름 붙인 모든 dialect에서 증명한다: 같은 (expected, event)의 동시 transaction 두 개가 Changed 하나와 Unchanged 하나를, 충돌하는 쌍이 E_CONFLICT를 내는지 단언하는 테스트. db-test와 영속화 테스트가 SQLite, PostgreSQL, MySQL에서 돈다(로컬 임시 서버와 CI service). 문서가 테스트한 dialect를 적는다(감사 23, 24) | 동시 테스트가 실패하거나 없음 RED → 세 dialect에서 GREEN | [ ] |
 | S-38 | Mermaid 다이어그램이 모든 state의 이름을 보인다: 고정한 mermaid 12.1.0은 description이 하나인 state(`draft : 1`, spec B-1의 정규형)를 description만으로 그리므로 GUI와 모든 Mermaid viewer가 key 없이 code 1..n만 보인다(S-22 확인). 측정 결과: `state "draft" as draft` 뒤에 `draft : 1`을 쓰면 `draft` 제목 아래 `1`이 있는 상자로 그려지고 description [draft, 1]로 파싱된다. 그려진 다이어그램이 key와 code를 보이도록 정규형을 바꾸며, 대안과 적대 검증해 결정하고 spec B-1에 기록한다(B-5의 예약어 위치를 다시 측정). mermaid store, golden, 예제 machine, GUI, README 예시가 따른다 | 그려진 svg의 label에 모든 state key가 있는지 보는 browser 테스트 실패 RED → GREEN | [o] |
-| S-39 | go 테스트 파일과 충돌하는 machine key를 예약한다: go `tests/vectors_test.go`가 `<module>/tests`와 `<module>/examples` 경로를 import하므로 machine key `tests`나 `examples`는 go 빌드를 깬다(S-25가 봄). 측정한 충돌 key를 근거와 함께 spec B-5의 고정 목록에 더한다 | tests라는 machine이 fsm-gen check를 통과하고 go를 깸 RED → E_KEY_RESERVED GREEN | [ ] |
+| S-39 | go 테스트 파일과 충돌하는 machine key를 예약한다: 생성된 go 테스트 package의 식별자를 이름으로 쓰는 machine key는 fsm-gen check를 통과하면서 go 빌드를 깬다(S-25가 봄). go 1.27.2로 측정한 결과 `examples`, `vectors`, `machines`, `expectation`, `lookup`이 `go test ./...`를 깨고("redeclared in this block", "already declared through import"), 처음 의심한 `tests`는 깨지 않는다. 측정한 key를 근거와 함께 spec B-5의 고정 목록에 더한다 | 측정한 각 key가 fsm-gen check를 통과하고 go를 깸 RED → E_KEY_RESERVED GREEN. `tests`는 허용으로 남음 | [o] |
 | S-40 | `packages/fsm-gui/tests/command.test.mjs`가 root `fsm.lock.json` 전체를 order machine만 있는 프로젝트에 복사하므로 root의 다른 machine에 의존한다(S-25가 봄). 테스트는 machine 하나와 그 lock 항목으로 프로젝트를 만든다 | root에 machine을 더하면 테스트 프로젝트가 바뀜 RED → 바뀌지 않음 GREEN | [o] |
