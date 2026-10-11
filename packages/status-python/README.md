@@ -21,8 +21,9 @@ It shows how the generated python code of a status definition is used, and it ch
 The checkout declares Python 3.14 in `config/toolchain.json` (`"python": "3.14"`). The package does not use the system
 `python3`: on macOS `/usr/bin/python3` is 3.9, and the orm client requires Python 3.11 or later.
 
-- `make install-python` (online, at the root) installs Python 3.14 with uv and links `var/tools/bin/python3` to it. That link
-  is the only change, and it stays in the checkout: no system path changes.
+- `make install-python` (online, at the root) installs Python 3.14 into uv's own store (`uv python install --no-bin`, so uv
+  writes nothing into a user bin directory such as `~/.local/bin`) and links `var/tools/bin/python3` to it. In the checkout,
+  that link is the only change; no system path changes.
 - `make install` (online) creates `.venv` with the interpreter named by `PYTHON` (default the absolute path of
   `var/tools/bin/python3` of the root, not a PATH lookup), refuses any other minor release, and installs this package in editable mode with its
   dependencies. The orm client is pinned in

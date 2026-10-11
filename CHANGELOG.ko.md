@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d741f2f859915b54006bbda8337e7d186a71d4f43de65c5fafb4e3d4f46610f3 -->
+<!-- source-sha256: 6845d4ef99e53453efdec4e162b0b5c1eacdac02d45143696cfa2e58109e1af4 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-11-3: `make install-python`은 `uv python install --no-bin 3.14`를 실행하므로, uv가 사용자 bin 디렉터리(기본 `~/.local/bin`)에 `python3.14` 실행 파일을 쓰지 않는다. 인터프리터는 여전히 uv 관리 설치이며, `var/tools/bin/python3`만 그것을 가리킨다. 변경 전에는 `UV_PYTHON_BIN_DIR`를 임시 디렉터리로 지정하면 target이 그곳에 `python3.14`를 썼고, 변경 후에는 그 디렉터리가 비어 있고 `~/.local/bin`은 바뀌지 않는다.
 - S-14-3: `gen`과 `vectors --kind`는 출력 디렉터리의 git-ignored 파일을 건너뛴다(`packages/status-compiler/src/cli/write-generated.mjs`). 무시된 파일은 손으로 쓴 파일이 아니라 빌드 산출물이므로 `E_NOT_GENERATED`로 생성기를 막지도 않고 stale 파일로 지우지도 않는다. 그래서 `packages/status-php-ext`에서는 `make test` 뒤에 `make clean` 없이 `make gen`을 실행한다. 추적 파일이나 git이 무시하지 않는 파일은 여전히 `E_NOT_GENERATED`이며, git work tree 밖에서는 무시되는 파일이 없다. 무시된 파일은 출력 디렉터리의 `git ls-files --others --ignored --exclude-standard`로 구한다. `make clean`은 phpize 출력을 지우는 목표로 남는다. 테스트는 `packages/status-compiler/tests/write-generated.test.mjs`에 있다.
 - S-14-1: php-ext 패키지 `packages/status-php-ext`는 정규 구조(`docs/plans/status-v1.md`, C-2)의 kind `php-ext`다. `make gen`은 `src/`와 `tests/Vectors.php`를 status-gen(`--php-namespace 'Polyspec\StatusTest' --php-ext-name polyspec_status_test`)으로 쓰고, php 패키지의 `tests/ConformanceTest.php`와 `examples/persist.php`를 복사하며(gen-check가 같은 byte임을 확인한다), `examples/model/`을 루트 `schema/persist.dbs`에서 orm-gen으로 쓴다. `make test`는 `src/`에서 phpize, `./configure`, `make`로 extension을 빌드하고 `--php-extension`으로 vector case 89개를 실행하며, `make parity-php-ext`가 이를 확인한다. `composer.lock`은 php 패키지와 같은 30개 패키지(polyspec/orm 0.0.7과 PHPUnit 12.5.38)를 고정하며, `config/dependency-policy.json`과 `config/dependency-review.json`이 php-ext manifest와 lock을 기록한다. `contracts/layout.json`은 생성 glob과 함께 kind를 선언한다. toolchain은 `config/toolchain.json`의 php와 composer 선언이며, 다시 선언하지 않았다.
 - S-14-2: php-ext backend의 C 출력을 첫 build 뒤에 고쳤다. 객체 인자는 `zval *`이다. `Z_PARAM_OBJECT_OF_CLASS`가 `zval *`을 쓰기 때문이다. Error method 표는 생성자 뒤에 둔다. `ZEND_LONG_FMT`의 format에는 `%`를 더 붙이지 않는다. `Step` property의 class 타입은 영구 class 이름 문자열의 `ZEND_TYPE_INIT_CLASS`이다. literal 이름은 property에서 해석되지 않기 때문이다. `Code` enum 값은 영구 interned 문자열이어서 shutdown에서 해제되지 않는다. `.gitignore`는 `packages/status-php-ext/src/`의 phpize 출력을 정확히 고정된 anchored 패턴으로 적는다. `config.m4`와 생성된 소스는 추적된 채로 남는다. golden 파일을 다시 썼다.

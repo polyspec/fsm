@@ -25,6 +25,7 @@
 | S-11 | python backend + `vectors --kind python` (golden) | golden RED → GREEN | [o] |
 | S-11-1 | python package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-python` and `parity-python` | `test-python` RED without generated output → GREEN; `layout-check` and `parity-python` pass | [o] |
 | S-11-2 | python package: remove `PYTHON_COLORS=0` from packages/status-python/Makefile once kit K22 (run-tests python runs without color) is synced; removal condition: the kit release with K22 is adopted by `make kit-sync` | test-python passes with FORCE_COLOR set and no PYTHON_COLORS in the Makefile | [ ] |
+| S-11-3 | `make install-python` installs Python with uv `--no-bin`, so uv writes nothing into a user bin directory (`~/.local/bin` by default); only `var/tools/bin/python3` links to uv's managed interpreter | with `UV_PYTHON_BIN_DIR` set to a scratch directory, install-python writes `python3.14` there RED → GREEN; with `--no-bin` the directory stays empty and `~/.local/bin` is unchanged | [o] |
 | S-12 | php backend + `vectors --kind php` (golden) | golden RED → GREEN | [o] |
 | S-12-1 | php package: conformance + persist + `examples/model/`, the kind in `kinds`, its toolchain and dependency pins, `test-php` and `parity-php` | `test-php` RED without generated output → GREEN; `layout-check` and `parity-php` pass | [o] |
 | S-13 | rust backend + `vectors --kind rust` (golden) | golden RED → GREEN | [o] |
