@@ -66,3 +66,10 @@ dependency pins, and that a conformance check asserts the expected value of its 
 Work on `main` directly is allowed. A branch is `{type}/{shortname}-{id}` and a worktree `fsm-{shortname}-{id}`; both are
 deleted right after the merge into `main`. Experimental code that cannot enter `main` is removed before the commit; when it
 cannot be removed at once, a sub-item records the removal condition.
+
+An item may be delegated to an agent that works in its own worktree. Whoever delegates reviews the result before the
+merge: the RED → GREEN evidence, and that every decision the item made (a new rule, tool, exception or name) is in the
+documents it concerns. Knowledge kept only by its author is a reason to reject the change.
+
+Parallel branches meet in the shared records. A merge keeps both sides: every CHANGELOG bullet in item order and, for
+each checklist row, the further state; then `make documents-stamp` restamps the Korean documents.
