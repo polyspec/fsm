@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: cab36b700f7067067bc102983d2dc397fc98d5b7375b75f25826fbe681cf51df -->
+<!-- source-sha256: 6429ca0a7e76db1c4a92997ceb3f93899e5f955ddf49efef50d58d0917376be9 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -63,7 +63,7 @@
 | S-28 | spec B-2의 store 계약 테스트가 존재한다: 모든 유효 fixture가 json → db → mermaid → json으로 바이트 동일하게 왕복하고, `run` gen과 vectors가 세 store에서 바이트 동일한 출력을 낸다(감사 7) | field를 버리는 store가 지금은 통과 RED → GREEN | [o] |
 | S-29 | 새 clone에서 `make check`가 통과한다: root install 타깃 하나가 모든 package 의존성(npm, composer, python, cargo, 각 package의 orm-gen)을 설치하고, 필요한 타깃의 선행 조건이다. CI는 정확히 `make check`를 돈다(감사 8) | 새 clone의 make check가 orm-gen, tsc, phpunit, .venv에서 실패 RED → 통과 GREEN | [o] |
 | S-29-1 | `gui-browsers`가 phony가 아니라 고정한 Playwright 버전을 키로 하는 file target이어서, `gui-browser-test`가 browser를 한 번만 내려받고 이후 실행은 네트워크가 필요 없다(S-29가 봄) | browser가 있을 때 make -n gui-browser-test가 다운로드를 출력 RED → 아무것도 출력하지 않음 GREEN | [o] |
-| S-29-2 | fsm-php와 fsm-php-ext의 composer vendor는 `composer.lock`뿐 아니라 `composer.json`도 키로 한다: `composer.json`의 autoload는 lock에 없어서, S-25가 `autoload.files`를 `src/functions.php`로 옮긴 뒤 기존 checkout은 옛 autoload를 유지했고 `make check`가 persist case에서 `Call to undefined function ...\\InReview\\code()`로 실패했다(tree 4768c23의 full run이 찾음). 설치 뒤 stamp를 갱신한다 | tests/make-install: 더 새 composer.json이 vendor를 그대로 둠 RED → 다시 설치 GREEN. full run 통과 | [o] |
+| S-29-2 | fsm-php와 fsm-php-ext의 composer vendor는 `composer.lock`뿐 아니라 `composer.json`도 키로 한다: `composer.json`의 autoload는 lock에 없어서, S-25가 `autoload.files`를 `src/functions.php`로 옮긴 뒤 기존 checkout은 옛 autoload를 유지했고 `make check`가 persist case에서 `Call to undefined function ...\InReview\code()`로 실패했다(tree 4768c23의 full run이 찾음). 설치 뒤 stamp를 갱신한다 | tests/make-install: 더 새 composer.json이 vendor를 그대로 둠 RED → 다시 설치 GREEN. full run 통과 | [o] |
 | S-30 | lock을 잃어도 code의 의미가 바뀌지 않는다: `lock`과 `check`가 lock을 커밋된 lock(json·mermaid는 git HEAD, db는 저장된 행)과 비교한다. 커밋된 codes나 reserved의 어떤 code도 빠지거나 key를 바꿀 수 없다. 규칙과 오류 코드를 spec B-3, B-5에 더한다(감사 9) | 두 code를 바꾸고 fsm.lock.json을 비운 뒤 lock: 지금은 ok RED → 거부 GREEN | [o] |
 | S-30-1 | README가 S-30의 lock baseline을 적는다: 커밋된 lock은 json·mermaid store에서 git HEAD, db store에서 저장된 행이다. 커밋된 code를 잃거나 바꾸는 저장·이름 바꾸기·삭제는 E_LOCK_REGRESSED로 거부된다. git 밖의 프로젝트는 baseline이 없어 이 보호가 없다. fsm 밖에서 바뀐 db 행은 감지되지 않는다. S-19는 S-30 전에 쓰여 이를 말하지 않는다 | spec B-3과 대조한 리뷰와 docs-build. baseline을 빠뜨린 README RED → GREEN | [o] |
 | S-31 | 모든 언어의 영속화가 spec B-4를 지킨다: rust 예제가 deadlock 때 orm이 다시 실행하는 transaction을 쓰거나(`transaction_once` 아님), 차이와 이유를 spec B-4와 layout.json에 적는다. spec B-4에 transaction + forUpdate를 쓰는 이유(orm v0.0.7에는 영향 행 수를 주는 조건부 update가 없음)와 다시 볼 조건을 기록한다(감사 10, 11) | rust 예제의 deadlock 재시도 테스트와 기록의 documents-check RED → GREEN | [o] |
