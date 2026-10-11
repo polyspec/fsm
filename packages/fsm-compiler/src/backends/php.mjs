@@ -14,7 +14,10 @@
 // composer's PSR-4 loads one class per file. A PHP enum is closed, so a state argument that is no state is a TypeError of the
 // call, and no E_UNKNOWN_CODE is raised for it; only from_code takes a raw integer.
 
+import { forKind } from '../core/vectors.mjs';
+
 const SHARED = 'fsm';
+const KIND = 'php';
 const NAMESPACE = /^[A-Za-z][A-Za-z0-9]*(\\[A-Za-z][A-Za-z0-9]*)*$/;
 
 /** The member name of a key: the pascal notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
@@ -226,6 +229,12 @@ function errorFile(ns) {
 }
 
 /** A PHP literal of a vector value (null, bool, int, string, list or map) at nesting `depth`, with four spaces per level. */
+/** The PHP int literal of a decimal string of the oracle; a value that is no decimal string is an Error. */
+function integerOf(item) {
+  if (typeof item !== 'string' || !/^-?[0-9]+$/.test(item)) throw new Error(`php: the input ${JSON.stringify(item)} is not a decimal string`);
+  return item;
+}
+
 function value(item, depth) {
   const pad = '    '.repeat(depth);
   if (item === null) return 'null';
@@ -237,7 +246,9 @@ function value(item, depth) {
   if (typeof item === 'string') return literal(item);
   const entries = Array.isArray(item) ? item.map(entry => [undefined, entry]) : Object.entries(item);
   if (entries.length === 0) return '[]';
-  const cell = ([key, entry]) => `${pad}    ${key === undefined ? '' : `${literal(key)} => `}${value(entry, depth + 1)},`;
+  // An input is a decimal string of the oracle, written as the PHP int it names: the 64-bit range stays exact (docs/spec/fsm.md, B-6).
+  const rendered = (key, entry) => (key === 'input' ? integerOf(entry) : value(entry, depth + 1));
+  const cell = ([key, entry]) => `${pad}    ${key === undefined ? '' : `${literal(key)} => `}${rendered(key, entry)},`;
   return ['[', ...entries.map(cell), `${pad}]`].join('\n');
 }
 
@@ -282,9 +293,9 @@ export function files(irs, lock, { phpNamespace } = {}) {
  * The native test module tests/Vectors.php of `vectorList`, the vectors of every machine in order, in the namespace <ns>\Tests:
  * the class Vectors whose cases() returns each case under its test name test_<feature>__<id> (docs/plans/fsm-v1.md, C-4).
  */
-export function vectorsFile(vectorList, { phpNamespace } = {}) {
+export function vectorsFile(list, { phpNamespace } = {}) {
   const phpNs = checkedNamespace(phpNamespace);
-  const cases = vectorList.flatMap(({ machine, cases: list }) => list.map(item => [`test_${item.feature}__${item.id}`, { machine, case: item }]));
+  const cases = forKind(list, KIND).flatMap(({ machine, cases: items }) => items.map(item => [`test_${item.feature}__${item.id}`, { machine, case: item }]));
   const entries = cases.map(([name, data]) => `            ${literal(name)} => ${value(data, 3)},`);
   return text([
     ...opening(SHARED, `${phpNs}\\Tests`),

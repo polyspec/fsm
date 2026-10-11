@@ -5,18 +5,21 @@
 //   node scripts/check-parity.mjs --kind <kind>            the record of one kind only
 //
 // The cases are the vectors of conformance/vectors/*.json, `{ machine, cases: [{ feature, id, ... }] }`; a case is named
-// `test_<feature>__<id>`, and every feature of contracts/features.json has at least one case. A record is the file
-// .results/<name>.json that `scripts/kit/run-tests.mjs --results` writes. The check fails when
+// `test_<feature>__<id>`, and every feature of contracts/features.json has at least one case. A case with a `kinds` list is
+// run by the kinds it names only (an invalid state value that the state type of rust and php cannot hold, docs/plans/fsm-v1.md,
+// C-4); a case without one is run by every kind. A record is the file .results/<name>.json that
+// `scripts/kit/run-tests.mjs --results` writes. The check fails when
 //
 //   - a record is missing, does not cover its package, or is stale (its inputs digest differs from the current files);
-//   - a kind did not run a vector case, ran one twice, or ran a case that no vector holds;
+//   - a kind did not run a vector case that admits it, ran one twice, ran a case that no vector holds, or ran a case that
+//     the kinds list of its vector excludes;
 //   - a case of a record has any status but pass (fail, timeout and skip all fail);
 //   - a test id names two or more cases, or names none and is not the parent of a test that names one (such as the Go test
 //     function that runs the cases as subtests);
 //   - a record ran longer than 600000 ms.
 //
-// There is no exemption: every kind runs the same cases at the same level. Each finding is one line on standard error;
-// the command exits with status 1 when there is one.
+// There is no exemption besides the kinds lists: every kind runs the same cases at the same level. Each finding is one line on
+// standard error; the command exits with status 1 when there is one.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -41,7 +44,7 @@ function cases(root) {
   const directory = path.join(root, VECTORS);
   const files = existsSync(directory) ? readdirSync(directory).filter(file => file.endsWith('.json')).sort() : [];
   if (files.length === 0) return { names: null, found: [finding(`${VECTORS} holds no vector file; fsm-gen vectors writes them`)] };
-  const names = new Set();
+  const names = new Map();
   const covered = new Set();
   for (const file of files) {
     const where = `${VECTORS}/${file}`;
@@ -57,7 +60,11 @@ function cases(root) {
       }
       const name = `test_${entry.feature}__${entry.id}`;
       if (names.has(name)) found.push(finding(`${where} holds the case ${name} twice`));
-      names.add(name);
+      const admitted = entry.kinds ?? null;
+      if (admitted !== null && (!Array.isArray(admitted) || admitted.length === 0 || admitted.some(kind => typeof kind !== 'string'))) {
+        found.push(finding(`${where} holds the case ${name} with a kinds field that is not a non-empty list of kind names`));
+      }
+      names.set(name, admitted);
       covered.add(entry.feature);
     }
   }
@@ -91,7 +98,10 @@ function readRecord(root, name, covers, rerun) {
 
 const statusFindings = (label, record) => record.cases.filter(entry => entry.status !== 'pass').map(entry => finding(`${label}: ${entry.id} is ${entry.status}; every case passes`));
 
-/** The findings of the record of `kind` against the vector case `names`. */
+/** Whether the vector case admitted by `admitted` (a list of kinds, or null for every kind) is run by `kind`. */
+const admits = (admitted, kind) => admitted === null || admitted.includes(kind);
+
+/** The findings of the record of `kind` against the vector cases `names`, a map of case name to its admitted kinds (or null). */
 function kindFindings(root, kind, names) {
   const fix = `run make test-${kind}`;
   const { record, found } = readRecord(root, kind, `packages/fsm-${kind}`, { missing: file => `the kind ${kind} has no result ${file}; ${fix}`, fix });
@@ -108,8 +118,11 @@ function kindFindings(root, kind, names) {
   }
   if (names) {
     for (const [name, count] of runs) if (count > 1) found.push(finding(`${kind} ran ${name} ${count} times; every case runs once`));
-    for (const name of names) if (!runs.has(name)) found.push(finding(`${kind} did not run ${name}`));
-    for (const name of runs.keys()) if (!names.has(name)) found.push(finding(`${kind} ran ${name}, which no vector of ${VECTORS} holds`));
+    for (const [name, admitted] of names) if (admits(admitted, kind) && !runs.has(name)) found.push(finding(`${kind} did not run ${name}`));
+    for (const name of runs.keys()) {
+      if (!names.has(name)) found.push(finding(`${kind} ran ${name}, which no vector of ${VECTORS} holds`));
+      else if (!admits(names.get(name), kind)) found.push(finding(`${kind} ran ${name}, which its vector does not admit for ${kind}`));
+    }
   }
   return found;
 }
@@ -120,6 +133,11 @@ export function parityFindings(root, { kind, tools = [] } = {}) {
   const kinds = Object.keys(layout.kinds).sort();
   if (kind !== undefined && !kinds.includes(kind)) return [finding(`--kind ${kind} is not a kind of contracts/layout.json`)];
   const { names, found } = cases(root);
+  if (names) {
+    for (const [name, admitted] of names) {
+      for (const entry of admitted ?? []) if (!kinds.includes(entry)) found.push(finding(`the case ${name} is admitted by ${entry}, which contracts/layout.json does not declare as a kind`));
+    }
+  }
   for (const entry of kind === undefined ? kinds : [kind]) found.push(...kindFindings(root, entry, names));
   if (kind === undefined) {
     for (const tool of tools) {
@@ -145,5 +163,5 @@ if (isMain(import.meta.url)) {
   }
   const layout = readJson(path.join(root, 'contracts/layout.json'));
   const count = values.kind ? 1 : Object.keys(layout.kinds).length;
-  console.log(`[check-parity] ${count} kinds ran ${cases(root).names.size} cases each and passed`);
+  console.log(`[check-parity] ${count} kinds passed; the vectors hold ${cases(root).names.size} cases, each run by every kind that admits it`);
 }

@@ -35,33 +35,46 @@ var vectors = []machineVectors{
 			{feature: "events_from", id: "in_review_events_from_s2", state: "done_now", want: expectation{events: []string{}}},
 			{feature: "from_code", id: "in_review_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "in_review_from_code_unknown", input: 4, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "in_review_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "in_review_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "in_review_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "in_review_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "in_review_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "in_review_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "in_review_apply_expected_v0_e0_s0", expectedValue: 0, expectedIsValue: true, event: "start_work", actual: "to_do", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "in_review_apply_actual_v0_e0_s0", expected: "to_do", event: "start_work", actualValue: 0, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "in_review_code_v4", value: 4, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "in_review_is_final_v4", value: 4, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "in_review_key_v4", code: 4, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "in_review_apply_expected_v4_e0_s0", expectedValue: 4, expectedIsValue: true, event: "start_work", actual: "to_do", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "in_review_apply_actual_v4_e0_s0", expected: "to_do", event: "start_work", actualValue: 4, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "target", id: "in_review_target_s0_e0", state: "to_do", event: "start_work", want: expectation{state: "in_progress"}},
-			{feature: "target", id: "in_review_target_s0_e1", state: "to_do", event: "finish_work", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "in_review_target_s0_e2", state: "to_do", event: "reopen_work", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "in_review_target_s1_e0", state: "in_progress", event: "start_work", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "in_review_target_s0_e1", state: "to_do", event: "finish_work", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 2}},
+			{feature: "target", id: "in_review_target_s0_e2", state: "to_do", event: "reopen_work", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 3}},
+			{feature: "target", id: "in_review_target_s1_e0", state: "in_progress", event: "start_work", want: expectation{error: "E_INVALID_TRANSITION", expected: 2, event: 1}},
 			{feature: "target", id: "in_review_target_s1_e1", state: "in_progress", event: "finish_work", want: expectation{state: "done_now"}},
 			{feature: "target", id: "in_review_target_s1_e2", state: "in_progress", event: "reopen_work", want: expectation{state: "to_do"}},
-			{feature: "target", id: "in_review_target_s2_e0", state: "done_now", event: "start_work", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "in_review_target_s2_e1", state: "done_now", event: "finish_work", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "in_review_target_s2_e2", state: "done_now", event: "reopen_work", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "in_review_target_s2_e0", state: "done_now", event: "start_work", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 1}},
+			{feature: "target", id: "in_review_target_s2_e1", state: "done_now", event: "finish_work", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 2}},
+			{feature: "target", id: "in_review_target_s2_e2", state: "done_now", event: "reopen_work", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 3}},
 			{feature: "apply", id: "in_review_apply_s0_e0_s0", expected: "to_do", event: "start_work", actual: "to_do", want: expectation{to: "in_progress", changed: true}},
 			{feature: "apply", id: "in_review_apply_s0_e0_s1", expected: "to_do", event: "start_work", actual: "in_progress", want: expectation{to: "in_progress", changed: false}},
-			{feature: "apply", id: "in_review_apply_s0_e0_s2", expected: "to_do", event: "start_work", actual: "done_now", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "in_review_apply_s0_e0_s2", expected: "to_do", event: "start_work", actual: "done_now", want: expectation{error: "E_CONFLICT", expected: 1, actual: 3, event: 1}},
 			{feature: "apply", id: "in_review_apply_s1_e1_s1", expected: "in_progress", event: "finish_work", actual: "in_progress", want: expectation{to: "done_now", changed: true}},
 			{feature: "apply", id: "in_review_apply_s1_e1_s2", expected: "in_progress", event: "finish_work", actual: "done_now", want: expectation{to: "done_now", changed: false}},
-			{feature: "apply", id: "in_review_apply_s1_e1_s0", expected: "in_progress", event: "finish_work", actual: "to_do", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "in_review_apply_s1_e1_s0", expected: "in_progress", event: "finish_work", actual: "to_do", want: expectation{error: "E_CONFLICT", expected: 2, actual: 1, event: 2}},
 			{feature: "apply", id: "in_review_apply_s1_e2_s1", expected: "in_progress", event: "reopen_work", actual: "in_progress", want: expectation{to: "to_do", changed: true}},
 			{feature: "apply", id: "in_review_apply_s1_e2_s0", expected: "in_progress", event: "reopen_work", actual: "to_do", want: expectation{to: "to_do", changed: false}},
-			{feature: "apply", id: "in_review_apply_s1_e2_s2", expected: "in_progress", event: "reopen_work", actual: "done_now", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "in_review_apply_s0_e1_s0", expected: "to_do", event: "finish_work", actual: "to_do", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "in_review_apply_s0_e2_s0", expected: "to_do", event: "reopen_work", actual: "to_do", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "in_review_apply_s1_e0_s1", expected: "in_progress", event: "start_work", actual: "in_progress", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "in_review_apply_s2_e0_s2", expected: "done_now", event: "start_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "in_review_apply_s2_e1_s2", expected: "done_now", event: "finish_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "in_review_apply_s2_e2_s2", expected: "done_now", event: "reopen_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "in_review_apply_s1_e2_s2", expected: "in_progress", event: "reopen_work", actual: "done_now", want: expectation{error: "E_CONFLICT", expected: 2, actual: 3, event: 3}},
+			{feature: "apply", id: "in_review_apply_s0_e1_s0", expected: "to_do", event: "finish_work", actual: "to_do", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 2}},
+			{feature: "apply", id: "in_review_apply_s0_e2_s0", expected: "to_do", event: "reopen_work", actual: "to_do", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 3}},
+			{feature: "apply", id: "in_review_apply_s1_e0_s1", expected: "in_progress", event: "start_work", actual: "in_progress", want: expectation{error: "E_INVALID_TRANSITION", expected: 2, event: 1}},
+			{feature: "apply", id: "in_review_apply_s2_e0_s2", expected: "done_now", event: "start_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 1}},
+			{feature: "apply", id: "in_review_apply_s2_e1_s2", expected: "done_now", event: "finish_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 2}},
+			{feature: "apply", id: "in_review_apply_s2_e2_s2", expected: "done_now", event: "reopen_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 3}},
 			{feature: "persist", id: "in_review_persist_first", scenario: "first", expected: "to_do", event: "start_work", stored: "to_do", want: expectation{storedAfter: "in_progress", changed: true}},
 			{feature: "persist", id: "in_review_persist_retry", scenario: "retry", expected: "to_do", event: "start_work", stored: "in_progress", want: expectation{storedAfter: "in_progress", changed: false}},
-			{feature: "persist", id: "in_review_persist_conflict", scenario: "conflict", expected: "to_do", event: "start_work", stored: "done_now", want: expectation{error: "E_CONFLICT", storedAfter: "done_now"}},
+			{feature: "persist", id: "in_review_persist_conflict", scenario: "conflict", expected: "to_do", event: "start_work", stored: "done_now", want: expectation{error: "E_CONFLICT", expected: 1, actual: 3, event: 1, storedAfter: "done_now"}},
 		},
 	},
 	{
@@ -80,11 +93,24 @@ var vectors = []machineVectors{
 			{feature: "events_from", id: "limits_events_from_s1", state: "ceiling", want: expectation{events: []string{}}},
 			{feature: "from_code", id: "limits_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "limits_from_code_unknown", input: 2, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "limits_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "limits_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "limits_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "limits_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "limits_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "limits_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "limits_apply_expected_v0_e0_s0", expectedValue: 0, expectedIsValue: true, event: "rise", actual: "floor", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "limits_apply_actual_v0_e0_s0", expected: "floor", event: "rise", actualValue: 0, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "limits_code_v2", value: 2, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "limits_is_final_v2", value: 2, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "limits_key_v2", code: 2, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "limits_apply_expected_v2_e0_s0", expectedValue: 2, expectedIsValue: true, event: "rise", actual: "floor", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "limits_apply_actual_v2_e0_s0", expected: "floor", event: "rise", actualValue: 2, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "target", id: "limits_target_s0_e0", state: "floor", event: "rise", want: expectation{state: "ceiling"}},
-			{feature: "target", id: "limits_target_s1_e0", state: "ceiling", event: "rise", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "limits_target_s1_e0", state: "ceiling", event: "rise", want: expectation{error: "E_INVALID_TRANSITION", expected: 2147483647, event: 1}},
 			{feature: "apply", id: "limits_apply_s0_e0_s0", expected: "floor", event: "rise", actual: "floor", want: expectation{to: "ceiling", changed: true}},
 			{feature: "apply", id: "limits_apply_s0_e0_s1", expected: "floor", event: "rise", actual: "ceiling", want: expectation{to: "ceiling", changed: false}},
-			{feature: "apply", id: "limits_apply_s1_e0_s1", expected: "ceiling", event: "rise", actual: "ceiling", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "limits_apply_s1_e0_s1", expected: "ceiling", event: "rise", actual: "ceiling", want: expectation{error: "E_INVALID_TRANSITION", expected: 2147483647, event: 1}},
 			{feature: "persist", id: "limits_persist_first", scenario: "first", expected: "floor", event: "rise", stored: "floor", want: expectation{storedAfter: "ceiling", changed: true}},
 			{feature: "persist", id: "limits_persist_retry", scenario: "retry", expected: "floor", event: "rise", stored: "ceiling", want: expectation{storedAfter: "ceiling", changed: false}},
 		},
@@ -120,67 +146,80 @@ var vectors = []machineVectors{
 			{feature: "events_from", id: "order_events_from_s4", state: "canceled", want: expectation{events: []string{}}},
 			{feature: "from_code", id: "order_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "order_from_code_unknown", input: 6, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "order_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "order_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "order_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "order_apply_expected_v0_e0_s0", expectedValue: 0, expectedIsValue: true, event: "next", actual: "draft", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "order_apply_actual_v0_e0_s0", expected: "draft", event: "next", actualValue: 0, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "order_code_v6", value: 6, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "order_is_final_v6", value: 6, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "order_key_v6", code: 6, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "order_apply_expected_v6_e0_s0", expectedValue: 6, expectedIsValue: true, event: "next", actual: "draft", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "order_apply_actual_v6_e0_s0", expected: "draft", event: "next", actualValue: 6, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "target", id: "order_target_s0_e0", state: "draft", event: "next", want: expectation{state: "paid"}},
-			{feature: "target", id: "order_target_s0_e1", state: "draft", event: "prev", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "order_target_s0_e1", state: "draft", event: "prev", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 2}},
 			{feature: "target", id: "order_target_s0_e2", state: "draft", event: "cancel", want: expectation{state: "canceled"}},
 			{feature: "target", id: "order_target_s1_e0", state: "paid", event: "next", want: expectation{state: "shipped"}},
 			{feature: "target", id: "order_target_s1_e1", state: "paid", event: "prev", want: expectation{state: "draft"}},
 			{feature: "target", id: "order_target_s1_e2", state: "paid", event: "cancel", want: expectation{state: "canceled"}},
 			{feature: "target", id: "order_target_s2_e0", state: "shipped", event: "next", want: expectation{state: "done"}},
 			{feature: "target", id: "order_target_s2_e1", state: "shipped", event: "prev", want: expectation{state: "paid"}},
-			{feature: "target", id: "order_target_s2_e2", state: "shipped", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s3_e0", state: "done", event: "next", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s3_e1", state: "done", event: "prev", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s3_e2", state: "done", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s4_e0", state: "canceled", event: "next", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s4_e1", state: "canceled", event: "prev", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s4_e2", state: "canceled", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "order_target_s2_e2", state: "shipped", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 3}},
+			{feature: "target", id: "order_target_s3_e0", state: "done", event: "next", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 1}},
+			{feature: "target", id: "order_target_s3_e1", state: "done", event: "prev", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 2}},
+			{feature: "target", id: "order_target_s3_e2", state: "done", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 3}},
+			{feature: "target", id: "order_target_s4_e0", state: "canceled", event: "next", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 1}},
+			{feature: "target", id: "order_target_s4_e1", state: "canceled", event: "prev", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 2}},
+			{feature: "target", id: "order_target_s4_e2", state: "canceled", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 3}},
 			{feature: "apply", id: "order_apply_s0_e0_s0", expected: "draft", event: "next", actual: "draft", want: expectation{to: "paid", changed: true}},
 			{feature: "apply", id: "order_apply_s0_e0_s1", expected: "draft", event: "next", actual: "paid", want: expectation{to: "paid", changed: false}},
-			{feature: "apply", id: "order_apply_s0_e0_s2", expected: "draft", event: "next", actual: "shipped", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e0_s3", expected: "draft", event: "next", actual: "done", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e0_s4", expected: "draft", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s0_e0_s2", expected: "draft", event: "next", actual: "shipped", want: expectation{error: "E_CONFLICT", expected: 1, actual: 3, event: 1}},
+			{feature: "apply", id: "order_apply_s0_e0_s3", expected: "draft", event: "next", actual: "done", want: expectation{error: "E_CONFLICT", expected: 1, actual: 4, event: 1}},
+			{feature: "apply", id: "order_apply_s0_e0_s4", expected: "draft", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 1, actual: 5, event: 1}},
 			{feature: "apply", id: "order_apply_s0_e2_s0", expected: "draft", event: "cancel", actual: "draft", want: expectation{to: "canceled", changed: true}},
 			{feature: "apply", id: "order_apply_s0_e2_s4", expected: "draft", event: "cancel", actual: "canceled", want: expectation{to: "canceled", changed: false}},
-			{feature: "apply", id: "order_apply_s0_e2_s1", expected: "draft", event: "cancel", actual: "paid", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e2_s2", expected: "draft", event: "cancel", actual: "shipped", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e2_s3", expected: "draft", event: "cancel", actual: "done", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s0_e2_s1", expected: "draft", event: "cancel", actual: "paid", want: expectation{error: "E_CONFLICT", expected: 1, actual: 2, event: 3}},
+			{feature: "apply", id: "order_apply_s0_e2_s2", expected: "draft", event: "cancel", actual: "shipped", want: expectation{error: "E_CONFLICT", expected: 1, actual: 3, event: 3}},
+			{feature: "apply", id: "order_apply_s0_e2_s3", expected: "draft", event: "cancel", actual: "done", want: expectation{error: "E_CONFLICT", expected: 1, actual: 4, event: 3}},
 			{feature: "apply", id: "order_apply_s1_e0_s1", expected: "paid", event: "next", actual: "paid", want: expectation{to: "shipped", changed: true}},
 			{feature: "apply", id: "order_apply_s1_e0_s2", expected: "paid", event: "next", actual: "shipped", want: expectation{to: "shipped", changed: false}},
-			{feature: "apply", id: "order_apply_s1_e0_s0", expected: "paid", event: "next", actual: "draft", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e0_s3", expected: "paid", event: "next", actual: "done", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e0_s4", expected: "paid", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s1_e0_s0", expected: "paid", event: "next", actual: "draft", want: expectation{error: "E_CONFLICT", expected: 2, actual: 1, event: 1}},
+			{feature: "apply", id: "order_apply_s1_e0_s3", expected: "paid", event: "next", actual: "done", want: expectation{error: "E_CONFLICT", expected: 2, actual: 4, event: 1}},
+			{feature: "apply", id: "order_apply_s1_e0_s4", expected: "paid", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 2, actual: 5, event: 1}},
 			{feature: "apply", id: "order_apply_s1_e1_s1", expected: "paid", event: "prev", actual: "paid", want: expectation{to: "draft", changed: true}},
 			{feature: "apply", id: "order_apply_s1_e1_s0", expected: "paid", event: "prev", actual: "draft", want: expectation{to: "draft", changed: false}},
-			{feature: "apply", id: "order_apply_s1_e1_s2", expected: "paid", event: "prev", actual: "shipped", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e1_s3", expected: "paid", event: "prev", actual: "done", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e1_s4", expected: "paid", event: "prev", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s1_e1_s2", expected: "paid", event: "prev", actual: "shipped", want: expectation{error: "E_CONFLICT", expected: 2, actual: 3, event: 2}},
+			{feature: "apply", id: "order_apply_s1_e1_s3", expected: "paid", event: "prev", actual: "done", want: expectation{error: "E_CONFLICT", expected: 2, actual: 4, event: 2}},
+			{feature: "apply", id: "order_apply_s1_e1_s4", expected: "paid", event: "prev", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 2, actual: 5, event: 2}},
 			{feature: "apply", id: "order_apply_s1_e2_s1", expected: "paid", event: "cancel", actual: "paid", want: expectation{to: "canceled", changed: true}},
 			{feature: "apply", id: "order_apply_s1_e2_s4", expected: "paid", event: "cancel", actual: "canceled", want: expectation{to: "canceled", changed: false}},
-			{feature: "apply", id: "order_apply_s1_e2_s0", expected: "paid", event: "cancel", actual: "draft", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e2_s2", expected: "paid", event: "cancel", actual: "shipped", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e2_s3", expected: "paid", event: "cancel", actual: "done", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s1_e2_s0", expected: "paid", event: "cancel", actual: "draft", want: expectation{error: "E_CONFLICT", expected: 2, actual: 1, event: 3}},
+			{feature: "apply", id: "order_apply_s1_e2_s2", expected: "paid", event: "cancel", actual: "shipped", want: expectation{error: "E_CONFLICT", expected: 2, actual: 3, event: 3}},
+			{feature: "apply", id: "order_apply_s1_e2_s3", expected: "paid", event: "cancel", actual: "done", want: expectation{error: "E_CONFLICT", expected: 2, actual: 4, event: 3}},
 			{feature: "apply", id: "order_apply_s2_e0_s2", expected: "shipped", event: "next", actual: "shipped", want: expectation{to: "done", changed: true}},
 			{feature: "apply", id: "order_apply_s2_e0_s3", expected: "shipped", event: "next", actual: "done", want: expectation{to: "done", changed: false}},
-			{feature: "apply", id: "order_apply_s2_e0_s0", expected: "shipped", event: "next", actual: "draft", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s2_e0_s1", expected: "shipped", event: "next", actual: "paid", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s2_e0_s4", expected: "shipped", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s2_e0_s0", expected: "shipped", event: "next", actual: "draft", want: expectation{error: "E_CONFLICT", expected: 3, actual: 1, event: 1}},
+			{feature: "apply", id: "order_apply_s2_e0_s1", expected: "shipped", event: "next", actual: "paid", want: expectation{error: "E_CONFLICT", expected: 3, actual: 2, event: 1}},
+			{feature: "apply", id: "order_apply_s2_e0_s4", expected: "shipped", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 3, actual: 5, event: 1}},
 			{feature: "apply", id: "order_apply_s2_e1_s2", expected: "shipped", event: "prev", actual: "shipped", want: expectation{to: "paid", changed: true}},
 			{feature: "apply", id: "order_apply_s2_e1_s1", expected: "shipped", event: "prev", actual: "paid", want: expectation{to: "paid", changed: false}},
-			{feature: "apply", id: "order_apply_s2_e1_s0", expected: "shipped", event: "prev", actual: "draft", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s2_e1_s3", expected: "shipped", event: "prev", actual: "done", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s2_e1_s4", expected: "shipped", event: "prev", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e1_s0", expected: "draft", event: "prev", actual: "draft", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s2_e2_s2", expected: "shipped", event: "cancel", actual: "shipped", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s3_e0_s3", expected: "done", event: "next", actual: "done", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s3_e1_s3", expected: "done", event: "prev", actual: "done", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s3_e2_s3", expected: "done", event: "cancel", actual: "done", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s4_e0_s4", expected: "canceled", event: "next", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s4_e1_s4", expected: "canceled", event: "prev", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s4_e2_s4", expected: "canceled", event: "cancel", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "order_apply_s2_e1_s0", expected: "shipped", event: "prev", actual: "draft", want: expectation{error: "E_CONFLICT", expected: 3, actual: 1, event: 2}},
+			{feature: "apply", id: "order_apply_s2_e1_s3", expected: "shipped", event: "prev", actual: "done", want: expectation{error: "E_CONFLICT", expected: 3, actual: 4, event: 2}},
+			{feature: "apply", id: "order_apply_s2_e1_s4", expected: "shipped", event: "prev", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 3, actual: 5, event: 2}},
+			{feature: "apply", id: "order_apply_s0_e1_s0", expected: "draft", event: "prev", actual: "draft", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 2}},
+			{feature: "apply", id: "order_apply_s2_e2_s2", expected: "shipped", event: "cancel", actual: "shipped", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 3}},
+			{feature: "apply", id: "order_apply_s3_e0_s3", expected: "done", event: "next", actual: "done", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 1}},
+			{feature: "apply", id: "order_apply_s3_e1_s3", expected: "done", event: "prev", actual: "done", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 2}},
+			{feature: "apply", id: "order_apply_s3_e2_s3", expected: "done", event: "cancel", actual: "done", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 3}},
+			{feature: "apply", id: "order_apply_s4_e0_s4", expected: "canceled", event: "next", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 1}},
+			{feature: "apply", id: "order_apply_s4_e1_s4", expected: "canceled", event: "prev", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 2}},
+			{feature: "apply", id: "order_apply_s4_e2_s4", expected: "canceled", event: "cancel", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 3}},
 			{feature: "persist", id: "order_persist_first", scenario: "first", expected: "draft", event: "next", stored: "draft", want: expectation{storedAfter: "paid", changed: true}},
 			{feature: "persist", id: "order_persist_retry", scenario: "retry", expected: "draft", event: "next", stored: "paid", want: expectation{storedAfter: "paid", changed: false}},
-			{feature: "persist", id: "order_persist_conflict", scenario: "conflict", expected: "draft", event: "next", stored: "shipped", want: expectation{error: "E_CONFLICT", storedAfter: "shipped"}},
+			{feature: "persist", id: "order_persist_conflict", scenario: "conflict", expected: "draft", event: "next", stored: "shipped", want: expectation{error: "E_CONFLICT", expected: 1, actual: 3, event: 1, storedAfter: "shipped"}},
 		},
 	},
 	{
@@ -194,6 +233,15 @@ var vectors = []machineVectors{
 			{feature: "events_from", id: "standby_events_from_s0", state: "ready", want: expectation{events: []string{}}},
 			{feature: "from_code", id: "standby_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "standby_from_code_unknown", input: 2, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "standby_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "standby_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "standby_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "standby_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "standby_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "standby_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "standby_code_v2", value: 2, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "standby_is_final_v2", value: 2, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "standby_key_v2", code: 2, want: expectation{error: "E_UNKNOWN_CODE"}},
 		},
 	},
 	{
@@ -219,33 +267,46 @@ var vectors = []machineVectors{
 			{feature: "from_code", id: "ticket_from_code_unknown", input: 6, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "ticket_from_code_r2", input: 2, want: expectation{error: "E_RESERVED_CODE"}},
 			{feature: "from_code", id: "ticket_from_code_r4", input: 4, want: expectation{error: "E_RESERVED_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "ticket_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "ticket_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "ticket_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "ticket_apply_expected_v0_e0_s0", expectedValue: 0, expectedIsValue: true, event: "submit", actual: "open", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "ticket_apply_actual_v0_e0_s0", expected: "open", event: "submit", actualValue: 0, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "ticket_code_v6", value: 6, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "ticket_is_final_v6", value: 6, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "ticket_key_v6", code: 6, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "ticket_apply_expected_v6_e0_s0", expectedValue: 6, expectedIsValue: true, event: "submit", actual: "open", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "ticket_apply_actual_v6_e0_s0", expected: "open", event: "submit", actualValue: 6, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "target", id: "ticket_target_s0_e0", state: "open", event: "submit", want: expectation{state: "review"}},
-			{feature: "target", id: "ticket_target_s0_e1", state: "open", event: "approve", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "ticket_target_s0_e2", state: "open", event: "reject", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "ticket_target_s1_e0", state: "review", event: "submit", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "ticket_target_s0_e1", state: "open", event: "approve", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 2}},
+			{feature: "target", id: "ticket_target_s0_e2", state: "open", event: "reject", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 3}},
+			{feature: "target", id: "ticket_target_s1_e0", state: "review", event: "submit", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 1}},
 			{feature: "target", id: "ticket_target_s1_e1", state: "review", event: "approve", want: expectation{state: "closed"}},
 			{feature: "target", id: "ticket_target_s1_e2", state: "review", event: "reject", want: expectation{state: "open"}},
-			{feature: "target", id: "ticket_target_s2_e0", state: "closed", event: "submit", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "ticket_target_s2_e1", state: "closed", event: "approve", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "ticket_target_s2_e2", state: "closed", event: "reject", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "ticket_target_s2_e0", state: "closed", event: "submit", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 1}},
+			{feature: "target", id: "ticket_target_s2_e1", state: "closed", event: "approve", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 2}},
+			{feature: "target", id: "ticket_target_s2_e2", state: "closed", event: "reject", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 3}},
 			{feature: "apply", id: "ticket_apply_s0_e0_s0", expected: "open", event: "submit", actual: "open", want: expectation{to: "review", changed: true}},
 			{feature: "apply", id: "ticket_apply_s0_e0_s1", expected: "open", event: "submit", actual: "review", want: expectation{to: "review", changed: false}},
-			{feature: "apply", id: "ticket_apply_s0_e0_s2", expected: "open", event: "submit", actual: "closed", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "ticket_apply_s0_e0_s2", expected: "open", event: "submit", actual: "closed", want: expectation{error: "E_CONFLICT", expected: 1, actual: 5, event: 1}},
 			{feature: "apply", id: "ticket_apply_s1_e1_s1", expected: "review", event: "approve", actual: "review", want: expectation{to: "closed", changed: true}},
 			{feature: "apply", id: "ticket_apply_s1_e1_s2", expected: "review", event: "approve", actual: "closed", want: expectation{to: "closed", changed: false}},
-			{feature: "apply", id: "ticket_apply_s1_e1_s0", expected: "review", event: "approve", actual: "open", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "ticket_apply_s1_e1_s0", expected: "review", event: "approve", actual: "open", want: expectation{error: "E_CONFLICT", expected: 3, actual: 1, event: 2}},
 			{feature: "apply", id: "ticket_apply_s1_e2_s1", expected: "review", event: "reject", actual: "review", want: expectation{to: "open", changed: true}},
 			{feature: "apply", id: "ticket_apply_s1_e2_s0", expected: "review", event: "reject", actual: "open", want: expectation{to: "open", changed: false}},
-			{feature: "apply", id: "ticket_apply_s1_e2_s2", expected: "review", event: "reject", actual: "closed", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "ticket_apply_s0_e1_s0", expected: "open", event: "approve", actual: "open", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "ticket_apply_s0_e2_s0", expected: "open", event: "reject", actual: "open", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "ticket_apply_s1_e0_s1", expected: "review", event: "submit", actual: "review", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "ticket_apply_s2_e0_s2", expected: "closed", event: "submit", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "ticket_apply_s2_e1_s2", expected: "closed", event: "approve", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "ticket_apply_s2_e2_s2", expected: "closed", event: "reject", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "ticket_apply_s1_e2_s2", expected: "review", event: "reject", actual: "closed", want: expectation{error: "E_CONFLICT", expected: 3, actual: 5, event: 3}},
+			{feature: "apply", id: "ticket_apply_s0_e1_s0", expected: "open", event: "approve", actual: "open", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 2}},
+			{feature: "apply", id: "ticket_apply_s0_e2_s0", expected: "open", event: "reject", actual: "open", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 3}},
+			{feature: "apply", id: "ticket_apply_s1_e0_s1", expected: "review", event: "submit", actual: "review", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 1}},
+			{feature: "apply", id: "ticket_apply_s2_e0_s2", expected: "closed", event: "submit", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 1}},
+			{feature: "apply", id: "ticket_apply_s2_e1_s2", expected: "closed", event: "approve", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 2}},
+			{feature: "apply", id: "ticket_apply_s2_e2_s2", expected: "closed", event: "reject", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 3}},
 			{feature: "persist", id: "ticket_persist_first", scenario: "first", expected: "open", event: "submit", stored: "open", want: expectation{storedAfter: "review", changed: true}},
 			{feature: "persist", id: "ticket_persist_retry", scenario: "retry", expected: "open", event: "submit", stored: "review", want: expectation{storedAfter: "review", changed: false}},
-			{feature: "persist", id: "ticket_persist_conflict", scenario: "conflict", expected: "open", event: "submit", stored: "closed", want: expectation{error: "E_CONFLICT", storedAfter: "closed"}},
+			{feature: "persist", id: "ticket_persist_conflict", scenario: "conflict", expected: "open", event: "submit", stored: "closed", want: expectation{error: "E_CONFLICT", expected: 1, actual: 5, event: 1, storedAfter: "closed"}},
 		},
 	},
 }
@@ -253,10 +314,10 @@ var vectors = []machineVectors{
 // machines maps the key of each machine to its adapter; the conformance test runs the cases of a machine through it.
 var machines = map[string]machineUnderTest{
 	"in_review": in_reviewMachine{},
-	"limits": limitsMachine{},
-	"order": orderMachine{},
-	"standby": standbyMachine{},
-	"ticket": ticketMachine{},
+	"limits":    limitsMachine{},
+	"order":     orderMachine{},
+	"standby":   standbyMachine{},
+	"ticket":    ticketMachine{},
 }
 
 // in_reviewMachine is the adapter of the in_review machine: its constants by key and its functions by key (docs/spec/fsm.md, B-6).
@@ -275,19 +336,31 @@ var in_reviewEvents = map[string]in_review.Event{
 	"reopen_work": in_review.EventReopenWork,
 }
 
-func (in_reviewMachine) initial() (string, error) {
+func (m in_reviewMachine) initial() (string, error) {
 	return in_review.Key(in_review.Initial())
 }
 
-func (in_reviewMachine) code(state string) (int32, error) {
-	value, err := lookup(in_reviewStates, "state", state)
+// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+func (m in_reviewMachine) state(arg stateArg) (in_review.State, error) {
+	if arg.isValue {
+		value, err := int32Of(arg.value)
+		if err != nil {
+			return 0, err
+		}
+		return in_review.State(value), nil
+	}
+	return lookup(in_reviewStates, "state", arg.key)
+}
+
+func (m in_reviewMachine) code(state stateArg) (int32, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return 0, err
 	}
 	return in_review.Code(value)
 }
 
-func (in_reviewMachine) key(code int64) (string, error) {
+func (m in_reviewMachine) key(code int64) (string, error) {
 	value, err := int32Of(code)
 	if err != nil {
 		return "", err
@@ -295,7 +368,7 @@ func (in_reviewMachine) key(code int64) (string, error) {
 	return in_review.Key(in_review.State(value))
 }
 
-func (in_reviewMachine) fromCode(code int64) (string, error) {
+func (m in_reviewMachine) fromCode(code int64) (string, error) {
 	value, err := in_review.FromCode(code)
 	if err != nil {
 		return "", err
@@ -303,15 +376,15 @@ func (in_reviewMachine) fromCode(code int64) (string, error) {
 	return in_review.Key(value)
 }
 
-func (in_reviewMachine) isFinal(state string) (bool, error) {
-	value, err := lookup(in_reviewStates, "state", state)
+func (m in_reviewMachine) isFinal(state stateArg) (bool, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return false, err
 	}
 	return in_review.IsFinal(value)
 }
 
-func (in_reviewMachine) eventsFrom(state string) ([]string, error) {
+func (m in_reviewMachine) eventsFrom(state string) ([]string, error) {
 	value, err := lookup(in_reviewStates, "state", state)
 	if err != nil {
 		return nil, err
@@ -331,7 +404,7 @@ func (in_reviewMachine) eventsFrom(state string) ([]string, error) {
 	return keys, nil
 }
 
-func (in_reviewMachine) target(expected, event string) (string, error) {
+func (m in_reviewMachine) target(expected, event string) (string, error) {
 	from, err := lookup(in_reviewStates, "state", expected)
 	if err != nil {
 		return "", err
@@ -347,8 +420,8 @@ func (in_reviewMachine) target(expected, event string) (string, error) {
 	return keyOf(in_reviewStates, "state", to)
 }
 
-func (in_reviewMachine) apply(expected, event, actual string) (string, bool, error) {
-	from, err := lookup(in_reviewStates, "state", expected)
+func (m in_reviewMachine) apply(expected stateArg, event string, actual stateArg) (string, bool, error) {
+	from, err := m.state(expected)
 	if err != nil {
 		return "", false, err
 	}
@@ -356,7 +429,7 @@ func (in_reviewMachine) apply(expected, event, actual string) (string, bool, err
 	if err != nil {
 		return "", false, err
 	}
-	observed, err := lookup(in_reviewStates, "state", actual)
+	observed, err := m.state(actual)
 	if err != nil {
 		return "", false, err
 	}
@@ -368,7 +441,7 @@ func (in_reviewMachine) apply(expected, event, actual string) (string, bool, err
 	return to, step.Changed, err
 }
 
-func (in_reviewMachine) decide(expected, event string) examples.Decide {
+func (m in_reviewMachine) decide(expected, event string) examples.Decide {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(in_reviewStates, "state", expected)
 		if err != nil {
@@ -404,19 +477,31 @@ var limitsEvents = map[string]limits.Event{
 	"rise": limits.EventRise,
 }
 
-func (limitsMachine) initial() (string, error) {
+func (m limitsMachine) initial() (string, error) {
 	return limits.Key(limits.Initial())
 }
 
-func (limitsMachine) code(state string) (int32, error) {
-	value, err := lookup(limitsStates, "state", state)
+// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+func (m limitsMachine) state(arg stateArg) (limits.State, error) {
+	if arg.isValue {
+		value, err := int32Of(arg.value)
+		if err != nil {
+			return 0, err
+		}
+		return limits.State(value), nil
+	}
+	return lookup(limitsStates, "state", arg.key)
+}
+
+func (m limitsMachine) code(state stateArg) (int32, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return 0, err
 	}
 	return limits.Code(value)
 }
 
-func (limitsMachine) key(code int64) (string, error) {
+func (m limitsMachine) key(code int64) (string, error) {
 	value, err := int32Of(code)
 	if err != nil {
 		return "", err
@@ -424,7 +509,7 @@ func (limitsMachine) key(code int64) (string, error) {
 	return limits.Key(limits.State(value))
 }
 
-func (limitsMachine) fromCode(code int64) (string, error) {
+func (m limitsMachine) fromCode(code int64) (string, error) {
 	value, err := limits.FromCode(code)
 	if err != nil {
 		return "", err
@@ -432,15 +517,15 @@ func (limitsMachine) fromCode(code int64) (string, error) {
 	return limits.Key(value)
 }
 
-func (limitsMachine) isFinal(state string) (bool, error) {
-	value, err := lookup(limitsStates, "state", state)
+func (m limitsMachine) isFinal(state stateArg) (bool, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return false, err
 	}
 	return limits.IsFinal(value)
 }
 
-func (limitsMachine) eventsFrom(state string) ([]string, error) {
+func (m limitsMachine) eventsFrom(state string) ([]string, error) {
 	value, err := lookup(limitsStates, "state", state)
 	if err != nil {
 		return nil, err
@@ -460,7 +545,7 @@ func (limitsMachine) eventsFrom(state string) ([]string, error) {
 	return keys, nil
 }
 
-func (limitsMachine) target(expected, event string) (string, error) {
+func (m limitsMachine) target(expected, event string) (string, error) {
 	from, err := lookup(limitsStates, "state", expected)
 	if err != nil {
 		return "", err
@@ -476,8 +561,8 @@ func (limitsMachine) target(expected, event string) (string, error) {
 	return keyOf(limitsStates, "state", to)
 }
 
-func (limitsMachine) apply(expected, event, actual string) (string, bool, error) {
-	from, err := lookup(limitsStates, "state", expected)
+func (m limitsMachine) apply(expected stateArg, event string, actual stateArg) (string, bool, error) {
+	from, err := m.state(expected)
 	if err != nil {
 		return "", false, err
 	}
@@ -485,7 +570,7 @@ func (limitsMachine) apply(expected, event, actual string) (string, bool, error)
 	if err != nil {
 		return "", false, err
 	}
-	observed, err := lookup(limitsStates, "state", actual)
+	observed, err := m.state(actual)
 	if err != nil {
 		return "", false, err
 	}
@@ -497,7 +582,7 @@ func (limitsMachine) apply(expected, event, actual string) (string, bool, error)
 	return to, step.Changed, err
 }
 
-func (limitsMachine) decide(expected, event string) examples.Decide {
+func (m limitsMachine) decide(expected, event string) examples.Decide {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(limitsStates, "state", expected)
 		if err != nil {
@@ -538,19 +623,31 @@ var orderEvents = map[string]order.Event{
 	"cancel": order.EventCancel,
 }
 
-func (orderMachine) initial() (string, error) {
+func (m orderMachine) initial() (string, error) {
 	return order.Key(order.Initial())
 }
 
-func (orderMachine) code(state string) (int32, error) {
-	value, err := lookup(orderStates, "state", state)
+// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+func (m orderMachine) state(arg stateArg) (order.State, error) {
+	if arg.isValue {
+		value, err := int32Of(arg.value)
+		if err != nil {
+			return 0, err
+		}
+		return order.State(value), nil
+	}
+	return lookup(orderStates, "state", arg.key)
+}
+
+func (m orderMachine) code(state stateArg) (int32, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return 0, err
 	}
 	return order.Code(value)
 }
 
-func (orderMachine) key(code int64) (string, error) {
+func (m orderMachine) key(code int64) (string, error) {
 	value, err := int32Of(code)
 	if err != nil {
 		return "", err
@@ -558,7 +655,7 @@ func (orderMachine) key(code int64) (string, error) {
 	return order.Key(order.State(value))
 }
 
-func (orderMachine) fromCode(code int64) (string, error) {
+func (m orderMachine) fromCode(code int64) (string, error) {
 	value, err := order.FromCode(code)
 	if err != nil {
 		return "", err
@@ -566,15 +663,15 @@ func (orderMachine) fromCode(code int64) (string, error) {
 	return order.Key(value)
 }
 
-func (orderMachine) isFinal(state string) (bool, error) {
-	value, err := lookup(orderStates, "state", state)
+func (m orderMachine) isFinal(state stateArg) (bool, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return false, err
 	}
 	return order.IsFinal(value)
 }
 
-func (orderMachine) eventsFrom(state string) ([]string, error) {
+func (m orderMachine) eventsFrom(state string) ([]string, error) {
 	value, err := lookup(orderStates, "state", state)
 	if err != nil {
 		return nil, err
@@ -594,7 +691,7 @@ func (orderMachine) eventsFrom(state string) ([]string, error) {
 	return keys, nil
 }
 
-func (orderMachine) target(expected, event string) (string, error) {
+func (m orderMachine) target(expected, event string) (string, error) {
 	from, err := lookup(orderStates, "state", expected)
 	if err != nil {
 		return "", err
@@ -610,8 +707,8 @@ func (orderMachine) target(expected, event string) (string, error) {
 	return keyOf(orderStates, "state", to)
 }
 
-func (orderMachine) apply(expected, event, actual string) (string, bool, error) {
-	from, err := lookup(orderStates, "state", expected)
+func (m orderMachine) apply(expected stateArg, event string, actual stateArg) (string, bool, error) {
+	from, err := m.state(expected)
 	if err != nil {
 		return "", false, err
 	}
@@ -619,7 +716,7 @@ func (orderMachine) apply(expected, event, actual string) (string, bool, error) 
 	if err != nil {
 		return "", false, err
 	}
-	observed, err := lookup(orderStates, "state", actual)
+	observed, err := m.state(actual)
 	if err != nil {
 		return "", false, err
 	}
@@ -631,7 +728,7 @@ func (orderMachine) apply(expected, event, actual string) (string, bool, error) 
 	return to, step.Changed, err
 }
 
-func (orderMachine) decide(expected, event string) examples.Decide {
+func (m orderMachine) decide(expected, event string) examples.Decide {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(orderStates, "state", expected)
 		if err != nil {
@@ -662,22 +759,33 @@ var standbyStates = map[string]standby.State{
 	"ready": standby.StateReady,
 }
 
-var standbyEvents = map[string]standby.Event{
-}
+var standbyEvents = map[string]standby.Event{}
 
-func (standbyMachine) initial() (string, error) {
+func (m standbyMachine) initial() (string, error) {
 	return standby.Key(standby.Initial())
 }
 
-func (standbyMachine) code(state string) (int32, error) {
-	value, err := lookup(standbyStates, "state", state)
+// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+func (m standbyMachine) state(arg stateArg) (standby.State, error) {
+	if arg.isValue {
+		value, err := int32Of(arg.value)
+		if err != nil {
+			return 0, err
+		}
+		return standby.State(value), nil
+	}
+	return lookup(standbyStates, "state", arg.key)
+}
+
+func (m standbyMachine) code(state stateArg) (int32, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return 0, err
 	}
 	return standby.Code(value)
 }
 
-func (standbyMachine) key(code int64) (string, error) {
+func (m standbyMachine) key(code int64) (string, error) {
 	value, err := int32Of(code)
 	if err != nil {
 		return "", err
@@ -685,7 +793,7 @@ func (standbyMachine) key(code int64) (string, error) {
 	return standby.Key(standby.State(value))
 }
 
-func (standbyMachine) fromCode(code int64) (string, error) {
+func (m standbyMachine) fromCode(code int64) (string, error) {
 	value, err := standby.FromCode(code)
 	if err != nil {
 		return "", err
@@ -693,15 +801,15 @@ func (standbyMachine) fromCode(code int64) (string, error) {
 	return standby.Key(value)
 }
 
-func (standbyMachine) isFinal(state string) (bool, error) {
-	value, err := lookup(standbyStates, "state", state)
+func (m standbyMachine) isFinal(state stateArg) (bool, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return false, err
 	}
 	return standby.IsFinal(value)
 }
 
-func (standbyMachine) eventsFrom(state string) ([]string, error) {
+func (m standbyMachine) eventsFrom(state string) ([]string, error) {
 	value, err := lookup(standbyStates, "state", state)
 	if err != nil {
 		return nil, err
@@ -721,7 +829,7 @@ func (standbyMachine) eventsFrom(state string) ([]string, error) {
 	return keys, nil
 }
 
-func (standbyMachine) target(expected, event string) (string, error) {
+func (m standbyMachine) target(expected, event string) (string, error) {
 	from, err := lookup(standbyStates, "state", expected)
 	if err != nil {
 		return "", err
@@ -737,8 +845,8 @@ func (standbyMachine) target(expected, event string) (string, error) {
 	return keyOf(standbyStates, "state", to)
 }
 
-func (standbyMachine) apply(expected, event, actual string) (string, bool, error) {
-	from, err := lookup(standbyStates, "state", expected)
+func (m standbyMachine) apply(expected stateArg, event string, actual stateArg) (string, bool, error) {
+	from, err := m.state(expected)
 	if err != nil {
 		return "", false, err
 	}
@@ -746,7 +854,7 @@ func (standbyMachine) apply(expected, event, actual string) (string, bool, error
 	if err != nil {
 		return "", false, err
 	}
-	observed, err := lookup(standbyStates, "state", actual)
+	observed, err := m.state(actual)
 	if err != nil {
 		return "", false, err
 	}
@@ -758,7 +866,7 @@ func (standbyMachine) apply(expected, event, actual string) (string, bool, error
 	return to, step.Changed, err
 }
 
-func (standbyMachine) decide(expected, event string) examples.Decide {
+func (m standbyMachine) decide(expected, event string) examples.Decide {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(standbyStates, "state", expected)
 		if err != nil {
@@ -797,19 +905,31 @@ var ticketEvents = map[string]ticket.Event{
 	"reject":  ticket.EventReject,
 }
 
-func (ticketMachine) initial() (string, error) {
+func (m ticketMachine) initial() (string, error) {
 	return ticket.Key(ticket.Initial())
 }
 
-func (ticketMachine) code(state string) (int32, error) {
-	value, err := lookup(ticketStates, "state", state)
+// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+func (m ticketMachine) state(arg stateArg) (ticket.State, error) {
+	if arg.isValue {
+		value, err := int32Of(arg.value)
+		if err != nil {
+			return 0, err
+		}
+		return ticket.State(value), nil
+	}
+	return lookup(ticketStates, "state", arg.key)
+}
+
+func (m ticketMachine) code(state stateArg) (int32, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return 0, err
 	}
 	return ticket.Code(value)
 }
 
-func (ticketMachine) key(code int64) (string, error) {
+func (m ticketMachine) key(code int64) (string, error) {
 	value, err := int32Of(code)
 	if err != nil {
 		return "", err
@@ -817,7 +937,7 @@ func (ticketMachine) key(code int64) (string, error) {
 	return ticket.Key(ticket.State(value))
 }
 
-func (ticketMachine) fromCode(code int64) (string, error) {
+func (m ticketMachine) fromCode(code int64) (string, error) {
 	value, err := ticket.FromCode(code)
 	if err != nil {
 		return "", err
@@ -825,15 +945,15 @@ func (ticketMachine) fromCode(code int64) (string, error) {
 	return ticket.Key(value)
 }
 
-func (ticketMachine) isFinal(state string) (bool, error) {
-	value, err := lookup(ticketStates, "state", state)
+func (m ticketMachine) isFinal(state stateArg) (bool, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return false, err
 	}
 	return ticket.IsFinal(value)
 }
 
-func (ticketMachine) eventsFrom(state string) ([]string, error) {
+func (m ticketMachine) eventsFrom(state string) ([]string, error) {
 	value, err := lookup(ticketStates, "state", state)
 	if err != nil {
 		return nil, err
@@ -853,7 +973,7 @@ func (ticketMachine) eventsFrom(state string) ([]string, error) {
 	return keys, nil
 }
 
-func (ticketMachine) target(expected, event string) (string, error) {
+func (m ticketMachine) target(expected, event string) (string, error) {
 	from, err := lookup(ticketStates, "state", expected)
 	if err != nil {
 		return "", err
@@ -869,8 +989,8 @@ func (ticketMachine) target(expected, event string) (string, error) {
 	return keyOf(ticketStates, "state", to)
 }
 
-func (ticketMachine) apply(expected, event, actual string) (string, bool, error) {
-	from, err := lookup(ticketStates, "state", expected)
+func (m ticketMachine) apply(expected stateArg, event string, actual stateArg) (string, bool, error) {
+	from, err := m.state(expected)
 	if err != nil {
 		return "", false, err
 	}
@@ -878,7 +998,7 @@ func (ticketMachine) apply(expected, event, actual string) (string, bool, error)
 	if err != nil {
 		return "", false, err
 	}
-	observed, err := lookup(ticketStates, "state", actual)
+	observed, err := m.state(actual)
 	if err != nil {
 		return "", false, err
 	}
@@ -890,7 +1010,7 @@ func (ticketMachine) apply(expected, event, actual string) (string, bool, error)
 	return to, step.Changed, err
 }
 
-func (ticketMachine) decide(expected, event string) examples.Decide {
+func (m ticketMachine) decide(expected, event string) examples.Decide {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(ticketStates, "state", expected)
 		if err != nil {

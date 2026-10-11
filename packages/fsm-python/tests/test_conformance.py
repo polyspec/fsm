@@ -37,6 +37,29 @@ def event_of(machine, key):
     return getattr(machine.Event, member(key))
 
 
+def failed(expect):
+    """Whether an expectation is an error: a dict with an error code; every other expectation is a plain value."""
+    return isinstance(expect, dict) and "error" in expect
+
+
+def state_arg(machine, case, key_field, value_field):
+    """The state argument of a case: its integer when the case gives one (an invalid state value), its member otherwise."""
+    if value_field in case:
+        return case[value_field]
+    return state_of(machine, case[key_field])
+
+
+def assert_error(test, call, expect):
+    """Asserts that `call` raises an Error with the code and the fields of `expect` (null where the field does not apply, B-6)."""
+    with test.assertRaises(Error) as raised:
+        call()
+    error = raised.exception
+    test.assertEqual(
+        (error.code, error.expected, error.actual, error.event),
+        (expect["error"], expect["expected"], expect["actual"], expect["event"]),
+    )
+
+
 def check(test, machine, case):
     """Runs the case `case` of the machine module `machine`, which is the generated module of the machine."""
     feature = case["feature"]
@@ -44,37 +67,40 @@ def check(test, machine, case):
     if feature == "initial":
         test.assertEqual(machine.initial(), state_of(machine, expect["state"]))
     elif feature == "code":
-        test.assertEqual(machine.code(state_of(machine, case["state"])), expect)
+        if failed(expect):
+            assert_error(test, lambda: machine.code(state_arg(machine, case, "state", "value")), expect)
+        else:
+            test.assertEqual(machine.code(state_of(machine, case["state"])), expect)
     elif feature == "key":
-        test.assertEqual(machine.key(case["code"]), expect)
+        if failed(expect):
+            assert_error(test, lambda: machine.key(case["code"]), expect)
+        else:
+            test.assertEqual(machine.key(case["code"]), expect)
     elif feature == "from_code":
-        if "error" in expect:
-            with test.assertRaises(Error) as raised:
-                machine.from_code(case["input"])
-            test.assertEqual(raised.exception.code, expect["error"])
+        if failed(expect):
+            assert_error(test, lambda: machine.from_code(case["input"]), expect)
         else:
             test.assertEqual(machine.from_code(case["input"]), state_of(machine, expect["state"]))
     elif feature == "is_final":
-        test.assertEqual(machine.is_final(state_of(machine, case["state"])), expect)
+        if failed(expect):
+            assert_error(test, lambda: machine.is_final(state_arg(machine, case, "state", "value")), expect)
+        else:
+            test.assertEqual(machine.is_final(state_of(machine, case["state"])), expect)
     elif feature == "events_from":
         test.assertEqual(machine.events_from(state_of(machine, case["state"])), [event_of(machine, key) for key in expect])
     elif feature == "target":
         state = state_of(machine, case["state"])
         event = event_of(machine, case["event"])
-        if "error" in expect:
-            with test.assertRaises(Error) as raised:
-                machine.target(state, event)
-            test.assertEqual(raised.exception.code, expect["error"])
+        if failed(expect):
+            assert_error(test, lambda: machine.target(state, event), expect)
         else:
             test.assertEqual(machine.target(state, event), state_of(machine, expect["state"]))
     elif feature == "apply":
-        expected = state_of(machine, case["expected"])
+        expected = state_arg(machine, case, "expected", "expected_value")
         event = event_of(machine, case["event"])
-        actual = state_of(machine, case["actual"])
-        if "error" in expect:
-            with test.assertRaises(Error) as raised:
-                machine.apply(expected, event, actual)
-            test.assertEqual(raised.exception.code, expect["error"])
+        actual = state_arg(machine, case, "actual", "actual_value")
+        if failed(expect):
+            assert_error(test, lambda: machine.apply(expected, event, actual), expect)
         else:
             step = machine.apply(expected, event, actual)
             test.assertEqual(step, machine.Step(to=state_of(machine, expect["to"]), changed=expect["changed"]))
@@ -91,10 +117,8 @@ def persist_case(test, machine, case):
             seed(db, 1, machine.code(state_of(machine, case["stored"])))
             expected = state_of(machine, case["expected"])
             event = event_of(machine, case["event"])
-            if "error" in expect:
-                with test.assertRaises(Error) as raised:
-                    transition(db, machine, 1, expected, event)
-                test.assertEqual(raised.exception.code, expect["error"])
+            if failed(expect):
+                assert_error(test, lambda: transition(db, machine, 1, expected, event), expect)
             else:
                 step = transition(db, machine, 1, expected, event)
                 test.assertEqual(step, machine.Step(to=state_of(machine, expect["stored_after"]), changed=expect["changed"]))

@@ -8,6 +8,26 @@ export const FEATURES = Object.freeze([
 ]);
 
 /**
+ * The kinds whose state type admits any integer, so that a case with an invalid state value (a value that is no state) can run
+ * in them. The rust and php kinds have an enum for the state, so no such value exists there (docs/plans/fsm-v1.md, C-4).
+ */
+export const RAW_STATE_KINDS = Object.freeze(['go', 'npm', 'python']);
+
+/**
+ * The cases of `vectorList` (the list of { machine, cases } of vectors) that the kind `kind` runs: a case without a `kinds` list is
+ * run by every kind, and a case with one only by the kinds it names. The `kinds` field is removed, so the native module of the
+ * kind holds the data of its cases alone.
+ */
+export function forKind(vectorList, kind) {
+  return vectorList.map(({ machine, cases }) => ({
+    machine,
+    cases: cases
+      .filter(entry => entry.kinds === undefined || entry.kinds.includes(kind))
+      .map(({ kinds, ...entry }) => entry),
+  }));
+}
+
+/**
  * The vectors of `ir` (the IR of normalize) with `lock` (the lock of the machine, which holds its reserved codes):
  * { machine, cases: [{ feature, id, ...data, expect }] }. The cases follow docs/plans/fsm-v1.md, C-4: initial; per state
  * code, key, from_code, is_final, events_from; the from_code errors; target for every (state, event); apply for every defined
@@ -31,39 +51,66 @@ export function vectors(ir, lock) {
   const eventIndex = new Map(events.map((event, index) => [event.key, index]));
   const s = key => `s${stateIndex.get(key)}`;
   const e = key => `e${eventIndex.get(key)}`;
+  // The fields of an error result (docs/spec/fsm.md, B-4 and B-6): the state codes of expected and actual, and the event as its
+  // declaration position from 1. A field that the error does not use is null, so every error case names all four fields.
+  const codeOf = key => states[stateIndex.get(key)].code;
+  const positionOf = key => eventIndex.get(key) + 1;
+  const failure = (code, fields = {}) => ({ error: code, expected: null, actual: null, event: null, ...fields });
   const cases = [];
   const ids = new Set();
-  const add = (feature, suffix, data, expect) => {
+  const add = (feature, suffix, data, expect, kinds) => {
     if (!FEATURES.includes(feature)) throw new Error(`vectors: ${feature} is not a feature of contracts/features.json`);
     const id = `${machine}_${suffix}`;
     // Internal assertion: ids are unique by construction (every key is an index), so this never fails.
     if (ids.has(id)) throw new Error(`vectors: internal error, the id ${id} is given twice`);
     ids.add(id);
-    cases.push({ feature, id, ...data, expect });
+    cases.push({ feature, id, ...data, expect, ...(kinds === undefined ? {} : { kinds }) });
   };
 
   add('initial', 'initial', {}, { state: initial });
   for (const state of states) {
     add('code', `code_${s(state.key)}`, { state: state.key }, state.code);
     add('key', `key_${s(state.key)}`, { code: state.code }, state.key);
-    add('from_code', `from_code_${s(state.key)}`, { input: state.code }, { state: state.key });
+    add('from_code', `from_code_${s(state.key)}`, { input: String(state.code) }, { state: state.key });
     add('is_final', `is_final_${s(state.key)}`, { state: state.key }, state.final);
     const from = events.filter(event => toOf(state.key, event.key) !== undefined).map(event => event.key);
     add('events_from', `events_from_${s(state.key)}`, { state: state.key }, from);
   }
 
-  add('from_code', 'from_code_zero', { input: 0 }, { error: 'E_UNKNOWN_CODE' });
+  // The codes that are no state: 0, the first positive code that no state or reserved code takes, and the edges of the 32-bit
+  // range and of the 64-bit range. Every one of them is E_UNKNOWN_CODE, and the decimal strings keep the 64-bit maximum exact.
+  add('from_code', 'from_code_zero', { input: '0' }, failure('E_UNKNOWN_CODE'));
   const taken = new Set([...states.map(state => state.code), ...reserved]);
   let unknown = 1;
   while (taken.has(unknown)) unknown += 1;
-  add('from_code', 'from_code_unknown', { input: unknown }, { error: 'E_UNKNOWN_CODE' });
-  for (const code of reserved) add('from_code', `from_code_r${code}`, { input: code }, { error: 'E_RESERVED_CODE' });
+  add('from_code', 'from_code_unknown', { input: String(unknown) }, failure('E_UNKNOWN_CODE'));
+  for (const code of reserved) add('from_code', `from_code_r${code}`, { input: String(code) }, failure('E_RESERVED_CODE'));
+  add('from_code', 'from_code_negative', { input: '-1' }, failure('E_UNKNOWN_CODE'));
+  add('from_code', 'from_code_int32_overflow', { input: '2147483648' }, failure('E_UNKNOWN_CODE'));
+  add('from_code', 'from_code_int64_max', { input: '9223372036854775807' }, failure('E_UNKNOWN_CODE'));
+
+  // An invalid state value (0 and the unknown code) for the functions that take a state, in the kinds whose state type admits it.
+  // A state argument is a key in every other case, and an integer here (`value`, or `expected_value` and `actual_value` for apply).
+  for (const value of [0, unknown]) {
+    add('code', `code_v${value}`, { value }, failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
+    add('is_final', `is_final_v${value}`, { value }, failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
+    add('key', `key_v${value}`, { code: value }, failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
+    if (events.length > 0) {
+      const first = states[0].key;
+      const event = events[0].key;
+      add('apply', `apply_expected_v${value}_e0_s0`, { expected_value: value, event, actual: first },
+        failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
+      add('apply', `apply_actual_v${value}_e0_s0`, { expected: first, event, actual_value: value },
+        failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
+    }
+  }
 
   for (const state of states) {
     for (const event of events) {
       const to = toOf(state.key, event.key);
       add('target', `target_${s(state.key)}_${e(event.key)}`, { state: state.key, event: event.key },
-        to === undefined ? { error: 'E_INVALID_TRANSITION' } : { state: to });
+        to === undefined ? failure('E_INVALID_TRANSITION', { expected: codeOf(state.key), event: positionOf(event.key) })
+          : { state: to });
     }
   }
 
@@ -75,9 +122,10 @@ export function vectors(ir, lock) {
       for (const actual of [state.key, to, ...others]) {
         const data = { expected: state.key, event: event.key, actual };
         const suffix = `apply_${s(state.key)}_${e(event.key)}_${s(actual)}`;
+        const conflict = failure('E_CONFLICT', { expected: codeOf(state.key), actual: codeOf(actual), event: positionOf(event.key) });
         if (actual === state.key) add('apply', suffix, data, { to, changed: true });
         else if (actual === to) add('apply', suffix, data, { to, changed: false });
-        else add('apply', suffix, data, { error: 'E_CONFLICT' });
+        else add('apply', suffix, data, conflict);
       }
     }
   }
@@ -86,7 +134,8 @@ export function vectors(ir, lock) {
     for (const event of events) {
       if (toOf(state.key, event.key) === undefined) {
         add('apply', `apply_${s(state.key)}_${e(event.key)}_${s(state.key)}`,
-          { expected: state.key, event: event.key, actual: state.key }, { error: 'E_INVALID_TRANSITION' });
+          { expected: state.key, event: event.key, actual: state.key },
+          failure('E_INVALID_TRANSITION', { expected: codeOf(state.key), event: positionOf(event.key) }));
       }
     }
   }
@@ -99,7 +148,12 @@ export function vectors(ir, lock) {
     persist('retry', first.to, { stored_after: first.to, changed: false });
     // The conflict stores a third state. A machine with two states has none, so it has no conflict case.
     const third = states.map(state => state.key).find(key => key !== first.state && key !== first.to);
-    if (third !== undefined) persist('conflict', third, { error: 'E_CONFLICT', stored_after: third });
+    if (third !== undefined) {
+      persist('conflict', third, {
+        ...failure('E_CONFLICT', { expected: codeOf(first.state), actual: codeOf(third), event: positionOf(first.event) }),
+        stored_after: third,
+      });
+    }
   }
 
   return { machine, cases };

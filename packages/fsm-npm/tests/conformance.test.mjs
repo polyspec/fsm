@@ -1,7 +1,9 @@
 // The conformance tests of the npm package (docs/plans/fsm-v1.md, C-4). Every vector case of tests/vectors.mjs (generated from
 // the core oracle) is one node:test test named test_<feature>__<id>: it calls the generated function of src/ and asserts the
-// expected value or the error code. The persist cases run the B-4 example (examples/persist.mjs) on SQLite and assert the
-// stored value after the run. The names are the notation of docs/spec/fsm.md, B-6: a key becomes a member by pascal case.
+// expected value and, for an error, the code and the fields of fsm.Error (docs/spec/fsm.md, B-4 and B-6; a field that does not
+// apply is null in the vector and undefined in the error). The persist cases run the B-4 example (examples/persist.mjs) on SQLite
+// and assert the stored value after the run. The names are the notation of docs/spec/fsm.md, B-6: a key becomes a member by pascal
+// case. A state argument is a key, or an integer where the case gives one (an invalid state value).
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -21,6 +23,9 @@ function stateOf(machine, key) {
   return value;
 }
 
+/** The state argument of a case: its integer when the case gives one (`value`), its key otherwise. */
+const stateArg = (machine, key, value) => (value !== undefined ? value : stateOf(machine, key));
+
 /** The event value of a key of the machine module `machine`. */
 function eventOf(machine, key) {
   const value = machine.Event[member(key)];
@@ -28,9 +33,34 @@ function eventOf(machine, key) {
   return value;
 }
 
-/** Asserts that `fn` throws a fsm.Error whose code is `code`. */
-function assertCode(fn, code) {
-  assert.throws(fn, error => error instanceof api.fsm.Error && error.code === code, `expected ${code}`);
+/** The error that `fn` throws (or the promise rejects with), which must be a fsm.Error. */
+function errorOf(fn) {
+  try {
+    fn();
+  } catch (error) {
+    assert.ok(error instanceof api.fsm.Error, `want a fsm.Error, got ${error}`);
+    return error;
+  }
+  assert.fail('the call must throw');
+}
+
+/** The error of a rejected promise, which must be a fsm.Error. */
+async function rejectionOf(promise) {
+  try {
+    await promise;
+  } catch (error) {
+    assert.ok(error instanceof api.fsm.Error, `want a fsm.Error, got ${error}`);
+    return error;
+  }
+  assert.fail('the promise must reject');
+}
+
+/** Asserts that a fsm.Error has the code of `expect` and the fields of `expect` (null where the field does not apply). */
+function assertFields(error, expect) {
+  assert.deepEqual(
+    { code: error.code, expected: error.expected ?? null, actual: error.actual ?? null, event: error.event ?? null },
+    { code: expect.error, expected: expect.expected, actual: expect.actual, event: expect.event },
+  );
 }
 
 /** Runs the persist case `c` of `machine` on a new SQLite database, and asserts the stored state after the run. */
@@ -42,7 +72,7 @@ async function persistCase(machine, c) {
     const expected = stateOf(machine, c.expected);
     const event = eventOf(machine, c.event);
     if (c.expect.error !== undefined) {
-      await assert.rejects(transition(db, machine, 1, expected, event), error => error instanceof api.fsm.Error && error.code === c.expect.error);
+      assertFields(await rejectionOf(transition(db, machine, 1, expected, event)), c.expect);
     } else {
       const step = await transition(db, machine, 1, expected, event);
       assert.deepEqual(step, { to: stateOf(machine, c.expect.stored_after), changed: c.expect.changed });
@@ -61,30 +91,33 @@ async function check(machine, c) {
       assert.equal(machine.initial(), stateOf(machine, c.expect.state));
       return;
     case 'code':
-      assert.equal(machine.code(stateOf(machine, c.state)), c.expect);
+      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.code(stateArg(machine, c.state, c.value))), c.expect);
+      else assert.equal(machine.code(stateOf(machine, c.state)), c.expect);
       return;
     case 'key':
-      assert.equal(machine.key(c.code), c.expect);
+      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.key(c.code)), c.expect);
+      else assert.equal(machine.key(c.code), c.expect);
       return;
     case 'from_code':
-      if (c.expect.error !== undefined) assertCode(() => machine.fromCode(c.input), c.expect.error);
+      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.fromCode(c.input)), c.expect);
       else assert.equal(machine.fromCode(c.input), stateOf(machine, c.expect.state));
       return;
     case 'is_final':
-      assert.equal(machine.isFinal(stateOf(machine, c.state)), c.expect);
+      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.isFinal(stateArg(machine, c.state, c.value))), c.expect);
+      else assert.equal(machine.isFinal(stateOf(machine, c.state)), c.expect);
       return;
     case 'events_from':
       assert.deepEqual(machine.eventsFrom(stateOf(machine, c.state)), c.expect.map(key => eventOf(machine, key)));
       return;
     case 'target':
-      if (c.expect.error !== undefined) assertCode(() => machine.target(stateOf(machine, c.state), eventOf(machine, c.event)), c.expect.error);
+      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.target(stateOf(machine, c.state), eventOf(machine, c.event))), c.expect);
       else assert.equal(machine.target(stateOf(machine, c.state), eventOf(machine, c.event)), stateOf(machine, c.expect.state));
       return;
     case 'apply': {
-      const expected = stateOf(machine, c.expected);
+      const expected = stateArg(machine, c.expected, c.expected_value);
       const event = eventOf(machine, c.event);
-      const actual = stateOf(machine, c.actual);
-      if (c.expect.error !== undefined) assertCode(() => machine.apply(expected, event, actual), c.expect.error);
+      const actual = stateArg(machine, c.actual, c.actual_value);
+      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.apply(expected, event, actual)), c.expect);
       else assert.deepEqual(machine.apply(expected, event, actual), { to: stateOf(machine, c.expect.to), changed: c.expect.changed });
       return;
     }

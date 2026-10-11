@@ -21,8 +21,7 @@ const (
 type Event int32
 
 // The events of standby.
-const (
-)
+const ()
 
 // Step is the result of Apply: the state that the event leads to, and whether the stored state changed.
 type Step struct {

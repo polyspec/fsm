@@ -8,7 +8,10 @@
 // dataclass with the fields to and changed; Code is a StrEnum whose members are the error codes without E_ (Code.CONFLICT), whose
 // values keep the E_ prefix. The functions take the state and event values in the order of B-6 and raise fsm.Error only.
 
+import { forKind } from '../core/vectors.mjs';
+
 const SHARED = 'fsm';
+const KIND = 'python';
 
 /** The member name of a key: the upper notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
 const upper = key => key.toUpperCase();
@@ -196,7 +199,15 @@ function machinePy(ir, lock) {
 }
 
 /** The native data module tests/vectors.py of `vectorList`, the vectors of every machine in order: `vectors = [...]`. */
-export function vectorsFile(vectorList) {
+/** The Python int literal of a decimal string of the oracle; a value that is no decimal string is an Error. */
+function digits(value) {
+  if (typeof value !== 'string' || !/^-?[0-9]+$/.test(value)) throw new Error(`python: the input ${JSON.stringify(value)} is not a decimal string`);
+  return value;
+}
+
+/** The native test module tests/vectors.py of `list`: the cases of the python kind (forKind), as Python literals. */
+export function vectorsFile(list) {
+  const vectorList = forKind(list, KIND);
   const literal = (value, indent) => {
     const inner = `${indent}    `;
     if (value === null) return 'None';
@@ -210,7 +221,9 @@ export function vectorsFile(vectorList) {
     }
     const entries = Object.entries(value);
     if (entries.length === 0) return '{}';
-    return `{\n${entries.map(([name, item]) => `${inner}${JSON.stringify(name)}: ${literal(item, inner)},\n`).join('')}${indent}}`;
+    // An input is a decimal string of the oracle, which is written as the Python int it names (the 64-bit range stays exact).
+    const item = ([name, value]) => (name === 'input' ? digits(value) : literal(value, inner));
+    return `{\n${entries.map(entry => `${inner}${JSON.stringify(entry[0])}: ${item(entry)},\n`).join('')}${indent}}`;
   };
   return text([
     header(SHARED),

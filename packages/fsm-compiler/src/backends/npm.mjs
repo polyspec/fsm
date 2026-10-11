@@ -4,7 +4,10 @@
 // two spaces of indentation and a final line break. The core imports nothing from node:, and the generated code has no runtime
 // dependency.
 
+import { forKind } from '../core/vectors.mjs';
+
 const SHARED = 'fsm';
+const KIND = 'npm';
 
 /** The member name of a key: the pascal notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
 const pascal = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
@@ -244,7 +247,15 @@ export function files(irs, lock) {
   return out;
 }
 
-/** The native data module tests/vectors.mjs of `vectorList`, the vectors of every machine in order: `export const vectors = [...]`. */
-export function vectorsFile(vectorList) {
+/**
+ * The native data module tests/vectors.mjs of `vectorList`, the vectors of every machine in order: `export const vectors = [...]`.
+ * The cases of the npm kind (forKind) are written with their integers as numbers: a decimal string of the oracle becomes the
+ * number nearest to it, which is an unsafe integer above 2^53, so from_code classes it as E_UNKNOWN_CODE (docs/spec/fsm.md, B-6).
+ */
+export function vectorsFile(list) {
+  const vectorList = forKind(list, KIND).map(({ machine, cases }) => ({
+    machine,
+    cases: cases.map(entry => (typeof entry.input === 'string' ? { ...entry, input: Number(entry.input) } : entry)),
+  }));
   return text([header(SHARED), '', `export const vectors = ${JSON.stringify(vectorList, null, 2)};`]);
 }

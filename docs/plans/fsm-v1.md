@@ -198,7 +198,7 @@ packages/fsm-<kind>/
 ### C-4. `check-parity.mjs`
 Fails when (no exemptions):
 - `.results/<kind>.json` of a kind in `kinds` is missing, or its `inputs` differs from the current digest
-- a vector case did not run in some kind
+- a vector case did not run in some kind that its `kinds` admits (a case without `kinds` is admitted by every kind), or a kind ran a case that its `kinds` excludes
 - a result holds a case that is not in the vectors
 - a feature in features.json has zero vector cases
 - a case has any status other than `pass` (`fail`, `timeout` and `skip` all fail)
@@ -221,17 +221,36 @@ Vectors (exhaustive; the core generates the oracle):
   - actual = to → `Unchanged`
   - every other defined state → `E_CONFLICT`
 - undefined (state, event) → `E_INVALID_TRANSITION`
-- `from_code`: 0, an unknown code, each reserved code
+- `from_code`: 0, an unknown code, each reserved code, a negative code, 2^31 and the 64-bit maximum (each E_UNKNOWN_CODE, except the reserved code)
+- invalid state values (S-26): 0 and the unknown code for `code`, `is_final`, `key` and `apply` (expected or actual), in the kinds of the table below
 - `persist`: first attempt / retry / conflict
+- every error case names the four fields of fsm.Error (`code`, `expected`, `actual`, `event`, docs/spec/fsm.md, B-6); a field that does not apply is null: E_CONFLICT has the state codes of expected and actual and the event position, E_INVALID_TRANSITION the code of expected and the event position, E_UNKNOWN_CODE and E_RESERVED_CODE none
+- an input of `from_code` is a decimal string, so the 64-bit range is exact in the file; the npm kind receives the nearest number, which is an unsafe integer and therefore E_UNKNOWN_CODE
 - Case ids: a case id is `<machine>_<suffix>`, and every key in the suffix is replaced by its declaration index, so that
   no two ids can collide, whatever the names are. A state is `s<i>`, an event `e<j>` (both 0-based) and a reserved code
   `r<code>`. The ids are `<m>_initial`; `<m>_code_s<i>`, `<m>_key_s<i>`, `<m>_from_code_s<i>`, `<m>_is_final_s<i>`,
-  `<m>_events_from_s<i>`; `<m>_from_code_zero`, `<m>_from_code_unknown`, `<m>_from_code_r<code>`; `<m>_target_s<i>_e<j>`;
+  `<m>_events_from_s<i>`; `<m>_from_code_zero`, `<m>_from_code_unknown`, `<m>_from_code_r<code>`, `<m>_from_code_negative`,
+  `<m>_from_code_int32_overflow`, `<m>_from_code_int64_max`; `<m>_code_v<value>`, `<m>_is_final_v<value>`, `<m>_key_v<value>`,
+  `<m>_apply_expected_v<value>_e0_s0`, `<m>_apply_actual_v<value>_e0_s0` (value is 0 and the unknown code); `<m>_target_s<i>_e<j>`;
   `<m>_apply_s<i>_e<j>_s<k>` (expected, event, actual); `<m>_persist_first`, `<m>_persist_retry`, `<m>_persist_conflict`.
   The case data fields keep the keys (state, event, expected, actual, ...); only the ids use indexes.
 - Persist cases exist only when the machine has a transition. `conflict` exists only when a third state exists, so a
   two-state machine has `first` and `retry`, and a machine without a transition (such as a one-state machine) has no
   persist case.
+- Invalid state values (S-26): whether a state argument can hold a value that is no state depends on the state type of the kind.
+  A case with an invalid value names the kinds that admit it in `kinds`, and check-parity requires it of those kinds only. The
+  decision per kind, recorded here for the spec B-6 rule that the functions fail with E_UNKNOWN_CODE:
+
+  | kind | state type | invalid state value |
+  |---|---|---|
+  | go | `State int32` | admitted: the default branch of the switch is E_UNKNOWN_CODE |
+  | npm | a number; the state is its value | admitted |
+  | python | an int (the members of `IntEnum`; the functions take any int) | admitted |
+  | rust | `enum State` with `#[repr(i32)]` | not admitted: the type has no value that is no state |
+  | php, php-ext | `enum State: int` | not admitted: the type has no value that is no state |
+
+- The native vector modules of rust, php and php-ext hold the cases that their kinds admit (core `forKind`), so they run 224 of
+  the 270 cases of the five machines; go, npm and python run all 270.
 
 ### C-5. compiler `packages/fsm-compiler`
 - Imports (S-32): `packages/fsm-compiler/src` imports only (1) node built-ins, by their `node:` specifier; (2) its own files, by a relative path that stays in `src`; (3) the vendored kit of this clone, `scripts/kit/` (a relative path, never a copy). No npm package, no bare built-in name and no dynamic `import()` or `require()`. `src/core` imports no `node:` module at all. `packages/fsm-compiler/tests/imports.test.mjs` scans every import specifier of `src` and fails on anything else.

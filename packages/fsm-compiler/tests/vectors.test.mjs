@@ -7,7 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { normalize } from '../src/core/normalize.mjs';
-import { FEATURES, vectors } from '../src/core/vectors.mjs';
+import { FEATURES, RAW_STATE_KINDS, forKind, vectors } from '../src/core/vectors.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
@@ -59,10 +59,10 @@ test('a two-state machine has no conflict case, because a third state does not e
   ]);
 });
 
-test('the order example has 89 cases, the first is order_initial and the last order_persist_conflict', () => {
+test('the order example has 102 cases, the first is order_initial and the last order_persist_conflict', () => {
   const result = generate(order());
   assert.equal(result.machine, 'order');
-  assert.equal(result.cases.length, 89);
+  assert.equal(result.cases.length, 102);
   assert.equal(result.cases[0].id, 'order_initial');
   assert.equal(result.cases.at(-1).id, 'order_persist_conflict');
 });
@@ -71,7 +71,7 @@ test('the order example has these cases per feature', () => {
   const counts = {};
   for (const entry of generate(order()).cases) counts[entry.feature] = (counts[entry.feature] ?? 0) + 1;
   assert.deepEqual(counts, {
-    initial: 1, code: 5, key: 5, from_code: 7, is_final: 5, events_from: 5, target: 15, apply: 43, persist: 3,
+    initial: 1, code: 7, key: 7, from_code: 10, is_final: 7, events_from: 5, target: 15, apply: 47, persist: 3,
   });
 });
 
@@ -80,9 +80,11 @@ test('the cases of a state follow the declaration order: code, key, from_code, i
   assert.deepEqual(list.slice(1, 6), [
     'order_code_s0', 'order_key_s0', 'order_from_code_s0', 'order_is_final_s0', 'order_events_from_s0',
   ]);
-  assert.deepEqual(list.slice(26, 28), ['order_from_code_zero', 'order_from_code_unknown']);
-  assert.equal(list[28], 'order_target_s0_e0');
-  assert.equal(list[43], 'order_apply_s0_e0_s0');
+  assert.deepEqual(list.slice(26, 29), ['order_from_code_zero', 'order_from_code_unknown', 'order_from_code_negative']);
+  assert.equal(list.indexOf('order_from_code_int64_max'), 30);
+  assert.equal(list.indexOf('order_code_v0'), 31);
+  assert.equal(list.indexOf('order_target_s0_e0'), 41);
+  assert.equal(list.indexOf('order_apply_s0_e0_s0'), 56);
 });
 
 test('an id is built from indexes: a state is s<i> and an event e<j>, both 0-based, a reserved code r<code>', () => {
@@ -111,20 +113,75 @@ test('every feature of contracts/features.json is the feature set of the oracle 
   assert.deepEqual(registered.filter(feature => !used.has(feature)), []);
 });
 
+const NO_FIELDS = { expected: null, actual: null, event: null };
+
 test('from_code: zero, the smallest positive code that is neither a code nor reserved, and each reserved code', () => {
   const result = generate(order(), [7, 9]);
   assert.deepEqual(find(result, 'order_from_code_zero'), {
-    feature: 'from_code', id: 'order_from_code_zero', input: 0, expect: { error: 'E_UNKNOWN_CODE' },
+    feature: 'from_code', id: 'order_from_code_zero', input: '0', expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS },
   });
   assert.deepEqual(find(result, 'order_from_code_unknown'), {
-    feature: 'from_code', id: 'order_from_code_unknown', input: 6, expect: { error: 'E_UNKNOWN_CODE' },
+    feature: 'from_code', id: 'order_from_code_unknown', input: '6', expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS },
   });
   assert.deepEqual(find(result, 'order_from_code_r7'), {
-    feature: 'from_code', id: 'order_from_code_r7', input: 7, expect: { error: 'E_RESERVED_CODE' },
+    feature: 'from_code', id: 'order_from_code_r7', input: '7', expect: { error: 'E_RESERVED_CODE', ...NO_FIELDS },
   });
   assert.deepEqual(find(result, 'order_from_code_r9'), {
-    feature: 'from_code', id: 'order_from_code_r9', input: 9, expect: { error: 'E_RESERVED_CODE' },
+    feature: 'from_code', id: 'order_from_code_r9', input: '9', expect: { error: 'E_RESERVED_CODE', ...NO_FIELDS },
   });
+});
+
+test('from_code: a negative code, 2^31 and the 64-bit maximum are E_UNKNOWN_CODE, given as exact decimal strings', () => {
+  const result = generate(order());
+  assert.deepEqual(find(result, 'order_from_code_negative').input, '-1');
+  assert.deepEqual(find(result, 'order_from_code_int32_overflow').input, '2147483648');
+  assert.deepEqual(find(result, 'order_from_code_int64_max'), {
+    feature: 'from_code', id: 'order_from_code_int64_max', input: '9223372036854775807', expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS },
+  });
+});
+
+test('every from_code input is a decimal string, so that no value of the 64-bit range is rounded', () => {
+  for (const entry of generate(order()).cases.filter(item => item.feature === 'from_code')) {
+    assert.match(entry.input, /^-?[0-9]+$/, entry.id);
+  }
+});
+
+test('an invalid state value (0 and the unknown code) is given to code, key, is_final and apply, for the kinds that admit it only', () => {
+  const result = generate(order());
+  assert.deepEqual(RAW_STATE_KINDS, ['go', 'npm', 'python']);
+  assert.deepEqual(find(result, 'order_code_v0'), {
+    feature: 'code', id: 'order_code_v0', value: 0, expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
+  });
+  assert.deepEqual(find(result, 'order_is_final_v6'), {
+    feature: 'is_final', id: 'order_is_final_v6', value: 6, expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
+  });
+  assert.deepEqual(find(result, 'order_key_v0'), {
+    feature: 'key', id: 'order_key_v0', code: 0, expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
+  });
+  assert.deepEqual(find(result, 'order_apply_expected_v0_e0_s0'), {
+    feature: 'apply', id: 'order_apply_expected_v0_e0_s0', expected_value: 0, event: 'next', actual: 'draft',
+    expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
+  });
+  assert.deepEqual(find(result, 'order_apply_actual_v6_e0_s0'), {
+    feature: 'apply', id: 'order_apply_actual_v6_e0_s0', expected: 'draft', event: 'next', actual_value: 6,
+    expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
+  });
+});
+
+test('a machine without events has no invalid apply case, because the apply needs an event', () => {
+  const track = { machine: 'track', states: [{ key: 'only', code: 1, initial: true, final: true }], events: [] };
+  assert.deepEqual(ids(generate(track)).filter(id => id.includes('_apply_')), []);
+});
+
+test('forKind keeps the cases a kind runs, without a kinds field: rust and php get no invalid state value', () => {
+  const list = [generate(order())];
+  const rust = forKind(list, 'rust')[0].cases;
+  const go = forKind(list, 'go')[0].cases;
+  assert.equal(rust.some(entry => entry.value !== undefined || entry.expected_value !== undefined || entry.actual_value !== undefined), false);
+  assert.equal(rust.length, 102 - 10);
+  assert.equal(go.length, 102);
+  assert.ok(go.every(entry => !('kinds' in entry)));
+  assert.equal(list[0].cases.some(entry => 'kinds' in entry), true, 'the oracle keeps the field');
 });
 
 test('from_code unknown is the smallest gap: codes 1 and 3 leave 2', () => {
@@ -133,14 +190,14 @@ test('from_code unknown is the smallest gap: codes 1 and 3 leave 2', () => {
     states: [{ key: 'a', code: 1, initial: true }, { key: 'b', code: 3, final: true }],
     events: [{ key: 'go', edges: [{ from: 'a', to: 'b' }] }],
   };
-  assert.deepEqual(find(generate(gap), 'gap_from_code_unknown').input, 2);
+  assert.deepEqual(find(generate(gap), 'gap_from_code_unknown').input, '2');
 });
 
 test('from_code unknown skips the reserved codes that follow the codes of the states', () => {
   const result = generate(twoStep(), [3, 4]);
-  assert.deepEqual(find(result, 'two_step_from_code_unknown').input, 5);
-  assert.deepEqual(find(result, 'two_step_from_code_r3').expect, { error: 'E_RESERVED_CODE' });
-  assert.deepEqual(find(result, 'two_step_from_code_r4').expect, { error: 'E_RESERVED_CODE' });
+  assert.deepEqual(find(result, 'two_step_from_code_unknown').input, '5');
+  assert.deepEqual(find(result, 'two_step_from_code_r3').expect, { error: 'E_RESERVED_CODE', ...NO_FIELDS });
+  assert.deepEqual(find(result, 'two_step_from_code_r4').expect, { error: 'E_RESERVED_CODE', ...NO_FIELDS });
 });
 
 test('target gives the target of a defined pair and E_INVALID_TRANSITION for an undefined one', () => {
@@ -148,7 +205,7 @@ test('target gives the target of a defined pair and E_INVALID_TRANSITION for an 
   assert.deepEqual(find(result, 'two_step_target_s0_e0'), {
     feature: 'target', id: 'two_step_target_s0_e0', state: 'start', event: 'go', expect: { state: 'end' },
   });
-  assert.deepEqual(find(result, 'two_step_target_s1_e0').expect, { error: 'E_INVALID_TRANSITION' });
+  assert.deepEqual(find(result, 'two_step_target_s1_e0').expect, { error: 'E_INVALID_TRANSITION', expected: 2, actual: null, event: 1 });
 });
 
 test('apply: changed for the expected state, unchanged for the target, E_CONFLICT for every other state', () => {
@@ -157,14 +214,16 @@ test('apply: changed for the expected state, unchanged for the target, E_CONFLIC
     feature: 'apply', id: 'order_apply_s0_e0_s0', expected: 'draft', event: 'next', actual: 'draft', expect: { to: 'paid', changed: true },
   });
   assert.deepEqual(find(result, 'order_apply_s0_e0_s1').expect, { to: 'paid', changed: false });
-  assert.deepEqual(find(result, 'order_apply_s0_e0_s2').expect, { error: 'E_CONFLICT' });
-  assert.deepEqual(find(result, 'order_apply_s0_e0_s3').expect, { error: 'E_CONFLICT' });
-  assert.deepEqual(find(result, 'order_apply_s0_e0_s4').expect, { error: 'E_CONFLICT' });
+  // E_CONFLICT carries the codes of expected and actual and the event position (docs/spec/fsm.md, B-4 and B-6).
+  assert.deepEqual(find(result, 'order_apply_s0_e0_s2').expect, { error: 'E_CONFLICT', expected: 1, actual: 3, event: 1 });
+  assert.deepEqual(find(result, 'order_apply_s0_e0_s3').expect, { error: 'E_CONFLICT', expected: 1, actual: 4, event: 1 });
+  assert.deepEqual(find(result, 'order_apply_s0_e0_s4').expect, { error: 'E_CONFLICT', expected: 1, actual: 5, event: 1 });
 });
 
 test('apply for an undefined pair expects E_INVALID_TRANSITION with the state as expected and as actual', () => {
   assert.deepEqual(find(generate(order()), 'order_apply_s0_e1_s0'), {
-    feature: 'apply', id: 'order_apply_s0_e1_s0', expected: 'draft', event: 'prev', actual: 'draft', expect: { error: 'E_INVALID_TRANSITION' },
+    feature: 'apply', id: 'order_apply_s0_e1_s0', expected: 'draft', event: 'prev', actual: 'draft',
+    expect: { error: 'E_INVALID_TRANSITION', expected: 1, actual: null, event: 2 },
   });
 });
 
@@ -180,7 +239,7 @@ test('persist: first, retry and conflict on the first transition of the order ex
   });
   assert.deepEqual(find(result, 'order_persist_conflict'), {
     feature: 'persist', id: 'order_persist_conflict', scenario: 'conflict', expected: 'draft', event: 'next', stored: 'shipped',
-    expect: { error: 'E_CONFLICT', stored_after: 'shipped' },
+    expect: { error: 'E_CONFLICT', expected: 1, actual: 3, event: 1, stored_after: 'shipped' },
   });
 });
 
@@ -206,7 +265,7 @@ test('a state named zero gives its vectors, and its code case does not collide w
   const result = generate(zero);
   assert.equal(new Set(ids(result)).size, result.cases.length);
   assert.deepEqual(find(result, 'zero_state_code_s0').expect, 1);
-  assert.deepEqual(find(result, 'zero_state_from_code_zero').expect, { error: 'E_UNKNOWN_CODE' });
+  assert.deepEqual(find(result, 'zero_state_from_code_zero').expect, { error: 'E_UNKNOWN_CODE', ...NO_FIELDS });
   assert.deepEqual(find(result, 'zero_state_from_code_s0').expect, { state: 'zero' });
   assert.deepEqual(find(result, 'zero_state_persist_first').expect, { stored_after: 'end', changed: true });
 });
@@ -223,10 +282,19 @@ test('a one-state machine that is initial and final, with no event, gives the st
     'track_events_from_s0',
     'track_from_code_zero',
     'track_from_code_unknown',
+    'track_from_code_negative',
+    'track_from_code_int32_overflow',
+    'track_from_code_int64_max',
+    'track_code_v0',
+    'track_is_final_v0',
+    'track_key_v0',
+    'track_code_v2',
+    'track_is_final_v2',
+    'track_key_v2',
   ]);
   assert.deepEqual(find(result, 'track_is_final_s0').expect, true);
   assert.deepEqual(find(result, 'track_events_from_s0').expect, []);
-  assert.deepEqual(find(result, 'track_from_code_unknown').input, 2);
+  assert.deepEqual(find(result, 'track_from_code_unknown').input, '2');
 });
 
 test('a lock without an entry for the machine makes vectors throw', () => {

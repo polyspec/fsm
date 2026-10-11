@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: d5972e23f44bbbbc490eafcf17b419fcd2f995372c20b62310156bc183f4a4df -->
+<!-- source-sha256: 3e828045030e484ec9d469f4978960ce13b414fe270304a21ab04a2087b9bb12 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -199,7 +199,7 @@ packages/fsm-<kind>/
 ### C-4. `check-parity.mjs`
 실패 조건(면제 없음):
 - `kinds`의 `.results/<kind>.json`이 없거나, `inputs`가 현재 digest와 다름
-- 어느 kind에서 벡터 케이스가 실행되지 않음
+- `kinds`가 허용하는 어느 kind에서 벡터 케이스가 실행되지 않음(`kinds`가 없는 케이스는 모든 kind가 허용한다), 또는 kind가 `kinds`가 제외한 케이스를 실행함
 - 벡터에 없는 케이스가 결과에 있음
 - features.json의 기능 중 벡터 케이스가 0개인 기능이 있음
 - 상태가 `pass`가 아닌 케이스가 있음(`fail`, `timeout`, `skip` 모두 실패)
@@ -222,9 +222,23 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
   - actual = to → `Unchanged`
   - 그 외 모든 정의 상태 → `E_CONFLICT`
 - 미정의 (state, event) → `E_INVALID_TRANSITION`
-- `from_code`: 0, 미지 code, 각 예약 code
+- `from_code`: 0, 미지 code, 각 예약 code, 음수 code, 2^31, 64비트 최댓값(예약 code를 제외하고 모두 E_UNKNOWN_CODE)
+- 잘못된 state 값(S-26): `code`, `is_final`, `key`, `apply`(expected 또는 actual)에 0과 미지 code, 아래 표의 kind에서만
 - `persist`: 첫 시도 / 재시도 / 충돌
-- case id: case id는 `<machine>_<suffix>`이고, suffix의 key마다 선언 index를 쓴다. 이름과 무관하게 두 id가 충돌하지 않게 하기 위해서다. state는 `s<i>`, event는 `e<j>`(둘 다 0부터 시작), 예약 code는 `r<code>`다. id는 `<m>_initial`; `<m>_code_s<i>`, `<m>_key_s<i>`, `<m>_from_code_s<i>`, `<m>_is_final_s<i>`, `<m>_events_from_s<i>`; `<m>_from_code_zero`, `<m>_from_code_unknown`, `<m>_from_code_r<code>`; `<m>_target_s<i>_e<j>`; `<m>_apply_s<i>_e<j>_s<k>`(expected, event, actual); `<m>_persist_first`, `<m>_persist_retry`, `<m>_persist_conflict`다. 케이스 데이터 필드는 key(state, event, expected, actual 등)를 그대로 쓰며, 바뀌는 것은 id뿐이다.
+- 모든 오류 case는 fsm.Error의 네 필드(`code`, `expected`, `actual`, `event`, 명세 B-6)를 명명한다. 해당하지 않는 필드는 null이다: E_CONFLICT는 expected와 actual의 state code와 event 위치, E_INVALID_TRANSITION은 expected의 code와 event 위치, E_UNKNOWN_CODE와 E_RESERVED_CODE는 아무것도 없다
+- `from_code`의 입력은 십진 문자열이므로 파일에서 64비트 범위가 정확하다. npm kind는 가장 가까운 number를 받는데, 이는 안전하지 않은 정수이므로 E_UNKNOWN_CODE다
+- case id: case id는 `<machine>_<suffix>`이고, suffix의 key마다 선언 index를 쓴다. 이름과 무관하게 두 id가 충돌하지 않게 하기 위해서다. state는 `s<i>`, event는 `e<j>`(둘 다 0부터 시작), 예약 code는 `r<code>`다. id는 `<m>_initial`; `<m>_code_s<i>`, `<m>_key_s<i>`, `<m>_from_code_s<i>`, `<m>_is_final_s<i>`, `<m>_events_from_s<i>`; `<m>_from_code_zero`, `<m>_from_code_unknown`, `<m>_from_code_r<code>`, `<m>_from_code_negative`, `<m>_from_code_int32_overflow`, `<m>_from_code_int64_max`; `<m>_code_v<value>`, `<m>_is_final_v<value>`, `<m>_key_v<value>`, `<m>_apply_expected_v<value>_e0_s0`, `<m>_apply_actual_v<value>_e0_s0`(value는 0과 미지 code); `<m>_target_s<i>_e<j>`; `<m>_apply_s<i>_e<j>_s<k>`(expected, event, actual); `<m>_persist_first`, `<m>_persist_retry`, `<m>_persist_conflict`다. 케이스 데이터 필드는 key(state, event, expected, actual 등)를 그대로 쓰며, 바뀌는 것은 id뿐이다.
+- 잘못된 state 값(S-26): state 인자가 state가 아닌 값을 가질 수 있는지는 kind의 state 타입에 달려 있다. 잘못된 값을 가진 case는 `kinds`에 그 값을 허용하는 kind를 적고, check-parity는 그 kind들에만 이를 요구한다. 명세 B-6의 규칙(함수는 E_UNKNOWN_CODE로 실패한다)에 대해 kind별 결정은 다음과 같고 여기에 기록한다.
+
+  | kind | state 타입 | 잘못된 state 값 |
+  |---|---|---|
+  | go | `State int32` | 허용: switch의 default 분기가 E_UNKNOWN_CODE다 |
+  | npm | number이며 state가 곧 그 값 | 허용 |
+  | python | int(`IntEnum`의 멤버이며 함수는 어떤 int든 받는다) | 허용 |
+  | rust | `#[repr(i32)]`의 `enum State` | 허용하지 않음: 타입에 state가 아닌 값이 없다 |
+  | php, php-ext | `enum State: int` | 허용하지 않음: 타입에 state가 아닌 값이 없다 |
+
+- rust, php, php-ext의 native vector 모듈은 자기 kind가 허용하는 case만 담는다(core `forKind`). 그래서 다섯 machine의 270개 case 중 224개를 돌리고, go, npm, python은 270개를 모두 돌린다.
 - persist 케이스는 machine에 transition이 있을 때만 존재한다. `conflict`는 third state가 있을 때만 존재하므로, state가 2개인 machine은 `first`와 `retry`만 갖고, transition이 없는 machine(예: state가 1개인 machine)은 persist 케이스가 없다.
 
 ### C-5. compiler `packages/fsm-compiler`

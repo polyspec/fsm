@@ -83,6 +83,31 @@ test('a vector case that did not run, ran twice, or a case that no vector holds'
   ]);
 });
 
+test('a case with a kinds list is run by those kinds only: the other kinds neither need it nor may run it', (t) => {
+  const raw = 'test_apply__order_raw_only_go';
+  const root = checkout(t, { vectors: { machine: 'order', cases: [...VECTORS.cases, { feature: 'apply', id: 'order_raw_only_go', kinds: ['go'] }] } });
+  ignore(root);
+  record(root, 'go', [...go([...NAMES, raw]), parent]);
+  record(root, 'npm', npm(NAMES));
+  record(root, 'compiler-test', [{ id: 'packages/fsm-compiler/a.test.mjs › validates', status: 'pass', elapsedMs: 3 }]);
+  assert.deepEqual(messages(root, { tools: ['compiler-test'] }), []);
+  record(root, 'npm', npm([...NAMES, raw]));
+  assert.deepEqual(messages(root, { tools: [] }), ['npm ran test_apply__order_raw_only_go, which its vector does not admit for npm']);
+  record(root, 'npm', npm(NAMES));
+  record(root, 'go', [...go(NAMES), parent]);
+  assert.deepEqual(messages(root, { tools: [] }), ['go did not run test_apply__order_raw_only_go']);
+});
+
+test('a kinds list is a non-empty list of declared kinds', (t) => {
+  const root = checkout(t, { vectors: { machine: 'order', cases: [...VECTORS.cases, { feature: 'apply', id: 'order_empty', kinds: [] }, { feature: 'apply', id: 'order_ruby', kinds: ['ruby'] }] } });
+  ignore(root);
+  passing(root);
+  assert.deepEqual(messages(root, { tools: [] }), [
+    'conformance/vectors/order.json holds the case test_apply__order_empty with a kinds field that is not a non-empty list of kind names',
+    'the case test_apply__order_ruby is admitted by ruby, which contracts/layout.json does not declare as a kind',
+  ]);
+});
+
 test('a feature without a vector case, and a vector of a feature that features.json does not list', (t) => {
   const root = checkout(t, { features: { schema: 1, features: ['initial', 'apply', 'persist'] }, vectors: { machine: 'order', cases: [...VECTORS.cases, { feature: 'other', id: 'order_x' }] } });
   ignore(root);
@@ -146,7 +171,7 @@ test('the command prints each finding and exits 1, and passes on a passing check
   const command = (...args) => spawnSync(process.execPath, ['scripts/check-parity.mjs', ...args], { cwd: root, encoding: 'utf8' });
   const passed = command('--tools', 'compiler-test');
   assert.equal(passed.status, 0, passed.stdout + passed.stderr);
-  assert.match(passed.stdout, /\[check-parity\] 2 kinds ran 2 cases each and passed/);
+  assert.match(passed.stdout, /\[check-parity\] 2 kinds passed; the vectors hold 2 cases, each run by every kind that admits it/);
   put(root, { '.results/npm.json': null });
   const failed = command('--kind', 'npm');
   assert.equal(failed.status, 1);
