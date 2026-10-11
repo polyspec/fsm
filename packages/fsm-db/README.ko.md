@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: 6417188a857e26896d3606eeec7f397f8b47f74eb690471b90526923de72a33b -->
+<!-- source-sha256: 3b297123cbb1f18dde3f0563a93affb405777580f8a9019edf86b2fd5bb1bbe7 -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -27,10 +27,11 @@ fsm의 DB store와 그 명령줄 `fsm-db`다. fsm 프로젝트는 정의와 lock
 
    `dsnEnv`는 DSN을 담은 환경 변수의 이름이다. DSN 자체는 파일에 쓰지 않는다.
 3. 그 변수에 database의 DSN을 설정한다([DSN](#dsn) 참고).
-4. 여섯 table을 만든다: `fsm-db install`.
+4. 명령 `fsm-db`를 PATH에 둔다: 저장소 루트에서 `npm install -g ./packages/fsm-db`. npm은 clone의 package를 link하므로
+   명령은 clone의 코드를 실행한다.
+5. 여섯 table을 만든다: `fsm-db install`.
 
-이 패키지에는 `bin` 항목이 없다. 아래 예시는 저장소 루트에서 `node packages/fsm-db/src/cli/fsm-db.mjs`를 실행하는 것을
-`fsm-db`로 적는다. `--project <dir>`은 프로젝트 루트이며, 기본값은 현재 디렉터리다.
+`--project <dir>`은 프로젝트 루트이며, 기본값은 현재 디렉터리다.
 
 ## 여섯 table
 

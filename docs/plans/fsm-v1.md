@@ -235,6 +235,7 @@ Vectors (exhaustive; the core generates the oracle):
   - `src/backends/<kind>.mjs`
   - `src/store-json`, `src/store-mermaid`
   - `src/cli` (`fsm-gen`)
+- The command `fsm-gen` is the `bin` of `packages/fsm-compiler/package.json` (a manifest without dependencies). From a clone, `npm install -g ./packages/fsm-compiler` links it onto the PATH; `tests/command.test.mjs` installs the package offline into a temporary npm prefix and runs the command (S-18-1).
 - Commands
   - `lock [--rename]`
   - `gen --kind <k> --out <dir>` (php requires `--php-namespace`; php-ext requires `--php-namespace` and `--php-ext-name`; go requires `--go-module <module path>`, because a generated machine imports the shared package `<module>/src/fsm` and the backend cannot read go.mod)
@@ -248,6 +249,7 @@ Vectors (exhaustive; the core generates the oracle):
   - `gen-check-test` (`tests/gen-check/`) RED: a one-byte change fixture, an added file fixture, an ignored file that must not be read
 
 ### C-6. fsm-db `packages/fsm-db`
+- The command `fsm-db` is the `bin` of `packages/fsm-db/package.json`. After `make db-deps`, `npm install -g ./packages/fsm-db` links it onto the PATH; `tests/command.test.mjs` installs it offline into a temporary npm prefix, installs the schema into a new SQLite database and checks it (S-18-1).
 - `schema/fsm.dbs` → orm-generated model (npm).
   - Definition tables
     - `machine(name PK)` (machine order is by name)
@@ -270,7 +272,7 @@ Vectors (exhaustive; the core generates the oracle):
 ### C-7. GUI `packages/fsm-gui` (hyper Node server + crudui + mermaid)
 - The GUI is a single-editor tool. save replaces everything; the last write wins.
 - Build: `hyper-build-assets --app . --api /api --output build` (hyper v0.0.11 requires `--app`, `--api` and `--output`) produces `templates.index.json`, `manifest.json` and the `public/assets` bundle (run before gui-test).
-- Run: `fsm-gui`
+- Run: `fsm-gui [--project <dir>] [--port <n>]`, the `bin` of `packages/fsm-gui/package.json`. After `make gui-build`, `npm install -g ./packages/fsm-gui` links it onto the PATH; `tests/command.test.mjs` installs it offline into a temporary npm prefix and requests the machine list from it (S-18-1).
   - The store follows `fsm.config.json`.
   - `App.open({manifest, templates: {index: build/templates.index.json, root: public}, handlers, timezone: 'UTC'})` with absolute paths; `var/sessions` is created before `FileSessions` opens it
   - `app.server(new FileSessions({directory: var/sessions}), {files: public})`

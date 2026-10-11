@@ -5,6 +5,9 @@
   "description": "GUI of fsm: hyper server, crudui list and detail, Mermaid display (docs/plans/fsm-v1.md, C-7)",
   "type": "module",
   "license": "MIT",
+  "bin": {
+    "fsm-gui": "src/main.mjs"
+  },
   "engines": {
     "node": ">=26"
   },

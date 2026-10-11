@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The fsm GUI server (docs/plans/fsm-v1.md, C-7):
-//   node src/main.mjs [--project <dir>] [--port <n>]
+//   fsm-gui [--project <dir>] [--port <n>]
 // --project is the project root, whose fsm.config.json selects the store (default: the current directory). --port is the
 // port on 127.0.0.1 (default 8080). The assets must be built first (make gui-build). The sessions are kept in
 // <project>/var/sessions. A finding of the configuration prints as `[fsm-gui] <code> <machine> <path>: <message>` on stderr
@@ -15,7 +15,7 @@ import { handlers } from './handlers.mjs';
 import { openStore } from './store.mjs';
 
 const GUI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const USAGE = 'usage: node src/main.mjs [--project <dir>] [--port <n>]';
+const USAGE = 'usage: fsm-gui [--project <dir>] [--port <n>]';
 
 /** Runs the server; returns the exit code. */
 async function main(argv) {

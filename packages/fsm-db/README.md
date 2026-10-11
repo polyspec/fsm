@@ -27,11 +27,11 @@ published: it is used from this repository.
 
    `dsnEnv` names the environment variable that holds the DSN. The DSN itself is never written in the file.
 3. Set that variable to the DSN of the database (see [DSN](#dsn)).
-4. Create the six tables: `fsm-db install`.
+4. Put the command `fsm-db` on the PATH: `npm install -g ./packages/fsm-db` from the repository root. npm links the
+   package of the clone, so the command runs the code of the clone.
+5. Create the six tables: `fsm-db install`.
 
-The package has no `bin` entry. The examples below write `fsm-db` for
-`node packages/fsm-db/src/cli/fsm-db.mjs`, run from the repository root. `--project <dir>` names the project root, which
-defaults to the current directory.
+`--project <dir>` names the project root, which defaults to the current directory.
 
 ## The six tables
 

@@ -16,7 +16,7 @@ const MAIN = path.join(GUI, 'src', 'main.mjs');
 test('an unknown option exits 2 with the usage', () => {
   const run = spawnSync(process.execPath, [MAIN, '--bogus'], { encoding: 'utf8' });
   assert.equal(run.status, 2);
-  assert.match(run.stderr, /usage: node src\/main\.mjs/);
+  assert.match(run.stderr, /usage: fsm-gui \[--project/);
 });
 
 test('a port that is not a number exits 2', () => {

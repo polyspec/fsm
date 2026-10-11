@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: bf09d2fa856783f761ceeffa4d9bbef20a7dcadeee970f7cafc9d22cdbee7120 -->
+<!-- source-sha256: e038dc4a4e5ed6d2c6a78959a445ad968ec164d41f7a90e26829a1289738f73d -->
 # fsm GUI
 
 [English](README.md)
@@ -17,11 +17,17 @@ fsm의 GUI(`docs/plans/fsm-v1.md`, C-7)다. hyper 서버로 프로젝트의 상�
 make gui-build
 ```
 
+저장소 루트에서 명령 `fsm-gui`를 PATH에 둔다. npm은 clone의 package를 link하므로 명령은 clone의 코드와 빌드된 asset을
+실행한다.
+
+```sh
+npm install -g ./packages/fsm-gui
+```
+
 프로젝트 디렉터리에서 서버를 시작하거나 `--project`로 지정한다.
 
 ```sh
-cd packages/fsm-gui
-node src/main.mjs --project /path/to/project --port 8080
+fsm-gui --project /path/to/project --port 8080
 ```
 
 서버는 `127.0.0.1`에서 listen하고 주소를 출력한다. 기계 목록은 `http://127.0.0.1:8080/`, 기계는
