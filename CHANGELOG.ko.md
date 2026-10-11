@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 0cb586e89522bb87a65cd474c0bf29853f011a5208be2c72d49dc127638655a7 -->
+<!-- source-sha256: 6e09269754c8ec2504d21e7589fb0742021bebec986be43d095ef791d25b243f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-35-3: `make check`가 다시 `vector-parity-check`를 실행한다. rebase가 CHECK_TARGETS에 kit 이름 `parity-check`를 되돌려 놓아 스위트가 fsm의 vector parity 대신 kit K33의 검사를 실행했으며, 이제 make-install 테스트가 그 타깃을 단언한다.
 - S-34-1: kit dependency gate는 python lock의 모든 전이 python package를 덮는다: 최신 릴리스와 advisory 리뷰는 `pythonLocks`를 통해 `packages/fsm-python/pylock.toml`을 읽는다(kit K36). RED: kit의 python-lock fixture 테스트(K36)가 kit-test에서 통과한다. fsm에서 `pythonLocks`가 비면 `dependency-policy-check`가 실패하고, lock을 나열하고 review한 뒤 통과한다.
 - S-34-2: python lock은 `packages/fsm-python/pylock.toml`이며, `uv.lock`의 PEP 751 export다(`uv export --format pylock.toml --frozen --no-emit-project`, kit K36). `config/dependency-policy.json`이 `pythonLocks`로 이름 붙이고, `make dependency-review RECORD=1`은 그 package와 두 git package(polyspec-orm과 polyspec-ordered-json, `v0.0.7`의 commit)를 review에 적는다. `make python-lock-check`는 커밋된 본문이 새 export와 다르면 실패한다(규칙이 없을 때 RED). package venv는 이 파일로 채운다(S-41).
 - S-41: python은 uv가 아니라 `make install-tools`(config/toolchain.json의 `pythonBuild` 3.14.8, 플랫폼별 sha256)에서 온다. `install-python`과 `tests/install-python`은 `tests/python-tools`(`make python-tools-test`)로 바뀌었다. package venv는 그 interpreter의 복사본이다(`python3 -m venv --copies --without-pip packages/fsm-python/.venv`). `packages/fsm-python/pylock.toml`(uv.lock에서 uv가 export)을 `uv pip install --link-mode copy`로 채운다. `uv venv`와 `uv sync`는 kit runner가 거부하는 link를 쓴다. python 테스트는 PATH 항목이 아니라 `run-tests.mjs python --venv`로 실행하며, main의 `make test-python`("No module named 'polyspec'")을 고친다. RED: python-tools-test가 uv로 만든 checkout venv에서 실패한다. GREEN: test-python 290 case, python-persist-test-postgres와 python-persist-test-mysql(실행 중인 서버), parity-python, toolchain-check, make-install-test, workflows-test가 통과한다.
