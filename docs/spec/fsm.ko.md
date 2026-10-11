@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 914bda3cebe5cc44df7a4547e3f5038c30978ab9edafd603af87fd9a97a769d8 -->
+<!-- source-sha256: 641a01c26d4dea133043398b7619d83f0cdeff10f37743c5ffaa011ecd03a52a -->
 # fsm 정의
 
 [English](fsm.md)
@@ -112,9 +112,10 @@ stateDiagram-v2
     - DSN은 `fsm.config.json`의 `dsnEnv`가 가리키는 환경 변수의 값이다. fsm-db는 다른 곳에서 DSN을 읽지 않는다.
     - `--project`의 기본값은 현재 디렉터리다. usage 오류는 종료 코드 2로 끝난다.
   - 이관 뒤 `fsm.config.json`을 바꾸는 것은 사람이 결정한다.
-- 규칙이 하나라는 것은 store 계약 테스트로 강제한다.
-  - 모든 fixture를 json → db → mermaid → json으로 왕복시켰을 때 바이트 동일해야 한다.
-  - 세 store에서 `run`한 결과가 바이트 동일해야 한다.
+- 규칙이 하나라는 것은 store 계약 테스트로 강제한다. 테스트는 `packages/fsm-db/tests/store-contract-all.test.mjs`에 있으며, 컴파일러에 의존하는 쪽인 fsm-db 패키지가 소유하고 `make db-test`에서 실행한다.
+  - `packages/fsm-compiler/tests/fixtures/valid`의 모든 valid fixture(각각, 그리고 전부 함께)를 json → db → mermaid → json으로 왕복시켰을 때 파일을 바이트로 비교해 바이트 동일해야 한다.
+  - 세 store에서 `run`한 결과가 바이트 동일해야 한다. 모든 kind의 `gen`(필수 옵션 포함: go는 `goModule`, php와 php-ext는 `phpNamespace`, php-ext는 `phpExtName`)과 `vectors`, 그리고 모든 kind의 vectors 파일을 포함한다.
+  - 필드를 떨어뜨리는 store(예: `final`)는 이 케이스들에 실패한다. core가 왕복을 거부하거나 바이트가 달라진다.
 
 ## B-3. code 불변 (lock)
 - code는 정체성이고 key는 이름이다. 배포된 code는 의미를 바꾸거나 재사용할 수 없다.

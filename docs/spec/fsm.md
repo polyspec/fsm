@@ -111,9 +111,10 @@ stateDiagram-v2
     - The DSN is the value of the environment variable that `dsnEnv` names in `fsm.config.json`. fsm-db reads no DSN from any other place.
     - `--project` defaults to the current directory. A usage error exits 2.
   - Changing `fsm.config.json` after a migration is a human decision.
-- Store contract tests enforce that there is one rule set.
-  - Every fixture round-trips json → db → mermaid → json byte-identically.
-  - `run` gives byte-identical results on all three stores.
+- Store contract tests enforce that there is one rule set. They live in `packages/fsm-db/tests/store-contract-all.test.mjs`, which the fsm-db package owns because it depends on the compiler (not the other way round), and run under `make db-test`.
+  - Every valid fixture of `packages/fsm-compiler/tests/fixtures/valid` (and all of them together) round-trips json → db → mermaid → json byte-identically, the files compared as bytes.
+  - `run` gives byte-identical results on all three stores: `gen` of every kind with its required options (`goModule` for go, `phpNamespace` for php and php-ext, `phpExtName` for php-ext) and `vectors`, including the vectors file of every kind.
+  - A store that drops a field (for example `final`) fails these cases: the core refuses the round trip, or the bytes differ.
 
 ## B-3. Code immutability (lock)
 - The code is the identity; the key is the name. A released code never changes meaning and is never reused.

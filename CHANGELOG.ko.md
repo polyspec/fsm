@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 9cc0706f03f3c89b486f141c4b2fa22a5bdb01a556316f8c146f2a6b8a75126e -->
+<!-- source-sha256: fc4bd4959106e90693b3e38ca0c7705f590785e07d77dfb86e67858b39a76b5d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-28: spec B-2의 store 계약을 세 store에서 증명한다. `packages/fsm-db/tests/store-contract-all.test.mjs`(컴파일러에 의존하는 fsm-db 패키지가 소유하며 `make db-test`에서 실행)는 `packages/fsm-compiler/tests/fixtures/valid`의 모든 valid fixture를 각각, 그리고 전부 함께 json → db → mermaid → json으로 왕복시키고 파일을 바이트로 비교한다. 또한 필수 옵션을 준 모든 kind의 `run` gen과 `vectors`(모든 kind의 vectors 파일 포함)가 json, mermaid, db store에서 바이트 동일한 출력을 내는지 확인한다. RED: save에서 `final`을 버리는 db store는 네 개의 동등성 케이스에서 실패한다. core가 `E_DEAD_END`로 왕복을 거부하거나 바이트가 달라지며, 탐지 케이스도 같은 것을 증명한다. 실제 store는 통과하므로 store 결함은 발견되지 않았다. spec B-2(en, ko)가 파일을 명시한다.
 - S-20: 문서 사이트(R11, 계획 C-8). `docs/.vitepress/config.mts`는 저장소 문서를 제자리에서 VitePress 1.6.4로 빌드한다(`make docs-build`, 패키지는 `docs-deps`가 `docs/package-lock.json`으로 설치): 루트와 패키지 README(영어와 한국어), 명세, 계획, 검증 페이지, changelog. README.md는 자기 디렉터리의 index 페이지이며, 사이트 페이지가 아닌 저장소 파일로 가는 링크는 공개 저장소를 가리키고, dead link는 빌드를 실패시킨다. `make docs-build-test`(tests/docs-build)는 dead link의 실패와 실제 빌드를 확인한다. `docs/package.json`은 vite를 6.4.4로 override한다. vitepress 1.6.4가 moderate 및 high advisory가 있는 5.4.x 줄을 고정하기 때문이다. 계획은 자리표시자 `<major>`를 코드 스팬에 쓴다. 사이트가 이를 Vue 마크업으로 컴파일하기 때문이다. `config/documents.json`은 `siteLinks`를 설정한다.
 - S-18-1: 명령 `fsm-gen`, `fsm-db`, `fsm-gui`가 존재한다. 각각 `packages/fsm-compiler/package.json`(새 파일, 의존성 없음), `packages/fsm-db/package.json`, `packages/fsm-gui/package.json`의 `bin` 항목이며, 각 파일은 node shebang으로 시작하고 실행 권한을 가지며, clone에서 `npm install -g ./packages/<package>`가 명령을 PATH에 link한다. S-18은 문서에서만 이름을 바꿨었다. 각 package의 테스트가 임시 npm prefix에 offline으로 설치하고 명령을 실행한다. GUI usage 줄은 `fsm-gui`를 쓴다.
 - S-15-1: `fsm-db install [--project <dir>]`은 `fsm.config.json`이 가리키는 database에 `schema/fsm.dbs`의 schema를 orm `utils().schema().install`로 설치하므로, database는 코드 없이 table을 얻는다. 새 database에서 `fsm-db check`는 `no such table: machine`로 실패하고(종료 코드 1), `install`은 `[fsm-db] install: ok`를 출력하며(종료 코드 0), 이후 `check`가 통과한다. 두 번째 `install`은 아무것도 바꾸지 않고 종료 코드 0으로 끝난다. table이 일부만 있는 database에서는 orm이 install을 `CONFIG`로 거부하며, 오류는 stack과 함께 출력되고(종료 코드 1) 대체 동작은 없다(orm v0.0.7에서 관찰). `packages/fsm-db/README.md`와 `README.ko.md`가 DB store의 사용자 안내서다. 명세(B-2)와 계획(C-6)은 명령을 나열하며, 명세의 `copy` 줄은 CLI가 가진 옵션(`--root`와 함께 쓰는 `--to` 또는 `--from`, DSN은 `dsnEnv`가 가리키는 변수에서만 온다)에 맞게 고쳤다. install은 SQLite에서 프로세스로 실행하는 테스트가 `packages/fsm-db/tests/cli.test.mjs`에 있다.
