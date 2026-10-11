@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b2972c1a2a0013437cde6bb99fc3be8b1b1056671f734e51084054edd88ace56 -->
+<!-- source-sha256: 8cb23c163d1a492c04cb06d452a9d0524f0211bee75d63a2b59b043733fc1400 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-35-1: vendored kit은 v0.0.20이다(`make kit-sync KIT_TAG=v0.0.20`). `kit-test`가 vendored 테스트를 `scripts/kit/run-tests.mjs`로 실행하므로(kit K32, 0.0.19로 릴리스) 다른 모든 테스트처럼 케이스별 진행과 timeout을 보고한다. 0.0.18과 0.0.19의 vendored python-real 테스트가 소비자의 toolchain을 읽어 여기서 실패했고 kit K34-1이 이를 vendored 테스트 밖으로 옮겼으므로 0.0.20을 받는다.
 - S-29-2: `packages/fsm-php`와 `packages/fsm-php-ext`의 composer vendor는 `composer.lock`뿐 아니라 `composer.json`도 키로 하고, 설치 뒤 stamp를 갱신한다. `composer.json`의 autoload는 lock에 없어서, 기존 checkout이 S-25 이전의 autoload를 유지했고 persist case가 정의되지 않은 함수로 실패했다.
 - S-37-2: fsm-db CLI와 command 테스트를 PostgreSQL과 MySQL에서도 실행한다(감사 23, 24). case마다 빈 database를 쓴다. SQLite에서는 새 파일이고, 서버에서는 admin DSN `FSM_TEST_PG_ADMIN_DSN` 또는 `FSM_TEST_MYSQL_ADMIN_DSN`을 통해 `createEmptyDatabase`(`packages/fsm-db/tests/dialect.mjs`)가 만든 새 database이며, 파일이 다시 지운다. `db-test-postgres`와 `db-test-mysql` target은 `cli.test.mjs`와 `command.test.mjs`도 실행하고 admin DSN을 요구한다. CLI 테스트는 테이블 없음 메시지의 인용된 table 이름을 확인한다. PostgreSQL 서버가 메시지를 한국어로 쓰기 때문이다. RED: PostgreSQL target의 테스트는 SQLite에서 돌아(조용한 통과), 그다음 서버 메시지 `relation "machine" does not exist`(서버는 한국어로 썼다)에서 실패했다. GREEN: 각 서버에서 36개 case가 통과한다. 결정과 CI service 줄은 계획 C-6에 있으며, fsm-db의 devDependencies `pg`와 `mysql2`는 고정되고 검토되었다.
 - S-37-1: go, rust, php, php-ext, python의 persist case도 PostgreSQL과 MySQL에서 실행한다(감사 23). 각 kind에 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`이 있고 `TOOL_TESTS`와 `CHECK_TARGETS`에 든다. 테스트는 `FSM_TEST_DIALECT`를 읽고, DSN을 `FSM_TEST_PG_DSN` 또는 `FSM_TEST_MYSQL_DSN`에서 받으며, 연결의 driver가 그 dialect인지 확인하고, persist table을 비운 뒤 case를 차례로 실행한다. DSN이 비어 있는 서버 target은 exit 2로 멈춘다(`require_dsn`). db와 npm의 서버 target도 같은 방식이다. RED: 테스트가 dialect를 읽기 전에는 PostgreSQL target이 SQLite case로 통과했다(go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다). PostgreSQL 17과 MySQL 8.4에서 모든 kind가 GREEN이다. 동시성 증명은 npm에 남는다(계획 C-4).
