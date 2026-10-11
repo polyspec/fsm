@@ -47,7 +47,7 @@ pub async fn seed(db: &Db, id: i64, code: i32) -> polyspec_orm::Result<()> {
 }
 
 /// The status code stored in the row `id`.
-pub async fn fsm_of(db: &Db, id: i64) -> polyspec_orm::Result<i32> {
+pub async fn status_of(db: &Db, id: i64) -> polyspec_orm::Result<i32> {
     Item::new().connect(db).id(id).get().await?.get_status()
 }
 

@@ -75,3 +75,81 @@ test('the rules and the plan may state the old name only as the old name', (t) =
   const elsewhere = check(t, { 'README.md': 'its old name `status`\n' });
   assert.equal(elsewhere.result.status, 1, elsewhere.result.stdout + elsewhere.result.stderr);
 });
+
+// The audit probe lines (audit 6, docs/plans/execution-checklist.md, S-27): each one still names the library through a word
+// that no allowed phrase covers, so every line is a finding, and the phrases of the same line are not an allowance for it.
+test('the audit probe lines are findings, one per line', (t) => {
+  const { result } = check(t, {
+    'README.md': [
+      'Install the status library: npm i @polyspec/status-npm # status code',
+      'Run `status-gen gen` and see the status column docs',
+      "const s = require('status'); s.status === 'x'",
+      "Use status.Error from the status package: status: 'pass'",
+      '',
+    ].join('\n'),
+    'packages/fsm-go/examples/model/go.mod': 'module github.com/polyspec/status-go\n',
+  });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  for (const where of ['README.md:1:', 'README.md:2:', 'README.md:3:', 'README.md:4:', 'packages/fsm-go/examples/model/go.mod:1:']) {
+    assert.ok(result.stderr.includes(`[check-name] ${where} `), `${where} is a finding\n${result.stderr}`);
+  }
+  assert.match(result.stderr, /5 occurrence\(s\) of the old library name/);
+});
+
+test('an allowed phrase is removed from its line and the rest is scanned again', (t) => {
+  const { result } = check(t, { 'packages/fsm-x/src/gen.mjs': '// the status column, read by status-gen\n' });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /^\[check-name\] packages\/fsm-x\/src\/gen\.mjs:1: /m);
+});
+
+test('the consumer accessors of the status column are allowed only as exact names', (t) => {
+  const { result } = check(t, {
+    'packages/fsm-x/examples/persist.py': 'def status_of(db, row_id):\n    row.set_status(code)\n    row.order_by_status_asc()\n',
+    'packages/fsm-x/examples/persist.rs': 'pub async fn status_of(db: &Db) {}\n',
+    'packages/fsm-x/examples/persist.go': 'func StatusOf(db *orm.DB) {}\nfunc Statusify() {}\n',
+  });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /^\[check-name\] packages\/fsm-x\/examples\/persist\.go:2: /m);
+  assert.doesNotMatch(result.stderr, /persist\.(py|rs|go):1:/);
+});
+
+test('the model entry allows the generated helper names of the status column, not other words', (t) => {
+  const { result } = check(t, {
+    'packages/fsm-go/examples/model/item.go': [
+      'func (x *ItemModel) GetStatus() int32 { return x.fStatus }',
+      'func (x *ItemModel) OrderByStatusAsc(fn ...orm.Func) *ItemModel { x.m.OrderBy("status", false, fn); return x }',
+      'case "status":',
+      '',
+    ].join('\n'),
+    'packages/fsm-npm/examples/model/models.ts': "x.set('status-gen', 1);\n",
+  });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /^\[check-name\] packages\/fsm-npm\/examples\/model\/models\.ts:1: /m);
+  assert.doesNotMatch(result.stderr, /item\.go:/);
+});
+
+test('a CHANGELOG bullet is allowed only for an item up to the rename (S-01 to S-18)', (t) => {
+  const before = check(t, {
+    'CHANGELOG.md': '- S-17: the GUI reads `status-gen` (packages/status-gui).\n- S-11-2: `status-python`.\n- S-18: the rename, `status-gen` stays.\n',
+  });
+  assert.equal(before.result.status, 0, before.result.stdout + before.result.stderr);
+  const after = check(t, { 'CHANGELOG.md': '- S-18-1: the command `status-gen` answers.\n' });
+  assert.equal(after.result.status, 1, after.result.stdout + after.result.stderr);
+  const note = check(t, { 'CHANGELOG.md': '- a note that names `status-gen`\n' });
+  assert.equal(note.result.status, 1, note.result.stdout + note.result.stderr);
+});
+
+test('the S-18 row allows its task phrases and no other occurrence', (t) => {
+  const row = '| S-18 | Rename status to fsm everywhere: the plan | a remaining `status` name that is not a state status RED (a scan) → GREEN |';
+  const ok = check(t, { 'docs/plans/execution-checklist.md': `${row}\n` });
+  assert.equal(ok.result.status, 0, ok.result.stdout + ok.result.stderr);
+  const extra = check(t, { 'docs/plans/execution-checklist.md': '| S-18 | Rename status to fsm everywhere; status-gen stays | x | [o] |\n' });
+  assert.equal(extra.result.status, 1, extra.result.stdout + extra.result.stderr);
+});
+
+test('a helper comment that names the exit status of a process is allowed', (t) => {
+  const { result } = check(t, {
+    'packages/fsm-compiler/tests/fsm-gen.test.mjs': '/** Runs fsm-gen with `args` and returns its status, stdout and stderr. */\n',
+  });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});

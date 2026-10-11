@@ -21,7 +21,7 @@ def seed(db, row_id, code):
     Item().connect(db).set_id(row_id).set_status(code).create()
 
 
-def fsm_of(db, row_id):
+def status_of(db, row_id):
     """The status code stored in the row `row_id`."""
     return Item().connect(db).id(row_id).get().get_status()
 

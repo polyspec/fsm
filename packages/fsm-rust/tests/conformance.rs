@@ -77,7 +77,7 @@ pub async fn check_persist(
         Err(other) => panic!("the transaction failed in the database: {other:?}"),
     };
     check_result(outcome, expect);
-    let row = persist::fsm_of(&db, 1).await.expect("read the row");
+    let row = persist::status_of(&db, 1).await.expect("read the row");
     assert_eq!(row, stored_after, "the stored code after the run");
     db.close().await;
 }

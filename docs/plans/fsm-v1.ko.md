@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 84f2cc712af28d375aab3ab41a9a8bab8648d88cbde6476d2cc9042a25ccb045 -->
+<!-- source-sha256: 5f53879386b5113029219328babaeda354b205ac658c083561a3ac71ea837544 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -96,7 +96,7 @@
     - `documents-check`: 체크리스트 형식
     - `push-gate`: [~] 상태로 push 금지
     - `owner-validate`: 경로 소유
-  - `name-check`(`scripts/check-name.mjs`, RED 테스트는 `tests/check-name/`): 추적 파일과 경로가 라이브러리를 옛 이름 `status`로 부르지 않는다. 허용되는 경우(상태 값, exit·HTTP·테스트 결과 status, 벤더 kit, CHANGELOG 이력)는 `ALLOWED`의 항목이며 각각 이유를 가진다(R12).
+  - `name-check`(`scripts/check-name.mjs`, RED 테스트는 `tests/check-name/`): 추적 파일과 경로가 라이브러리를 옛 이름 `status`로 부르지 않는다. 출현마다 판정한다: 허용 항목이 이름 붙인 구절을 줄에서 지우고, 남은 부분에 그 단어가 있으면 finding이다. 허용 항목은 소비자 상태 열의 상태 값(접근자와 열 용어), 프로세스·요청의 exit·HTTP·테스트 결과 용어, 벤더 kit, S-01부터 S-18까지(rename 포함)의 CHANGELOG 항목, 계획과 규칙의 rename 용어이며, 각각 `ALLOWED`의 항목으로 이유를 가지고 정확한 구절만 허용한다(R12).
   - K19: 상태를 [o]로 바꾸는 커밋은 CHANGELOG도 바꿔야 한다. 커밋 하나가 상태를 바꾸는 항목은 최대 1개다.
   - **리뷰 규칙(도구 없음)**
     - 브랜치/워크트리 이름 규칙과 병합 즉시 삭제
