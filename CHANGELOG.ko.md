@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d611385f92ecfc281ff76977779cf6ed3f63ab6b6c62fb14ca0242b11573a512 -->
+<!-- source-sha256: 384a716fb6b78cfcf28361f687ea5a1230096186c5c51d8f156464a2b56b3978 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-20-2: docs 설치가 npm 경고를 출력하지 않는다. npm 11이 esbuild와 fsevents의 설치 script에 경고했고, 이는 `docs/package.json`이 결정하지 않은 것이었다. esbuild script는 고정 버전에 허용하고(`allowScripts`), fsevents script는 거부한다. 사이트는 watcher를 쓰지 않으며 이 package는 빌드된 binary를 담기 때문이다. 추적과 근거는 계획 C-8에 있다. `tests/docs-build`는 lock으로 새 `npm ci`를 실행하고 npm 경고가 있으면 실패한다.
 - S-29-1: `gui-browsers`는 고정된 Playwright 버전마다 Chromium을 한 번 내려받는다. 브라우저는 `packages/fsm-gui/package-lock.json`의 버전으로 키를 정한 file `var/deps/playwright-<version>`이며, `gui-browser-test`가 이 file에 의존하므로 stamp가 있는 이후 실행은 다운로드를 출력하지 않고 네트워크도 필요 없다(`make -n gui-browser-test`를 `tests/make-install`이 검사한다). `gui-browsers`는 stamp의 phony 별칭으로 남는다.
 - S-34: python 의존성을 잠갔다(감사 16). `packages/fsm-python/uv.lock`(`uv lock`)이 트리의 모든 package를 정확한 버전, 각 artifact의 sha256, 각 git package의 commit과 함께 담는다(orm과 ordered-json은 `v0.0.7`). `make -C packages/fsm-python install`은 이 lock으로 `uv sync --locked`를 실행하므로 uv가 각 artifact를 hash와 대조한다. `make install`의 python stamp는 `pyproject.toml` 대신 `uv.lock`으로 키를 정한다. kit dependency gate는 Python lock을 읽지 않으므로 `scripts/check-python-lock.mjs`(`make python-lock-check`)가 lock의 pin, commit, tag, current, closure 규칙을 검사한다(계획 C-1). 전이 package의 최신 릴리스와 advisory 리뷰는 S-34-1로 등록했다.
 - S-37: 영속화와 DB store를 SQLite, PostgreSQL, MySQL에서 증명한다(감사 23, 24). `packages/fsm-npm/tests/persist-dialects.test.mjs`는 한 row의 전이 두 개를 두 연결에서 동시에 실행한다. 같은 (expected, event)는 Changed 하나와 Unchanged 하나를, 한 expected 상태의 서로 다른 event 두 개는 Changed 하나와 E_CONFLICT 하나를 낸다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이기 때문이다. `forUpdate()`가 없으면 PostgreSQL과 MySQL에서 두 전이가 모두 Changed를 보고한다(RED). `make db-test-postgres`와 `make db-test-mysql`은 `packages/fsm-db/tests/dialect.mjs`를 통해 두 서버에서 DB store 테스트와 store 계약을 실행한다. `FSM_TEST_PG_DSN`이나 `FSM_TEST_MYSQL_DSN`이 없으면 target이 실패하며 case를 건너뛰지 않는다(RED: 변수 없이 실행하여 실패를 확인). 문서는 테스트한 dialect를 적는다(명세 B-2, B-4; fsm-db README; 루트 README). S-21을 위한 CI service 줄은 계획 C-6에 있다.

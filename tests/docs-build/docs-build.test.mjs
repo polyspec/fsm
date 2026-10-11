@@ -80,3 +80,20 @@ test('the site builds from the repository documents, with the English and Korean
   // A document outside the include list of C-8 is not a page.
   assert.equal(existsSync(path.join(out, 'AGENTS.html')), false, 'AGENTS.md is not a site page');
 });
+
+// The install of the documentation packages prints no npm warning (docs/plans/execution-checklist.md, S-20-2; C-8). npm 11
+// warns about the install scripts that docs/package.json does not decide (its allowScripts field), so a fresh `npm ci` of
+// docs/package-lock.json, run in a temporary directory with the same package.json and lock, must print no warning line. An
+// install-script warning is decided in docs/package.json, which the test then passes.
+const NPM_WARNING = /^npm (?:warn|WARN|error|ERR!)\b/i;
+
+test('the docs install prints no npm warning', { timeout: TIMEOUT_MS }, (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'fsm-docs-install-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  copyFileSync(path.join(REPO, 'docs/package.json'), path.join(dir, 'package.json'));
+  copyFileSync(path.join(REPO, 'docs/package-lock.json'), path.join(dir, 'package-lock.json'));
+  const result = spawnSync('npm', ['ci', '--no-audit', '--no-fund'], { cwd: dir, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  assert.equal(result.status, 0, `npm ci failed\n${result.stdout}${result.stderr}`);
+  const warnings = `${result.stdout}\n${result.stderr}`.split('\n').map(line => line.trim()).filter(line => NPM_WARNING.test(line));
+  assert.deepEqual(warnings, [], 'npm prints a warning on the install of the docs packages');
+});
