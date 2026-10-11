@@ -37,6 +37,12 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1.md`; the definitio
 - No hidden errors: no fallback, no silent conversion or drop, no null return, no backward-compatibility layer.
 - No external sources in git files: only adopt / not-adopt verdicts in generic wording. polyspec repositories (kit, orm,
   hyper, crudui, template and others) are internal libraries and may be cited.
+- Do not rebuild what an existing outside tool or library already does. Use the standard tool of its ecosystem as it is
+  (for example uv for Python interpreters, environments and locks, Composer for PHP dependencies), and accept its own
+  behavior, such as the symbolic links that it creates; our rules govern what we create.
+- No symbolic links and no relative paths in what this repository creates (tracked files, configuration, scripts,
+  generated output). Paths are resolved declaratively (named in a tracked file) or by discovery (a stated discovery
+  rule).
 
 ## Checklist
 

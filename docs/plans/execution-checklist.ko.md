@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: f118d2f1ce592304c65f3a5c3914e590d2222fce0746d59548e8a09bf1ca8ccd -->
+<!-- source-sha256: 04710421ceeb7a618237b44071ee1881f36399c08c64baacf0fa6e6ff3b072c9 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -92,3 +92,4 @@
 | S-38 | Mermaid 다이어그램이 모든 state의 이름을 보인다: 고정한 mermaid 12.1.0은 description이 하나인 state(`draft : 1`, spec B-1의 정규형)를 description만으로 그리므로 GUI와 모든 Mermaid viewer가 key 없이 code 1..n만 보인다(S-22 확인). 측정 결과: `state "draft" as draft` 뒤에 `draft : 1`을 쓰면 `draft` 제목 아래 `1`이 있는 상자로 그려지고 description [draft, 1]로 파싱된다. 그려진 다이어그램이 key와 code를 보이도록 정규형을 바꾸며, 대안과 적대 검증해 결정하고 spec B-1에 기록한다(B-5의 예약어 위치를 다시 측정). mermaid store, golden, 예제 machine, GUI, README 예시가 따른다 | 그려진 svg의 label에 모든 state key가 있는지 보는 browser 테스트 실패 RED → GREEN | [o] |
 | S-39 | go 테스트 파일과 충돌하는 machine key를 예약한다: 생성된 go 테스트 package의 식별자를 이름으로 쓰는 machine key는 fsm-gen check를 통과하면서 go 빌드를 깬다(S-25가 봄). go 1.27.2로 측정한 결과 `examples`, `vectors`, `machines`, `expectation`, `lookup`이 `go test ./...`를 깨고("redeclared in this block", "already declared through import"), 처음 의심한 `tests`는 깨지 않는다. 측정한 key를 근거와 함께 spec B-5의 고정 목록에 더한다 | 측정한 각 key가 fsm-gen check를 통과하고 go를 깸 RED → E_KEY_RESERVED GREEN. `tests`는 허용으로 남음 | [o] |
 | S-40 | `packages/fsm-gui/tests/command.test.mjs`가 root `fsm.lock.json` 전체를 order machine만 있는 프로젝트에 복사하므로 root의 다른 machine에 의존한다(S-25가 봄). 테스트는 machine 하나와 그 lock 항목으로 프로젝트를 만든다 | root에 machine을 더하면 테스트 프로젝트가 바뀜 RED → 바뀌지 않음 GREEN | [o] |
+| S-43 | AGENTS.md(.ko) 규칙: 기존 외부 도구나 라이브러리는 있는 그대로 쓰며 다시 만들지 않는다. 저장소는 추적 파일, 설정, 스크립트, 생성 출력에 symbolic link와 상대 경로를 만들지 않는다. 경로는 추적 파일에 이름을 적거나 명시된 탐색 규칙으로 찾는다 | 두 규칙이 AGENTS.md와 AGENTS.ko.md에 있고, 커밋된 트리에서 `make documents-check`가 통과 | [o] |
