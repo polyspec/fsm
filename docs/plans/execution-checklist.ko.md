@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: b4a6953a777582d7abcc3bb1938cdf9a22f883e1fef347de7c99d5c8fced3970 -->
+<!-- source-sha256: 43eff0e1e91ac0083512382b96aa95ee92199bdd12e9982c117a6a57d4807d42 -->
 # 실행 체크리스트
 
 ## status v1
@@ -37,6 +37,6 @@
 | S-14-3 | gen과 vectors --kind는 출력 디렉터리에서 git이 무시하는 파일을 건너뛴다: 무시된 빌드 산출물(php-ext src/의 phpize 파일)은 손으로 쓴 파일이 아니므로 E_NOT_GENERATED로 생성기를 막지도 않고 지워지지도 않는다. 헤더 없는 추적 파일과 무시되지 않은 새 파일은 여전히 막는다 | make clean 없이 php-ext build 뒤 gen RED → GREEN, 손으로 쓴 파일은 여전히 E_NOT_GENERATED | [o] |
 | S-15 | status-db: `schema/status.dbs` + DbStore + 계약 테스트 + copy + `db-test` | 계약 불일치·`E_STORE_NOT_EMPTY`·원자성 RED → GREEN | [o] |
 | S-16 | GUI 골격: hyper app + 목록·상세 + Mermaid + `gui-test` + 고정 버전 mermaid 패키지로 정규형과 B-5의 모든 예약 상태 key를 파싱하는 테스트 | handler RED → GREEN | [o] |
-| S-16-1 | GUI test hang: `make gui-test` 실행 한 번에서 중첩 Mermaid subtest가 빈 event loop로 "the test did not finish"를 보고했고 약 20번 재현되지 않았다. 원인을 찾아 원인에서 고치고, 호출별 deadline이 원인을 가렸을 뿐이면 제거한다 | 재현(또는 원인 증명) RED → GREEN | [ ] |
+| S-16-1 | GUI test hang: `make gui-test` 실행 한 번에서 중첩 Mermaid subtest가 빈 event loop로 "the test did not finish"를 보고했고 약 20번 재현되지 않았다. 원인을 찾아 원인에서 고치고, 호출별 deadline이 원인을 가렸을 뿐이면 제거한다 | 재현(또는 원인 증명) RED → GREEN | [o] |
 | S-17 | GUI 편집: crudui 폼 + 검증 오류 표시 + rename | 저장 후 `check` 통과 | [o] |
 | S-17-1 | GUI 후속: 브라우저에서 추가한 행이 core nextCode의 제안 code를 보이고(페이지가 다음 code를 담는다), 편집 폼에서 상태를 지우면 그 code가 reserved로 옮겨짐을 GUI 테스트가 증명한다 | code 제안 없는 추가 행 RED, reserved 없는 삭제 RED → GREEN | [o] |

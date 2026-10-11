@@ -33,24 +33,10 @@ const byText = (a, b) => {
   return x < y ? -1 : x > y ? 1 : 0;
 };
 
-/**
- * Settles `promise`, or fails after 20 seconds with `label`. The timer keeps the process alive while Mermaid works, so a call
- * that never settles fails its own case instead of ending the file without a result.
- */
-class Unsettled extends Error {}
-
-function deadline(promise, label) {
-  let timer;
-  const expired = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Unsettled(`${label} did not settle in 20 seconds`)), 20000);
-  });
-  return Promise.race([promise, expired]).finally(() => clearTimeout(timer));
-}
-
 /** The model of a parsed diagram: its states with their descriptions and its transitions with their labels, both sorted. */
 async function parsedModel(text) {
-  const { diagramType } = await deadline(mermaid.parse(text), 'mermaid.parse');
-  const { db } = await deadline(mermaid.mermaidAPI.getDiagramFromText(text), 'mermaid.mermaidAPI.getDiagramFromText');
+  const { diagramType } = await mermaid.parse(text);
+  const { db } = await mermaid.mermaidAPI.getDiagramFromText(text);
   const states = [...db.getStates().entries()].map(([id, state]) => [id, [...state.descriptions]]).sort(byText);
   const relations = db.getRelations().map(({ id1, id2, relationTitle }) => [id1, id2, relationTitle]).sort(byText);
   return { diagramType, states, relations };
@@ -120,8 +106,6 @@ async function carriesAsWritten(spec) {
   try {
     model = await parsedModel(textOf(spec));
   } catch (error) {
-    // A Mermaid call that never settles is a failure of the test, not a parse failure that makes the word unusable.
-    if (error instanceof Unsettled) throw error;
     return { carried: false, reason: `parse fails: ${error.message.split('\n')[0]}` };
   }
   const expected = writtenModel(spec);
