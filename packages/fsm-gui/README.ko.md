@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: 4a957ac1b43924f55c4ab249d08a8975433e09a54de5df2e4b52e50d227733eb -->
+<!-- source-sha256: fe616ae067e738d2115fd2acd5168275029cc009b20341ca79b1cf14db8751f2 -->
 # fsm GUI
 
 [English](README.md).
@@ -154,6 +154,7 @@ json과 mermaid 프로젝트는 저장 뒤 `check`를 통과한다.
 | `public/assets/` | client bundle과 chunk, `make gui-build`가 `@polyspec/crudui-generator-core`에서 복사하는 `crudui.css`(git이 무시) |
 | `public/favicon.ico` | `/favicon.ico`의 아이콘. `scripts/make-favicon.mjs`가 쓴다(ICO 파일이다. 계획 C-7 참고) |
 | `scripts/make-favicon.mjs` | `public/favicon.ico`를 쓴다. 아이콘을 바꿀 때만 손으로 실행한다 |
+| `scripts/manual-check.mjs` | GUI 수동 확인(`docs/verification/gui.md`)의 driver: 실행 중인 서버를 Chromium으로 밟고 녹화한다 |
 | `tests/browser/` | form의 브라우저 테스트(`make gui-browser-test`) |
 
 의존성 버전은 `package.json`과 `package-lock.json`에 고정하며 `config/dependency-policy.json`에 기록한다: hyper v0.0.11, crudui

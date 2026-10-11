@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 384a716fb6b78cfcf28361f687ea5a1230096186c5c51d8f156464a2b56b3978 -->
+<!-- source-sha256: 7dae5944434e502dfe7afbb108d0009de86855a1c6cd8c2929b4337ea89fa539 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-22: 계획의 GUI 수동 확인을 고정한 Playwright의 Chromium에서 json, mermaid, db store로 commit bc9f1b1에서 실행했고, 단계, 결과, 녹화를 `docs/verification/gui.md`에 기록했다: 다이어그램이 모든 state 이름을 보이고, 추가한 행이 제안 code 6을 가지며, 저장한 state가 표와 다이어그램에 나오고, 삭제한 state가 빠지고 다음 code가 7이며, 이름 바꾸기가 code를 유지하고, 각 store에서 `fsm-gen check` 또는 `fsm-db check`가 통과한다. driver는 `packages/fsm-gui/scripts/manual-check.mjs`다. 첫 실행들이 S-22-1, S-22-2, S-22-3, S-38을 찾았다.
 - S-20-2: docs 설치가 npm 경고를 출력하지 않는다. npm 11이 esbuild와 fsevents의 설치 script에 경고했고, 이는 `docs/package.json`이 결정하지 않은 것이었다. esbuild script는 고정 버전에 허용하고(`allowScripts`), fsevents script는 거부한다. 사이트는 watcher를 쓰지 않으며 이 package는 빌드된 binary를 담기 때문이다. 추적과 근거는 계획 C-8에 있다. `tests/docs-build`는 lock으로 새 `npm ci`를 실행하고 npm 경고가 있으면 실패한다.
 - S-29-1: `gui-browsers`는 고정된 Playwright 버전마다 Chromium을 한 번 내려받는다. 브라우저는 `packages/fsm-gui/package-lock.json`의 버전으로 키를 정한 file `var/deps/playwright-<version>`이며, `gui-browser-test`가 이 file에 의존하므로 stamp가 있는 이후 실행은 다운로드를 출력하지 않고 네트워크도 필요 없다(`make -n gui-browser-test`를 `tests/make-install`이 검사한다). `gui-browsers`는 stamp의 phony 별칭으로 남는다.
 - S-34: python 의존성을 잠갔다(감사 16). `packages/fsm-python/uv.lock`(`uv lock`)이 트리의 모든 package를 정확한 버전, 각 artifact의 sha256, 각 git package의 commit과 함께 담는다(orm과 ordered-json은 `v0.0.7`). `make -C packages/fsm-python install`은 이 lock으로 `uv sync --locked`를 실행하므로 uv가 각 artifact를 hash와 대조한다. `make install`의 python stamp는 `pyproject.toml` 대신 `uv.lock`으로 키를 정한다. kit dependency gate는 Python lock을 읽지 않으므로 `scripts/check-python-lock.mjs`(`make python-lock-check`)가 lock의 pin, commit, tag, current, closure 규칙을 검사한다(계획 C-1). 전이 package의 최신 릴리스와 advisory 리뷰는 S-34-1로 등록했다.

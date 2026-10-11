@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: b0a9780e50270f42b49dd50720eb7fe554510370bff3adb9cee89a484e74e939 -->
+<!-- source-sha256: 3ff974c1a978ab27fdf23fa0b178e530528ed0c514cd806c66463aeca0e81d81 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -48,7 +48,7 @@
 | S-20-1 | 사이트 빌드에 경고가 없다: VitePress 빌드가 "Circular chunk: framework -> theme -> framework"를 출력하며 원인을 추적하지 않았다. 원인을 추적해 없애거나, 출력이 올바르다는 근거와 함께 원인을 plan에 기록한다 | 어떤 빌드 경고에서도 docs-build-test 실패 RED → GREEN | [o] |
 | S-20-2 | `make docs-deps`가 esbuild와 fsevents의 npm install-script 경고를 출력한다(S-20-1이 보았고 바꾸지 않음). 설치의 모든 경고를 추적한다: docs package의 올바른 npm 설정으로 없애거나, 원인과 무해한 이유를 plan C-8에 기록한다 | 설명되지 않은 npm 경고에서 docs-build-test나 deps 테스트 실패 RED → GREEN | [o] |
 | S-21 | 공개: public 저장소 polyspec/fsm 생성, main push, make check를 돌리는 CI workflow, 사이트를 배포하는 Pages workflow. 사용자가 2026-10-11에 모든 단계를 허락했다. push 뒤 로컬 저장소 디렉터리 이름을 `fsm`으로 바꾼다 | GitHub에서 사이트와 CI가 응답 | [ ] |
-| S-22 | 계획(Verification)의 GUI 수동 확인을 json, mermaid, db store 각각으로 한다: 상태 추가·삭제·rename 후 저장, `fsm-gen check` 또는 `fsm-db check` 통과, 브라우저의 Mermaid 표시, 추가한 행의 제안 code. 트리와 store별 단계·결과를 `docs/verification/gui.md(.ko)`에 기록한다 | 실패한 단계는 새 하위 항목 RED → 모든 store의 모든 단계가 통과하고 기록됨 GREEN | [ ] |
+| S-22 | 계획(Verification)의 GUI 수동 확인을 json, mermaid, db store 각각으로 한다: 상태 추가·삭제·rename 후 저장, `fsm-gen check` 또는 `fsm-db check` 통과, 브라우저의 Mermaid 표시, 추가한 행의 제안 code. 트리와 store별 단계·결과를 `docs/verification/gui.md(.ko)`에 기록한다 | 실패한 단계는 새 하위 항목 RED → 모든 store의 모든 단계가 통과하고 기록됨 GREEN | [o] |
 | S-22-1 | GUI 폼의 추가·삭제 버튼이 페이지의 행을 바꾼다: client가 form instance를 구독해 다시 렌더링한다(`patchContent(host, renderForm(form))` 뒤 `connection.sync()`). 이것이 crudui `connectForm`의 계약이다. S-22 확인에서 클릭이 instance만 바꾸고 페이지는 바꾸지 않음을 발견했고, handler 테스트로는 보이지 않는다. `packages/fsm-gui/tests`의 브라우저 테스트(고정한 Playwright, 임시 프로젝트로 띄운 GUI)가 이를 소유한다 | add 클릭 뒤 행 수가 그대로 RED → 제안 code를 가진 행이 나타나고, remove가 없애고, save가 저장 GREEN | [o] |
 | S-22-2 | GUI 폼을 쓸 수 있다: crudui stylesheet `@polyspec/crudui-generator-core/crudui.css`가 asset bundle에 들어가 행 버튼이 동작을 보여 주고, 모든 field가 구별되는 label을 가지며(저장된 key와 새 key가 둘 다 "Key"가 아님), `/favicon.ico`가 404 대신 icon을 준다 | 브라우저 테스트가 label 없는 행 버튼, 한 행의 같은 label 두 개, 404를 찾음 RED → GREEN | [o] |
 | S-22-3 | 브라우저 테스트가 network idle이 아니라 폼 자신의 준비 상태를 기다린다: client가 connectForm이 폼을 묶으면 form host에 표시(`data-fsm-connected`)를 하고, 케이스는 그 표시를 기다리며, 표시 전에는 행 버튼이 클릭을 받지 않고, 첫 실행 실패의 원인을 찾아 plan C-7에 기록한다(새로 받은 Chromium의 첫 탐색이 2.5~12.4초로 케이스 제한 5초를 넘고, client는 `load` 전에 묶인다). 그래서 setup이 자기 제한으로 편집 페이지를 한 번 연다. 행의 첫 기준은 묶기 전 클릭을 가정했고, 차가운 시도 30회가 이를 반박했다 | 표식 없는 client에서 표식 테스트 실패, 새 다운로드의 첫 케이스가 12.4초에서 실패 RED → 표식 테스트 통과, 새 다운로드 네 번 통과 GREEN | [o] |

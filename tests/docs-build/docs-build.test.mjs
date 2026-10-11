@@ -45,11 +45,22 @@ function build(docs) {
   return spawnSync(process.execPath, [VITEPRESS, 'build', docs], { cwd: path.dirname(docs), encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 });
 }
 
-/** A copy of the repository documents and of the site configuration in a temporary directory, with its own docs/. */
+// An image of a document (`![alt](relative path)`) is part of the page, so the mirror copies it with the document.
+const IMAGE = /!\[[^\]]*\]\(([^)\s]+)\)/g;
+
+/** The repository paths of the local images that the Markdown file `rel` shows. */
+function imagesOf(rel) {
+  const text = readFileSync(path.join(REPO, rel), 'utf8');
+  return [...text.matchAll(IMAGE)].map(match => match[1]).filter(target => !/^[a-z]+:/i.test(target))
+    .map(target => path.posix.join(path.posix.dirname(rel), target));
+}
+
+/** A copy of the repository documents, their images and the site configuration in a temporary directory, with its own docs/. */
 function mirror(t) {
   const root = mkdtempSync(path.join(tmpdir(), 'fsm-docs-build-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  for (const rel of [...markdownFiles(REPO), CONFIG, 'docs/package.json']) {
+  const documents = markdownFiles(REPO);
+  for (const rel of [...documents, ...documents.flatMap(imagesOf), CONFIG, 'docs/package.json']) {
     mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
     copyFileSync(path.join(REPO, rel), path.join(root, rel));
   }

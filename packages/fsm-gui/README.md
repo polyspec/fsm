@@ -162,6 +162,7 @@ with a browser DOM that Node does not have. The edit tests (`edit-machine`, `ren
 | `public/assets/` | The client bundle and its chunks, and `crudui.css` copied from `@polyspec/crudui-generator-core` by `make gui-build` (ignored) |
 | `public/favicon.ico` | The icon at `/favicon.ico`, written by `scripts/make-favicon.mjs` (an ICO file: see the plan, C-7) |
 | `scripts/make-favicon.mjs` | Writes `public/favicon.ico`; run it by hand only when the icon changes |
+| `scripts/manual-check.mjs` | The driver of the GUI manual check (`docs/verification/gui.md`): walks a running server in Chromium and records it |
 | `tests/browser/` | The browser test of the forms (`make gui-browser-test`) |
 
 The versions of the dependencies are pinned in `package.json` and `package-lock.json` and recorded in
