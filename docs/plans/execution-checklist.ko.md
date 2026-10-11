@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: ba5e79efb4e6558bb11357a71fe9e2ebcb3f380b983909665f7711b756d7e97b -->
+<!-- source-sha256: adbe49f41cc267dfb6c5c299f44a0ccc378393b10c5eb494acd1af2f07e09cb9 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -47,7 +47,7 @@
 | S-20 | 문서 사이트: 문서(spec, 언어별 가이드, CLI, GUI, DB)로 빌드하는 docs/.vitepress의 VitePress, kit documents site link를 쓰는 `docs-build` 타깃, owner 규칙 | 깨진 링크에서 docs-build 실패 RED → GREEN | [o] |
 | S-20-1 | 사이트 빌드에 경고가 없다: VitePress 빌드가 "Circular chunk: framework -> theme -> framework"를 출력하며 원인을 추적하지 않았다. 원인을 추적해 없애거나, 출력이 올바르다는 근거와 함께 원인을 plan에 기록한다 | 어떤 빌드 경고에서도 docs-build-test 실패 RED → GREEN | [o] |
 | S-20-2 | `make docs-deps`가 esbuild와 fsevents의 npm install-script 경고를 출력한다(S-20-1이 보았고 바꾸지 않음). 설치의 모든 경고를 추적한다: docs package의 올바른 npm 설정으로 없애거나, 원인과 무해한 이유를 plan C-8에 기록한다 | 설명되지 않은 npm 경고에서 docs-build-test나 deps 테스트 실패 RED → GREEN | [o] |
-| S-21 | 공개: public 저장소 polyspec/fsm 생성, main push, make check를 돌리는 CI workflow, 사이트를 배포하는 Pages workflow. 사용자가 2026-10-11에 모든 단계를 허락했다. push 뒤 로컬 저장소 디렉터리 이름을 `fsm`으로 바꾼다 | GitHub에서 사이트와 CI가 응답 | [ ] |
+| S-21 | 공개: public 저장소 polyspec/fsm 생성, main push, make check를 돌리는 CI workflow, 사이트를 배포하는 Pages workflow. 사용자가 2026-10-11에 모든 단계를 허락했다. push 뒤 로컬 저장소 디렉터리 이름을 `fsm`으로 바꾼다 | GitHub에서 사이트와 CI가 응답 | [o] |
 | S-21-1 | CI는 ubuntu-26.04에서 돈다: orm의 PHP client는 SQLite 3.46을 요구하는데 ubuntu-24.04의 PHP는 시스템 SQLite 3.45.1에 연결되어, 더 새 SQLite를 가진 개발자 machine에서는 통과하는 php persist case가 CI에서 `CAPABILITY_UNSUPPORTED: SQLite 3.45.1 is older than 3.46`로 실패했다(run 38120456615). orm의 CI도 같은 이유로 ubuntu-26.04에서 돈다. workflows 테스트가 runner를 단언한다 | ubuntu-24.04에서 php persist case 실패 RED → ubuntu-26.04에서 CI 녹색 GREEN | [o] |
 | S-22 | 계획(Verification)의 GUI 수동 확인을 json, mermaid, db store 각각으로 한다: 상태 추가·삭제·rename 후 저장, `fsm-gen check` 또는 `fsm-db check` 통과, 브라우저의 Mermaid 표시, 추가한 행의 제안 code. 트리와 store별 단계·결과를 `docs/verification/gui.md(.ko)`에 기록한다 | 실패한 단계는 새 하위 항목 RED → 모든 store의 모든 단계가 통과하고 기록됨 GREEN | [o] |
 | S-22-1 | GUI 폼의 추가·삭제 버튼이 페이지의 행을 바꾼다: client가 form instance를 구독해 다시 렌더링한다(`patchContent(host, renderForm(form))` 뒤 `connection.sync()`). 이것이 crudui `connectForm`의 계약이다. S-22 확인에서 클릭이 instance만 바꾸고 페이지는 바꾸지 않음을 발견했고, handler 테스트로는 보이지 않는다. `packages/fsm-gui/tests`의 브라우저 테스트(고정한 Playwright, 임시 프로젝트로 띄운 GUI)가 이를 소유한다 | add 클릭 뒤 행 수가 그대로 RED → 제안 code를 가진 행이 나타나고, remove가 없애고, save가 저장 GREEN | [o] |
