@@ -122,7 +122,7 @@ Which properties a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and t
 
 ## Persistence
 
-`examples/persist.php` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a
+`examples/persist.php` is the pattern of `docs/spec/fsm.md`, B-4 with polyspec orm on SQLite, PostgreSQL and MySQL (the DSN given to `open` selects the dialect). The stored state is a code in a
 row. A transition runs in one transaction: the row is read under its lock (`forUpdate()`), the event is applied to the state
 that the caller observed, and the row is updated only when the step is changed:
 
@@ -157,9 +157,11 @@ From the checkout:
 make -C packages/fsm-php install   # composer install: the pinned orm release and PHPUnit 12.5.38 (composer.lock)
 make -C packages/fsm-php test      # PHPUnit through scripts/kit/run-tests.mjs
 make test-php                      # the same from the root
+make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 The run passes 89 of 89 cases. `tests/ConformanceTest.php` runs one PHPUnit test per vector case of `tests/Vectors.php`, named
-`test_<feature>__<id>` in its data set; the persist cases run `examples/persist.php` on SQLite. The root `make gen-check` checks
+`test_<feature>__<id>` in its data set; the persist cases run `examples/persist.php` on SQLite, and `make php-persist-test-postgres` and `make php-persist-test-mysql` run them on PostgreSQL and MySQL. The root `make gen-check` checks
 that the generated files are the ones `fsm-gen` writes today. The PHP release of the checkout is 8.5 (`config/toolchain.json`);
 `config.platform.php` in `composer.json` is 8.4.0, the minimum of the orm client.

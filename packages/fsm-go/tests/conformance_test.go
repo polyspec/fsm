@@ -1,18 +1,22 @@
 // Package tests holds the conformance tests of the go package (docs/plans/fsm-v1.md, C-4). Every vector case of vectors_test.go
 // (generated from the core oracle) is one subtest named test_<feature>__<id>. The case is run through the adapter of its machine
 // in vectors_test.go, which maps the keys of the oracle to the constants of the machine and calls its generated functions. The
-// persist cases run the B-4 example (examples/persist.go) on SQLite and assert the stored code after the run.
+// persist cases run the B-4 example (examples/persist.go) on the dialect of FSM_TEST_DIALECT and assert the stored code after the
+// run (docs/plans/fsm-v1.md, C-6).
 package tests
 
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"slices"
 	"testing"
 
 	"github.com/polyspec/fsm-go/examples"
+	"github.com/polyspec/fsm-go/examples/model"
 	"github.com/polyspec/fsm-go/src/fsm"
+	"github.com/polyspec/orm/packages/orm-go/orm"
 )
 
 // machineVectors and vectorCase are the shape of the data of vectors_test.go. A case keeps the keys of the oracle: state, event,
@@ -245,16 +249,51 @@ func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 	}
 }
 
-// runPersist runs one persist case on a new SQLite database: the row 1 holds the stored code, one transition runs, and the stored
-// code after the run is asserted.
-func runPersist(t *testing.T, m machineUnderTest, c vectorCase) {
-	db, err := examples.Open("sqlite://" + filepath.Join(t.TempDir(), "persist.db"))
+// openPersistDB opens the database of one persist case on the dialect that FSM_TEST_DIALECT names: sqlite, the default, is a new
+// file of the test's temporary directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A missing
+// DSN fails the case, so no dialect is skipped. The rows of the persist table are cleared, so a case reads only the row it seeds.
+func openPersistDB(t *testing.T) *orm.DB {
+	t.Helper()
+	dialect := os.Getenv("FSM_TEST_DIALECT")
+	if dialect == "" {
+		dialect = "sqlite"
+	}
+	var dsn string
+	switch dialect {
+	case "sqlite":
+		dsn = "sqlite://" + filepath.Join(t.TempDir(), "persist.db")
+	case "postgres", "mysql":
+		variable := "FSM_TEST_PG_DSN"
+		if dialect == "mysql" {
+			variable = "FSM_TEST_MYSQL_DSN"
+		}
+		dsn = os.Getenv(variable)
+		if dsn == "" {
+			t.Fatalf("%s is not set: the %s persist cases need a database DSN and never skip", variable, dialect)
+		}
+	default:
+		t.Fatalf("FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is %q", dialect)
+	}
+	db, err := examples.Open(dsn)
 	assertNoError(t, err)
 	t.Cleanup(func() {
 		if err := db.Close(); err != nil {
 			t.Errorf("close: %v", err)
 		}
 	})
+	if db.Driver() != dialect {
+		t.Fatalf("the database is %s, want %s", db.Driver(), dialect)
+	}
+	rows, err := model.Item().Connect(db).Gets()
+	assertNoError(t, err)
+	assertNoError(t, rows.Delete())
+	return db
+}
+
+// runPersist runs one persist case: the row 1 holds the stored code, one transition runs, and the stored code after the run is
+// asserted.
+func runPersist(t *testing.T, m machineUnderTest, c vectorCase) {
+	db := openPersistDB(t)
 	stored, err := m.code(keyArg(c.stored))
 	assertNoError(t, err)
 	assertNoError(t, examples.Seed(db, 1, stored))

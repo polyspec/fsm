@@ -2,10 +2,12 @@
 
 Every vector case of tests/vectors.py (generated from the core oracle) is one unittest method named test_<feature>__<id>. It calls
 the generated function of src/polyspec_fsm and asserts the expected value or the error code. The persist cases run the B-4
-example (examples/persist.py) on SQLite and assert the stored value after the run. The names follow docs/spec/fsm.md, B-6: a key
-becomes a member in upper case, so the state DRAFT of the key draft.
+example (examples/persist.py) on the dialect of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1.md, C-6) and assert the
+stored value after the run. The names follow docs/spec/fsm.md, B-6: a key becomes a member in upper case, so the state DRAFT of the
+key draft.
 """
 
+import os
 import sys
 import tempfile
 import unittest
@@ -17,7 +19,7 @@ PACKAGE = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(PACKAGE / "src"), str(PACKAGE / "examples")]
 
 import polyspec_fsm  # noqa: E402
-from persist import open_database, seed, status_of, transition  # noqa: E402
+from persist import clear, open_database, seed, status_of, transition  # noqa: E402
 from polyspec_fsm.fsm import Error  # noqa: E402
 from vectors import vectors  # noqa: E402
 
@@ -108,11 +110,36 @@ def check(test, machine, case):
         raise AssertionError(f"no check for the feature {feature}; the vectors and this file must agree")
 
 
+def open_persist_database(directory):
+    """Opens the database of one persist case on the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6).
+
+    sqlite, the default, is a new file of `directory`; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN.
+    A missing DSN fails the case, so no dialect is skipped. The rows of the persist table are cleared, so a case reads only its row.
+    """
+    dialect = os.environ.get("FSM_TEST_DIALECT") or "sqlite"
+    if dialect == "sqlite":
+        dsn = f"sqlite:///{directory}/persist.db"
+    elif dialect in ("postgres", "mysql"):
+        variable = "FSM_TEST_PG_DSN" if dialect == "postgres" else "FSM_TEST_MYSQL_DSN"
+        dsn = os.environ.get(variable, "")
+        if not dsn:
+            raise AssertionError(f"{variable} is not set: the {dialect} persist cases need a database DSN and never skip")
+    else:
+        raise AssertionError(f"FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is {dialect}")
+    db = open_database(dsn)
+    if db.driver != dialect:
+        db.close()
+        raise AssertionError(f"the database is {db.driver}, want {dialect}")
+    if dialect != "sqlite":
+        clear(db)
+    return db
+
+
 def persist_case(test, machine, case):
-    """Runs the persist case `case` on a new SQLite database, and asserts the stored state after the run."""
+    """Runs the persist case `case` and asserts the stored state after the run."""
     expect = case["expect"]
     with tempfile.TemporaryDirectory(prefix="fsm-python-persist-") as directory:
-        db = open_database(f"sqlite:///{directory}/persist.db")
+        db = open_persist_database(directory)
         try:
             seed(db, 1, machine.code(state_of(machine, case["stored"])))
             expected = state_of(machine, case["expected"])

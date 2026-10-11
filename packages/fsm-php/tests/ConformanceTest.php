@@ -1,8 +1,9 @@
 <?php
 // The conformance tests of the php package (docs/plans/fsm-v1.md, C-4). Every vector case of Vectors.php (generated from the
 // core oracle) is one PHPUnit test named test_<feature>__<id>: it calls the generated functions and cases of the machine module
-// and asserts the expected value or the error code. The persist cases run the B-4 example (examples/persist.php) on SQLite and
-// assert the stored state after the run. The names follow docs/spec/fsm.md, B-6: a key is a case by its pascal notation.
+// and asserts the expected value or the error code. The persist cases run the B-4 example (examples/persist.php) on the dialect
+// of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1.md, C-6) and assert the stored state after the run. The names follow
+// docs/spec/fsm.md, B-6: a key is a case by its pascal notation.
 //
 // The file uses the public API of the generated code only: the namespace of each machine and its functions and cases, the Error
 // class of the shared namespace, and the functions of the persist example. It names no path, so the package and the php
@@ -132,12 +133,42 @@ final class ConformanceTest extends TestCase
         }
     }
 
-    /** Runs a persist case on a new SQLite database and asserts the stored state after the run. */
+    /**
+     * Opens the database of one persist case on the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6): sqlite, the
+     * default, is a new file of $directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A missing
+     * DSN fails the case, so no dialect is skipped. The rows of the persist table are cleared, so a case reads only the row it seeds.
+     */
+    private function openPersistDatabase(string $directory): \Polyspec\Orm\Db
+    {
+        $dialect = getenv('FSM_TEST_DIALECT');
+        if ($dialect === false || $dialect === '') {
+            $dialect = 'sqlite';
+        }
+        if ($dialect === 'sqlite') {
+            $dsn = 'sqlite://' . $directory . '/persist.db';
+        } elseif ($dialect === 'postgres' || $dialect === 'mysql') {
+            $variable = $dialect === 'postgres' ? 'FSM_TEST_PG_DSN' : 'FSM_TEST_MYSQL_DSN';
+            $dsn = getenv($variable);
+            if ($dsn === false || $dsn === '') {
+                self::fail("{$variable} is not set: the {$dialect} persist cases need a database DSN and never skip");
+            }
+        } else {
+            self::fail("FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is {$dialect}");
+        }
+        $db = Examples\open($dsn);
+        self::assertSame($dialect, $db->driver(), 'the database dialect');
+        if ($dialect !== 'sqlite') {
+            (new \Polyspec\FsmTest\Model\Item())->connect($db)->gets()->delete();
+        }
+        return $db;
+    }
+
+    /** Runs a persist case and asserts the stored state after the run. */
     private function persist(string $module, array $c): void
     {
         $directory = sys_get_temp_dir() . '/fsm-php-persist-' . bin2hex(random_bytes(8));
         mkdir($directory, 0700);
-        $db = Examples\open('sqlite://' . $directory . '/persist.db');
+        $db = $this->openPersistDatabase($directory);
         try {
             Examples\seed($db, 1, self::call($module, 'code', self::caseOf($module, 'State', $c['stored'])));
             $expected = self::caseOf($module, 'State', $c['expected']);

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-go -->
-<!-- source-sha256: b04bcc27f2f8a72e14e54b2b81ba1e07a4e19eba971c3e9b4970fc48f8e014ad -->
+<!-- source-sha256: 2486cf7b3536424c95d75c5457d56d510a489763bb1ab1fd26293aa9d888ea6a -->
 # github.com/polyspec/fsm-go
 
 [English](README.md)
@@ -112,7 +112,7 @@ Go에는 null이 없으므로 0 값이 설정되지 않은 필드다.
 
 ## 영속화
 
-`packages/fsm-go/examples/persist.go`는 SQLite와 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다.
+`packages/fsm-go/examples/persist.go`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다.
 `Transition`은 한 transaction 안에서 시도 한 번을 실행한다. row를 잠금 아래 읽고, 저장된 code를 `decide`에 넘기며, `decide`가 변경을
 알릴 때만 row를 쓴다. `Decide`는 `func(stored int64) (to int32, changed bool, err error)`이므로 이 파일은 모든 기계에 쓰인다. 기계의
 `decide`는 관찰한 상태와 event에 대한 `Apply`를 저장된 code의 `FromCode`에 적용하는 것이다. 기계마다의 `decide`는
@@ -191,6 +191,8 @@ checkout에서 실행한다(module은 한 번 온라인으로 받아야 한다):
 make -C packages/fsm-go install   # go mod download
 make -C packages/fsm-go test      # GOPROXY=off, the conformance tests and the persistence example on SQLite
 make test-go                      # the same from the root
+make go-persist-test-postgres     # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/conformance_test.go`는 `tests/vectors_test.go`의 vector case마다 하나의 subtest를

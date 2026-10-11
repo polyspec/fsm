@@ -10,14 +10,14 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/fsm-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test docs-build-test gui-browser-test readme-test install-python-test make-install-test rust-persist-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test docs-build-test gui-browser-test readme-test install-python-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test python-lock-test python-lock-check parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test python-lock-test python-lock-check
+.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test python-lock-test python-lock-check
 
 
 
@@ -164,9 +164,11 @@ gen-check: $(NPM_DEP) $(GO_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP)
 # share the database, so they run one after the other. The CLI and command tests stay on SQLite (docs/plans/execution-checklist.md, S-37-2).
 DB_DIALECT_TESTS := packages/fsm-db/tests/db-store.test.mjs packages/fsm-db/tests/store-contract-all.test.mjs
 db-test-postgres: $(DB_DEP)
+	@$(call require_dsn,FSM_TEST_PG_DSN)
 	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs node --results .results/db-test-postgres.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 db-test-mysql: $(DB_DEP)
+	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs node --results .results/db-test-mysql.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 # db-deps installs the packages of packages/fsm-db (orm and ordered-json from their release tarballs, pinned in its
@@ -239,9 +241,11 @@ npm-persist-test: $(NPM_DEP) $(DB_DEP)
 	FSM_TEST_DIALECT=sqlite node scripts/kit/run-tests.mjs node --results .results/npm-persist-test.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
 
 npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP)
+	@$(call require_dsn,FSM_TEST_PG_DSN)
 	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs node --results .results/npm-persist-test-postgres.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
 
 npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP)
+	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs node --results .results/npm-persist-test-mysql.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
 
 # npm-types runs tests/types.test.mjs of packages/fsm-npm: tsc compiles tests/types/consumer.ts against the generated
@@ -315,3 +319,53 @@ test-php-ext: $(PHP_EXT_DEP)
 # have run once and passed (docs/plans/fsm-v1.md, C-4 and D).
 parity-php-ext: test-php-ext
 	node scripts/check-parity.mjs --kind php-ext
+
+# ---- Persist cases on the server dialects (docs/spec/fsm.md, B-4; docs/plans/fsm-v1.md, C-6; docs/plans/execution-checklist.md, S-37-1)
+# Each kind runs its persist cases on PostgreSQL and MySQL with the DSN variables of npm (FSM_TEST_PG_DSN, FSM_TEST_MYSQL_DSN). The
+# test selects the dialect with FSM_TEST_DIALECT and fails when its DSN is empty; require_dsn makes the target itself stop first
+# with exit 2, so a missing DSN is a failed target and never a skipped dialect. The persist cases of sqlite run in test-<kind>.
+define require_dsn
+test -n "$${$(1)}" || { echo "$@ needs $(1): a server dialect never skips (docs/plans/fsm-v1.md, C-6)" >&2; exit 2; }
+endef
+
+go-persist-test-postgres: $(GO_DEP)
+	@$(call require_dsn,FSM_TEST_PG_DSN)
+	FSM_TEST_DIALECT=postgres GOPROXY=off node scripts/kit/run-tests.mjs go --cwd packages/fsm-go --results .results/go-persist-test-postgres.json --inputs packages/fsm-go --inputs schema/persist.dbs -- ./tests -run 'TestConformance/test_persist__'
+
+go-persist-test-mysql: $(GO_DEP)
+	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
+	FSM_TEST_DIALECT=mysql GOPROXY=off node scripts/kit/run-tests.mjs go --cwd packages/fsm-go --results .results/go-persist-test-mysql.json --inputs packages/fsm-go --inputs schema/persist.dbs -- ./tests -run 'TestConformance/test_persist__'
+
+rust-persist-test-postgres: $(RUST_DEP)
+	@$(call require_dsn,FSM_TEST_PG_DSN)
+	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs cargo --results .results/rust-persist-test-postgres.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance persist
+
+rust-persist-test-mysql: $(RUST_DEP)
+	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
+	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs cargo --results .results/rust-persist-test-mysql.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance persist
+
+php-persist-test-postgres: $(PHP_DEP)
+	@$(call require_dsn,FSM_TEST_PG_DSN)
+	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs phpunit --cwd packages/fsm-php --results .results/php-persist-test-postgres.json --inputs packages/fsm-php --inputs schema/persist.dbs -- tests --filter persist
+
+php-persist-test-mysql: $(PHP_DEP)
+	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
+	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs phpunit --cwd packages/fsm-php --results .results/php-persist-test-mysql.json --inputs packages/fsm-php --inputs schema/persist.dbs -- tests --filter persist
+
+php-ext-persist-test-postgres: $(PHP_EXT_DEP)
+	@$(call require_dsn,FSM_TEST_PG_DSN)
+	$(MAKE) -C packages/fsm-php-ext build
+	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs phpunit --php-extension packages/fsm-php-ext/src/modules/polyspec_fsm_test.so --cwd packages/fsm-php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs -- tests --filter persist
+
+php-ext-persist-test-mysql: $(PHP_EXT_DEP)
+	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
+	$(MAKE) -C packages/fsm-php-ext build
+	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs phpunit --php-extension packages/fsm-php-ext/src/modules/polyspec_fsm_test.so --cwd packages/fsm-php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs -- tests --filter persist
+
+python-persist-test-postgres: $(PYTHON_DEP)
+	@$(call require_dsn,FSM_TEST_PG_DSN)
+	FSM_TEST_DIALECT=postgres PATH=$(CURDIR)/packages/fsm-python/.venv/bin:$$PATH node scripts/kit/run-tests.mjs python --results .results/python-persist-test-postgres.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist
+
+python-persist-test-mysql: $(PYTHON_DEP)
+	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
+	FSM_TEST_DIALECT=mysql PATH=$(CURDIR)/packages/fsm-python/.venv/bin:$$PATH node scripts/kit/run-tests.mjs python --results .results/python-persist-test-mysql.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 211919550e77e8d5d417999d062d674ded52b62cd9ecc780cab471887dfdff6b -->
+<!-- source-sha256: 346a00969d683e7519bff7c827bb8bfaa3990bed56febf5fac62964ec35c4b65 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-37-1: go, rust, php, php-ext, python의 persist case도 PostgreSQL과 MySQL에서 실행한다(감사 23). 각 kind에 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`이 있고 `TOOL_TESTS`와 `CHECK_TARGETS`에 든다. 테스트는 `FSM_TEST_DIALECT`를 읽고, DSN을 `FSM_TEST_PG_DSN` 또는 `FSM_TEST_MYSQL_DSN`에서 받으며, 연결의 driver가 그 dialect인지 확인하고, persist table을 비운 뒤 case를 차례로 실행한다. DSN이 비어 있는 서버 target은 exit 2로 멈춘다(`require_dsn`). db와 npm의 서버 target도 같은 방식이다. RED: 테스트가 dialect를 읽기 전에는 PostgreSQL target이 SQLite case로 통과했다(go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다). PostgreSQL 17과 MySQL 8.4에서 모든 kind가 GREEN이다. 동시성 증명은 npm에 남는다(계획 C-4).
 - S-26-2: S-26-1이 찾은 README 사실을 실제 출력에 맞춘다. compiler README는 `vectors --kind go`에 `--go-module`을 적는다. python README는 명령이 쓰는 package `./app/order_fsm`을 적는다(실제로 실행했다; 예제는 `app/`을 module 경로에 넣고 import한다). `src/app_fsm`은 checkout에 없는 경로였다. go README는 persistence 발췌가 test bed의 model package `examples/model`을 import하며 소비자는 자기 것을 import한다고 밝히고, 발췌는 파일과 대조했다. RED: compiler 명령이 `--go-module` 없이 실패했고, python 설명이 명령이 쓰지 않는 경로를 적었다. GREEN: 문서의 명령을 모두 실행했고, 한국어 fenced block은 영어와 같다.
 - S-26-1-1: go vectors 파일은 자기 module의 machine package(`<module>/src/<machine>`)만 import하므로, 소비자의 `vectors --kind go` 파일은 소비자 module에서 vet된다. 생성되는 `decide`는 `examples.Decide`가 이름 붙이던 함수 타입을 반환하므로 파일이 test bed의 `examples`(orm model이 필요한)를 더 이상 import하지 않는다. persistence 예제는 test bed의 것으로 남는다. RED: 소비자 module에서 `go vet`이 `cannot find module providing package github.com/polyspec/fsm-go/examples`로 실패; GREEN: `packages/fsm-compiler/tests/go-backend.test.mjs`의 소비자 테스트가 통과하고, golden vectors 파일과 `packages/fsm-go/tests/vectors_test.go`를 다시 생성했으며, `make test-go`, `make parity-go`, `make gen-check`가 통과한다. plan C-2와 C-5가 결정을 기록한다.
 - S-22: 계획의 GUI 수동 확인을 고정한 Playwright의 Chromium에서 json, mermaid, db store로 commit bc9f1b1에서 실행했고, 단계, 결과, 녹화를 `docs/verification/gui.md`에 기록했다: 다이어그램이 모든 state 이름을 보이고, 추가한 행이 제안 code 6을 가지며, 저장한 state가 표와 다이어그램에 나오고, 삭제한 state가 빠지고 다음 code가 7이며, 이름 바꾸기가 code를 유지하고, 각 store에서 `fsm-gen check` 또는 `fsm-db check`가 통과한다. driver는 `packages/fsm-gui/scripts/manual-check.mjs`다. 첫 실행들이 S-22-1, S-22-2, S-22-3, S-38을 찾았다.

@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 3730bdb32009657af9fafab47d4d9aa673c4e9bbf5494862e77636b66564304b -->
+<!-- source-sha256: e04bcea4e6397ed34591939cfef044608068f2ee962fed90d138320b7a1f9e13 -->
 # fsm 정의
 
 [English](fsm.md)
@@ -189,7 +189,7 @@ stateDiagram-v2
 - transaction + `forUpdate()`를 쓰고 조건부 문 하나(`UPDATE … SET <status column> = to WHERE id = x AND <status column> = expected`, 영향 행 수가 1일 때 승인)를 쓰지 않는 이유: orm v0.0.7의 공개 model API에는 그런 update가 없다. model `update`는 바뀐 열을 기본 키로 한 행에 쓴다(`packages/orm-rust/orm/src/model.rs`, `update`, 약 1067행). 그 유일한 조건은 갱신 시각 열의 optimistic 검사인 `update(true)`이고(`docs/dsl.md`), 쓰기는 영향 행 수를 호출자에게 돌려주지 않는다. 수는 그 검사를 위해서만 읽힌다(`model.rs` 약 858–862행). 내부 catalog는 행 수를 센다(`packages/orm-rust/orm-build/src/catalog/mutation.rs`, 약 201–204행). 그러나 공개 호출 중 수를 돌려주는 것은 없다. 그래서 잠금을 쓴다.
 - orm이 술어가 status column을 이름 짓고 영향 행 수를 호출자에게 돌려주는 update를 공개하면 이 규칙을 다시 본다. 그때 조건부 문 하나가 잠금을 대신하며, 이 절은 같은 항목에서 바뀐다.
 
-- dialect(S-37): 모든 kind는 패턴을 SQLite에서 테스트한다. npm은 동시성과 persist case를 PostgreSQL과 MySQL에서도 실행한다(`make npm-persist-test-postgres`, `make npm-persist-test-mysql`, 계획 C-4). `forUpdate()`가 없으면 같은 (expected, event)의 두 전이가 두 서버 모두에서 Changed를 보고하므로, 이 테스트가 잠금을 증명한다.
+- dialect(S-37): 모든 kind는 패턴을 SQLite에서 테스트한다. npm은 동시성과 persist case를 PostgreSQL과 MySQL에서도 실행한다(`make npm-persist-test-postgres`, `make npm-persist-test-mysql`, 계획 C-4). go, rust, php, php-ext, python은 persist case를 PostgreSQL과 MySQL에서 실행한다(`make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql`, 계획 C-4). `forUpdate()`가 없으면 같은 (expected, event)의 두 전이가 두 서버 모두에서 Changed를 보고하므로, 이 테스트가 잠금을 증명한다.
 
 ## B-5. 검증 규칙 (오류 코드 1개 = RED 케이스 1개, warning 없음)
 - finding: core `validate(definitions)`는 모든 finding을 `{code, machine, path, message}`로 돌려준다. `path`는 머신 객체 안의 JSON 경로(`$.states[1].code`), `machine`은 그 key이며, 정의에 문자열 key가 없으면 null이다. finding은 머신 안에서는 문서 순서, 머신 사이에서는 입력 순서를 따른다. `E_SCHEMA` finding이 있는 머신은 다른 finding을 받지 않는다. GUI는 `path`를 폼 필드에 연결하고, 필드가 없는 finding은 폼 오류로 보인다.
