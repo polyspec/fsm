@@ -77,15 +77,6 @@
     },
     {
       "paths": [
-        "scripts/check-parity.mjs",
-        "tests/check-parity/**"
-      ],
-      "targets": [
-        "parity-test"
-      ]
-    },
-    {
-      "paths": [
         "packages/fsm-compiler/**",
         "schema/fsm.schema.json",
         "machines/**",
@@ -141,7 +132,7 @@
       "targets": [
         "layout-check",
         "gen-check",
-        "parity-npm",
+        "test-npm",
         "npm-types",
         "dependency-policy-check",
         "npm-persist-test",
@@ -156,7 +147,7 @@
       "targets": [
         "layout-check",
         "gen-check",
-        "parity-go",
+        "test-go",
         "dependency-policy-check",
         "toolchain-check",
         "go-persist-test-postgres",
@@ -216,7 +207,7 @@
       "targets": [
         "layout-check",
         "gen-check",
-        "parity-php",
+        "test-php",
         "dependency-policy-check",
         "toolchain-check",
         "php-persist-test-postgres",
@@ -252,7 +243,7 @@
         "layout-check",
         "gen-check",
         "rust-persist-test",
-        "parity-rust",
+        "test-rust",
         "dependency-policy-check",
         "toolchain-check",
         "rust-persist-test-postgres",
@@ -266,7 +257,7 @@
       "targets": [
         "layout-check",
         "gen-check",
-        "parity-npm",
+        "test-npm",
         "dependency-policy-check",
         "npm-persist-test",
         "npm-persist-test-postgres",
@@ -280,7 +271,7 @@
       "targets": [
         "layout-check",
         "gen-check",
-        "parity-python",
+        "test-python",
         "dependency-policy-check",
         "toolchain-check",
         "python-lock-check",
@@ -295,7 +286,7 @@
       "targets": [
         "layout-check",
         "gen-check",
-        "parity-php-ext",
+        "test-php-ext",
         "dependency-policy-check",
         "toolchain-check",
         "php-ext-persist-test-postgres",

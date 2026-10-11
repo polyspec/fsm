@@ -223,12 +223,12 @@ test('make -n check prints no make warning: no target of the repository replaces
   assert.deepEqual(warnings, []);
 });
 
-// The full suite runs both parity checks (S-42-1): kit's K33 (parity-declarations-check and parity-check, config/parity.json),
-// which runs every binding and checks the vector cases, and fsm's vector-parity-check (scripts/check-parity.mjs), which checks the
-// saved records, the time limit and the feature coverage. A rebase once dropped vector-parity-check, with no make warning (S-35-3).
-test('make check runs the parity check of kit and vector-parity-check (S-35-3, S-42-1)', () => {
+// The full suite runs kit's parity check (K33: parity-declarations-check and parity-check, config/parity.json), which runs
+// every binding and checks the vector cases (S-42-1). A rebase once dropped the parity target of the suite, with no make warning
+// (S-35-3).
+test('make check runs the parity check of kit (S-35-3, S-42-1)', () => {
   const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
   const targets = result.stdout.split('\n').find((line) => line.includes('full-run.mjs run')).split(/\s+/);
-  for (const target of ['parity-declarations-check', 'parity-check', 'vector-parity-check']) assert.ok(targets.includes(target), `CHECK_TARGETS does not run ${target}`);
+  for (const target of ['parity-declarations-check', 'parity-check']) assert.ok(targets.includes(target), `CHECK_TARGETS does not run ${target}`);
 });

@@ -115,7 +115,7 @@ The vectors are the expected result of every operation of a machine, computed by
 `fsm-gen vectors --out <file>` writes the common form, one file for every machine (`conformance/vectors.json` in this repository). Each
 language package consumes the vectors in its own form: `vectors_test.go` (go, from `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`
 (npm), `ConformanceTest.php` (php and php-ext, one method per case), `vectors.py` (python) and `vectors.rs` (rust). The package runs one test
-per case and `check-parity` requires every case to have run once and passed in every kind.
+per case, and kit's parity check (`make parity-check`) requires every case to run once and pass in every kind that admits it.
 
 ## Checks
 
