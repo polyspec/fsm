@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: 3b297123cbb1f18dde3f0563a93affb405777580f8a9019edf86b2fd5bb1bbe7 -->
+<!-- source-sha256: a00a6c6109ff0232ae9b0e1e155f76fc761544608867c939de83f3adf16c6818 -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -143,6 +143,8 @@ $ fsm-db copy --from json --root ./order-machines --project ./order-machines
 $ fsm-db copy --from json --root ./order-machines --project ./order-machines
 [fsm-db] E_STORE_NOT_EMPTY - $: the target store is not empty, so copy writes nothing
 $ fsm-db copy --to json --root ./exported --project ./order-machines
+[fsm-db] copy: ok
+$ fsm-db copy --to mermaid --root ./exported-mmd --project ./order-machines
 [fsm-db] copy: ok
 ```
 
