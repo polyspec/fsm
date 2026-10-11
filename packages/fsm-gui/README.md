@@ -96,7 +96,9 @@ make gui-browser-test
 `gui-browsers` downloads the Chromium of the pinned Playwright package (an exact devDependency of this package) from the
 Playwright CDN; it is ONLINE and runs once per machine. `gui-browser-test` builds the assets, starts the GUI on a temporary
 project and drives the edit form in that Chromium (`tests/browser/browser.test.mjs`): add a state row, save a state with an
-edge, remove it, and check the suggested codes, the stored machine and lock, and the Mermaid diagram.
+edge, remove it, and check the suggested codes, the stored machine and lock, and the Mermaid diagram. It also checks that every
+row button shows its crudui size and icon, that the fields of one row have distinct labels on the edit and rename forms, and
+that `/favicon.ico` answers an icon.
 
 `gui-test` builds the assets, then runs the top-level tests of `tests/`: the pages through the hyper application without HTTP, the
 server process over HTTP, the store selection, and the parse of the canonical form with the pinned Mermaid package. The
@@ -121,7 +123,9 @@ with a browser DOM that Node does not have. The edit tests (`edit-machine`, `ren
 | `src/store.mjs` | The store selection from `fsm.config.json` |
 | `src/handlers.mjs` | The loaders and actions of the screens: the list, the detail, the edit, rename, new and delete screens |
 | `build/` | The output of `make gui-build`: `templates.index.json`, `manifest.json` (ignored) |
-| `public/assets/` | The client bundle and its chunks (ignored) |
+| `public/assets/` | The client bundle and its chunks, and `crudui.css` copied from `@polyspec/crudui-generator-core` by `make gui-build` (ignored) |
+| `public/favicon.ico` | The icon at `/favicon.ico`, written by `scripts/make-favicon.mjs` (an ICO file: see the plan, C-7) |
+| `scripts/make-favicon.mjs` | Writes `public/favicon.ico`; run it by hand only when the icon changes |
 
 The versions of the dependencies are pinned in `package.json` and `package-lock.json` and recorded in
 `config/dependency-policy.json`: hyper v0.0.11, crudui v0.0.5, the template v0.0.5 and mermaid, with the same release

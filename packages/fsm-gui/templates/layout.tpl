@@ -16,6 +16,8 @@ pre { overflow-x: auto; background: #f5f5f7; padding: 12px; }
 .errors code { font-size: 13px; }
 .notice { color: #555; }
 </style>
+<link rel="stylesheet" href="/assets/crudui.css">
+<link rel="icon" href="/favicon.ico">
 <script type="module" src="{= assets.hyper}"></script>
 </head>
 <body hx-boost:inherited="true" hx-target:inherited="#content" hx-swap:inherited="innerMorph">

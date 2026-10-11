@@ -91,9 +91,11 @@ gui-deps: db-deps
 	cd packages/fsm-gui && npm ci --no-audit --no-fund
 
 # gui-build builds the browser assets of the GUI with the hyper v0.0.11 asset build: the templates, the client bundle that holds
-# mermaid, build/templates.index.json and build/manifest.json (docs/plans/fsm-v1.md, C-7). gui-test runs it first.
+# mermaid, build/templates.index.json and build/manifest.json (docs/plans/fsm-v1.md, C-7). gui-test runs it first. The crudui
+# stylesheet is copied into public/assets and given to the build with --static, which puts it in the static deployment (the way
+# hyper-build-assets takes the stylesheets that the layouts link); the layout links it as /assets/crudui.css (S-22-2).
 gui-build: gui-deps
-	cd packages/fsm-gui && node_modules/.bin/hyper-build-assets --app . --api /api --output build
+	cd packages/fsm-gui && mkdir -p public/assets && cp node_modules/@polyspec/crudui-generator-core/styles/crudui.css public/assets/crudui.css && node_modules/.bin/hyper-build-assets --app . --api /api --output build --static public/assets/crudui.css
 
 # gui-test runs the tests of packages/fsm-gui (docs/plans/fsm-v1.md, C-7): the handlers and the server entry through the
 # built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI. The

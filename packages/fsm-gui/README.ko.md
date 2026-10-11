@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: 434b89f99f76e5d0c91f05edc6f1f36f5d9d5b6f0f1459448b97d730811308ea -->
+<!-- source-sha256: 625df1de6103f54de12a75e8cd696331cbfcaadcd7f0373ac6ea0deb9c4e8304 -->
 # fsm GUI
 
 [English](README.md)
@@ -92,7 +92,8 @@ make gui-browser-test
 `gui-browsers`는 고정된 Playwright 패키지(이 패키지의 정확한 버전 devDependency)의 Chromium을 Playwright CDN에서 내려받는다.
 ONLINE이며 머신마다 한 번 실행한다. `gui-browser-test`는 asset을 빌드하고, 임시 프로젝트에 GUI를 띄운 뒤 그 Chromium으로
 편집 폼을 조작한다(`tests/browser/browser.test.mjs`). 상태 행을 추가하고, 엣지와 함께 상태를 저장하고, 삭제하고, 제안 code,
-저장된 머신과 lock, Mermaid 다이어그램을 확인한다.
+저장된 머신과 lock, Mermaid 다이어그램을 확인한다. 또한 행의 모든 버튼이 crudui 크기와 아이콘을 보이는지, 편집과 이름 바꾸기 폼에서
+한 행의 필드가 서로 다른 label을 갖는지, `/favicon.ico`가 아이콘을 돌려주는지 확인한다.
 
 `gui-test`는 asset을 빌드한 뒤 `tests/`의 최상위 테스트를 실행한다. hyper 애플리케이션을 HTTP 없이 거치는 페이지, HTTP로 응답하는 서버
 프로세스, store 선택, 고정된 Mermaid 패키지로 정규 형식을 파싱하는 테스트다. 파싱 테스트는 Node에서 Mermaid를 읽을 때
@@ -117,7 +118,9 @@ json과 mermaid 프로젝트는 저장 뒤 `check`를 통과한다.
 | `src/store.mjs` | `fsm.config.json`에서 store를 고른다 |
 | `src/handlers.mjs` | 화면의 loader와 action: 목록, 상세, 편집, 이름 바꾸기, 새 기계, 삭제 |
 | `build/` | `make gui-build`의 결과: `templates.index.json`, `manifest.json`(무시됨) |
-| `public/assets/` | client bundle과 chunk(무시됨) |
+| `public/assets/` | client bundle과 chunk, `make gui-build`가 `@polyspec/crudui-generator-core`에서 복사하는 `crudui.css`(무시됨) |
+| `public/favicon.ico` | `/favicon.ico`의 아이콘. `scripts/make-favicon.mjs`가 쓴다(ICO 파일이다. 계획 C-7 참고) |
+| `scripts/make-favicon.mjs` | `public/favicon.ico`를 쓴다. 아이콘을 바꿀 때만 손으로 실행한다 |
 
 의존성 버전은 `package.json`과 `package-lock.json`에 고정하고 `config/dependency-policy.json`에 기록한다. hyper v0.0.11,
 crudui v0.0.5, template v0.0.5, mermaid를 고정하며, 그 `@polyspec/*` 패키지의 전이 의존성은 같은 release URL을 `overrides`에 둔다.
