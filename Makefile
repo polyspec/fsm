@@ -13,9 +13,9 @@ include scripts/kit/kit.mk
 # kind (config/parity.json, S-42-1).
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check workflows-test parity-declarations-check parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-check workflows-test parity-declarations-check parity-check
 
-.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check layout-test layout-check compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm test-go test-php test-rust rust-persist-test npm-types test-python test-php-ext gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test python-lock-test python-lock-check workflows-test
+.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check layout-test layout-check compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm test-go test-php test-rust rust-persist-test npm-types test-python test-php-ext gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test python-lock-check workflows-test
 
 
 
@@ -96,16 +96,9 @@ check:
 make-install-test:
 	node scripts/kit/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs scripts/kit/kit.mk --inputs contracts/layout.json --inputs packages --inputs tests/make-install -- tests/make-install
 
-# python-lock-test runs the tests of scripts/check-python-lock.mjs; python-lock-check checks that uv.lock of packages/fsm-python locks
-# every package with an exact version, hashes (git packages: a commit) and agrees with pyproject.toml. The kit dependency gate
-# reads no uv.lock, so this check covers the python lock (docs/plans/fsm-v1.md, C-1; docs/plans/execution-checklist.md, S-34).
-# It also requires the committed pylock.toml (the kit gate reads it through pythonLocks) to have the body of a fresh uv export of the
-# lock (S-34-2): a change of uv.lock without a new export fails here.
-python-lock-test:
-	node scripts/kit/run-tests.mjs node --results .results/python-lock-test.json --inputs scripts/check-python-lock.mjs --inputs tests/check-python-lock --inputs packages/fsm-python/pyproject.toml --inputs $(PYTHON_LOCK) --inputs packages/fsm-python/pylock.toml -- tests/check-python-lock
-
+# python-lock-check runs uv's own check of the python lock (packages/fsm-python lock-check; docs/plans/fsm-v1.md, C-1; S-34-3).
 python-lock-check:
-	node scripts/check-python-lock.mjs
+	$(MAKE) -C packages/fsm-python lock-check
 
 # workflows-test runs the tests of the CI and Pages workflows (.github/workflows): every action is pinned to a verified commit,
 # the check job runs make install and make check with the services of plan C-6, and each version comes from the file that

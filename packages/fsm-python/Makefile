@@ -26,7 +26,7 @@ FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
 export PYTHONDONTWRITEBYTECODE := 1
 
-.PHONY: install gen test
+.PHONY: install gen test lock-check
 
 # $(PYLOCK) is exported from uv.lock (the lock of the project, which `uv lock` writes). S-34 commits it; until then this target
 # writes it, so a later run finds it up to date and needs no network.
@@ -52,3 +52,14 @@ gen:
 test:
 	@test -x $(VENV)/bin/python || { echo "test: $(VENV) is missing; run make install first"; exit 1; }
 	node $(ROOT)/scripts/kit/run-tests.mjs python --venv $(CURDIR)/$(VENV) --results .results/python.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests
+
+# lock-check is uv's own check of the lock (S-34-3): uv.lock is current for pyproject.toml (`uv lock --check`, offline), and the
+# committed pylock.toml has the body of a fresh export of it (the header names the command, so it is not compared). pyproject.toml
+# takes orm and ordered-json from the archives of their release tags, so the lock holds registry packages and archives only.
+lock-check:
+	$(UV) lock --check --offline
+	rm -rf $(ROOT)/var/python-lock && mkdir -p $(ROOT)/var/python-lock
+	$(UV) export --format pylock.toml --frozen --no-emit-project --color never -o $(ROOT)/var/python-lock/pylock.toml
+	grep -v '^#' $(PYLOCK) > $(ROOT)/var/python-lock/committed.toml
+	grep -v '^#' $(ROOT)/var/python-lock/pylock.toml > $(ROOT)/var/python-lock/fresh.toml
+	diff $(ROOT)/var/python-lock/committed.toml $(ROOT)/var/python-lock/fresh.toml || { echo "lock-check: $(PYLOCK) is not the export of uv.lock; run uv export --format pylock.toml --frozen --no-emit-project -o $(PYLOCK)"; exit 1; }
