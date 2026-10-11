@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 3e828045030e484ec9d469f4978960ce13b414fe270304a21ab04a2087b9bb12 -->
+<!-- source-sha256: 704d81e8b1e43fb2a58709a0b2f381707aea6a2793fbe613ca321b6f8af7a8e8 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -387,7 +387,8 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
   - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
   - `test-<kind>`, `parity-<kind>`(`parity-<kind>: test-<kind>`), `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check kit-test owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test install-python-test packages-test parity-check`
+  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test parity-check`
+- 패키지 의존성(S-29): `make install`(ONLINE, clone마다 한 번)은 `install-tools`의 toolchain을 `var/tools`에 설치하고 모든 패키지 의존성을 설치한다: `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui`, `docs`의 lock으로 `npm ci`; `packages/fsm-php`와 `packages/fsm-php-ext`의 `composer install`(`composer.lock`); `make install-python`의 Python 3.14 link와 `packages/fsm-python`의 venv(`pip install -e .`); go module과 cargo crate(`var/deps/go`, `var/deps/rust`). 각각은 자기 lock을 키로 하는 file target이므로, 나중의 실행은 최신 상태를 확인하고 네트워크가 필요 없다. package를 쓰는 타깃은 그 file을 선행 조건으로 둔다: `npm-types`, `gen-check`, `test-<kind>`(따라서 `parity-<kind>`와 `packages-test`), `db-test`, `gui-test`, `gui-browser-test`, `docs-build`, `docs-build-test`. 새 clone은 `make install`을 한 번 실행한 뒤 `make check`를 실행한다: toolchain은 `make install`에서만 온다. `make make-install-test`(`tests/make-install/`)는 Makefile 사본에서, 의존성이 하나도 없는 경우와 모두 있는 경우에 선행 조건을 검사한다.
 - 항목 개발 중에는 owner-checks 매핑만 실행한다.
 - GUI 수동 확인: json·mermaid·db store 각각으로 다음을 확인한다.
   1. 상태를 추가·삭제·rename한 뒤 저장한다(lock은 save가 함께 갱신).
