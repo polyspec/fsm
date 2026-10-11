@@ -17,11 +17,17 @@ Install and build the browser assets once. The build writes `build/` and `public
 make gui-build
 ```
 
+Put the command `fsm-gui` on the PATH from the repository root. npm links the package of the clone, so the command runs
+the code and the built assets of the clone:
+
+```sh
+npm install -g ./packages/fsm-gui
+```
+
 Start the server from the project directory, or name it with `--project`:
 
 ```sh
-cd packages/fsm-gui
-node src/main.mjs --project /path/to/project --port 8080
+fsm-gui --project /path/to/project --port 8080
 ```
 
 The server listens on `127.0.0.1` and prints its address. Open `http://127.0.0.1:8080/` for the machine list and

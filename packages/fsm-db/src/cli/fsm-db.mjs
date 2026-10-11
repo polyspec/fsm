@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // The command line of the DB store (docs/plans/fsm-v1.md, C-6; docs/spec/fsm.md, B-2):
 //   fsm-db install [--project <dir>]
 //   fsm-db check [--project <dir>]

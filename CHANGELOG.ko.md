@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: f208d8d48113ed2e8630561eb892296fa0f84c7c3fd0371b7dc0cabd20350edb -->
+<!-- source-sha256: 18b272358442ce5a8b6cb16014e84609483423104b181043771f45ac3b731423 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-18-1: 명령 `fsm-gen`, `fsm-db`, `fsm-gui`가 존재한다. 각각 `packages/fsm-compiler/package.json`(새 파일, 의존성 없음), `packages/fsm-db/package.json`, `packages/fsm-gui/package.json`의 `bin` 항목이며, 각 파일은 node shebang으로 시작하고 실행 권한을 가지며, clone에서 `npm install -g ./packages/<package>`가 명령을 PATH에 link한다. S-18은 문서에서만 이름을 바꿨었다. 각 package의 테스트가 임시 npm prefix에 offline으로 설치하고 명령을 실행한다. GUI usage 줄은 `fsm-gui`를 쓴다.
 - S-15-1: `fsm-db install [--project <dir>]`은 `fsm.config.json`이 가리키는 database에 `schema/fsm.dbs`의 schema를 orm `utils().schema().install`로 설치하므로, database는 코드 없이 table을 얻는다. 새 database에서 `fsm-db check`는 `no such table: machine`로 실패하고(종료 코드 1), `install`은 `[fsm-db] install: ok`를 출력하며(종료 코드 0), 이후 `check`가 통과한다. 두 번째 `install`은 아무것도 바꾸지 않고 종료 코드 0으로 끝난다. table이 일부만 있는 database에서는 orm이 install을 `CONFIG`로 거부하며, 오류는 stack과 함께 출력되고(종료 코드 1) 대체 동작은 없다(orm v0.0.7에서 관찰). `packages/fsm-db/README.md`와 `README.ko.md`가 DB store의 사용자 안내서다. 명세(B-2)와 계획(C-6)은 명령을 나열하며, 명세의 `copy` 줄은 CLI가 가진 옵션(`--root`와 함께 쓰는 `--to` 또는 `--from`, DSN은 `dsnEnv`가 가리키는 변수에서만 온다)에 맞게 고쳤다. install은 SQLite에서 프로세스로 실행하는 테스트가 `packages/fsm-db/tests/cli.test.mjs`에 있다.
 - S-18: 라이브러리 이름을 `status`에서 `fsm`으로 전부 바꾼다(R12). 패키지는 `packages/fsm-*`, 명령은 `fsm-gen`, `fsm-db`, `fsm-gui`, 파일은 `fsm.config.json`, `fsm.lock.json`, `machines/*.fsm.json`, `*.fsm.mmd`, `schema/fsm.schema.json`과 `schema/fsm.dbs`(dbspec `fsm`), 문서는 `docs/spec/fsm.md`와 `docs/plans/fsm-v1.md`, 생성 공용 모듈은 `fsm`(`fsm.Error`, `<ns>\Fsm\Error`, 백엔드마다 모듈 `fsm`), 예약 머신 key는 `fsm`이다. `status`는 다시 일반 key다. 매니페스트 이름은 `polyspec_fsm`, `polyspec-fsm`, `@polyspec/fsm-*`, `github.com/polyspec/fsm-go`, 네임스페이스 `Polyspec\FsmTest`, extension `polyspec_fsm_test`다. 소비자의 status 열과 프로세스·테스트의 status는 `status`를 유지한다. `scripts/check-name.mjs`(`make name-check`)는 허용 목록 밖에서 라이브러리를 `status`로 부르는 추적 파일이나 경로가 있으면 실패하며, golden과 생성 파일은 `fsm-gen`으로 다시 생성했다. AGENTS.md와 계획은 `name-check`를 규칙을 강제하는 도구로 적고, 범위는 R1–R12이며, 문서는 옛 이름을 "옛 이름 `status`"로만 언급한다.
 - S-11-2: python 패키지가 color 우회 설정을 제거한다. kit v0.0.15(K22)가 run-tests python에서 `NO_COLOR=1`과 `PYTHON_COLORS=0`을 직접 설정하므로, `packages/status-python/Makefile`의 `make test`는 더 이상 `PYTHON_COLORS=0`을 설정하지 않는다. kit 설정이 없으면 `FORCE_COLOR=3`에서 unittest가 verbose 줄에 color를 넣고 reporter가 이를 읽지 못한다. 줄을 제거한 상태에서 v0.0.14 runner는 10번 중 10번 실패했고, v0.0.15 runner는 10번 중 10번 통과했다. `make test-python`은 `FORCE_COLOR=3`에서도, 없어도 89개 case를 모두 통과한다.

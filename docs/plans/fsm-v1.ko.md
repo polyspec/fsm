@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 5ef521556b3ba5ca7d552f3aa9c1d2d8ed3ed8c7b9a890e23abc74f9742c9280 -->
+<!-- source-sha256: 8b4a7dd97a01a0a2a38eb69866138f03b843f90ebb2c8f04f3d30364b69409f5 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -229,6 +229,7 @@ packages/fsm-<kind>/
   - `src/backends/<kind>.mjs`
   - `src/store-json`, `src/store-mermaid`
   - `src/cli` (`fsm-gen`)
+- 명령 `fsm-gen`은 `packages/fsm-compiler/package.json`(의존성 없는 manifest)의 `bin`이다. clone에서 `npm install -g ./packages/fsm-compiler`가 이를 PATH에 link한다. `tests/command.test.mjs`가 package를 임시 npm prefix에 offline으로 설치하고 명령을 실행한다(S-18-1).
 - 명령
   - `lock [--rename]`
   - `gen --kind <k> --out <dir>` (php는 `--php-namespace` 필수, php-ext는 `--php-namespace`와 `--php-ext-name` 필수, go는 `--go-module <module path>` 필수: 생성된 machine이 공용 패키지 `<module>/src/fsm`를 import하며 backend는 go.mod를 읽을 수 없다)
@@ -242,6 +243,7 @@ packages/fsm-<kind>/
   - `gen-check-test`(`tests/gen-check/`) RED: 1바이트 변경 fixture, 파일 추가 fixture, 읽지 말아야 할 무시된 파일
 
 ### C-6. fsm-db `packages/fsm-db`
+- 명령 `fsm-db`는 `packages/fsm-db/package.json`의 `bin`이다. `make db-deps` 뒤 `npm install -g ./packages/fsm-db`가 이를 PATH에 link한다. `tests/command.test.mjs`가 임시 npm prefix에 offline으로 설치하고, 새 SQLite database에 schema를 설치하고 check한다(S-18-1).
 - `schema/fsm.dbs` → orm 생성 모델(npm).
   - 정의 테이블
     - `machine(name PK)`(머신 순서는 name 순)
@@ -264,7 +266,7 @@ packages/fsm-<kind>/
 ### C-7. GUI `packages/fsm-gui` (hyper Node 서버 + crudui + mermaid)
 - GUI는 단일 편집자 도구다. save는 전체 교체이고, 마지막 쓰기가 이긴다.
 - 빌드: `hyper-build-assets --app . --api /api --output build`(hyper v0.0.11은 `--app`·`--api`·`--output`을 요구한다)가 `templates.index.json`, `manifest.json`, `public/assets` 번들을 만든다(gui-test 전에 실행).
-- 실행: `fsm-gui`
+- 실행: `fsm-gui [--project <dir>] [--port <n>]`, `packages/fsm-gui/package.json`의 `bin`. `make gui-build` 뒤 `npm install -g ./packages/fsm-gui`가 이를 PATH에 link한다. `tests/command.test.mjs`가 임시 npm prefix에 offline으로 설치하고 machine 목록을 요청한다(S-18-1).
   - store는 `fsm.config.json`을 따른다.
   - `App.open({manifest, templates: {index: build/templates.index.json, root: public}, handlers, timezone: 'UTC'})`, 경로는 절대 경로, `FileSessions`가 열기 전에 `var/sessions`를 만든다
   - `app.server(new FileSessions({directory: var/sessions}), {files: public})`

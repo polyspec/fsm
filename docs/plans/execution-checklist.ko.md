@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 9af250ec6ca4fd2da429a7198f5e2f848ab39e451df1cac58adaba06f9bb9dc3 -->
+<!-- source-sha256: 1293d9ed6054c8a8f634b9e97ca2d7dd972f2f131e86a8e11005f79b52b7103f -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -42,6 +42,7 @@
 | S-17 | GUI 편집: crudui 폼 + 검증 오류 표시 + rename | 저장 후 `check` 통과 | [o] |
 | S-17-1 | GUI 후속: 브라우저에서 추가한 행이 core nextCode의 제안 code를 보이고(페이지가 다음 code를 담는다), 편집 폼에서 상태를 지우면 그 code가 reserved로 옮겨짐을 GUI 테스트가 증명한다 | code 제안 없는 추가 행 RED, reserved 없는 삭제 RED → GREEN | [o] |
 | S-18 | status를 fsm으로 전부 바꾼다: 문서의 저장소 이름, 패키지(`packages/fsm-*`), 명령(`fsm-gen`, `fsm-db`, `fsm-gui`), 파일(`fsm.config.json`, `fsm.lock.json`, `machines/*.fsm.json`, `*.fsm.mmd`), 생성 공용 모듈(`fsm.Error`)과 예약 machine key, 계획·spec 문서, 그리고 모든 golden과 vector를 다시 생성 | 상태 의미가 아닌 `status` 이름이 남으면 RED(scan) → GREEN, make check 통과 | [o] |
+| S-18-1 | S-18이 이름 붙인 명령이 존재한다: `fsm-gen`(packages/fsm-compiler), `fsm-db`(packages/fsm-db), `fsm-gui`(packages/fsm-gui)가 각 package manifest의 `bin` 항목이고, 각 파일은 node shebang으로 시작하며, clone에서 `npm install -g ./packages/<package>`가 명령을 PATH에 둔다. S-18은 문서에서만 이름을 바꿔 사용자가 문서의 이름으로 실행할 수 없었다 | package 테스트가 임시 npm prefix에 offline으로 설치하고 명령을 실행: bin 없음 RED → 명령이 응답 GREEN | [o] |
 | S-19 | 루트와 모든 패키지 README(영·한) 완성: 설치, 세 store의 정의, CLI, 언어별 생성 API와 apply·영속화 예제, GUI, DB store. 문서 검사가 모든 링크를 검증 | 사용법 절이 없는 README RED → GREEN | [ ] |
 | S-20 | 문서 사이트: 문서(spec, 언어별 가이드, CLI, GUI, DB)로 빌드하는 docs/.vitepress의 VitePress, kit documents site link를 쓰는 `docs-build` 타깃, owner 규칙 | 깨진 링크에서 docs-build 실패 RED → GREEN | [ ] |
 | S-21 | 공개: public 저장소 polyspec/fsm 생성, main push, make check를 돌리는 CI workflow, 사이트를 배포하는 Pages workflow. 사용자가 2026-10-11에 모든 단계를 허락했다. push 뒤 로컬 저장소 디렉터리 이름을 `fsm`으로 바꾼다 | GitHub에서 사이트와 CI가 응답 | [ ] |
