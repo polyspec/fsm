@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 6429ca0a7e76db1c4a92997ceb3f93899e5f955ddf49efef50d58d0917376be9 -->
+<!-- source-sha256: 79d53d2f85898c7ede1dd634499b1ebb0aa7180c5cb679320ca327f84d3800da -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -72,6 +72,8 @@
 | S-33 | 조용한 변환과 null 반환이 없다: php `fromCode`가 npm·python처럼 int가 아닌 값을 거부한다. `packages/fsm-gui/src/forms.mjs`와 `src/core/validate.mjs`가 null을 반환하지 않는다. spec B-6이 생성되는 오류 상수를 정확히 적는다(감사 13, 14, 22) | strict_types 없이 `fromCode("2")`, `fromCode(2.0)`, `fromCode(true)`가 성공 RED → 모든 언어에서 같게 E_UNKNOWN_CODE 또는 type error GREEN | [o] |
 | S-34 | python 의존성을 잠근다: fsm-python의 모든 전이 package가 dependency-policy가 덮는 커밋된 lock에 정확한 버전과 hash를 갖는다(감사 16) | 고정되지 않은 의존성이 통과 RED → GREEN | [o] |
 | S-34-1 | kit dependency gate가 python package의 uv.lock을 읽는다: 최신 릴리스와 advisory 리뷰가 build-system과 extra의 requirement만이 아니라 모든 전이 python package를 덮는다. S-34가 gate가 Python lock을 읽지 않음을 찾았다(계획 C-1, S-34 결정) | kit fixture에서 오래된 전이 python package에 `check-dependency-policy`가 실패 RED → GREEN | [ ] |
+| S-34-2 | python lock이 kit의 단일 Python lock 형식을 따른다(kit 소유자와 합의, kit K36): fsm은 `uv export --format pylock.toml --frozen --no-emit-project`로 `uv.lock`에서 export한 `packages/fsm-python/pylock.toml`(PEP 751, Final)을 커밋하고, root python-lock-check는 커밋된 pylock.toml이 새 export와 다르면 실패하며, config/dependency-policy.json의 `pythonLocks`가 그것을 이름 붙여 kit 검토가 모든 전이 python package를 다룬다. K36을 담은 kit 릴리스가 필요하다 | export와 다른 pylock.toml, 검토에서 빠진 전이 package가 통과 RED → 실패 GREEN | [ ] |
+| S-34-3 | python lock은 polyspec 라이브러리를 git checkout이 아니라 릴리스의 wheel asset과 해시로 설치한다(kit 소유자와 합의, limepie와 같은 방식): uv.lock과 pylock.toml의 polyspec-ordered-json, polyspec-orm VCS 항목을 각 라이브러리 wheel의 archive URL과 sha256으로 바꿔 lock이 registry와 archive package만 가지며 uv와 pip가 모두 설치한다. wheel 릴리스(ordered-json 0.0.8 먼저, orm은 나중)가 필요하고, orm 버전은 다른 kind가 고정한 것을 유지한다 | python lock의 VCS 항목 RED → 없음, pip가 해시와 함께 설치 GREEN | [ ] |
 | S-35 | plan과 contract가 저장소와 맞는다: plan의 D 표가 낡은 상태를 보이지 않고(체크리스트를 가리킴), C-1 트리에 `src/store-lock`이 있고, `contracts/layout.json`이 npm의 `tests/types*`를 선언하고 이유를 적으며, S-11-3에 반복 가능한 테스트가 생기고, `kit-test`가 CHECK_TARGETS에 들어간다(감사 17, 18, 19, 21) | npm 선언 없는 layout-check, bin link를 쓰는 uv에 대한 S-11-3 테스트 RED → GREEN | [o] |
 | S-35-1 | `kit-test`가 다른 모든 테스트처럼 `scripts/kit/run-tests.mjs`를 거친다(AGENTS.md): kit.mk는 `node --test tests/kit/`를 직접 실행한다. kit.mk는 벤더 파일이므로 변경은 kit 항목(K32, kit 0.0.19로 릴리스)과 여기의 `make kit-sync`다. 동기화는 kit 0.0.20을 받는다: 0.0.18과 0.0.19의 vendored python-real 테스트가 소비자의 toolchain을 읽어 여기서 실패하며, kit 소유자가 0.0.20에서 고친다 | kit-test가 케이스별 진행을 출력하지 않고 기록을 쓰지 않음 RED → run-tests로 함 GREEN | [ ] |
 | S-41 | Python이 kit 0.0.18의 규칙을 따른다(kit 소유자가 밝힘): Python을 실행하는 저장소는 config/toolchain.json에 `pythonBuild`(wheel을 내면 `pythonBackend`도)를 선언하고, uv가 설치한 interpreter 없이 `make install-tools`로 var/tools에 Python을 설치한다. fsm의 `install-python`(uv)과 그 테스트를 바꾸고, python package는 그 interpreter로 설치한다 | install-tools Python에서 toolchain-check와 python package 테스트. uv가 설치한 interpreter link RED → GREEN | [ ] |
