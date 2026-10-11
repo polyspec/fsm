@@ -10,14 +10,15 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/fsm-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test docs-build-test gui-browser-test readme-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test docs-build-test gui-browser-test readme-test install-python-test
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test
+
 
 
 
@@ -179,6 +180,12 @@ install-python:
 	$(ONLINE) $(UV) python install --no-bin 3.14
 	mkdir -p var/tools/bin
 	p="$$($(UV) python find --managed-python 3.14)" && test -x "$$p" && ln -sfn "$$p" var/tools/bin/python3
+
+# install-python-test runs the tests of install-python in a temporary checkout with a stub uv: the target installs with --no-bin
+# and writes no link outside var/tools, and a recipe without --no-bin is shown to write one (tests/install-python, S-11-3 and
+# S-35). It needs no network and writes nothing outside its temporary directory.
+install-python-test:
+	node scripts/kit/run-tests.mjs node --results .results/install-python-test.json --inputs Makefile --inputs contracts/layout.json --inputs scripts/kit --inputs tests/install-python -- tests/install-python
 
 # test-python runs the tests of packages/fsm-python: the conformance cases and the persist example, offline, with the Python 3.14
 # venv of `make -C packages/fsm-python install` (docs/plans/fsm-v1.md, C-2).

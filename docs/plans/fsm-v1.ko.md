@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 1e2ef8e247a80319d17c8c7614acc303da2c1e1e112c368a78278e58d326bf6e -->
+<!-- source-sha256: 34adbec4efea6ed70c1d08444e9c51e47f1510193a8868a8ae1776f22d619611 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -134,12 +134,13 @@ fsm/
   .gitignore            # anchored only: /var/, /.results/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/fsm-python/**/__pycache__/, php-ext phpize output under /packages/fsm-php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/fsm-gui/build/, /packages/fsm-gui/public/assets/, /packages/fsm-php*/.phpunit.result.cache, /packages/fsm-php*/.phpunit.cache/
   config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review}.json
   scripts/kit/ tests/kit/                    # vendored from kit
-  scripts/check-layout.mjs scripts/check-parity.mjs scripts/gen-check.mjs   tests/check-layout/ tests/check-parity/ tests/gen-check/
+  scripts/check-layout.mjs scripts/check-parity.mjs scripts/check-name.mjs scripts/gen-check.mjs   tests/check-layout/ tests/check-name/ tests/check-parity/ tests/docs-build/ tests/gen-check/ tests/install-python/
   contracts/layout.json (tools, kinds, canonical tree, allowed differences)   contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
+  docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
   schema/fsm.schema.json  schema/fsm.dbs  schema/persist.dbs   # persist.dbs = shared by the six language package examples
   fsm.config.json  machines/order.fsm.json  fsm.lock.json  conformance/vectors/<machine>.json
-  packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-mermaid/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
+  packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-lock/, src/store-mermaid/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
   packages/fsm-db/        {src/, tests/}   # DbStore + fsm-db CLI, depends on orm
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
   packages/fsm-{go,npm,php,php-ext,python,rust}/
@@ -183,6 +184,7 @@ packages/fsm-<kind>/
   - 추적 파일과 무시되지 않은 신규 파일이 정규 트리에서 벗어남(추가/누락/개명)
   - php와 php-ext의 테스트가 바이트 단위로 다름
   - layout.json 형식 오류
+  - 테스트 파일(허용 glob `tests/` 중 필수 집합 밖)이 layout.json의 `differences`에 이유와 함께 없거나, 선언된 차이가 kind의 허용 glob이 아닐 때
 - kind는 패키지 항목에서 하나씩 추가한다.
 
 ### C-3. 결과 기록 (K18)
@@ -327,35 +329,9 @@ packages/fsm-<kind>/
 - 한국어 펜스 코드 블록은 영어 블록과 같다(`documents-check`가 요구한다). 따라서 코드와 명령 출력은 번역하지 않고, 그 둘을 둘러싼 산문만 번역한다.
 - 테스트는 `tests/check-readmes/`(`make readme-test`)이고, `make readme-check`는 저장소에 검사를 실행한다.
 
-## D. 체크리스트 초안
+## D. 체크리스트와 owner 검사
 
-**kit 체크리스트 (kit repo에서 먼저 진행 → 릴리스 → fsm에서 kit-sync. kit에 넣을 때는 kit의 5열 형식으로 쓴다)**
-
-| id | 항목 | RED → GREEN | 상태 |
-|---|---|---|---|
-| K17 | `run-tests python`: `python3 -m unittest -v`의 stderr를 읽는다. cargo와 공용 줄 파서 1개를 쓰고, runner가 timeout을 강제한다. tool-inventory(.ko)를 갱신한다 | PATH stub python3으로 pass/fail/timeout/no-test RED | [ ] |
-| K18 | `run-tests --results`(counts의 `cases` + `inputs` + `elapsedMs`), `inputsDigest`, tool-inventory 갱신 | node/vitest fixture 테스트 + PATH stub go/cargo/phpunit/python3 RED | [ ] |
-| K19 | `check-commits` 규칙: [o] 전환 커밋은 changelog(영·한)도 바꿔야 하고, 커밋당 상태 변경 항목은 최대 1개. 스키마에 `done`·`changelog` 추가. 그 커밋에서 추가된 행은 상태 변경이 아니다 | git fixture RED | [ ] |
-
-**fsm 체크리스트**
-
-| id | 항목 | RED → GREEN | 상태 |
-|---|---|---|---|
-| S-01 | git init, kit-sync, config(toolchain은 node만, dependency-policy는 빈 목록 + `make dependency-review RECORD=1`로 만든 `config/dependency-review.json`), hooks, AGENTS.md(.ko) A절, D절의 S 행 전체를 담은 체크리스트(S-01은 `[o]`, 나머지는 `[ ]`), CHANGELOG, 이 계획, `CHECK_TARGETS`(지금까지 정의된 타깃만, 각 항목이 자기 타깃을 추가)와 `check` | `kit-check owner-validate documents-check commits-check toolchain-check hooks-check dependency-policy-check` | [ ] |
-| S-02 | `docs/spec/fsm.md(.ko)` B절 | `documents-check` | [ ] |
-| S-03 | `check-layout` + `layout.json`(kinds = {}, kind마다 required 파일과 allowed glob을 담는 객체) + `layout-test`/`layout-check` | fixture(kinds 불일치/추가/누락/개명/php↔php-ext 불일치/형식 오류) RED | [ ] |
-| S-04 | `check-parity` + `parity-test` | fixture(결과 없음/도구 결과 없음/`--kind`는 자기 kind만 읽음/stale inputs/미실행/미등록/0케이스/fail/timeout/skip/이름 일치 0·2개/부모 id/10분 초과) RED | [ ] |
-| S-05 | core `E_SCHEMA` + schema 대응 테스트 | RED | [ ] |
-| S-05-1 | core 그래프 오류 | 오류 코드별 RED | [ ] |
-| S-05-2 | core 이름·code 오류 | 오류 코드별 RED | [ ] |
-| S-06 | normalize/IR + lock(rename/reserved) + JsonStore + store 계약 + `run`/`copy` | lock 시나리오 RED | [ ] |
-| S-07 | `fsm.config.json`(`{"store":"json"}`) + `machines/order.fsm.json` + `fsm.lock.json` + `contracts/features.json` + vectors 오라클(미등록 featureId 거부) + `gen-check` + `gen-check-test` | 수작업 기대값 fixture 일치, gen-check RED | [ ] |
-| S-08 | MermaidStore(정규형 파서·writer) + json↔mermaid 왕복 | `E_MERMAID_UNSUPPORTED`·순서 위반·왕복 불일치 RED | [ ] |
-| S-09 / S-09-1 | npm backend + `vectors --kind npm`(골든) / npm 패키지(conformance + persist + 루트 `schema/persist.dbs`(여기서 생성, 이후 공용) + `examples/model/`(orm-gen, gen-check 대상), kinds 추가, toolchain·dependency-policy 추가, `test-npm`) | 생성물 없음 RED → 통과, layout·parity | [ ] |
-| S-10 … S-14 (+ `-1`) | 같은 방식으로 go, python, php, rust, php-ext | 동일 | [ ] |
-| S-15 | fsm-db: dbs + DbStore + 계약 테스트 + copy + `db-test` | 계약 불일치·`E_STORE_NOT_EMPTY`·원자성 RED | [ ] |
-| S-16 | GUI 골격: hyper app + 목록·상세 + Mermaid + `gui-test` | handler RED | [ ] |
-| S-17 | GUI 편집: crudui 폼 + 검증 오류 표시 + lock/rename | 저장 후 `check` 통과 | [ ] |
+항목의 상태는 [docs/plans/execution-checklist.ko.md](execution-checklist.ko.md)에 있다. 이 계획의 유일한 체크리스트이며(AGENTS.ko.md, 체크리스트), 이 절은 상태를 담지 않는다. kit 항목 K17~K19는 kit 저장소의 항목이라 이 체크리스트에 없으며, E절이 이름을 든다.
 
 owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 
@@ -368,6 +344,7 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 | `contracts/layout.json` | `layout-test layout-check gen-check packages-test` |
 | `scripts/gen-check.mjs`, `tests/gen-check/**` | `gen-check-test gen-check` |
 | `scripts/check-parity.mjs`, `tests/check-parity/**` | `parity-test` |
+| `tests/install-python/**` | `install-python-test` |
 | `packages/fsm-compiler/**`, `schema/fsm.schema.json`, `machines/**`, `fsm.lock.json`, `conformance/**`, `contracts/features.json`, `fsm.config.json` | `compiler-test gen-check` |
 | `schema/persist.dbs` | `gen-check packages-test` |
 | `schema/fsm.dbs`, `packages/fsm-db/**` | `db-test` |
@@ -375,8 +352,8 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 | `packages/fsm-<kind>/**` | `layout-check gen-check parity-<kind> dependency-policy-check` |
 
 - kind의 소유 검사는 `parity-<kind>`(kind마다 쓰는 리터럴 타깃, 선행 타깃 `test-<kind>`, recipe `node scripts/check-parity.mjs --kind <kind>`)다. `--kind`이면 check-parity는 그 kind의 결과만 읽고 C-4 조건을 그 결과에만 적용한다(모든 벡터 케이스가 1번 실행되어 통과, 미등록 케이스 없음, `inputs` 최신, `elapsedMs`). 다른 kind의 결과와 도구 결과는 읽지 않는다. 선행 타깃과 `--kind`가 없는 `parity-check`는 모든 kind와 도구 결과를 읽고 `check`에서 `packages-test` 뒤에 돈다.
-- 독립 항목(S-03, S-04, S-05)은 병렬로 진행할 수 있다.
-- 전체 스위트는 S-17 커밋 후 `make check`로 1회 돌린다.
+- 독립 항목은 체크리스트가 허용할 때 병렬로 진행할 수 있다(AGENTS.ko.md, 체크리스트).
+- 전체 스위트는 체크리스트의 마지막 항목 커밋 후 `make check`로 1회 돌린다.
 
 ## E. 진행 순서
 1. kit K17~K19 → kit 릴리스 → fsm S-01부터 진행한다.
@@ -387,9 +364,11 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
   - `CHECK_TARGETS`, `check`
   - `layout-test`, `layout-check`, `parity-test`, `parity-check`
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
+  - `install-python-test` (`tests/install-python`: the install-python recipe in a temporary checkout with a stub uv, S-11-3)
+  - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
   - `test-<kind>`, `parity-<kind>`(`parity-<kind>: test-<kind>`), `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test parity-check`
+  - `CHECK_TARGETS` = `kit-check kit-test owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test install-python-test packages-test parity-check`
 - 항목 개발 중에는 owner-checks 매핑만 실행한다.
 - GUI 수동 확인: json·mermaid·db store 각각으로 다음을 확인한다.
   1. 상태를 추가·삭제·rename한 뒤 저장한다(lock은 save가 함께 갱신).

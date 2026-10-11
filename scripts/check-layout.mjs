@@ -7,6 +7,8 @@
 //   layout-file      every file of a kind package matches a canonical file, a required file or an allowed glob of the kind
 //   layout-missing   every canonical file and every required file of the kind exists, and every canonical directory holds a file
 //   layout-php-twin  the php and the php-ext packages hold the same tests/ files with the same bytes
+//   layout-config    also: a test file of an allowed glob (tests/...) beyond the required set is a difference, which must be
+//                    declared in `differences` with its reason; a declared difference names an allowed glob of its kind
 //
 //   node scripts/check-layout.mjs
 //
@@ -46,6 +48,19 @@ const SCHEMA = {
       properties: { files: strings, directories: strings },
     },
     kinds: { type: 'object', additionalProperties: false, properties: Object.fromEntries(KINDS.map(kind => [kind, kindSchema])) },
+    differences: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['kind', 'path', 'reason'],
+        additionalProperties: false,
+        properties: {
+          kind: { type: 'string', enum: KINDS },
+          path: { type: 'string', pattern: '^[^/].*[^/]$' },
+          reason: { type: 'string', pattern: '\\S' },
+        },
+      },
+    },
   },
 };
 
@@ -90,6 +105,20 @@ export function layoutFindings(root) {
     }
     for (const directory of layout.canonical.directories.filter(entry => !own.some(name => name.startsWith(`${entry}/`)))) {
       found.push(finding('layout-missing', `${base}${directory}/ holds no file; every package has ${layout.canonical.directories.map(entry => `${entry}/`).join(', ').replace(/, ([^,]*)$/, ' and $1')}`));
+    }
+  }
+
+  const differences = layout.differences ?? [];
+  for (const kind of kinds) {
+    for (const glob of layout.kinds[kind].allowed.filter(entry => entry.startsWith('tests/'))) {
+      if (!differences.some(entry => entry.kind === kind && entry.path === glob)) {
+        found.push(finding('layout-config', `${LAYOUT}: ${kind} allows ${glob}, a test beyond its required set; declare it in differences with its reason`));
+      }
+    }
+  }
+  for (const entry of differences) {
+    if (!layout.kinds[entry.kind]?.allowed.includes(entry.path)) {
+      found.push(finding('layout-config', `${LAYOUT}: the difference ${entry.kind} ${entry.path} is not an allowed glob of ${entry.kind}`));
     }
   }
 
