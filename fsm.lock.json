@@ -1,4 +1,19 @@
 {
+  "in_review": {
+    "codes": {
+      "1": "to_do",
+      "2": "in_progress",
+      "3": "done_now"
+    },
+    "reserved": []
+  },
+  "limits": {
+    "codes": {
+      "1": "floor",
+      "2147483647": "ceiling"
+    },
+    "reserved": []
+  },
   "order": {
     "codes": {
       "1": "draft",
@@ -8,5 +23,22 @@
       "5": "canceled"
     },
     "reserved": []
+  },
+  "standby": {
+    "codes": {
+      "1": "ready"
+    },
+    "reserved": []
+  },
+  "ticket": {
+    "codes": {
+      "1": "open",
+      "3": "review",
+      "5": "closed"
+    },
+    "reserved": [
+      2,
+      4
+    ]
   }
 }

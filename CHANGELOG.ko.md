@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d00289d664b4e21639afff832c75b7c090452edf75568e726b3f6e4ff978bc96 -->
+<!-- source-sha256: e3bf4d05a226ae30eed000aab075045acbd33d80cace0d3ef92b9ce7159f3e79 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-25: 적합성 machine이 정의를 덮는다(감사 3). `machines/`에 `standby`(event 없음), `in_review`(모든 수준의 underscore key), `ticket`(reserved code 2와 4: 첫 lock 뒤 상태를 제거했고, 두 번째 lock이 code를 reserved로 유지한다), `limits`(code 2147483647)를 lock 항목과 `conformance/vectors`와 함께 더했다. go harness는 일반형이다. `tests/vectors_test.go`는 key 표와 machine마다 adapter 하나를 담고 go 백엔드가 생성한다(`vectors --kind go`는 `--go-module`을 받는다). `tests/conformance_test.go`는 각 case를 그 machine의 adapter로 실행하고, `examples/persist.go`는 machine을 `Decide`로 받는다. php 패키지는 적재기 `src/functions.php`로 모든 machine의 함수를 싣는다(명세 B-6, 계획 C-2). order 골든 파일과 비교하는 compiler 테스트는 order machine만 있는 프로젝트를 읽는다(`tests/order-project.mjs`). 각 kind는 다섯 machine의 209 케이스를 통과한다. S-23의 event 없는 패키지 machine은 `standby`다.
 - S-24: php-ext 백엔드가 모든 C 이름을 `--php-namespace`와 `--php-ext-name`에서 유도한다. 머신 파일이 `php_polyspec_fsm_test.h`와 `polyspec_fsm_test_arginfo.h`를 include했고, Error 클래스 심볼은 옵션과 무관하게 `Polyspec_FsmTest_Fsm_Error`였다. 이제 `php_<ext>.h`, `<ext>_arginfo.h`, `<namespace의 _ 버전>_Fsm_Error`다(명세 B-6). 백엔드 테스트는 두 번째 쌍 `Acme\Tool`과 `acme_tool`로 출력을 phpize, ./configure, make로 빌드하고 php에 올린다.
 - S-23: rust 백엔드가 이벤트가 없는 머신을 컴파일한다. variant가 없는 enum은 표현을 가질 수 없으므로(rustc E0084), 그런 머신의 `Event`는 `#[repr(i32)]` 없는 `pub enum Event {}`다(명세 B-6). 백엔드 테스트가 그 머신의 생성 파일을 cargo로 빌드한다.
 - S-22-3: 브라우저 테스트는 `networkidle`이 아니라 연결된 폼을 기다린다. client는 `connectForm`과 구독이 자리 잡으면 form host `#fsm-form`에 `data-fsm-connected="true"`를 설정하고, 연결이 끊기면 제거한다. layout은 표시가 설정되기 전까지 행 버튼이 클릭을 받지 못하게 한다. 첫 실행 실패는 묶기 전 클릭이 아니라 새로 받은 Chromium의 첫 탐색으로, 5초 케이스 제한에 대해 2.5~12.4초였다(새 다운로드 네 번 측정, plan C-7). setup이 이제 자기 제한으로 편집 페이지를 한 번 연다.

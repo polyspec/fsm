@@ -83,7 +83,7 @@
             "Polyspec\\FsmTest\\": "src/"
         },
         "files": [
-            "src/Order/functions.php"
+            "src/functions.php"
         ]
     },
     "autoload-dev": {

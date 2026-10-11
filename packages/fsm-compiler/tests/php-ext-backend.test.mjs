@@ -17,6 +17,7 @@ import { files as phpFiles, vectorsFile as phpVectorsFile } from '../src/backend
 import { normalize } from '../src/core/normalize.mjs';
 import { vectors } from '../src/core/vectors.mjs';
 import { jsonStore } from '../src/store-json/store.mjs';
+import { ORDER_PROJECT } from './order-project.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
@@ -35,7 +36,7 @@ const NAMES = [
 
 /** The IRs and the lock of the repository's definitions (the order example). */
 async function orderIrs() {
-  const { definitions, lock, findings } = await jsonStore(ROOT).load();
+  const { definitions, lock, findings } = await jsonStore(ORDER_PROJECT).load();
   assert.deepEqual(findings, []);
   return { irs: definitions.map(normalize), lock };
 }

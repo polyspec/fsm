@@ -171,9 +171,9 @@ packages/fsm-<kind>/
 
 | kind | manifest | src | tests |
 |---|---|---|---|
-| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (in Go a package is a directory) | `conformance_test.go`, `vectors_test.go` |
+| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (in Go a package is a directory) | `conformance_test.go` (generic: it runs each case through the adapter of its machine), `vectors_test.go` (generated: the vector cases, the key tables of every machine and one adapter per machine, which implements the interface of `conformance_test.go`; the imports name the module, so `vectors --kind go` takes `--go-module`) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts` (`export * as order`) | `conformance.test.mjs`, `vectors.mjs` |
-| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php` | `ConformanceTest.php`, `Vectors.php` |
+| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, and the loader `functions.php` (requires every machine's `Order/functions.php`; composer `autoload.files` names only this file, because PSR-4 cannot load functions) | `ConformanceTest.php`, `Vectors.php` |
 | php-ext | composer.json (`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c` (shared `<ns>\Fsm\Error` and error code constants), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | tests **byte-identical** to php; `make test` builds with phpize, then runs with `--php-extension <.so>`; gen requires `--php-namespace` and `--php-ext-name` |
 | python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py` (generates methods named exactly after the cases), `vectors.py` |
 | rust | Cargo.toml (`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs` (`pub mod order; pub mod fsm;`), `order.rs`, `fsm.rs` | `conformance.rs` (`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`); persist cases are `#[tokio::test]`; generated `tests/vectors.rs` starts with `#![allow(non_snake_case)]` |
@@ -210,6 +210,8 @@ Case name extraction: `/\btest_[a-z][a-z0-9]*(?:_[a-z0-9]+)*__[a-z][a-z0-9]*(?:_
 
 `contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. A vector file is `conformance/vectors/<machine>.json` = `{machine, cases: [{feature, id, …}]}`; the case name is `test_<feature>__<id>`.
 
+Conformance machines (`machines/`, S-25): every kind runs the vectors of every machine in `machines/`, so the definition's shapes are covered by all six kinds: `order` (the example); `standby` (no events: one state, which is initial and final); `in_review` (underscore keys in the machine, state and event keys); `ticket` (reserved codes 2 and 4, which are states removed after a first lock; the lock keeps them as reserved); `limits` (the code 2147483647). Each kind passes 209 cases (`parity-check`).
+
 Vectors (exhaustive; the core generates the oracle):
 - `initial`
 - per state: the `code`/`key`/`from_code` round trip, `is_final`, `events_from`
@@ -242,7 +244,7 @@ Vectors (exhaustive; the core generates the oracle):
 - Commands
   - `lock [--rename]`
   - `gen --kind <k> --out <dir>` (php requires `--php-namespace`; php-ext requires `--php-namespace` and `--php-ext-name`; go requires `--go-module <module path>`, because a generated machine imports the shared package `<module>/src/fsm` and the backend cannot read go.mod)
-  - `vectors [--kind <k>] --out <path>`
+  - `vectors [--kind <k>] --out <path>` (go: `--go-module <module path>`, as for gen)
   - `check`: validates every definition and the lock match, and the lock keeps every committed code (B-3)
   - `copy --to json|mermaid --root <dir>`
 - Root `gen-check`

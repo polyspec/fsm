@@ -3,6 +3,576 @@
 
 vectors = [
     {
+        "machine": "in_review",
+        "cases": [
+            {
+                "feature": "initial",
+                "id": "in_review_initial",
+                "expect": {
+                    "state": "to_do",
+                },
+            },
+            {
+                "feature": "code",
+                "id": "in_review_code_s0",
+                "state": "to_do",
+                "expect": 1,
+            },
+            {
+                "feature": "key",
+                "id": "in_review_key_s0",
+                "code": 1,
+                "expect": "to_do",
+            },
+            {
+                "feature": "from_code",
+                "id": "in_review_from_code_s0",
+                "input": 1,
+                "expect": {
+                    "state": "to_do",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "in_review_is_final_s0",
+                "state": "to_do",
+                "expect": False,
+            },
+            {
+                "feature": "events_from",
+                "id": "in_review_events_from_s0",
+                "state": "to_do",
+                "expect": [
+                    "start_work",
+                ],
+            },
+            {
+                "feature": "code",
+                "id": "in_review_code_s1",
+                "state": "in_progress",
+                "expect": 2,
+            },
+            {
+                "feature": "key",
+                "id": "in_review_key_s1",
+                "code": 2,
+                "expect": "in_progress",
+            },
+            {
+                "feature": "from_code",
+                "id": "in_review_from_code_s1",
+                "input": 2,
+                "expect": {
+                    "state": "in_progress",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "in_review_is_final_s1",
+                "state": "in_progress",
+                "expect": False,
+            },
+            {
+                "feature": "events_from",
+                "id": "in_review_events_from_s1",
+                "state": "in_progress",
+                "expect": [
+                    "finish_work",
+                    "reopen_work",
+                ],
+            },
+            {
+                "feature": "code",
+                "id": "in_review_code_s2",
+                "state": "done_now",
+                "expect": 3,
+            },
+            {
+                "feature": "key",
+                "id": "in_review_key_s2",
+                "code": 3,
+                "expect": "done_now",
+            },
+            {
+                "feature": "from_code",
+                "id": "in_review_from_code_s2",
+                "input": 3,
+                "expect": {
+                    "state": "done_now",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "in_review_is_final_s2",
+                "state": "done_now",
+                "expect": True,
+            },
+            {
+                "feature": "events_from",
+                "id": "in_review_events_from_s2",
+                "state": "done_now",
+                "expect": [],
+            },
+            {
+                "feature": "from_code",
+                "id": "in_review_from_code_zero",
+                "input": 0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "in_review_from_code_unknown",
+                "input": 4,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s0_e0",
+                "state": "to_do",
+                "event": "start_work",
+                "expect": {
+                    "state": "in_progress",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s0_e1",
+                "state": "to_do",
+                "event": "finish_work",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s0_e2",
+                "state": "to_do",
+                "event": "reopen_work",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s1_e0",
+                "state": "in_progress",
+                "event": "start_work",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s1_e1",
+                "state": "in_progress",
+                "event": "finish_work",
+                "expect": {
+                    "state": "done_now",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s1_e2",
+                "state": "in_progress",
+                "event": "reopen_work",
+                "expect": {
+                    "state": "to_do",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s2_e0",
+                "state": "done_now",
+                "event": "start_work",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s2_e1",
+                "state": "done_now",
+                "event": "finish_work",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "in_review_target_s2_e2",
+                "state": "done_now",
+                "event": "reopen_work",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s0_e0_s0",
+                "expected": "to_do",
+                "event": "start_work",
+                "actual": "to_do",
+                "expect": {
+                    "to": "in_progress",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s0_e0_s1",
+                "expected": "to_do",
+                "event": "start_work",
+                "actual": "in_progress",
+                "expect": {
+                    "to": "in_progress",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s0_e0_s2",
+                "expected": "to_do",
+                "event": "start_work",
+                "actual": "done_now",
+                "expect": {
+                    "error": "E_CONFLICT",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s1_e1_s1",
+                "expected": "in_progress",
+                "event": "finish_work",
+                "actual": "in_progress",
+                "expect": {
+                    "to": "done_now",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s1_e1_s2",
+                "expected": "in_progress",
+                "event": "finish_work",
+                "actual": "done_now",
+                "expect": {
+                    "to": "done_now",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s1_e1_s0",
+                "expected": "in_progress",
+                "event": "finish_work",
+                "actual": "to_do",
+                "expect": {
+                    "error": "E_CONFLICT",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s1_e2_s1",
+                "expected": "in_progress",
+                "event": "reopen_work",
+                "actual": "in_progress",
+                "expect": {
+                    "to": "to_do",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s1_e2_s0",
+                "expected": "in_progress",
+                "event": "reopen_work",
+                "actual": "to_do",
+                "expect": {
+                    "to": "to_do",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s1_e2_s2",
+                "expected": "in_progress",
+                "event": "reopen_work",
+                "actual": "done_now",
+                "expect": {
+                    "error": "E_CONFLICT",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s0_e1_s0",
+                "expected": "to_do",
+                "event": "finish_work",
+                "actual": "to_do",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s0_e2_s0",
+                "expected": "to_do",
+                "event": "reopen_work",
+                "actual": "to_do",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s1_e0_s1",
+                "expected": "in_progress",
+                "event": "start_work",
+                "actual": "in_progress",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s2_e0_s2",
+                "expected": "done_now",
+                "event": "start_work",
+                "actual": "done_now",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s2_e1_s2",
+                "expected": "done_now",
+                "event": "finish_work",
+                "actual": "done_now",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "in_review_apply_s2_e2_s2",
+                "expected": "done_now",
+                "event": "reopen_work",
+                "actual": "done_now",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "persist",
+                "id": "in_review_persist_first",
+                "scenario": "first",
+                "expected": "to_do",
+                "event": "start_work",
+                "stored": "to_do",
+                "expect": {
+                    "stored_after": "in_progress",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "persist",
+                "id": "in_review_persist_retry",
+                "scenario": "retry",
+                "expected": "to_do",
+                "event": "start_work",
+                "stored": "in_progress",
+                "expect": {
+                    "stored_after": "in_progress",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "persist",
+                "id": "in_review_persist_conflict",
+                "scenario": "conflict",
+                "expected": "to_do",
+                "event": "start_work",
+                "stored": "done_now",
+                "expect": {
+                    "error": "E_CONFLICT",
+                    "stored_after": "done_now",
+                },
+            },
+        ],
+    },
+    {
+        "machine": "limits",
+        "cases": [
+            {
+                "feature": "initial",
+                "id": "limits_initial",
+                "expect": {
+                    "state": "floor",
+                },
+            },
+            {
+                "feature": "code",
+                "id": "limits_code_s0",
+                "state": "floor",
+                "expect": 1,
+            },
+            {
+                "feature": "key",
+                "id": "limits_key_s0",
+                "code": 1,
+                "expect": "floor",
+            },
+            {
+                "feature": "from_code",
+                "id": "limits_from_code_s0",
+                "input": 1,
+                "expect": {
+                    "state": "floor",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "limits_is_final_s0",
+                "state": "floor",
+                "expect": False,
+            },
+            {
+                "feature": "events_from",
+                "id": "limits_events_from_s0",
+                "state": "floor",
+                "expect": [
+                    "rise",
+                ],
+            },
+            {
+                "feature": "code",
+                "id": "limits_code_s1",
+                "state": "ceiling",
+                "expect": 2147483647,
+            },
+            {
+                "feature": "key",
+                "id": "limits_key_s1",
+                "code": 2147483647,
+                "expect": "ceiling",
+            },
+            {
+                "feature": "from_code",
+                "id": "limits_from_code_s1",
+                "input": 2147483647,
+                "expect": {
+                    "state": "ceiling",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "limits_is_final_s1",
+                "state": "ceiling",
+                "expect": True,
+            },
+            {
+                "feature": "events_from",
+                "id": "limits_events_from_s1",
+                "state": "ceiling",
+                "expect": [],
+            },
+            {
+                "feature": "from_code",
+                "id": "limits_from_code_zero",
+                "input": 0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "limits_from_code_unknown",
+                "input": 2,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "limits_target_s0_e0",
+                "state": "floor",
+                "event": "rise",
+                "expect": {
+                    "state": "ceiling",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "limits_target_s1_e0",
+                "state": "ceiling",
+                "event": "rise",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "limits_apply_s0_e0_s0",
+                "expected": "floor",
+                "event": "rise",
+                "actual": "floor",
+                "expect": {
+                    "to": "ceiling",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "limits_apply_s0_e0_s1",
+                "expected": "floor",
+                "event": "rise",
+                "actual": "ceiling",
+                "expect": {
+                    "to": "ceiling",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "limits_apply_s1_e0_s1",
+                "expected": "ceiling",
+                "event": "rise",
+                "actual": "ceiling",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "persist",
+                "id": "limits_persist_first",
+                "scenario": "first",
+                "expected": "floor",
+                "event": "rise",
+                "stored": "floor",
+                "expect": {
+                    "stored_after": "ceiling",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "persist",
+                "id": "limits_persist_retry",
+                "scenario": "retry",
+                "expected": "floor",
+                "event": "rise",
+                "stored": "ceiling",
+                "expect": {
+                    "stored_after": "ceiling",
+                    "changed": False,
+                },
+            },
+        ],
+    },
+    {
         "machine": "order",
         "cases": [
             {
@@ -811,6 +1381,484 @@ vectors = [
                 "expect": {
                     "error": "E_CONFLICT",
                     "stored_after": "shipped",
+                },
+            },
+        ],
+    },
+    {
+        "machine": "standby",
+        "cases": [
+            {
+                "feature": "initial",
+                "id": "standby_initial",
+                "expect": {
+                    "state": "ready",
+                },
+            },
+            {
+                "feature": "code",
+                "id": "standby_code_s0",
+                "state": "ready",
+                "expect": 1,
+            },
+            {
+                "feature": "key",
+                "id": "standby_key_s0",
+                "code": 1,
+                "expect": "ready",
+            },
+            {
+                "feature": "from_code",
+                "id": "standby_from_code_s0",
+                "input": 1,
+                "expect": {
+                    "state": "ready",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "standby_is_final_s0",
+                "state": "ready",
+                "expect": True,
+            },
+            {
+                "feature": "events_from",
+                "id": "standby_events_from_s0",
+                "state": "ready",
+                "expect": [],
+            },
+            {
+                "feature": "from_code",
+                "id": "standby_from_code_zero",
+                "input": 0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "standby_from_code_unknown",
+                "input": 2,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                },
+            },
+        ],
+    },
+    {
+        "machine": "ticket",
+        "cases": [
+            {
+                "feature": "initial",
+                "id": "ticket_initial",
+                "expect": {
+                    "state": "open",
+                },
+            },
+            {
+                "feature": "code",
+                "id": "ticket_code_s0",
+                "state": "open",
+                "expect": 1,
+            },
+            {
+                "feature": "key",
+                "id": "ticket_key_s0",
+                "code": 1,
+                "expect": "open",
+            },
+            {
+                "feature": "from_code",
+                "id": "ticket_from_code_s0",
+                "input": 1,
+                "expect": {
+                    "state": "open",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "ticket_is_final_s0",
+                "state": "open",
+                "expect": False,
+            },
+            {
+                "feature": "events_from",
+                "id": "ticket_events_from_s0",
+                "state": "open",
+                "expect": [
+                    "submit",
+                ],
+            },
+            {
+                "feature": "code",
+                "id": "ticket_code_s1",
+                "state": "review",
+                "expect": 3,
+            },
+            {
+                "feature": "key",
+                "id": "ticket_key_s1",
+                "code": 3,
+                "expect": "review",
+            },
+            {
+                "feature": "from_code",
+                "id": "ticket_from_code_s1",
+                "input": 3,
+                "expect": {
+                    "state": "review",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "ticket_is_final_s1",
+                "state": "review",
+                "expect": False,
+            },
+            {
+                "feature": "events_from",
+                "id": "ticket_events_from_s1",
+                "state": "review",
+                "expect": [
+                    "approve",
+                    "reject",
+                ],
+            },
+            {
+                "feature": "code",
+                "id": "ticket_code_s2",
+                "state": "closed",
+                "expect": 5,
+            },
+            {
+                "feature": "key",
+                "id": "ticket_key_s2",
+                "code": 5,
+                "expect": "closed",
+            },
+            {
+                "feature": "from_code",
+                "id": "ticket_from_code_s2",
+                "input": 5,
+                "expect": {
+                    "state": "closed",
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "ticket_is_final_s2",
+                "state": "closed",
+                "expect": True,
+            },
+            {
+                "feature": "events_from",
+                "id": "ticket_events_from_s2",
+                "state": "closed",
+                "expect": [],
+            },
+            {
+                "feature": "from_code",
+                "id": "ticket_from_code_zero",
+                "input": 0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "ticket_from_code_unknown",
+                "input": 6,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "ticket_from_code_r2",
+                "input": 2,
+                "expect": {
+                    "error": "E_RESERVED_CODE",
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "ticket_from_code_r4",
+                "input": 4,
+                "expect": {
+                    "error": "E_RESERVED_CODE",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s0_e0",
+                "state": "open",
+                "event": "submit",
+                "expect": {
+                    "state": "review",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s0_e1",
+                "state": "open",
+                "event": "approve",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s0_e2",
+                "state": "open",
+                "event": "reject",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s1_e0",
+                "state": "review",
+                "event": "submit",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s1_e1",
+                "state": "review",
+                "event": "approve",
+                "expect": {
+                    "state": "closed",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s1_e2",
+                "state": "review",
+                "event": "reject",
+                "expect": {
+                    "state": "open",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s2_e0",
+                "state": "closed",
+                "event": "submit",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s2_e1",
+                "state": "closed",
+                "event": "approve",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "target",
+                "id": "ticket_target_s2_e2",
+                "state": "closed",
+                "event": "reject",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s0_e0_s0",
+                "expected": "open",
+                "event": "submit",
+                "actual": "open",
+                "expect": {
+                    "to": "review",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s0_e0_s1",
+                "expected": "open",
+                "event": "submit",
+                "actual": "review",
+                "expect": {
+                    "to": "review",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s0_e0_s2",
+                "expected": "open",
+                "event": "submit",
+                "actual": "closed",
+                "expect": {
+                    "error": "E_CONFLICT",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s1_e1_s1",
+                "expected": "review",
+                "event": "approve",
+                "actual": "review",
+                "expect": {
+                    "to": "closed",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s1_e1_s2",
+                "expected": "review",
+                "event": "approve",
+                "actual": "closed",
+                "expect": {
+                    "to": "closed",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s1_e1_s0",
+                "expected": "review",
+                "event": "approve",
+                "actual": "open",
+                "expect": {
+                    "error": "E_CONFLICT",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s1_e2_s1",
+                "expected": "review",
+                "event": "reject",
+                "actual": "review",
+                "expect": {
+                    "to": "open",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s1_e2_s0",
+                "expected": "review",
+                "event": "reject",
+                "actual": "open",
+                "expect": {
+                    "to": "open",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s1_e2_s2",
+                "expected": "review",
+                "event": "reject",
+                "actual": "closed",
+                "expect": {
+                    "error": "E_CONFLICT",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s0_e1_s0",
+                "expected": "open",
+                "event": "approve",
+                "actual": "open",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s0_e2_s0",
+                "expected": "open",
+                "event": "reject",
+                "actual": "open",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s1_e0_s1",
+                "expected": "review",
+                "event": "submit",
+                "actual": "review",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s2_e0_s2",
+                "expected": "closed",
+                "event": "submit",
+                "actual": "closed",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s2_e1_s2",
+                "expected": "closed",
+                "event": "approve",
+                "actual": "closed",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "ticket_apply_s2_e2_s2",
+                "expected": "closed",
+                "event": "reject",
+                "actual": "closed",
+                "expect": {
+                    "error": "E_INVALID_TRANSITION",
+                },
+            },
+            {
+                "feature": "persist",
+                "id": "ticket_persist_first",
+                "scenario": "first",
+                "expected": "open",
+                "event": "submit",
+                "stored": "open",
+                "expect": {
+                    "stored_after": "review",
+                    "changed": True,
+                },
+            },
+            {
+                "feature": "persist",
+                "id": "ticket_persist_retry",
+                "scenario": "retry",
+                "expected": "open",
+                "event": "submit",
+                "stored": "review",
+                "expect": {
+                    "stored_after": "review",
+                    "changed": False,
+                },
+            },
+            {
+                "feature": "persist",
+                "id": "ticket_persist_conflict",
+                "scenario": "conflict",
+                "expected": "open",
+                "event": "submit",
+                "stored": "closed",
+                "expect": {
+                    "error": "E_CONFLICT",
+                    "stored_after": "closed",
                 },
             },
         ],

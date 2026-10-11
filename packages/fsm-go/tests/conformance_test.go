@@ -1,17 +1,17 @@
 // Package tests holds the conformance tests of the go package (docs/plans/fsm-v1.md, C-4). Every vector case of vectors_test.go
-// (generated from the core oracle) is one subtest named test_<feature>__<id>: it calls the generated functions of src/ and asserts
-// the expected value or the error code. The persist cases run the B-4 example (examples/persist.go) on SQLite and assert the
-// stored state after the run. The keys of the vectors are mapped to the constants of the order machine by the tables below.
+// (generated from the core oracle) is one subtest named test_<feature>__<id>. The case is run through the adapter of its machine
+// in vectors_test.go, which maps the keys of the oracle to the constants of the machine and calls its generated functions. The
+// persist cases run the B-4 example (examples/persist.go) on SQLite and assert the stored code after the run.
 package tests
 
 import (
 	"errors"
+	"fmt"
 	"path/filepath"
 	"slices"
 	"testing"
 
 	"github.com/polyspec/fsm-go/examples"
-	"github.com/polyspec/fsm-go/src/order"
 	"github.com/polyspec/fsm-go/src/fsm"
 )
 
@@ -49,53 +49,61 @@ type expectation struct {
 	events      []string
 }
 
-// The keys of the order machine and the constants that they name (docs/spec/fsm.md, B-6).
-var states = map[string]order.State{
-	"draft":    order.StateDraft,
-	"paid":     order.StatePaid,
-	"shipped":  order.StateShipped,
-	"done":     order.StateDone,
-	"canceled": order.StateCanceled,
+// machineUnderTest is the adapter of one machine, generated into vectors_test.go. It takes and returns keys, and returns the errors
+// of the generated functions unchanged.
+type machineUnderTest interface {
+	initial() (string, error)
+	code(state string) (int32, error)
+	key(code int64) (string, error)
+	fromCode(code int64) (string, error)
+	isFinal(state string) (bool, error)
+	eventsFrom(state string) ([]string, error)
+	target(expected, event string) (string, error)
+	apply(expected, event, actual string) (string, bool, error)
+	decide(expected, event string) examples.Decide
 }
 
-var events = map[string]order.Event{
-	"next":   order.EventNext,
-	"prev":   order.EventPrev,
-	"cancel": order.EventCancel,
-}
-
-// TestConformance runs every vector case as the subtest test_<feature>__<id> of this test.
+// TestConformance runs every vector case as the subtest test_<feature>__<id> of this test, through the adapter of its machine.
 func TestConformance(t *testing.T) {
 	for _, machine := range vectors {
-		if machine.machine != "order" {
-			t.Fatalf("no conformance check for the machine %s; this package checks order", machine.machine)
+		adapter, ok := machines[machine.machine]
+		if !ok {
+			t.Fatalf("no adapter for the machine %s; vectors_test.go must hold one", machine.machine)
 		}
 		for _, c := range machine.cases {
 			t.Run("test_"+c.feature+"__"+c.id, func(t *testing.T) {
-				runCase(t, c)
+				runCase(t, adapter, c)
 			})
 		}
 	}
 }
 
-// mustState returns the state of a key; a key that is no state fails the test.
-func mustState(t *testing.T, key string) order.State {
-	t.Helper()
-	state, ok := states[key]
-	if !ok {
-		t.Fatalf("%q is no state of order", key)
+// int32Of returns a code as the 32-bit value of the state types; a value outside the 32-bit range is an error.
+func int32Of(code int64) (int32, error) {
+	if code != int64(int32(code)) {
+		return 0, fmt.Errorf("%d is outside the 32-bit range of the states", code)
 	}
-	return state
+	return int32(code), nil
 }
 
-// mustEvent returns the event of a key; a key that is no event fails the test.
-func mustEvent(t *testing.T, key string) order.Event {
-	t.Helper()
-	event, ok := events[key]
+// lookup returns the constant of a key of the machine; a key that the machine does not have is an error.
+func lookup[T any](table map[string]T, what, key string) (T, error) {
+	value, ok := table[key]
 	if !ok {
-		t.Fatalf("%q is no event of order", key)
+		var zero T
+		return zero, fmt.Errorf("%q is no %s of the machine", key, what)
 	}
-	return event
+	return value, nil
+}
+
+// keyOf returns the key of a constant of the machine; a constant that no key names is an error.
+func keyOf[T comparable](table map[string]T, what string, value T) (string, error) {
+	for key, candidate := range table {
+		if candidate == value {
+			return key, nil
+		}
+	}
+	return "", fmt.Errorf("the %s %v has no key in the machine", what, value)
 }
 
 // assertCode fails the test unless err is a *fsm.Error whose code is code.
@@ -118,81 +126,79 @@ func assertNoError(t *testing.T, err error) {
 	}
 }
 
-// runCase checks one case against the generated functions of its feature.
-func runCase(t *testing.T, c vectorCase) {
+// runCase checks one case against the generated functions of its feature, through the adapter of its machine.
+func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 	switch c.feature {
 	case "initial":
-		if got := order.Initial(); got != mustState(t, c.want.state) {
-			t.Fatalf("Initial() = %d, want %s", got, c.want.state)
+		got, err := m.initial()
+		assertNoError(t, err)
+		if got != c.want.state {
+			t.Fatalf("Initial = %q, want %q", got, c.want.state)
 		}
 	case "code":
-		got, err := order.Code(mustState(t, c.state))
+		got, err := m.code(c.state)
 		assertNoError(t, err)
 		if int64(got) != c.want.code {
 			t.Fatalf("Code = %d, want %d", got, c.want.code)
 		}
 	case "key":
-		got, err := order.Key(order.State(c.code))
+		got, err := m.key(c.code)
 		assertNoError(t, err)
 		if got != c.want.key {
 			t.Fatalf("Key = %q, want %q", got, c.want.key)
 		}
 	case "from_code":
-		got, err := order.FromCode(c.input)
+		got, err := m.fromCode(c.input)
 		if c.want.error != "" {
 			assertCode(t, err, c.want.error)
 			return
 		}
 		assertNoError(t, err)
-		if got != mustState(t, c.want.state) {
-			t.Fatalf("FromCode(%d) = %d, want %s", c.input, got, c.want.state)
+		if got != c.want.state {
+			t.Fatalf("FromCode(%d) = %q, want %q", c.input, got, c.want.state)
 		}
 	case "is_final":
-		got, err := order.IsFinal(mustState(t, c.state))
+		got, err := m.isFinal(c.state)
 		assertNoError(t, err)
 		if got != c.want.final {
 			t.Fatalf("IsFinal = %t, want %t", got, c.want.final)
 		}
 	case "events_from":
-		got, err := order.EventsFrom(mustState(t, c.state))
+		got, err := m.eventsFrom(c.state)
 		assertNoError(t, err)
-		want := make([]order.Event, 0, len(c.want.events))
-		for _, key := range c.want.events {
-			want = append(want, mustEvent(t, key))
-		}
-		if !slices.Equal(got, want) {
-			t.Fatalf("EventsFrom = %v, want %v", got, want)
+		if !slices.Equal(got, c.want.events) {
+			t.Fatalf("EventsFrom = %v, want %v", got, c.want.events)
 		}
 	case "target":
-		got, err := order.Target(mustState(t, c.state), mustEvent(t, c.event))
+		got, err := m.target(c.state, c.event)
 		if c.want.error != "" {
 			assertCode(t, err, c.want.error)
 			return
 		}
 		assertNoError(t, err)
-		if got != mustState(t, c.want.state) {
-			t.Fatalf("Target = %d, want %s", got, c.want.state)
+		if got != c.want.state {
+			t.Fatalf("Target = %q, want %q", got, c.want.state)
 		}
 	case "apply":
-		step, err := order.Apply(mustState(t, c.expected), mustEvent(t, c.event), mustState(t, c.actual))
+		to, changed, err := m.apply(c.expected, c.event, c.actual)
 		if c.want.error != "" {
 			assertCode(t, err, c.want.error)
 			return
 		}
 		assertNoError(t, err)
-		if step != (order.Step{To: mustState(t, c.want.to), Changed: c.want.changed}) {
-			t.Fatalf("Apply = %+v, want to %s changed %t", step, c.want.to, c.want.changed)
+		if to != c.want.to || changed != c.want.changed {
+			t.Fatalf("Apply = to %q changed %t, want to %q changed %t", to, changed, c.want.to, c.want.changed)
 		}
 	case "persist":
-		runPersist(t, c)
+		runPersist(t, m, c)
 	default:
 		t.Fatalf("no check for the feature %s; the vectors and this file must agree", c.feature)
 	}
 }
 
-// runPersist runs one persist case on a new SQLite database: the row 1 holds the stored state, one transition runs, and the stored
-// state after the run is asserted.
-func runPersist(t *testing.T, c vectorCase) {
+// runPersist runs one persist case on a new SQLite database: the row 1 holds the stored code, one transition runs, and the stored
+// code after the run is asserted.
+func runPersist(t *testing.T, m machineUnderTest, c vectorCase) {
 	db, err := examples.Open("sqlite://" + filepath.Join(t.TempDir(), "persist.db"))
 	assertNoError(t, err)
 	t.Cleanup(func() {
@@ -200,19 +206,25 @@ func runPersist(t *testing.T, c vectorCase) {
 			t.Errorf("close: %v", err)
 		}
 	})
-	assertNoError(t, examples.Seed(db, 1, mustState(t, c.stored)))
-	step, err := examples.Transition(db, 1, mustState(t, c.expected), mustEvent(t, c.event))
+	stored, err := m.code(c.stored)
+	assertNoError(t, err)
+	assertNoError(t, examples.Seed(db, 1, stored))
+	to, changed, err := examples.Transition(db, 1, m.decide(c.expected, c.event))
 	if c.want.error != "" {
 		assertCode(t, err, c.want.error)
 	} else {
 		assertNoError(t, err)
-		if step != (order.Step{To: mustState(t, c.want.storedAfter), Changed: c.want.changed}) {
-			t.Fatalf("Transition = %+v, want to %s changed %t", step, c.want.storedAfter, c.want.changed)
+		want, err := m.code(c.want.storedAfter)
+		assertNoError(t, err)
+		if to != want || changed != c.want.changed {
+			t.Fatalf("Transition = to %d changed %t, want to %d changed %t", to, changed, want, c.want.changed)
 		}
 	}
-	stored, err := examples.StatusOf(db, 1)
+	got, err := examples.StatusOf(db, 1)
 	assertNoError(t, err)
-	if stored != mustState(t, c.want.storedAfter) {
-		t.Fatalf("the stored state after the run is %d, want %s", stored, c.want.storedAfter)
+	want, err := m.code(c.want.storedAfter)
+	assertNoError(t, err)
+	if got != want {
+		t.Fatalf("the stored code after the run is %d, want %d", got, want)
 	}
 }

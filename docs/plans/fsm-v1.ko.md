@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: ce1d713e70fba4301a25801890cc9aba34f44bf7e8d1000134e2bbf22e2ed92a -->
+<!-- source-sha256: d5972e23f44bbbbc490eafcf17b419fcd2f995372c20b62310156bc183f4a4df -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -172,9 +172,9 @@ packages/fsm-<kind>/
 
 | kind | manifest | src | tests 비고 |
 |---|---|---|---|
-| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`, `vectors_test.go` |
+| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`(일반형: 각 case를 그 machine의 adapter로 실행), `vectors_test.go`(생성: vector case, 모든 machine의 key 표, machine마다 `conformance_test.go`의 interface를 구현하는 adapter 하나; import가 module을 이름으로 쓰므로 `vectors --kind go`는 `--go-module`을 받는다) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts`(`export * as order`) | `conformance.test.mjs`, `vectors.mjs` |
-| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php` | `ConformanceTest.php`, `Vectors.php` |
+| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceTest.php`, `Vectors.php` |
 | php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c`(공용 `<ns>\Fsm\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | php와 **바이트 동일**한 테스트. `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
 | python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py`(케이스 이름 그대로의 메서드 생성), `vectors.py` |
 | rust | Cargo.toml(`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs`(`pub mod order; pub mod fsm;`), `order.rs`, `fsm.rs` | `conformance.rs`(`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`), persist 케이스는 `#[tokio::test]`, 생성 `tests/vectors.rs`는 `#![allow(non_snake_case)]`로 시작 |
@@ -211,6 +211,8 @@ packages/fsm-<kind>/
 
 `contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. vector 파일은 `conformance/vectors/<machine>.json` = `{machine, cases: [{feature, id, …}]}`이고, 케이스 이름은 `test_<feature>__<id>`다.
 
+Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 machine의 벡터를 돈다. 그래서 여섯 kind가 정의의 모양을 모두 덮는다: `order`(예시), `standby`(event 없음: 상태 하나이며 initial이자 final), `in_review`(machine, 상태, event key의 underscore), `ticket`(reserved code 2와 4: 첫 lock 뒤 제거한 상태이며 lock은 이를 reserved로 유지), `limits`(code 2147483647). 각 kind는 209 케이스를 통과한다(`parity-check`).
+
 벡터(전수, 오라클은 core가 생성):
 - `initial`
 - 상태마다 `code`/`key`/`from_code` 왕복, `is_final`, `events_from`
@@ -236,7 +238,7 @@ packages/fsm-<kind>/
 - 명령
   - `lock [--rename]`
   - `gen --kind <k> --out <dir>` (php는 `--php-namespace` 필수, php-ext는 `--php-namespace`와 `--php-ext-name` 필수, go는 `--go-module <module path>` 필수: 생성된 machine이 공용 패키지 `<module>/src/fsm`를 import하며 backend는 go.mod를 읽을 수 없다)
-  - `vectors [--kind <k>] --out <path>`
+  - `vectors [--kind <k>] --out <path>` (go: gen과 같이 `--go-module <module path>`)
   - `check`: 전 정의 검증 + lock 일치 + lock이 커밋된 code를 모두 유지(B-3)
   - `copy --to json|mermaid --root <dir>`
 - 루트 `gen-check`

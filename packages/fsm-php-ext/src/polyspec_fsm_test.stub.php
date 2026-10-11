@@ -4,6 +4,63 @@
 // The declarations that the C code of this extension registers (src/*.c). They describe the API for editors and static
 // analysis, and they are never run: the extension itself registers the classes, enums and functions.
 
+namespace Polyspec\FsmTest\InReview {
+    enum State: int
+    {
+        case ToDo = 1;
+        case InProgress = 2;
+        case DoneNow = 3;
+    }
+
+    enum Event: int
+    {
+        case StartWork = 1;
+        case FinishWork = 2;
+        case ReopenWork = 3;
+    }
+
+    final class Step
+    {
+        public function __construct(public readonly State $to, public readonly bool $changed) {}
+    }
+
+    function initial(): State {}
+    function code(State $state): int {}
+    function key(State $state): string {}
+    function fromCode(int $value): State {}
+    function isFinal(State $state): bool {}
+    function eventsFrom(State $state): array {}
+    function target(State $expected, Event $event): State {}
+    function apply(State $expected, Event $event, State $actual): Step {}
+}
+
+namespace Polyspec\FsmTest\Limits {
+    enum State: int
+    {
+        case Floor = 1;
+        case Ceiling = 2147483647;
+    }
+
+    enum Event: int
+    {
+        case Rise = 1;
+    }
+
+    final class Step
+    {
+        public function __construct(public readonly State $to, public readonly bool $changed) {}
+    }
+
+    function initial(): State {}
+    function code(State $state): int {}
+    function key(State $state): string {}
+    function fromCode(int $value): State {}
+    function isFinal(State $state): bool {}
+    function eventsFrom(State $state): array {}
+    function target(State $expected, Event $event): State {}
+    function apply(State $expected, Event $event, State $actual): Step {}
+}
+
 namespace Polyspec\FsmTest\Order {
     enum State: int
     {
@@ -19,6 +76,61 @@ namespace Polyspec\FsmTest\Order {
         case Next = 1;
         case Prev = 2;
         case Cancel = 3;
+    }
+
+    final class Step
+    {
+        public function __construct(public readonly State $to, public readonly bool $changed) {}
+    }
+
+    function initial(): State {}
+    function code(State $state): int {}
+    function key(State $state): string {}
+    function fromCode(int $value): State {}
+    function isFinal(State $state): bool {}
+    function eventsFrom(State $state): array {}
+    function target(State $expected, Event $event): State {}
+    function apply(State $expected, Event $event, State $actual): Step {}
+}
+
+namespace Polyspec\FsmTest\Standby {
+    enum State: int
+    {
+        case Ready = 1;
+    }
+
+    enum Event: int
+    {
+    }
+
+    final class Step
+    {
+        public function __construct(public readonly State $to, public readonly bool $changed) {}
+    }
+
+    function initial(): State {}
+    function code(State $state): int {}
+    function key(State $state): string {}
+    function fromCode(int $value): State {}
+    function isFinal(State $state): bool {}
+    function eventsFrom(State $state): array {}
+    function target(State $expected, Event $event): State {}
+    function apply(State $expected, Event $event, State $actual): Step {}
+}
+
+namespace Polyspec\FsmTest\Ticket {
+    enum State: int
+    {
+        case Open = 1;
+        case Review = 3;
+        case Closed = 5;
+    }
+
+    enum Event: int
+    {
+        case Submit = 1;
+        case Approve = 2;
+        case Reject = 3;
     }
 
     final class Step

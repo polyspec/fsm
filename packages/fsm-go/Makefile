@@ -15,7 +15,7 @@ install:
 
 gen:
 	$(FSM_GEN) gen --project $(ROOT) --kind go --go-module $(MODULE) --out $(DEST)/src
-	$(FSM_GEN) vectors --project $(ROOT) --kind go --out $(DEST)/tests/vectors_test.go
+	$(FSM_GEN) vectors --project $(ROOT) --kind go --go-module $(MODULE) --out $(DEST)/tests/vectors_test.go
 	# orm-gen runs go in the module of its output directory, so the models are generated inside DEST. When DEST is another
 	# directory, it receives a copy of go.mod, go.sum and examples/persist.go, which the scan reads; its src/ is the one above.
 	mkdir -p $(DEST)/examples

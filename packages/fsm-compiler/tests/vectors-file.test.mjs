@@ -32,7 +32,7 @@ test('the committed order vectors hold the format that check-parity reads', () =
 test('the committed order vectors are byte-identical to the core output for the committed machine and lock', async () => {
   const store = await jsonStore(ROOT).load();
   assert.deepEqual(store.findings, []);
-  const [definition] = store.definitions;
+  const definition = store.definitions.find(item => item.machine === 'order');
   const generated = vectors(normalize(definition), store.lock);
   assert.equal(readFileSync(FILE, 'utf8'), `${JSON.stringify(generated, null, 2)}\n`);
 });

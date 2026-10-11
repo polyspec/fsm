@@ -246,18 +246,174 @@ function caseLiteral(entry) {
   return `{${fields.join(', ')}, want: expectation{${want.join(', ')}}}`;
 }
 
+/** The keys of a machine from its vector cases: a code case names every state and a target case names every event (core, vectors.mjs). */
+function keysOf(cases) {
+  const states = [...new Set(cases.filter(entry => entry.feature === 'code').map(entry => entry.state))];
+  const events = [...new Set(cases.filter(entry => entry.feature === 'target').map(entry => entry.event))];
+  return { states, events };
+}
+
 /**
- * The native data file tests/vectors_test.go of `vectorList`, the vectors of every machine in order: the package `tests`, and
- * the variable `vectors` of machineVectors (declared by tests/conformance_test.go), one literal per case.
+ * The adapter of one machine in tests/vectors_test.go: the key tables of its constants and the methods of the machineUnderTest
+ * interface (declared by tests/conformance_test.go), which take and return keys and call the generated functions of its package.
  */
-export function vectorsFile(vectorList) {
+function adapterOf(machine, cases) {
+  const { states, events } = keysOf(cases);
+  const stateConst = key => `${machine}.State${pascal(key)}`;
+  const eventConst = key => `${machine}.Event${pascal(key)}`;
+  const type = `${machine}Machine`;
+  const statesTable = `${machine}States`;
+  const eventsTable = `${machine}Events`;
+  return [
+    `// ${type} is the adapter of the ${machine} machine: its constants by key and its functions by key (docs/spec/fsm.md, B-6).`,
+    `type ${type} struct{}`,
+    '',
+    `// ${statesTable} and ${eventsTable} map the keys of the ${machine} machine to its constants.`,
+    `var ${statesTable} = map[string]${machine}.State{`,
+    ...aligned(states.map(key => [`\t${quoted(key)}:`, `${stateConst(key)},`])),
+    '}',
+    '',
+    `var ${eventsTable} = map[string]${machine}.Event{`,
+    ...aligned(events.map(key => [`\t${quoted(key)}:`, `${eventConst(key)},`])),
+    '}',
+    '',
+    `func (${type}) initial() (string, error) {`,
+    `\treturn ${machine}.Key(${machine}.Initial())`,
+    '}',
+    '',
+    `func (${type}) code(state string) (int32, error) {`,
+    `\tvalue, err := lookup(${statesTable}, "state", state)`,
+    '\tif err != nil {',
+    '\t\treturn 0, err',
+    '\t}',
+    `\treturn ${machine}.Code(value)`,
+    '}',
+    '',
+    `func (${type}) key(code int64) (string, error) {`,
+    '\tvalue, err := int32Of(code)',
+    '\tif err != nil {',
+    '\t\treturn "", err',
+    '\t}',
+    `\treturn ${machine}.Key(${machine}.State(value))`,
+    '}',
+    '',
+    `func (${type}) fromCode(code int64) (string, error) {`,
+    `\tvalue, err := ${machine}.FromCode(code)`,
+    '\tif err != nil {',
+    '\t\treturn "", err',
+    '\t}',
+    `\treturn ${machine}.Key(value)`,
+    '}',
+    '',
+    `func (${type}) isFinal(state string) (bool, error) {`,
+    `\tvalue, err := lookup(${statesTable}, "state", state)`,
+    '\tif err != nil {',
+    '\t\treturn false, err',
+    '\t}',
+    `\treturn ${machine}.IsFinal(value)`,
+    '}',
+    '',
+    `func (${type}) eventsFrom(state string) ([]string, error) {`,
+    `\tvalue, err := lookup(${statesTable}, "state", state)`,
+    '\tif err != nil {',
+    '\t\treturn nil, err',
+    '\t}',
+    `\tevents, err := ${machine}.EventsFrom(value)`,
+    '\tif err != nil {',
+    '\t\treturn nil, err',
+    '\t}',
+    '\tkeys := make([]string, 0, len(events))',
+    '\tfor _, event := range events {',
+    `\t\tkey, err := keyOf(${eventsTable}, "event", event)`,
+    '\t\tif err != nil {',
+    '\t\t\treturn nil, err',
+    '\t\t}',
+    '\t\tkeys = append(keys, key)',
+    '\t}',
+    '\treturn keys, nil',
+    '}',
+    '',
+    `func (${type}) target(expected, event string) (string, error) {`,
+    `\tfrom, err := lookup(${statesTable}, "state", expected)`,
+    '\tif err != nil {',
+    '\t\treturn "", err',
+    '\t}',
+    `\tvalue, err := lookup(${eventsTable}, "event", event)`,
+    '\tif err != nil {',
+    '\t\treturn "", err',
+    '\t}',
+    `\tto, err := ${machine}.Target(from, value)`,
+    '\tif err != nil {',
+    '\t\treturn "", err',
+    '\t}',
+    `\treturn keyOf(${statesTable}, "state", to)`,
+    '}',
+    '',
+    `func (${type}) apply(expected, event, actual string) (string, bool, error) {`,
+    `\tfrom, err := lookup(${statesTable}, "state", expected)`,
+    '\tif err != nil {',
+    '\t\treturn "", false, err',
+    '\t}',
+    `\tvalue, err := lookup(${eventsTable}, "event", event)`,
+    '\tif err != nil {',
+    '\t\treturn "", false, err',
+    '\t}',
+    `\tobserved, err := lookup(${statesTable}, "state", actual)`,
+    '\tif err != nil {',
+    '\t\treturn "", false, err',
+    '\t}',
+    `\tstep, err := ${machine}.Apply(from, value, observed)`,
+    '\tif err != nil {',
+    '\t\treturn "", false, err',
+    '\t}',
+    `\tto, err := keyOf(${statesTable}, "state", step.To)`,
+    '\treturn to, step.Changed, err',
+    '}',
+    '',
+    `func (${type}) decide(expected, event string) examples.Decide {`,
+    '\treturn func(stored int64) (int32, bool, error) {',
+    `\t\tfrom, err := lookup(${statesTable}, "state", expected)`,
+    '\t\tif err != nil {',
+    '\t\t\treturn 0, false, err',
+    '\t\t}',
+    `\t\tvalue, err := lookup(${eventsTable}, "event", event)`,
+    '\t\tif err != nil {',
+    '\t\t\treturn 0, false, err',
+    '\t\t}',
+    `\t\tobserved, err := ${machine}.FromCode(stored)`,
+    '\t\tif err != nil {',
+    '\t\t\treturn 0, false, err',
+    '\t\t}',
+    `\t\tstep, err := ${machine}.Apply(from, value, observed)`,
+    '\t\tif err != nil {',
+    '\t\t\treturn 0, false, err',
+    '\t\t}',
+    `\t\tcode, err := ${machine}.Code(step.To)`,
+    '\t\treturn code, step.Changed, err',
+    '\t}',
+    '}',
+  ];
+}
+
+/**
+ * The native data file tests/vectors_test.go of `vectorList`, the vectors of every machine in order: the package `tests`, the
+ * variable `vectors` of machineVectors (one literal per case), and per machine its adapter (adapterOf), which the variable
+ * `machines` maps by machine key. The options { module } name the module path, which the imports of the machine packages need.
+ */
+export function vectorsFile(vectorList, { module } = {}) {
+  if (typeof module !== 'string' || module === '') throw new Error('go: the module path of the package is required');
   const lines = [
     header(SHARED),
     '',
     'package tests',
     '',
+    'import (',
+    '\t"github.com/polyspec/fsm-go/examples"',
+    ...vectorList.map(({ machine }) => `\t"${module}/src/${machine}"`),
+    ')',
+    '',
     '// vectors are the conformance vectors of the state machines, in the order of their definitions (docs/plans/fsm-v1.md, C-4).',
-    '// Each case keeps the keys of the oracle; the conformance test maps them to the constants of the machine.',
+    '// Each case keeps the keys of the oracle; the adapter of its machine maps them to the constants of the machine.',
     'var vectors = []machineVectors{',
   ];
   for (const { machine, cases } of vectorList) {
@@ -265,6 +421,11 @@ export function vectorsFile(vectorList) {
     for (const entry of cases) lines.push(`\t\t\t${caseLiteral(entry)},`);
     lines.push('\t\t},', '\t},');
   }
-  lines.push('}');
-  return text(lines);
+  lines.push('}', '');
+  lines.push('// machines maps the key of each machine to its adapter; the conformance test runs the cases of a machine through it.');
+  lines.push('var machines = map[string]machineUnderTest{');
+  for (const { machine } of vectorList) lines.push(`\t${quoted(machine)}: ${machine}Machine{},`);
+  lines.push('}', '');
+  for (const { machine, cases } of vectorList) lines.push(...adapterOf(machine, cases), '');
+  return text(lines.slice(0, -1));
 }

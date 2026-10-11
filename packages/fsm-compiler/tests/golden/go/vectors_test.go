@@ -2,8 +2,13 @@
 
 package tests
 
+import (
+	"github.com/polyspec/fsm-go/examples"
+	"github.com/polyspec/fsm-go/src/order"
+)
+
 // vectors are the conformance vectors of the state machines, in the order of their definitions (docs/plans/fsm-v1.md, C-4).
-// Each case keeps the keys of the oracle; the conformance test maps them to the constants of the machine.
+// Each case keeps the keys of the oracle; the adapter of its machine maps them to the constants of the machine.
 var vectors = []machineVectors{
 	{
 		machine: "order",
@@ -99,4 +104,143 @@ var vectors = []machineVectors{
 			{feature: "persist", id: "order_persist_conflict", scenario: "conflict", expected: "draft", event: "next", stored: "shipped", want: expectation{error: "E_CONFLICT", storedAfter: "shipped"}},
 		},
 	},
+}
+
+// machines maps the key of each machine to its adapter; the conformance test runs the cases of a machine through it.
+var machines = map[string]machineUnderTest{
+	"order": orderMachine{},
+}
+
+// orderMachine is the adapter of the order machine: its constants by key and its functions by key (docs/spec/fsm.md, B-6).
+type orderMachine struct{}
+
+// orderStates and orderEvents map the keys of the order machine to its constants.
+var orderStates = map[string]order.State{
+	"draft":    order.StateDraft,
+	"paid":     order.StatePaid,
+	"shipped":  order.StateShipped,
+	"done":     order.StateDone,
+	"canceled": order.StateCanceled,
+}
+
+var orderEvents = map[string]order.Event{
+	"next":   order.EventNext,
+	"prev":   order.EventPrev,
+	"cancel": order.EventCancel,
+}
+
+func (orderMachine) initial() (string, error) {
+	return order.Key(order.Initial())
+}
+
+func (orderMachine) code(state string) (int32, error) {
+	value, err := lookup(orderStates, "state", state)
+	if err != nil {
+		return 0, err
+	}
+	return order.Code(value)
+}
+
+func (orderMachine) key(code int64) (string, error) {
+	value, err := int32Of(code)
+	if err != nil {
+		return "", err
+	}
+	return order.Key(order.State(value))
+}
+
+func (orderMachine) fromCode(code int64) (string, error) {
+	value, err := order.FromCode(code)
+	if err != nil {
+		return "", err
+	}
+	return order.Key(value)
+}
+
+func (orderMachine) isFinal(state string) (bool, error) {
+	value, err := lookup(orderStates, "state", state)
+	if err != nil {
+		return false, err
+	}
+	return order.IsFinal(value)
+}
+
+func (orderMachine) eventsFrom(state string) ([]string, error) {
+	value, err := lookup(orderStates, "state", state)
+	if err != nil {
+		return nil, err
+	}
+	events, err := order.EventsFrom(value)
+	if err != nil {
+		return nil, err
+	}
+	keys := make([]string, 0, len(events))
+	for _, event := range events {
+		key, err := keyOf(orderEvents, "event", event)
+		if err != nil {
+			return nil, err
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+func (orderMachine) target(expected, event string) (string, error) {
+	from, err := lookup(orderStates, "state", expected)
+	if err != nil {
+		return "", err
+	}
+	value, err := lookup(orderEvents, "event", event)
+	if err != nil {
+		return "", err
+	}
+	to, err := order.Target(from, value)
+	if err != nil {
+		return "", err
+	}
+	return keyOf(orderStates, "state", to)
+}
+
+func (orderMachine) apply(expected, event, actual string) (string, bool, error) {
+	from, err := lookup(orderStates, "state", expected)
+	if err != nil {
+		return "", false, err
+	}
+	value, err := lookup(orderEvents, "event", event)
+	if err != nil {
+		return "", false, err
+	}
+	observed, err := lookup(orderStates, "state", actual)
+	if err != nil {
+		return "", false, err
+	}
+	step, err := order.Apply(from, value, observed)
+	if err != nil {
+		return "", false, err
+	}
+	to, err := keyOf(orderStates, "state", step.To)
+	return to, step.Changed, err
+}
+
+func (orderMachine) decide(expected, event string) examples.Decide {
+	return func(stored int64) (int32, bool, error) {
+		from, err := lookup(orderStates, "state", expected)
+		if err != nil {
+			return 0, false, err
+		}
+		value, err := lookup(orderEvents, "event", event)
+		if err != nil {
+			return 0, false, err
+		}
+		observed, err := order.FromCode(stored)
+		if err != nil {
+			return 0, false, err
+		}
+		step, err := order.Apply(from, value, observed)
+		if err != nil {
+			return 0, false, err
+		}
+		code, err := order.Code(step.To)
+		return code, step.Changed, err
+	}
 }
