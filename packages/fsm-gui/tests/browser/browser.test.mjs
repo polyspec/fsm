@@ -24,6 +24,7 @@ const EDGE_ROWS = '[data-field-path$=".edges"] > .crudui-node__body > .crudui-no
 const ADD = 'button[data-crudui-action="add-row"]';
 const REMOVE = 'button[data-crudui-action="remove-row"]';
 const SAVE = '.crudui-form__footer button[type="submit"]';
+const FORM_HOST = '#fsm-form';
 
 let server;
 let browser;
@@ -52,11 +53,15 @@ function startGui(project) {
 
 const readJson = file => JSON.parse(readFileSync(path.join(root, file), 'utf8'));
 
-/** The machine's edit page, opened fresh; the test waits until the page has no pending load. */
+/** The machine's edit page, opened fresh; the test waits until the client has connected the form (C-7, S-22-3). */
 async function openEdit() {
   await page.goto(`${url}/machines/order/edit`);
-  // The client loads its chunks after the load event; the page is ready when the network is idle and the form is connected.
-  await page.waitForLoadState('networkidle');
+  await connected();
+}
+
+/** Waits for the form host that connectForm has bound: the client marks it with data-fsm-connected="true" (C-7). */
+async function connected() {
+  await page.locator(`${FORM_HOST}[data-fsm-connected="true"]`).waitFor();
 }
 
 /** No uncaught error of the page: a script error would hide the defect that a test looks for. */
@@ -75,6 +80,10 @@ before(async () => {
   url = started.url;
   browser = await chromium.launch({ headless: true });
   page = await browser.newPage();
+  // The first navigation of a browser that was just downloaded takes 2.5 to 12.4 s (measured, plan C-7), more than the 5 s
+  // limit of a case. That start belongs to the setup: the edit page, which loads the whole client bundle, is opened here with
+  // its own limit, and every case keeps the 5 s limit for its actions.
+  await page.goto(`${url}/machines/order/edit`, { timeout: 60000 });
   page.setDefaultTimeout(5000);
   pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
@@ -83,6 +92,34 @@ before(async () => {
 after(async () => {
   await browser?.close();
   server?.kill('SIGTERM');
+});
+
+test('a click right after the load event adds a row, with no wait for the client', async () => {
+  await page.goto(`${url}/machines/order/edit`);
+  const states = page.locator(STATE_ROWS);
+  assert.equal(await states.count(), 5);
+  await states.last().locator(ADD).click();
+  assert.equal(await states.count(), 6, 'a click right after the load event must add a row: the form must be connected by then');
+  expectNoPageErrors();
+});
+
+test('the form host is marked once connectForm has bound the form', async () => {
+  await page.goto(`${url}/machines/order/edit`);
+  await connected();
+  assert.equal(await page.locator(FORM_HOST).getAttribute('data-fsm-connected'), 'true');
+  expectNoPageErrors();
+});
+
+test('the row buttons take no click while the form is not connected', async () => {
+  await openEdit();
+  const button = page.locator(STATE_ROWS).last().locator(ADD);
+  const host = page.locator(FORM_HOST);
+  const pointerEvents = () => button.evaluate(element => getComputedStyle(element).pointerEvents);
+  await host.evaluate(element => element.removeAttribute('data-fsm-connected'));
+  assert.equal(await pointerEvents(), 'none', 'an unconnected form must not take a click on its row buttons');
+  await host.evaluate(element => element.setAttribute('data-fsm-connected', 'true'));
+  assert.equal(await pointerEvents(), 'auto', 'a connected form takes the clicks of its row buttons');
+  expectNoPageErrors();
 });
 
 test('add on the last state row adds a row that holds the suggested code', async () => {
@@ -183,8 +220,8 @@ test('every row button shows its action: a crudui size, a masked icon and an acc
 
 test('the fields of one row have distinct labels on the edit and the rename forms', async () => {
   for (const address of ['/machines/order/edit', '/machines/order/rename']) {
+    // The labels are in the server's markup, so the load event is the page's readiness.
     await page.goto(`${url}${address}`);
-    await page.waitForLoadState('networkidle');
     const duplicates = await page.evaluate(() => [...document.querySelectorAll('.crudui-node--row')].flatMap(row => {
       const labels = [...row.querySelectorAll('.crudui-node--field')]
         .filter(field => field.parentElement.closest('.crudui-node--row') === row)

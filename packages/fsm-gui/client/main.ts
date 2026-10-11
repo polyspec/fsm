@@ -40,6 +40,10 @@ void mermaid.run();
 // form element, so the connection of the old element is removed before the new one is bound.
 let formConnection: FormConnection | undefined;
 let formUnsubscribe: (() => void) | undefined;
+// The form host that carries the marker data-fsm-connected="true": it is set once connectForm and the subscription are in place,
+// and removed when the connection is dropped. The browser test waits for it (C-7, S-22-3), and the layout's CSS keeps the row
+// buttons from taking a click until it is set.
+let connectedHost: HTMLElement | undefined;
 // The observer of the edit form: a row that the browser adds or removes changes the codes of the added rows, so the codes are
 // written again after every change of the rows.
 let codeObserver: MutationObserver | undefined;
@@ -68,6 +72,8 @@ function connectEditForm(): void {
   formUnsubscribe = undefined;
   formConnection?.disconnect();
   formConnection = undefined;
+  connectedHost?.removeAttribute('data-fsm-connected');
+  connectedHost = undefined;
   codeObserver?.disconnect();
   codeObserver = undefined;
   const state = document.getElementById('fsm-form-state');
@@ -85,6 +91,8 @@ function connectEditForm(): void {
     patchContent(host, renderForm(session, render));
     formConnection?.sync();
   });
+  connectedHost = host;
+  host.setAttribute('data-fsm-connected', 'true');
   // A null next code is no suggestion: the save shows the finding of the core, and the added rows keep their blank codes.
   if (nextCode === null) return;
   codeObserver = new MutationObserver(() => fillAddedCodes(host, nextCode));
