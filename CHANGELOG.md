@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-21: fsm is public at https://github.com/polyspec/fsm. The CI workflow (`.github/workflows/ci.yml`) runs `make install` and `make check` with PostgreSQL and MySQL services on every push to main and passed the full suite (run 38121153369); the Pages workflow publishes the documentation site at https://polyspec.github.io/fsm/. The local repository directory is named `fsm`.
 - S-21-1: CI and Pages run on ubuntu-26.04, because orm's PHP client requires SQLite 3.46 and the PHP of ubuntu-24.04 links SQLite 3.45.1; CI run 38121153369 passed the full suite there, 47 of 47 targets (tree 4963dbe).
 - S-41-1: the python package venv is made by the kit tool (`make python-venv DIR=packages/fsm-python/.venv`, kit K44 in kit v0.0.24), not by `python -m venv` in fsm's Makefile. On Linux CPython's venv makes a `lib64 -> lib` link that run-tests --venv refuses, which failed the ubuntu CI of S-41 (run 38118092530); the kit tool removes that link. A test of tests/python-tools asserts that `make -n install` calls the kit tool (RED with `-m venv`). `make install` removes the venv before it makes a new one, as before.
 - S-35-3: `make check` runs `vector-parity-check` again; a rebase had put the kit name `parity-check` back into CHECK_TARGETS, so the suite ran kit K33's checker instead of fsm's vector parity, and a make-install test now asserts the target.
