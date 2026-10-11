@@ -19,7 +19,7 @@ async function deleteAll(model) {
 }
 
 /**
- * The DB store of the orm connection `db`: { load() -> Promise<{ definitions, lock, findings }>, save({ definitions, lock })
+ * The DB store of the orm connection `db`: { load() -> Promise<{ definitions, lock, baseline, findings }>, save({ definitions, lock })
  * -> Promise }. save replaces every row inside one transaction, so a failed write leaves the rows that were there.
  */
 export function dbStore(db) {
@@ -57,7 +57,8 @@ export function dbStore(db) {
     for (const row of reservedRows) entryOf(row.machine).reserved.push(row.code);
     for (const machine of Object.keys(lock)) lock[machine].reserved.sort((a, b) => a - b);
 
-    return { definitions, lock, findings: [] };
+    // The rows that load reads are the committed state of the database: the baseline of the lock rules (B-3).
+    return { definitions, lock, baseline: structuredClone(lock), findings: [] };
   }
 
   async function save({ definitions, lock }) {

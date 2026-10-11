@@ -28,11 +28,16 @@ const replacement = () => ({
   lock: { track: { codes: { 1: 'only' }, reserved: [] } },
 });
 
-/** The result of store.load(), which must be a Promise. */
+/**
+ * The result of store.load() without its baseline, which must be a Promise. The baseline is the committed lock, which depends on
+ * the store (git HEAD for the file stores, the rows for the db store), so each store's test checks it; the contract checks the rest.
+ */
 async function loadOf(store) {
   const pending = store.load();
   assert.ok(pending instanceof Promise, 'load() must return a Promise');
-  return pending;
+  const { baseline, ...rest } = await pending;
+  assert.ok(baseline !== undefined, 'load() must return the committed lock as baseline');
+  return rest;
 }
 
 /** The result of store.save(written), which must be a Promise. */

@@ -6,7 +6,7 @@
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { writeAtomic } from '../../../../scripts/kit/files.mjs';
-import { readLockFile, writeLockFile } from '../store-lock/lock-file.mjs';
+import { committedLock, readLockFile, writeLockFile } from '../store-lock/lock-file.mjs';
 import { parseMermaid } from './parse.mjs';
 import { mermaidText } from './write.mjs';
 
@@ -15,7 +15,7 @@ const SUFFIX = '.fsm.mmd';
 const finding = (code, machine, path, message) => ({ code, machine, path, message });
 const compare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
-/** The Mermaid store of the root directory `root`: { load() -> Promise<{ definitions, lock, findings }>, save({ definitions, lock }) -> Promise }. */
+/** The Mermaid store of the root directory `root`: { load() -> Promise<{ definitions, lock, baseline, findings }>, save({ definitions, lock }) -> Promise }. */
 export function mermaidStore(root) {
   const machines = path.join(root, 'machines');
 
@@ -54,8 +54,9 @@ export function mermaidStore(root) {
       }
     }
     const read = readLockFile(root);
-    findings.push(...read.findings);
-    return { definitions, lock: read.lock, findings };
+    const committed = committedLock(root);
+    findings.push(...read.findings, ...committed.findings);
+    return { definitions, lock: read.lock, baseline: committed.lock, findings };
   }
 
   /** Writes the definitions in canonical form, deletes the *.fsm.mmd files that are not defined, and writes the lock. */

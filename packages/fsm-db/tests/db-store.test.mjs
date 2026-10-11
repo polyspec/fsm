@@ -150,7 +150,7 @@ test('a failed write inside the transaction rolls back every row it deleted and 
   broken.definitions[1].states[1].code = 1;
   await assert.rejects(() => store.save(broken));
   assert.equal(await snapshot(), before);
-  assert.deepEqual(await store.load(), { ...sample(), findings: [] });
+  assert.deepEqual(await store.load(), { ...sample(), baseline: sample().lock, findings: [] });
 });
 
 test('a save is refused by the core before any row changes when a key is 65 characters', async () => {
@@ -161,6 +161,33 @@ test('a save is refused by the core before any row changes when a key is 65 char
   long.definitions[0].machine = `${LONG}c`;
   const result = await run('save', { load: store.load, save: store.save }, { definitions: long.definitions });
   assert.equal(result.findings[0].code, 'E_KEY_FORMAT');
+  assert.equal(await snapshot(), before);
+});
+
+/** The order machine of the lock cases: draft (code 1), paid (2) and done (3), with its lock. */
+const committedOrder = () => ({
+  definitions: [{
+    machine: 'order',
+    states: [{ key: 'draft', code: 1, initial: true }, { key: 'paid', code: 2 }, { key: 'done', code: 3, final: true }],
+    events: [{ key: 'next', edges: [{ from: 'draft', to: 'paid' }, { from: 'paid', to: 'done' }] }],
+  }],
+  lock: { order: { codes: { 1: 'draft', 2: 'paid', 3: 'done' }, reserved: [] } },
+});
+
+test('a save on the database refuses a swap of the stored codes and changes no row (the stored rows are the baseline)', async () => {
+  const { store, snapshot } = await dbCase();
+  await store.save(committedOrder());
+  const before = await snapshot();
+  const swapped = committedOrder();
+  swapped.definitions[0].states[0].code = 2;
+  swapped.definitions[0].states[1].code = 1;
+  const result = await run('save', store, { definitions: swapped.definitions });
+  // The rows that load reads are the baseline, so the existing rule E_CODE_CHANGED refuses the swap (B-3); E_LOCK_REGRESSED
+  // needs a committed state that is not the stored rows, which the database store does not have.
+  assert.deepEqual(shape(result.findings), [
+    { code: 'E_CODE_CHANGED', machine: 'order', path: '$.states[0].code' },
+    { code: 'E_CODE_CHANGED', machine: 'order', path: '$.states[1].code' },
+  ]);
   assert.equal(await snapshot(), before);
 });
 

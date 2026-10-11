@@ -43,6 +43,38 @@ export function lockMismatch(definitions, lock) {
   return found;
 }
 
+/**
+ * The findings (E_LOCK_REGRESSED) of a lock that loses or changes a code of the committed lock (B-3). `committed` is the lock
+ * of the committed state and `lock` the lock that a command keeps or writes. A committed reserved code stays reserved. A
+ * committed code stays a code or moves to reserved; while its key is still a key of `lock`, the code keeps that key, so a key
+ * that moved to another code (a swap) is a finding. A key that left the lock with its code kept is a rename, not a finding.
+ * An empty array means no committed code is lost or changed.
+ */
+export function lockRegressed(committed, lock) {
+  const found = [];
+  for (const machine of Object.keys(committed)) {
+    const before = committed[machine];
+    const after = Object.hasOwn(lock, machine) ? lock[machine] : { codes: {}, reserved: [] };
+    const keyOf = new Map(Object.entries(after.codes).map(([code, key]) => [Number(code), key]));
+    const keys = new Set(keyOf.values());
+    for (const code of before.reserved) {
+      if (keyOf.has(code) || !after.reserved.includes(code)) {
+        found.push(finding('E_LOCK_REGRESSED', machine, '$.reserved', `code ${code} is reserved in the committed lock of ${machine}; it stays reserved and is never given to a state`));
+      }
+    }
+    for (const [code, key] of Object.entries(before.codes)) {
+      const released = Number(code);
+      if (after.reserved.includes(released)) continue;
+      if (!keyOf.has(released)) {
+        found.push(finding('E_LOCK_REGRESSED', machine, '$.codes', `code ${released} (${key}) of the committed lock of ${machine} is missing from the lock; a released code is never removed`));
+      } else if (keyOf.get(released) !== key && keys.has(key)) {
+        found.push(finding('E_LOCK_REGRESSED', machine, '$.codes', `code ${released} was ${key} in the committed lock of ${machine} and is ${keyOf.get(released)} now, while ${key} keeps another code`));
+      }
+    }
+  }
+  return found;
+}
+
 /** The lock in canonical order: machines by name, codes numerically, reserved ascending. */
 export function canonicalLock(lock) {
   return Object.fromEntries(Object.keys(lock).sort().map(machine => {

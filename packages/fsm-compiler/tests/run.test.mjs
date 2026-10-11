@@ -6,11 +6,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { copy, run } from '../src/core/run.mjs';
 
-/** A store in memory. `writes` lists every save, in order. */
-function memory({ definitions = [], lock = {}, findings = [] } = {}) {
+/** A store in memory. `writes` lists every save, in order. `baseline` is the committed lock (B-3); it defaults to the lock. */
+function memory({ definitions = [], lock = {}, findings = [], baseline = lock } = {}) {
   const store = {
     writes: [],
-    load: async () => structuredClone({ definitions, lock, findings }),
+    load: async () => structuredClone({ definitions, lock, baseline, findings }),
     save: async written => {
       store.writes.push(structuredClone(written));
     },
@@ -94,6 +94,64 @@ test('lock repairs a stored lock that does not match the definitions', async () 
   const store = memory({ definitions: [order()], lock: { order: { codes: { 1: 'draft' }, reserved: [] } } });
   assert.deepEqual(await runOf('lock', store), { findings: [] });
   assert.deepEqual(store.writes, [{ definitions: [order()], lock: orderLock() }]);
+});
+
+/** The order machine with the codes of draft and paid swapped. */
+const swappedOrder = () => {
+  const definition = order();
+  definition.states[0].code = 2;
+  definition.states[1].code = 1;
+  return definition;
+};
+
+/** The lock that is committed for the order machine: the codes of orderLock, reserved empty. */
+const committedOrder = () => orderLock();
+
+test('lock refuses a swap of committed codes that an empty stored lock would accept (E_LOCK_REGRESSED)', async () => {
+  const store = memory({ definitions: [swappedOrder()], lock: {}, baseline: committedOrder() });
+  const result = await runOf('lock', store);
+  assert.deepEqual(shape(result.findings), [
+    { code: 'E_LOCK_REGRESSED', machine: 'order', path: '$.codes' },
+    { code: 'E_LOCK_REGRESSED', machine: 'order', path: '$.codes' },
+  ]);
+  assert.equal(store.writes.length, 0);
+});
+
+test('lock repairs a stored lock that lost committed codes when the definitions keep their keys', async () => {
+  const store = memory({ definitions: [order()], lock: {}, baseline: committedOrder() });
+  assert.deepEqual(await runOf('lock', store), { findings: [] });
+  assert.deepEqual(store.writes, [{ definitions: [order()], lock: orderLock() }]);
+});
+
+test('check refuses a consistent swap of the definitions and the lock (E_LOCK_REGRESSED)', async () => {
+  const lock = { order: { codes: { 1: 'paid', 2: 'draft', 3: 'done' }, reserved: [] } };
+  const result = await runOf('check', memory({ definitions: [swappedOrder()], lock, baseline: committedOrder() }));
+  assert.deepEqual(shape(result.findings), [
+    { code: 'E_LOCK_REGRESSED', machine: 'order', path: '$.codes' },
+    { code: 'E_LOCK_REGRESSED', machine: 'order', path: '$.codes' },
+  ]);
+});
+
+test('lock refuses to give a committed reserved code to a state (E_LOCK_REGRESSED on reserved)', async () => {
+  const baseline = { order: { codes: { 1: 'draft', 2: 'paid' }, reserved: [3] } };
+  const definition = order();
+  const store = memory({ definitions: [definition], lock: {}, baseline });
+  const result = await runOf('lock', store);
+  assert.deepEqual(shape(result.findings), [{ code: 'E_LOCK_REGRESSED', machine: 'order', path: '$.reserved' }]);
+  assert.equal(store.writes.length, 0);
+});
+
+test('a rename of a committed state keeps its code and is not a regression', async () => {
+  const renamed = order();
+  renamed.states[1].key = 'shipped';
+  renamed.events[0].edges = [{ from: 'draft', to: 'shipped' }, { from: 'shipped', to: 'done' }];
+  const lock = { order: { codes: { 1: 'draft', 2: 'shipped', 3: 'done' }, reserved: [] } };
+  assert.deepEqual(await runOf('check', memory({ definitions: [renamed], lock, baseline: committedOrder() })), { findings: [] });
+});
+
+test('a committed state that left the definitions stays reserved and is not a regression', async () => {
+  const lock = { order: { codes: { 1: 'draft', 3: 'done' }, reserved: [2] } };
+  assert.deepEqual(await runOf('check', memory({ definitions: [shortOrder()], lock, baseline: committedOrder() })), { findings: [] });
 });
 
 test('lock refused by a lock rule writes nothing', async () => {

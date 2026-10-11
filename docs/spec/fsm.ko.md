@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 641a01c26d4dea133043398b7619d83f0cdeff10f37743c5ffaa011ecd03a52a -->
+<!-- source-sha256: 506b4abf9a9ed854909deecd6f8999c2852a64666f9be5d871f9ba8483f7652e -->
 # fsm 정의
 
 [English](fsm.md)
@@ -94,7 +94,7 @@ stateDiagram-v2
 | `mermaid` | `machines/*.fsm.mmd` | `fsm.lock.json` | fsm-compiler |
 | `db` | orm 정의 테이블 | orm lock 테이블 | fsm-db |
 
-- store 계약은 `{load() → Promise<{definitions, lock}>, save({definitions, lock}) → Promise}`이다. DB store의 orm client가 비동기이므로 store 계약, `run`, `copy`는 비동기이고, 순수 함수(validate, normalize, lock, vectors)는 동기로 남아 GUI가 직접 호출한다.
+- store 계약은 `{load() → Promise<{definitions, lock, baseline, findings}>, save({definitions, lock}) → Promise}`, `baseline`은 커밋된 lock이다(B-3)이다. DB store의 orm client가 비동기이므로 store 계약, `run`, `copy`는 비동기이고, 순수 함수(validate, normalize, lock, vectors)는 동기로 남아 GUI가 직접 호출한다.
   - store는 변환과 원자적 쓰기만 하고 검증하지 않는다.
   - 쓰기: json·mermaid는 파일별 임시파일+rename(파일 단위 원자성만), db는 한 transaction 안에서 전체 교체. 파일 store가 중간에 중단되면 다음 `gen`/`vectors`/`check`가 `E_LOCK_MISMATCH`로 드러내고 복구는 git으로 한다.
 - 명령(`lock`, `save`, `gen`, `vectors`, `check`)은 core `run(command, store, options)` 하나로 실행한다(비동기, Promise를 돌려준다).
@@ -103,7 +103,7 @@ stateDiagram-v2
   - 형식: `{"store":"json"|"mermaid"}` 또는 `{"store":"db","dsnEnv":"FSM_DSN"}`
   - fsm-gen, fsm-db, fsm-gui는 이 파일을 읽는다. 설정된 store를 그 도구가 다루지 못하면(예: fsm-gen + `db`) `E_STORE_NOT_CONFIGURED`.
   - `machines/`에 설정과 다른 형식의 파일이 있으면 `E_STORE_MIXED`.
-- `copy(from, to)`는 `run` 밖의 비동기 core 이관 함수다(`await to.save(await from.load())`). fsm-db CLI는 `copy --to json|mermaid --root <dir>`(database가 원본)와 `copy --from json|mermaid --root <dir>`(database가 대상)이며, 대상 루트에 `machines/`나 `fsm.lock.json`(db면 정의·lock 행)이 있으면 `E_STORE_NOT_EMPTY`.
+- `copy(from, to)`는 `run` 밖의 비동기 core 이관 함수다(`await to.save(await from.load())`). fsm-db CLI는 `copy --to json|mermaid --root <dir>`(database가 원본)와 `copy --from json|mermaid --root <dir>`(database가 대상)이며, 대상 루트에 `machines/`나 `fsm.lock.json`(db면 정의·lock 행), 또는 커밋된 `fsm.lock.json`(git HEAD)이 있으면 `E_STORE_NOT_EMPTY`.
   - fsm-gen은 json↔mermaid 이관을 제공한다(의존성 0 유지).
   - fsm-db는 db↔json/mermaid 이관과 schema 설치를 제공한다. 명령은 `install`, `check`, `lock`, `copy`이며, usage·종료 코드·예시는 `packages/fsm-db/README.ko.md`에 있다.
     - `install [--project <dir>]`은 orm `utils().schema().install`로 `schema/fsm.dbs`의 여섯 table을 설치한다. table이 없는 database에서는 table을 만들고 `[fsm-db] install: ok`를 출력한다. 여섯 table이 모두 있는 database에서는 아무것도 바꾸지 않고 같은 줄을 출력한다. 이는 orm v0.0.7의 관찰된 동작이며 `packages/fsm-db/tests/cli.test.mjs`가 검증한다. table이 일부만 있는 database에서는 orm이 install을 `CONFIG`로 거부하고, 명령은 오류를 stack과 함께 출력한 뒤 종료 코드 1로 끝난다. 대체 동작(fallback)은 없다.
@@ -119,13 +119,26 @@ stateDiagram-v2
 
 ## B-3. code 불변 (lock)
 - code는 정체성이고 key는 이름이다. 배포된 code는 의미를 바꾸거나 재사용할 수 없다.
-- lock = `{machine: {codes: {code: key}, reserved: [code…]}}`. lock은 `lock`(손으로 편집한 정의용), `save`(GUI), `copy`(원본을 B-5 전 규칙으로 검증한 뒤 원본 lock을 그대로 쓴다)만 갱신한다. `lock`과 `save`는 같은 lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`, 사라진 code → reserved)을 적용하고, 셋 모두 정의와 lock을 같은 `store.save`로 쓴다.
+- lock = `{machine: {codes: {code: key}, reserved: [code…]}}`. lock은 `lock`(손으로 편집한 정의용), `save`(GUI), `copy`(원본을 B-5 전 규칙으로 검증한 뒤 원본 lock을 그대로 쓴다)만 갱신한다. `lock`과 `save`는 같은 lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`, `E_LOCK_REGRESSED`, 사라진 code → reserved)을 적용하고, 셋 모두 정의와 lock을 같은 `store.save`로 쓴다.
 - `lock`이 거부하는 경우
   - `E_CODE_REUSED`: reserved code 재사용
   - `E_CODE_KEY_CHANGED`: 기존 code의 key 변경. 이름 변경은 `lock --rename m.old=new`로만 하며, 정의와 lock을 함께 바꾼다.
   - `E_CODE_CHANGED`: lock이 code에 대응시킨 key를 정의가 다른 code로 주는 경우. 삭제 후 다시 추가한 key도 lock이 아직 대응시키고 있으면 포함한다. 메시지는 lock이 가진 code를 밝히며, released code는 절대 바뀌지 않는다. lock에 reserved 이력으로만 남은 key는 비교할 code가 없다(reserved에는 code만 있다).
+  - `E_LOCK_REGRESSED`: 쓸 lock이 커밋된 code를 잃거나 바꾼다(아래 기준선).
+- 기준선(커밋된 lock): 모든 store의 `load()`는 커밋된 lock을 `baseline`으로 돌려주고, 모든 명령은 자기 lock을 이 기준선과 비교한다.
+  - json, mermaid: git HEAD의 `fsm.lock.json`. 프로젝트 디렉터리에서 `git show HEAD:./fsm.lock.json`으로 읽는다.
+  - db: `load`가 읽는 lock 테이블의 행, 명령이 쓰기 전의 행이다.
+  - 커밋된 것이 없으면 기준선은 빈 lock이다: 프로젝트 디렉터리가 아직 없거나, git 작업 트리 밖이거나, 저장소에 commit이 없거나, `fsm.lock.json`이 HEAD에 추적되지 않을 때(추적되지 않았거나 무시된 파일). 이때 lock 규칙은 저장된 lock만 판정한다. git 밖에서는 이것이 유일한 보호다. git이 없는 프로젝트는 이 절의 릴리스 보호를 받지 못한다(S-30의 결정이며 소유자가 확인한다).
+  - 커밋된 `fsm.lock.json`을 읽을 수 없으면 그 자체가 finding(`E_SCHEMA`)이며 모든 명령을 멈춘다. 빈 기준선으로 대신하지 않는다. git의 다른 실패는 빈 기준선이 아니라 오류로 명령을 멈춘다.
+- `E_LOCK_REGRESSED`: 명령이 유지할 lock(`lock`과 `save`는 쓸 lock, `check`, `gen`, `vectors`, `copy`는 저장된 lock)을 기준선과 비교한다. 머신의 커밋된 code는 세 규칙으로 판정하며, 위반마다 finding 하나를 낸다(규칙 1은 경로 `$.reserved`, 규칙 2와 3은 `$.codes`).
+  1. 커밋된 reserved code는 reserved로 남는다: 상태에 주지 않으며 `reserved`에서 빼지 않는다.
+  2. 커밋된 code는 key와 함께 code로 남거나, 상태가 정의에서 사라져 `reserved`로 옮겨진다. 절대 지우지 않는다.
+  3. 커밋된 key가 아직 `codes`의 key이면 커밋된 code를 유지해야 한다. 그래서 다른 code로 옮겨진 key(swap)는 거부한다. `codes`에서 key가 사라졌지만 code가 남은 경우는 이름 변경이며 거부하지 않는다.
+- 따라서 이름 변경은 커밋 전에도 모든 명령이 받아들인다: code는 유지하고 옛 key만 빠지며, 커밋이 그 변경을 기록한다. 커밋된 code의 상실이나 swap은 `lock --rename`을 포함한 모든 명령이 되돌릴 때까지 거부한다. 머신 전체가 사라지면 그 code는 reserved(규칙 2)와 lock 항목에 남는다(아래 참고).
+- 복구: `lock`은 저장된 lock이 정의와 맞지 않을 때 쓰는 lock이 커밋된 code를 모두 유지할 때만 복구한다(규칙 1~3). 그래서 삭제되거나 비워진 lock은 정의가 커밋된 code를 유지하면 정의에서 복구되고, 유지하지 않으면 `E_LOCK_REGRESSED`로 거부된다.
 - 정의에서 사라진 상태의 code는 reserved로 옮긴다. 머신 전체가 사라지면 그 code를 모두 그 머신의 reserved로 옮기고 lock 항목은 남긴다(DB lock 테이블에 machine FK가 없다, 계획 C-6).
-- `gen`/`vectors`/`check`는 다음을 만족하지 않으면 `E_LOCK_MISMATCH`: 정의된 머신마다 lock `codes`가 그 상태들의 `{code: key}`와 같고 `reserved`가 그 code와 겹치지 않는다. 정의에 없는 lock 머신은 `codes`가 비어 있다.
+- `gen`/`vectors`/`check`는 다음을 만족하지 않으면 `E_LOCK_MISMATCH`: 정의된 머신마다 lock `codes`가 그 상태들의 `{code: key}`와 같고 `reserved`가 그 code와 겹치지 않는다. 정의에 없는 lock 머신은 `codes`가 비어 있다. 저장된 lock이 커밋된 code를 잃거나 바꾸면(규칙 1~3) `E_LOCK_REGRESSED`.
+- db store: 기준선이 저장된 행이므로, 위의 저장된 lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`)이 명령이 쓸 수 있는 모든 변경을 이미 거부하고, 명령을 통해서는 `E_LOCK_REGRESSED`가 나오지 않는다. fsm 밖(SQL)에서 바뀌거나 지워진 행은 명령이 비교할 기록이 없어 감지하지 못한다. 데이터베이스의 커밋 기록은 이 버전에 없으며, 계획에서 결정해야 한다.
 - 새 code의 기본값은 core `nextCode(machine, definitions, lock)` = max(정의 ∪ lock codes ∪ reserved)+1이다. 범위를 넘으면 `E_CODE_RANGE`. GUI는 이 값을 제안만 하고 규칙을 갖지 않는다.
 - 새 레코드는 `initial`로만 시작한다. 삭제된 상태의 데이터 이관은 소비자 DB 작업이다.
 
@@ -174,7 +187,7 @@ stateDiagram-v2
   - `E_DUPLICATE_KEY`: 머신 key 중복, 한 머신 안의 상태 key 중복·이벤트 key 중복, 또는 `_`를 지웠을 때 같아지는 두 머신 key(`ab`와 `a_b`는 모두 php `<ns>\Ab`가 된다)
   - `E_KEY_RESERVED`: `docs/spec/fsm.md`의 고정 목록 하나이며 kind·store와 무관하게 모든 정의에 적용한다. (1) 머신 key(`_`를 지우고 비교): `fsm`(공용 모듈), `index`(npm `index.js`), `lib`·`main`(rust `src/lib.rs`·`src/main.rs`, go `package main`), `internal`(go internal package는 `tests/`에서 import할 수 없음), `init`(go는 `init`라는 이름으로 package를 import하지 못함), `testdata`·`vendor`(go `./...`가 건너뜀), go 사전 선언 식별자(`error`, `string`, `int`, `len`, `nil` 등. 그 이름의 package를 import하면 이를 가린다), 그리고 go·rust(고정 edition)·python·js의 keyword(이 네 언어에서는 머신 key가 그대로 모듈 이름이다). (2) pascal 형태가 enum 멤버로 거부되는 상태·이벤트 key: `self`(rust `Self`), `class`(php `Class`). (3) Mermaid 예약어(store와 무관하게 항상 적용): 상태 key `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`; 머신 key `null, true, false`(고정한 mermaid 버전 12.1.0 기준). S-16 테스트(`packages/fsm-gui/tests/mermaid-parse.test.mjs`)는 상태 key를 다섯 위치(설명 줄, 초기 줄, edge의 출발, edge의 도착, 최종 줄)에서 검사한다. 단어는 그 위치에서 mermaid가 다이어그램을 파싱하지 못하거나, 쓴 모델과 다른 모델로 파싱할 때 쓸 수 없다. 다른 모델은 `[*]` id와 충돌하는 id(`root_start`, `root_end`)이거나, mermaid가 버리는 줄이나 code다(설명 줄의 `state`, 설명 줄과 초기 줄의 `acctitle`·`accdescr`). 머신 단어는 mermaid의 stateDiagram이 frontmatter title을 읽지 않으므로 frontmatter의 YAML 규칙으로 검사한다. 이름은 변형하지 않고 거부한다.
 - code·lock
-  - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`
+  - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`, `E_LOCK_REGRESSED`
 - store
   - `E_MERMAID_UNSUPPORTED`, `E_STORE_MIXED`, `E_STORE_NOT_EMPTY`, `E_STORE_NOT_CONFIGURED`
 - 생성
