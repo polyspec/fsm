@@ -325,6 +325,22 @@
       "targets": [
         "docs-build-test"
       ]
+    },
+    {
+      "paths": [
+        "tests/install-python/**"
+      ],
+      "targets": [
+        "install-python-test"
+      ]
+    },
+    {
+      "paths": [
+        "Makefile"
+      ],
+      "targets": [
+        "install-python-test"
+      ]
     }
   ]
 }

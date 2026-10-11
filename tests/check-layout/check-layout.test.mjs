@@ -125,3 +125,40 @@ test('the command prints each finding and exits 1, and passes on the layout of t
   const own = spawnSync(process.execPath, ['scripts/check-layout.mjs'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(own.status, 0, own.stdout + own.stderr);
 });
+
+// The npm declarations of the type check (docs/plans/execution-checklist.md, S-09-2 and S-35): a test file beyond the required
+// set is a difference of its kind, and contracts/layout.json declares it with its reason. A declaration that names no allowed
+// glob of its kind, or has no reason, is a finding.
+const NPM_TYPES = {
+  'packages/fsm-npm/tests/types.test.mjs': 't',
+  'packages/fsm-npm/tests/types/consumer.ts': 'c',
+};
+const withNpmTypes = (differences) => ({
+  ...LAYOUT,
+  kinds: { npm: { ...LAYOUT.kinds.npm, allowed: [...LAYOUT.kinds.npm.allowed, 'tests/types.test.mjs', 'tests/types/**'] } },
+  ...(differences === undefined ? {} : { differences }),
+});
+const NPM_DECLARATIONS = [
+  { kind: 'npm', path: 'tests/types.test.mjs', reason: 'the type check of the generated declarations (S-09-2): tsc compiles the consumer file' },
+  { kind: 'npm', path: 'tests/types/**', reason: 'the consumer files of that type check, compiled in strict mode' },
+];
+
+test('layout-config: a test file that the layout allows is a difference, and it has no entry in differences without its declaration', (t) => {
+  const found = layoutFindings(checkout(t, { ...npm, ...tool, ...NPM_TYPES }, withNpmTypes()));
+  assert.deepEqual(found.map(entry => entry.rule), ['layout-config', 'layout-config']);
+  assert.match(found[0].message, /npm allows tests\/types\.test\.mjs, a test beyond its required set/);
+  assert.match(found[1].message, /npm allows tests\/types\/\*\*, a test beyond its required set/);
+});
+
+test('layout-config: a declared difference with its reason passes', (t) => {
+  assert.deepEqual(layoutFindings(checkout(t, { ...npm, ...tool, ...NPM_TYPES }, withNpmTypes(NPM_DECLARATIONS))), []);
+});
+
+test('layout-config: a difference that names no allowed glob of its kind, or gives no reason, is a finding', (t) => {
+  const notAllowed = layoutFindings(checkout(t, { ...npm, ...tool, ...NPM_TYPES }, withNpmTypes([...NPM_DECLARATIONS, { kind: 'npm', path: 'tests/other.mjs', reason: 'r' }])));
+  assert.deepEqual(notAllowed.map(entry => entry.rule), ['layout-config']);
+  assert.match(notAllowed[0].message, /the difference npm tests\/other\.mjs is not an allowed glob of npm/);
+  const noReason = layoutFindings(checkout(t, { ...npm, ...tool, ...NPM_TYPES }, withNpmTypes([{ ...NPM_DECLARATIONS[0], reason: ' ' }, NPM_DECLARATIONS[1]])));
+  assert.deepEqual(noReason.map(entry => entry.rule), ['layout-config']);
+  assert.match(noReason[0].message, /reason/);
+});

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: aa6472dab52d5380c853898fcea56bc7c9abf9a4f6c0df52c3e328b98020937b -->
+<!-- source-sha256: e40d85a43d634270a16392db66465249b6582c9ffca684e90ac9b8d1b1b37f52 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-35: 계획과 계약이 저장소와 맞는다(감사 17, 18, 19, 21). 계획 D 표는 상태를 담지 않고 체크리스트를 가리킨다. C-1 트리에 `src/store-lock`, 이름 검사기, docs-build와 install-python 테스트, 문서 사이트 파일을 넣었다. `contracts/layout.json`은 npm의 `tests/types.test.mjs`와 `tests/types/**`를 이유와 함께 `differences`에 선언하고, check-layout은 어떤 선언도 없는 kind의 테스트 파일을 거부한다(`tests/check-layout/`의 RED 테스트). S-11-3에는 반복 가능한 테스트 `make install-python-test`가 생겼다. 임시 checkout에서 stub uv로 타깃을 돌리고, `--no-bin`이 없는 레시피는 링크를 쓴다는 것을 보인다. `kit-test`를 `CHECK_TARGETS`에 넣었다.
 - S-32: 컴파일러의 import를 명시하고 테스트한다(계획 C-5). `packages/fsm-compiler/src`는 `node:` 내장 모듈, 자기 파일, 이 clone의 벤더 kit(`scripts/kit/`)만 import하고 npm 패키지는 import하지 않는다. 계획은 의존성 0이라 했지만 kit import와 모순이었다. `tests/imports.test.mjs`가 `src`의 모든 import specifier(정적, 동적, 상대 경로)를 검사하고 그 집합 밖이면 실패한다. `src/core`는 `node:` 모듈을 import하지 않는다(감사 5).
 - S-27: `name-check`는 줄이 아니라 옛 이름의 출현마다 판정한다. 허용 구절은 줄에서 지운 뒤 남은 부분을 다시 검사한다. CHANGELOG 항목은 rename까지(S-01부터 S-18까지)의 bullet만 허용하고, model 항목은 orm-gen이 상태 열을 위해 쓰는 helper와 열 이름만 허용한다. 줄 전체를 허용하던 항목은 정확한 구절만 허용하며, 감사 probe 줄은 finding이다(`tests/check-name/`의 RED 테스트). rename 잔재를 고쳤다: Makefile 주석, 컴파일러와 gen-check 테스트 helper 주석, python과 rust 예제의 상태 열용 `status_of`(감사 6, 12).
 - S-19: 사용자 문서(R11, 계획 C-9). 루트 README와 모든 패키지 README(영어와 한국어)가 사용자에게 라이브러리를 설명한다: fsm이 무엇이고 무엇이 아닌지, JSON, Mermaid, database의 order 예제로 보는 모델, code와 lock, `apply`로 하는 전이와 `expected`가 재시도를 멱등하게 만드는 이유, 모든 검증 code, 프로젝트 파일, 요구사항과 설정, 모든 `fsm-gen` 명령과 옵션의 실제 출력과 종료 코드, 생성 이름, 검사. `packages/fsm-compiler/README.md`는 새로 만들었다(구조, store 계약, 명령, backend 옵션, vector). database와 GUI README는 필수 절을 추가했다(GUI는 Tests 절을 유지). 각 언어 README는 생성 명령, 생성 파일, apply 예제가 있는 API, 오류, `examples/persist.*`의 영속화 패턴, 테스트를 설명한다. `scripts/check-readmes.mjs`(`make readme-check`, 테스트는 `tests/check-readmes/`)는 각 README의 절과 같은 제목을 가진 한국어 짝을 요구한다. 문서를 쓰기 전에는 54개 검사 결과를 냈다. `make docs-build`는 새 페이지로 사이트를 빌드한다.

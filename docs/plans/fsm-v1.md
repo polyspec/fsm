@@ -133,12 +133,13 @@ fsm/
   .gitignore            # anchored only: /var/, /.results/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/fsm-python/**/__pycache__/, php-ext phpize output under /packages/fsm-php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/fsm-gui/build/, /packages/fsm-gui/public/assets/, /packages/fsm-php*/.phpunit.result.cache, /packages/fsm-php*/.phpunit.cache/
   config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review}.json
   scripts/kit/ tests/kit/                    # vendored from kit
-  scripts/check-layout.mjs scripts/check-parity.mjs scripts/gen-check.mjs   tests/check-layout/ tests/check-parity/ tests/gen-check/
+  scripts/check-layout.mjs scripts/check-parity.mjs scripts/check-name.mjs scripts/gen-check.mjs   tests/check-layout/ tests/check-name/ tests/check-parity/ tests/docs-build/ tests/gen-check/ tests/install-python/
   contracts/layout.json (tools, kinds, canonical tree, allowed differences)   contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
+  docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
   schema/fsm.schema.json  schema/fsm.dbs  schema/persist.dbs   # persist.dbs = shared by the six language package examples
   fsm.config.json  machines/order.fsm.json  fsm.lock.json  conformance/vectors/<machine>.json
-  packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-mermaid/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
+  packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-lock/, src/store-mermaid/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
   packages/fsm-db/        {src/, tests/}   # DbStore + fsm-db CLI, depends on orm
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
   packages/fsm-{go,npm,php,php-ext,python,rust}/
@@ -182,6 +183,7 @@ packages/fsm-<kind>/
   - tracked files or non-ignored new files deviate from the canonical tree (added, missing, renamed)
   - the php and php-ext tests are not byte-identical
   - layout.json is malformed
+  - a test file that a kind allows (a `tests/` glob beyond its required set) has no entry in `differences` of layout.json with its reason, or a declared difference names no allowed glob of its kind
 - Kinds are added one at a time by the package items.
 
 ### C-3. Result records (K18)
@@ -333,35 +335,9 @@ Vectors (exhaustive; the core generates the oracle):
 - A Korean fenced code block is identical to its English block (`documents-check` requires it), so code and command output are not translated; the prose around them is.
 - The tests are `tests/check-readmes/` (`make readme-test`); `make readme-check` runs the check on the repository.
 
-## D. Checklist draft
+## D. Checklist and owner checks
 
-**kit checklist (done first in the kit repository → release → kit-sync in fsm; written in kit's own 5-column format when added there)**
-
-| id | Item | RED → GREEN | State |
-|---|---|---|---|
-| K17 | `run-tests python`: read the stderr of `python3 -m unittest -v`, with one line parser shared with cargo; the runner enforces the timeout; update tool-inventory(.ko) | PATH stub python3: pass/fail/timeout/no-test RED | [ ] |
-| K18 | `run-tests --results` (counts `cases` + `inputs` + `elapsedMs`), `inputsDigest`, update tool-inventory | fixture node/vitest tests + PATH stub go/cargo/phpunit/python3 RED | [ ] |
-| K19 | `check-commits` rule: a commit that moves an item to `[o]` also changes the changelog (en and ko), and one commit changes the state of at most one item; add `done` and `changelog` to the schemas; a row added in the commit is not a state change | git fixture RED | [ ] |
-
-**fsm checklist**
-
-| id | Item | RED → GREEN | State |
-|---|---|---|---|
-| S-01 | git init, kit-sync, config (toolchain: node only; dependency-policy with empty lists + `config/dependency-review.json` from `make dependency-review RECORD=1`), hooks, AGENTS.md(.ko) section A, the checklist with every S row of section D (S-01 `[o]`, the rest `[ ]`), CHANGELOG, this plan, `CHECK_TARGETS` (only the targets defined so far; each item appends its own) and `check` | `kit-check owner-validate documents-check commits-check toolchain-check hooks-check dependency-policy-check` | [ ] |
-| S-02 | `docs/spec/fsm.md(.ko)` section B | `documents-check` | [ ] |
-| S-03 | `check-layout` + `layout.json` (kinds = {}, an object of each kind with its required files and allowed globs) + `layout-test`/`layout-check` | fixtures (kinds mismatch/added/missing/renamed/php↔php-ext mismatch/malformed) RED | [ ] |
-| S-04 | `check-parity` + `parity-test` | fixtures (no result/missing tool result/`--kind` reads only its kind/stale inputs/not run/unregistered/zero cases/fail/timeout/skip/0 or 2 name matches/parent id/over 10 minutes) RED | [ ] |
-| S-05 | core `E_SCHEMA` + schema correspondence test | RED | [ ] |
-| S-05-1 | core graph errors | RED per error code | [ ] |
-| S-05-2 | core name/code errors | RED per error code | [ ] |
-| S-06 | normalize/IR + lock (rename/reserved) + JsonStore + store contract + `run`/`copy` | RED per lock scenario | [ ] |
-| S-07 | `fsm.config.json` (`{"store":"json"}`) + `machines/order.fsm.json` + `fsm.lock.json` + `contracts/features.json` + vector oracle (rejects unregistered featureId) + `gen-check` + `gen-check-test` | matches hand-written expected fixture, gen-check RED | [ ] |
-| S-08 | MermaidStore (canonical parser and writer) + json↔mermaid round trip | `E_MERMAID_UNSUPPORTED`, order violation, round-trip mismatch RED | [ ] |
-| S-09 / S-09-1 | npm backend + `vectors --kind npm` (golden) / npm package (conformance + persist + root `schema/persist.dbs` (created here, shared afterwards) + `examples/model/` (orm-gen, covered by gen-check), add the kind, add toolchain and dependency-policy, `test-npm`) | RED with no generated output → pass, layout and parity | [ ] |
-| S-10 … S-14 (+ `-1`) | the same for go, python, php, rust, php-ext | same | [ ] |
-| S-15 | fsm-db: dbs + DbStore + contract tests + copy + `db-test` | contract mismatch, `E_STORE_NOT_EMPTY`, atomicity RED | [ ] |
-| S-16 | GUI skeleton: hyper app + list and detail + Mermaid + `gui-test` | handler RED | [ ] |
-| S-17 | GUI editing: crudui forms + validation error display + lock/rename | `check` passes after a save | [ ] |
+The state of every item is in [docs/plans/execution-checklist.md](execution-checklist.md), the only checklist of this plan (AGENTS.md, Checklist). This section holds no state. The kit items K17 to K19 are items of the kit repository, not of this checklist; section E names them.
 
 owner-checks mapping (each item adds its own part):
 
@@ -374,6 +350,7 @@ owner-checks mapping (each item adds its own part):
 | `contracts/layout.json` | `layout-test layout-check gen-check packages-test` |
 | `scripts/gen-check.mjs`, `tests/gen-check/**` | `gen-check-test gen-check` |
 | `scripts/check-parity.mjs`, `tests/check-parity/**` | `parity-test` |
+| `tests/install-python/**` | `install-python-test` |
 | `packages/fsm-compiler/**`, `schema/fsm.schema.json`, `machines/**`, `fsm.lock.json`, `conformance/**`, `contracts/features.json`, `fsm.config.json` | `compiler-test gen-check` |
 | `schema/persist.dbs` | `gen-check packages-test` |
 | `schema/fsm.dbs`, `packages/fsm-db/**` | `db-test` |
@@ -381,8 +358,8 @@ owner-checks mapping (each item adds its own part):
 | `packages/fsm-<kind>/**` | `layout-check gen-check parity-<kind> dependency-policy-check` |
 
 - `parity-<kind>` (a literal target per kind with prerequisite `test-<kind>` and recipe `node scripts/check-parity.mjs --kind <kind>`) is the owner check of a kind. With `--kind`, check-parity reads only that kind's result and applies the C-4 conditions to it alone (every vector case ran once and passed, no unknown case, current `inputs`, `elapsedMs`); it reads neither other kinds nor the tool results. `parity-check` (no prerequisite, no `--kind`) reads every kind and the tool results and runs in `check` after `packages-test`.
-- Independent items (S-03, S-04, S-05) may run in parallel.
-- The full suite runs once with `make check` after S-17 is committed.
+- Independent items may run in parallel when the checklist allows it (AGENTS.md, Checklist).
+- The full suite runs once with `make check` after the last item of the checklist is committed.
 
 ## E. Order of work
 1. kit K17–K19 → kit release → fsm from S-01.
@@ -393,9 +370,11 @@ owner-checks mapping (each item adds its own part):
   - `CHECK_TARGETS`, `check`
   - `layout-test`, `layout-check`, `parity-test`, `parity-check`
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
+  - `install-python-test` (`tests/install-python`: the install-python recipe in a temporary checkout with a stub uv, S-11-3)
+  - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
   - `test-<kind>`, `parity-<kind>` (`parity-<kind>: test-<kind>`), `packages-test` (the `test-<kind>` of `kinds` with `make -j6`)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test parity-check`
+  - `CHECK_TARGETS` = `kit-check kit-test owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test install-python-test packages-test parity-check`
 - During item work only the owner-checks mapping runs.
 - GUI manual check, for each of the json, mermaid and db stores:
   1. Add, delete and rename states, then save (save updates the lock too).

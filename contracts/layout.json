@@ -130,5 +130,17 @@
         "examples/model/**"
       ]
     }
-  }
+  },
+  "differences": [
+    {
+      "kind": "npm",
+      "path": "tests/types.test.mjs",
+      "reason": "the type check of the generated declarations (S-09-2, make npm-types): TypeScript compiles tests/types/consumer.ts in strict mode against src/*.d.ts; only npm ships declaration files"
+    },
+    {
+      "kind": "npm",
+      "path": "tests/types/**",
+      "reason": "the consumer files that the type check compiles (tests/types/consumer.ts); they are compiled, not run, so they have no vector case"
+    }
+  ]
 }
