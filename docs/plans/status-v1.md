@@ -34,6 +34,8 @@
 | R8 | Standards are enforced by tools (layout, feature↔test, language parity). Development order is RED→GREEN | user instruction |
 | R9 | Test execution rules: per-case progress and timeout, 10-minute ceiling, owner checks, full suite once | user instruction |
 | R10 | Checklist, commit and document discipline (section A) | user instruction |
+| R11 | Documentation: the root README and every package README (English and Korean) explain the library completely for its users, and a documentation site is published on GitHub Pages | user instruction |
+| R12 | The library is named fsm: repository polyspec/fsm, and every package, command, file and generated module carries the name | user instruction |
 
 **Out of v1 scope (not subject to audit findings)**
 - The not-adopted list in B-0
