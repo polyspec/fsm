@@ -86,7 +86,8 @@
         "examples/persist.rs"
       ],
       "allowed": [
-        "src/*.rs"
+        "src/*.rs",
+        "tests/persist_retry.rs"
       ],
       "generated": [
         "src/**",
