@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: 0ddfaeaa8e91ebc56b76138c8b3d0dd1b9666b5b957642a3f812726288285fb8 -->
+<!-- source-sha256: af5efe02c46bf98a5f8a46727c34649589cf1f57fef2e57274e3208dad503566 -->
 # fsm GUI
 
 [English](README.md).
@@ -104,6 +104,11 @@ $ echo $?
   저장이 검사 결과를 보여준다.
 - 기계나 상태를 삭제하면 그 code가 `fsm.lock.json`의 `reserved`로 옮겨가서, 나중의 상태가 그 code를 받지 못한다
   (`docs/spec/fsm.md`, B-3). 삭제한 기계를 다시 추가하면 그 reserved code 뒤에서 시작한다.
+- 저장, 이름 바꾸기, 삭제는 커밋된 lock과 비교한다. json과 mermaid는 git HEAD의 `fsm.lock.json`과 비교한다. 커밋된 code를 잃거나,
+  커밋된 reserved code를 `reserved`에서 빼거나 상태에 주거나, 커밋된 key들의 code를 맞바꾸는 저장은 `E_LOCK_REGRESSED`로 거부하며
+  아무것도 쓰지 않는다. 아직 커밋하지 않은 상태의 이름 바꾸기는 받는다. git 밖의 프로젝트이거나 `fsm.lock.json`이 추적되지 않거나
+  무시되면 커밋된 lock이 없어 그 보호가 없다. db store에는 커밋이 없다: 규칙은 core의 저장된 lock 규칙(`E_CODE_REUSED`,
+  `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`)이며, 거기서는 `E_LOCK_REGRESSED`가 생기지 않고, fsm 밖에서 바뀐 행은 감지하지 않는다.
 - 저장, 이름 바꾸기, 삭제는 보낸 페이지의 `_csrf` token을 가져야 한다. 없으면 서버는 403으로 응답하고 아무것도 쓰지 않는다.
 - 편집 form의 행은 browser에서 추가하고 제거한다. `client/main.ts`가 페이지 로드 뒤와 htmx swap 뒤마다 렌더된 form에 crudui
   `connectForm`을 붙이고, 행을 바꿀 때마다 페이지의 render 옵션으로 host에 form을 다시 렌더링한다(`patchContent` 뒤

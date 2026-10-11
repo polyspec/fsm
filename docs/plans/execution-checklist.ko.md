@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 639ada01d3d84ed6491b482f02712319e3663c5b344564c8ccabe1a454657456 -->
+<!-- source-sha256: 2b561c2c87a93a27bb95c360a57ea81f30999027489a887c4d28d9d699ab2e84 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -59,7 +59,7 @@
 | S-28 | spec B-2의 store 계약 테스트가 존재한다: 모든 유효 fixture가 json → db → mermaid → json으로 바이트 동일하게 왕복하고, `run` gen과 vectors가 세 store에서 바이트 동일한 출력을 낸다(감사 7) | field를 버리는 store가 지금은 통과 RED → GREEN | [o] |
 | S-29 | 새 clone에서 `make check`가 통과한다: root install 타깃 하나가 모든 package 의존성(npm, composer, python, cargo, 각 package의 orm-gen)을 설치하고, 필요한 타깃의 선행 조건이다. CI는 정확히 `make check`를 돈다(감사 8) | 새 clone의 make check가 orm-gen, tsc, phpunit, .venv에서 실패 RED → 통과 GREEN | [ ] |
 | S-30 | lock을 잃어도 code의 의미가 바뀌지 않는다: `lock`과 `check`가 lock을 커밋된 lock(json·mermaid는 git HEAD, db는 저장된 행)과 비교한다. 커밋된 codes나 reserved의 어떤 code도 빠지거나 key를 바꿀 수 없다. 규칙과 오류 코드를 spec B-3, B-5에 더한다(감사 9) | 두 code를 바꾸고 fsm.lock.json을 비운 뒤 lock: 지금은 ok RED → 거부 GREEN | [o] |
-| S-30-1 | README가 S-30의 lock baseline을 적는다: 커밋된 lock은 json·mermaid store에서 git HEAD, db store에서 저장된 행이다. 커밋된 code를 잃거나 바꾸는 저장·이름 바꾸기·삭제는 E_LOCK_REGRESSED로 거부된다. git 밖의 프로젝트는 baseline이 없어 이 보호가 없다. fsm 밖에서 바뀐 db 행은 감지되지 않는다. S-19는 S-30 전에 쓰여 이를 말하지 않는다 | spec B-3과 대조한 리뷰와 docs-build. baseline을 빠뜨린 README RED → GREEN | [ ] |
+| S-30-1 | README가 S-30의 lock baseline을 적는다: 커밋된 lock은 json·mermaid store에서 git HEAD, db store에서 저장된 행이다. 커밋된 code를 잃거나 바꾸는 저장·이름 바꾸기·삭제는 E_LOCK_REGRESSED로 거부된다. git 밖의 프로젝트는 baseline이 없어 이 보호가 없다. fsm 밖에서 바뀐 db 행은 감지되지 않는다. S-19는 S-30 전에 쓰여 이를 말하지 않는다 | spec B-3과 대조한 리뷰와 docs-build. baseline을 빠뜨린 README RED → GREEN | [o] |
 | S-31 | 모든 언어의 영속화가 spec B-4를 지킨다: rust 예제가 deadlock 때 orm이 다시 실행하는 transaction을 쓰거나(`transaction_once` 아님), 차이와 이유를 spec B-4와 layout.json에 적는다. spec B-4에 transaction + forUpdate를 쓰는 이유(orm v0.0.7에는 영향 행 수를 주는 조건부 update가 없음)와 다시 볼 조건을 기록한다(감사 10, 11) | rust 예제의 deadlock 재시도 테스트와 기록의 documents-check RED → GREEN | [ ] |
 | S-32 | compiler의 import를 명시하고 테스트한다: compiler는 clone의 벤더 kit helper(`scripts/kit/files.mjs`, `git.mjs`, `process.mjs`)를 import하는데 plan은 의존성 0이라 한다. plan이 compiler가 import할 수 있는 것(node 내장, 자기 파일, clone의 kit, npm package 없음)을 정확히 적고 테스트가 import를 검사한다(감사 5) | 명시 집합 밖의 import가 지금은 통과 RED → GREEN | [o] |
 | S-33 | 조용한 변환과 null 반환이 없다: php `fromCode`가 npm·python처럼 int가 아닌 값을 거부한다. `packages/fsm-gui/src/forms.mjs`와 `src/core/validate.mjs`가 null을 반환하지 않는다. spec B-6이 생성되는 오류 상수를 정확히 적는다(감사 13, 14, 22) | strict_types 없이 `fromCode("2")`, `fromCode(2.0)`, `fromCode(true)`가 성공 RED → 모든 언어에서 같게 E_UNKNOWN_CODE 또는 type error GREEN | [ ] |

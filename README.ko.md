@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: e739d6f5c92ad01c2ad1cd5ce7455ccae1f4ea4e6f9e94b82eb2195a8a654d83 -->
+<!-- source-sha256: af7fdf9bcce2644d74d5f4d85a1cf79e7dae47b8f1c7f4e3e41dd3f2477701d1 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -149,6 +149,22 @@ lock은 정의와 함께 commit한다. 한 번이라도 공개된 code의 기록
 `copy`는 원본 lock을 그대로 쓴다. `check`, `vectors`, `gen`은 읽기만 한다. lock과 정의가 어긋나면 이 세 명령은 `E_LOCK_MISMATCH`로
 실패한다.
 
+커밋된 lock이 기준선이다(`docs/spec/fsm.md`, B-3). json과 mermaid store는 git HEAD에서 읽고(`git show
+HEAD:./fsm.lock.json`), db store는 커밋이 없으므로 저장된 행과 비교한다. 커밋된 code를 잃거나, 커밋된 reserved code를
+`reserved`에서 빼거나 상태에 주거나, 커밋된 key들의 code를 맞바꾸는 lock은 `E_LOCK_REGRESSED`로 거부하며 아무것도 쓰지
+않는다. `lock`, `save`, `check`, `gen`, `vectors`, `copy`가 모두 이 규칙을 적용한다. 아직 커밋하지 않은 상태의 이름 바꾸기는
+받는다: code를 유지하고 옛 key를 버린다. 위에서 커밋한 `order`에서 `fsm.lock.json`을 지우고 `paid`와 `shipped`의 code를
+맞바꾸면 (`fsm-gen lock`의 실제 출력):
+
+```
+[fsm-gen] E_LOCK_REGRESSED order $.codes: code 2 was paid in the committed lock of order and is shipped now, while paid keeps another code
+[fsm-gen] E_LOCK_REGRESSED order $.codes: code 3 was shipped in the committed lock of order and is paid now, while shipped keeps another code
+```
+
+git 밖의 프로젝트이거나 `fsm.lock.json`이 추적되지 않거나 무시되면 커밋된 기준선이 비어 그 보호가 없다. 그때 lock 규칙은 저장된
+lock만 판정한다. 이 버전의 database에는 커밋된 기록이 없어 `E_LOCK_REGRESSED`가 생기지 않으며, fsm 밖(SQL)에서 바뀌거나 지워진
+행은 감지하지 않는다.
+
 ## 전이
 
 전이는 두 상태로 계산한다. 호출자가 event를 요청하기 전에 읽은 **expected** 상태와, store가 지금 가진 **actual** 상태다. 멱등성의
@@ -201,6 +217,7 @@ core는 아무것도 쓰거나 생성하기 전에 모든 정의를 검사한다
 | `E_CODE_RANGE` | code가 1부터 2147483647 범위를 벗어난다 |
 | `E_UNKNOWN_STATE_REF` | edge가 기계에 없는 상태를 가리킨다 |
 | `E_LOCK_MISMATCH` | lock이 상태들의 code와 정확히 같지 않거나, 정의되지 않은 기계가 lock에 code를 가진다 |
+| `E_LOCK_REGRESSED` | lock이 커밋된 code를 잃거나, 그중 reserved를 풀거나 상태에 주거나, 커밋된 key들의 code를 맞바꾼다(json과 mermaid: git HEAD와 비교) |
 | `E_CODE_REUSED` | 상태가 lock에서 reserved인 code를 가진다 |
 | `E_CODE_KEY_CHANGED` | 상태가 code는 유지하지만 `--rename` 없이 key가 바뀌었다 |
 | `E_CODE_CHANGED` | lock이 code에 대응시킨 key에 다른 code가 주어졌다 |

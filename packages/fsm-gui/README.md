@@ -106,6 +106,12 @@ core's (`docs/spec/fsm.md`, B-3 and B-5):
   (`E_CODE_RANGE`), the page carries null, the browser gives none, and the save shows the finding.
 - Deleting a machine, or a state, moves its codes to `reserved` in `fsm.lock.json`, so a later state never takes them
   (`docs/spec/fsm.md`, B-3). A deleted machine that is added again starts after its reserved codes.
+- A save, rename or delete is checked against the committed lock: json and mermaid compare with `fsm.lock.json` at git HEAD. A save
+  that would lose a committed code, remove a committed reserved code from `reserved` or give it to a state, or swap the codes of
+  committed keys is refused with `E_LOCK_REGRESSED`, and writes nothing. A rename of a state that is not committed yet is accepted.
+  A project outside git, or one whose `fsm.lock.json` is untracked or ignored, has no committed lock and gets no such protection.
+  The db store has no commit: its rules are the stored-lock rules of the core (`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`,
+  `E_CODE_CHANGED`), `E_LOCK_REGRESSED` does not arise there, and rows changed outside fsm are not detected.
 - Each save, rename or delete must carry the `_csrf` token of the page that it was sent from. Without it the server answers
   403 and writes nothing.
 - The rows of the Edit form are added and removed in the browser: `client/main.ts` binds the rendered form with crudui
