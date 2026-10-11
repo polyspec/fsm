@@ -1,0 +1,11 @@
+# The crudui form of the new machine screen (docs/plans/fsm-v1.md, C-7). A new machine is created with one state that is both
+# the initial and the final state and has no event: the smallest machine that passes every rule of docs/spec/fsm.md, B-5. The
+# form holds no validation rule; the core checks both keys.
+type: group
+properties:
+  machine:
+    type: text
+    label: Machine key
+  state:
+    type: text
+    label: Key of the only state

@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "comment": "Node.js is declared in .node-version and Rust in rust-toolchain.toml; the npm kind adds nothing, because the kit declares npm only in a root package.json, which this repository does not have. The go kind declares the Go release in packages/status-go/go.mod (its toolchain line) and the govulncheck release of the dependency review. The php kind declares the PHP and Composer releases that run its tests; its dependencies resolve for PHP 8.4.0 (config.platform.php in packages/status-php/composer.json), the minimum of polyspec/orm. The rust kind adds cargoAudit, which the dependency review runs on the Cargo locks. The python kind declares Python 3.14, which make install-python installs with uv and links as var/tools/bin/python3. Each remaining kind item adds the toolchain of its kind.",
+  "comment": "Node.js is declared in .node-version and Rust in rust-toolchain.toml; the npm kind adds nothing, because the kit declares npm only in a root package.json, which this repository does not have. The go kind declares the Go release in packages/fsm-go/go.mod (its toolchain line) and the govulncheck release of the dependency review. The php kind declares the PHP and Composer releases that run its tests; its dependencies resolve for PHP 8.4.0 (config.platform.php in packages/fsm-php/composer.json), the minimum of polyspec/orm. The rust kind adds cargoAudit, which the dependency review runs on the Cargo locks. The python kind declares Python 3.14, which make install-python installs with uv and links as var/tools/bin/python3. Each remaining kind item adds the toolchain of its kind.",
   "go": {
-    "mod": "packages/status-go/go.mod"
+    "mod": "packages/fsm-go/go.mod"
   },
   "govulncheck": "1.8.0",
   "php": [

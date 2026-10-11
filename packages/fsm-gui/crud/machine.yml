@@ -1,0 +1,62 @@
+# The crudui form of the machine edit screen (docs/plans/fsm-v1.md, C-7). It holds no validation rule: every rule belongs to
+# the core (docs/spec/fsm.md, B-5), and a save goes through core run save. A stored state keeps its key and its code. Its key
+# is a read-only control (dummy-input) shown while `persisted` is 1; a new state takes its key in `newKey`. The code is always a
+# read-only control: the GUI only shows the code that core nextCode suggests for a new state (docs/spec/fsm.md, B-3).
+type: group
+properties:
+  states:
+    type: group
+    label: States
+    multiple:
+      sortable: true
+      header: sticky
+      title: key
+    properties:
+      persisted:
+        type: text
+        design:
+          show: false
+      key:
+        type: dummy-input
+        label: Key
+        design:
+          show: ".persisted"
+      newKey:
+        type: text
+        label: Key
+        design:
+          show: "!.persisted"
+      code:
+        type: dummy-input
+        label: Code
+      initial:
+        type: checkbox
+        label: Initial
+      final:
+        type: checkbox
+        label: Final
+  events:
+    type: group
+    label: Events
+    multiple:
+      sortable: true
+      header: sticky
+      title: key
+    properties:
+      key:
+        type: text
+        label: Event
+      edges:
+        type: group
+        label: Edges
+        multiple:
+          sortable: true
+          header: sticky
+          title: from
+        properties:
+          from:
+            type: text
+            label: From
+          to:
+            type: text
+            label: To

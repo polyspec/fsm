@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 5603ea2fd52fb4a9f3caf64e932297e8b6946d1de4315890628112451b025428 -->
+<!-- source-sha256: 1db8a2bd3d4ef36c8bb1f54b046a83f3f51d7dce65fcb25c88bb19cbe1d3379e -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-18: 라이브러리 이름을 `status`에서 `fsm`으로 전부 바꾼다(R12). 패키지는 `packages/fsm-*`, 명령은 `fsm-gen`, `fsm-db`, `fsm-gui`, 파일은 `fsm.config.json`, `fsm.lock.json`, `machines/*.fsm.json`, `*.fsm.mmd`, `schema/fsm.schema.json`과 `schema/fsm.dbs`(dbspec `fsm`), 문서는 `docs/spec/fsm.md`와 `docs/plans/fsm-v1.md`, 생성 공용 모듈은 `fsm`(`fsm.Error`, `<ns>\Fsm\Error`, 백엔드마다 모듈 `fsm`), 예약 머신 key는 `fsm`이다. `status`는 다시 일반 key다. 매니페스트 이름은 `polyspec_fsm`, `polyspec-fsm`, `@polyspec/fsm-*`, `github.com/polyspec/fsm-go`, 네임스페이스 `Polyspec\FsmTest`, extension `polyspec_fsm_test`다. 소비자의 status 열과 프로세스·테스트의 status는 `status`를 유지한다. `scripts/check-name.mjs`(`make name-check`)는 허용 목록 밖에서 라이브러리를 `status`로 부르는 추적 파일이나 경로가 있으면 실패하며, golden과 생성 파일은 `fsm-gen`으로 다시 생성했다. AGENTS.md와 계획은 `name-check`를 규칙을 강제하는 도구로 적고, 범위는 R1–R12이며, 문서는 옛 이름을 "옛 이름 `status`"로만 언급한다.
 - S-11-2: python 패키지가 color 우회 설정을 제거한다. kit v0.0.15(K22)가 run-tests python에서 `NO_COLOR=1`과 `PYTHON_COLORS=0`을 직접 설정하므로, `packages/status-python/Makefile`의 `make test`는 더 이상 `PYTHON_COLORS=0`을 설정하지 않는다. kit 설정이 없으면 `FORCE_COLOR=3`에서 unittest가 verbose 줄에 color를 넣고 reporter가 이를 읽지 못한다. 줄을 제거한 상태에서 v0.0.14 runner는 10번 중 10번 실패했고, v0.0.15 runner는 10번 중 10번 통과했다. `make test-python`은 `FORCE_COLOR=3`에서도, 없어도 89개 case를 모두 통과한다.
 - S-16-1: GUI test hang을 원인에서 고쳤다. kit v0.0.15 sync(K23)는 test child의 stdout 파이프를 blocking으로 만든다(`scripts/kit/test-load-check.mjs`). 비동기 파이프에서는 test child의 `process.exit`이 파이프에 남은 결과를 버렸다. 그래서 파일이 실행한 test보다 적은 결과를 보고할 수 있었고, runner는 "the test did not finish"를 출력할 수 있었다. case 600개짜리 파일에서 v0.0.14는 30번 중 12번, v0.0.15는 30번 중 0번 결과를 잃었고, blocking 줄만 되돌린 v0.0.15는 30번 중 10번 잃었다. 이 sync는 K21(`--cwd` 아래 node 파일 group)과 K22(run-tests python이 `NO_COLOR=1`과 `PYTHON_COLORS=0`을 설정)도 가져온다. test 변경 전에는 `make gui-test`가 4개씩 병렬로 20번 중 20번 통과했고(각 210개 결과), `make compiler-test`도 20번 중 20번 통과했다(각 302개 결과). 이 checkout에서는 hang이 재현되지 않았다. `packages/status-gui/tests/mermaid-parse.test.mjs`의 호출별 20초 deadline은 hang을 가렸을 뿐이어서 제거했다. runner가 이미 case마다 자체 timeout을 준다. flat test(예약 단어와 위치마다 하나, 일반 key마다 하나)는 각 case가 자기 이름과 결과를 가지므로 유지했다. 변경 후 `make gui-test`는 20번 중 20번 통과했다.
 - S-11-3: `make install-python`은 `uv python install --no-bin 3.14`를 실행하므로, uv가 사용자 bin 디렉터리(기본 `~/.local/bin`)에 `python3.14` 실행 파일을 쓰지 않는다. 인터프리터는 여전히 uv 관리 설치이며, `var/tools/bin/python3`만 그것을 가리킨다. 변경 전에는 `UV_PYTHON_BIN_DIR`를 임시 디렉터리로 지정하면 target이 그곳에 `python3.14`를 썼고, 변경 후에는 그 디렉터리가 비어 있고 `~/.local/bin`은 바뀌지 않는다.

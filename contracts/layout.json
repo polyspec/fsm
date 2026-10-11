@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "comment": "The canonical layout of the language packages (docs/plans/status-v1.md, C-2): every kind package holds the canonical files and directories, its required files and only files that its allowed globs match. Each package item (S-09-1 to S-14-1) adds its kind. The language-forced difference of rust: it has no examples/model/, because its build.rs generates the orm model of schema/persist.dbs into OUT_DIR.",
+  "comment": "The canonical layout of the language packages (docs/plans/fsm-v1.md, C-2): every kind package holds the canonical files and directories, its required files and only files that its allowed globs match. Each package item (S-09-1 to S-14-1) adds its kind. The language-forced difference of rust: it has no examples/model/, because its build.rs generates the orm model of schema/persist.dbs into OUT_DIR.",
   "tools": [
-    "status-compiler",
-    "status-db",
-    "status-gui"
+    "fsm-compiler",
+    "fsm-db",
+    "fsm-gui"
   ],
   "canonical": {
     "files": [
@@ -101,7 +101,7 @@
         "examples/persist.py"
       ],
       "allowed": [
-        "src/polyspec_status/*.py",
+        "src/polyspec_fsm/*.py",
         "examples/model/**"
       ],
       "generated": [

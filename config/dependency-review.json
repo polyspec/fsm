@@ -1,111 +1,111 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mjs) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-10T22:36:47.216Z",
+  "reviewed": "2026-10-11T02:35:43.108Z",
   "locks": [
     {
-      "lock": "packages/status-db/package-lock.json",
-      "sha256": "a11dd8cdce4737e81a82e4099ee6a7b07393ab2fb7c62af47d8e24403cebe184",
+      "lock": "packages/fsm-db/package-lock.json",
+      "sha256": "730590ac47bb6d9259ea1c68a14598dc4b1d1d999f3d0e3bf33c52400bbd204f",
       "advisories": []
     },
     {
-      "lock": "packages/status-gui/package-lock.json",
-      "sha256": "311927d3d686c32ecf8cd7bbc60bba6c41d73ee47471fd71a8dc119ed48ce421",
+      "lock": "packages/fsm-gui/package-lock.json",
+      "sha256": "ab76e869ca883d767b3a4ac7fed2629bf4fe72d5416b243bf2d2cfb218567f20",
       "advisories": []
     },
     {
-      "lock": "packages/status-npm/package-lock.json",
-      "sha256": "9164ab83a00436292a811301cfe43d3510c8a2a796c5cb073fcbfb2df43371c2",
+      "lock": "packages/fsm-npm/package-lock.json",
+      "sha256": "546099fad8366f90cf311e4a5e425987086c8d924698e0c3e409a7b9f81e3b98",
       "advisories": []
     },
     {
-      "lock": "packages/status-php/composer.lock",
-      "sha256": "c74a295eec79df0beb21694a9f57dc795dbef23fab831a6523ef129d746eaddb",
+      "lock": "packages/fsm-php/composer.lock",
+      "sha256": "ee1153a984445f67bedcca376ee0690cc86cc78fdb7fd7eb83631ac8d5102724",
       "advisories": []
     },
     {
-      "lock": "packages/status-php-ext/composer.lock",
-      "sha256": "3afc9ed940bd155b95e3ec00e3cb388f0a52d39b595b5e4dc213474b7848807c",
+      "lock": "packages/fsm-php-ext/composer.lock",
+      "sha256": "7edc097a278714abd7cffc0cefc577c44adc9153e5191cc12bab65b1ccf21c6f",
       "advisories": []
     },
     {
-      "lock": "packages/status-go/go.sum",
+      "lock": "packages/fsm-go/go.sum",
       "sha256": "48b4d86e577e858d1d53f5ffd72dfa61d464906f43924cf874b1bb93203c4d61",
       "advisories": []
     },
     {
-      "lock": "packages/status-rust/Cargo.lock",
-      "sha256": "3e846a6befccaaec694058ec1b8a6c9f7a03291cf1ce539f2c2a113f2f49c239",
+      "lock": "packages/fsm-rust/Cargo.lock",
+      "sha256": "498ace7f6e35cc19df5e48d2a8e154637aec3ff32af296a16f2084120b6dbca7",
       "advisories": []
     }
   ],
   "dependencies": [
     {
       "ecosystem": "npm",
-      "manifest": "packages/status-gui/package.json",
+      "manifest": "packages/fsm-gui/package.json",
       "package": "htmx.org",
       "version": "4.0.0",
       "latest": "2.0.11"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/status-gui/package.json",
+      "manifest": "packages/fsm-gui/package.json",
       "package": "mermaid",
       "version": "12.1.0",
       "latest": "12.1.0"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/status-gui/package.json",
+      "manifest": "packages/fsm-gui/package.json",
       "package": "yaml",
       "version": "2.9.1",
       "latest": "2.9.1"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/status-npm/package.json",
+      "manifest": "packages/fsm-npm/package.json",
       "package": "typescript",
       "version": "7.0.2",
       "latest": "7.0.2"
     },
     {
       "ecosystem": "composer",
-      "manifest": "packages/status-php/composer.json",
+      "manifest": "packages/fsm-php/composer.json",
       "package": "polyspec/orm",
       "version": "0.0.7",
       "latest": "0.0.7"
     },
     {
       "ecosystem": "composer",
-      "manifest": "packages/status-php/composer.json",
+      "manifest": "packages/fsm-php/composer.json",
       "package": "phpunit/phpunit",
       "version": "12.5.38",
       "latest": "12.5.38"
     },
     {
       "ecosystem": "composer",
-      "manifest": "packages/status-php-ext/composer.json",
+      "manifest": "packages/fsm-php-ext/composer.json",
       "package": "polyspec/orm",
       "version": "0.0.7",
       "latest": "0.0.7"
     },
     {
       "ecosystem": "composer",
-      "manifest": "packages/status-php-ext/composer.json",
+      "manifest": "packages/fsm-php-ext/composer.json",
       "package": "phpunit/phpunit",
       "version": "12.5.38",
       "latest": "12.5.38"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/status-python/pyproject.toml",
+      "manifest": "packages/fsm-python/pyproject.toml",
       "package": "setuptools",
       "version": "84.0.0",
       "latest": "84.0.0"
     },
     {
       "ecosystem": "go",
-      "manifest": "packages/status-go/go.mod",
+      "manifest": "packages/fsm-go/go.mod",
       "package": "github.com/polyspec/orm",
       "version": "v0.0.7",
       "latest": "v0.0.7"

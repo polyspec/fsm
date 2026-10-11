@@ -40,7 +40,7 @@ function cases(root) {
   const features = readJson(path.join(root, FEATURES)).features;
   const directory = path.join(root, VECTORS);
   const files = existsSync(directory) ? readdirSync(directory).filter(file => file.endsWith('.json')).sort() : [];
-  if (files.length === 0) return { names: null, found: [finding(`${VECTORS} holds no vector file; status-gen vectors writes them`)] };
+  if (files.length === 0) return { names: null, found: [finding(`${VECTORS} holds no vector file; fsm-gen vectors writes them`)] };
   const names = new Set();
   const covered = new Set();
   for (const file of files) {
@@ -94,7 +94,7 @@ const statusFindings = (label, record) => record.cases.filter(entry => entry.sta
 /** The findings of the record of `kind` against the vector case `names`. */
 function kindFindings(root, kind, names) {
   const fix = `run make test-${kind}`;
-  const { record, found } = readRecord(root, kind, `packages/status-${kind}`, { missing: file => `the kind ${kind} has no result ${file}; ${fix}`, fix });
+  const { record, found } = readRecord(root, kind, `packages/fsm-${kind}`, { missing: file => `the kind ${kind} has no result ${file}; ${fix}`, fix });
   if (!record) return found;
   const named = record.cases.map(entry => ({ entry, names: [...new Set(entry.id.match(CASE_NAME) ?? [])] }));
   const runs = new Map();

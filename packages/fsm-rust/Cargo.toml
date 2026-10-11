@@ -1,0 +1,23 @@
+[package]
+name = "fsm-rust"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Rust consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1.md, C-2)"
+
+# tests/vectors.rs and examples/persist.rs are modules of the test crate tests/conformance.rs, not targets of their own, so
+# automatic test and example discovery is off and the one test target is named here.
+autotests = false
+autoexamples = false
+
+[[test]]
+name = "conformance"
+path = "tests/conformance.rs"
+
+# The orm pins of docs/plans/fsm-v1.md, C-1: the model generator runs in build.rs, the runtime is used by the persist example.
+[build-dependencies]
+polyspec-orm-build = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }
+
+[dev-dependencies]
+polyspec-orm = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

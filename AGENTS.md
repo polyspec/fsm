@@ -5,8 +5,8 @@
 
 ## Purpose
 
-status defines state machines once and generates code for go, npm (js + d.ts), php, php-ext, python and rust. The plan,
-the scope (R1–R10) and the design are in `docs/plans/status-v1.md`; the definition is fixed in `docs/spec/status.md`.
+fsm defines state machines once and generates code for go, npm (js + d.ts), php, php-ext, python and rust. The plan,
+the scope (R1–R12) and the design are in `docs/plans/fsm-v1.md`; the definition is fixed in `docs/spec/fsm.md`.
 
 ## Judgement
 
@@ -56,12 +56,13 @@ starting: the number of `[~]` tasks does not grow while none becomes `[o]`.
 
 Enforced by tools: the message format (`commits-check`, commit-msg hook), one item per commit and the changelog of a
 finished item (commit-msg hook), the checklist format (`documents-check`), no push in the `[~]` state (`push-gate`) and
-path ownership (`owner-validate`, pre-commit hook). Review rules without a tool: imperative mood and What/Why, RED before
+path ownership (`owner-validate`, pre-commit hook), and that no tracked file names the library by its
+old name `status` except the reasoned entries of `scripts/check-name.mjs` (`name-check`). Review rules without a tool: imperative mood and What/Why, RED before
 GREEN, the test location, branch naming and deletion, no external sources, experimental code removed, WIP control,
 dependency pins, and that a conformance check asserts the expected value of its vector.
 
 ## Branches and worktrees
 
-Work on `main` directly is allowed. A branch is `{type}/{shortname}-{id}` and a worktree `status-{shortname}-{id}`; both are
+Work on `main` directly is allowed. A branch is `{type}/{shortname}-{id}` and a worktree `fsm-{shortname}-{id}`; both are
 deleted right after the merge into `main`. Experimental code that cannot enter `main` is removed before the commit; when it
 cannot be removed at once, a sub-item records the removal condition.

@@ -4,6 +4,24 @@
   "owners": [
     {
       "paths": [
+        "**"
+      ],
+      "targets": [
+        "name-check"
+      ]
+    },
+    {
+      "paths": [
+        "scripts/check-name.mjs",
+        "tests/check-name/**"
+      ],
+      "targets": [
+        "name-test",
+        "name-check"
+      ]
+    },
+    {
+      "paths": [
         "scripts/kit/**",
         "tests/kit/**",
         ".kit/**",
@@ -68,13 +86,13 @@
     },
     {
       "paths": [
-        "packages/status-compiler/**",
-        "schema/status.schema.json",
+        "packages/fsm-compiler/**",
+        "schema/fsm.schema.json",
         "machines/**",
-        "status.lock.json",
+        "fsm.lock.json",
         "conformance/**",
         "contracts/features.json",
-        "status.config.json"
+        "fsm.config.json"
       ],
       "targets": [
         "compiler-test",
@@ -94,8 +112,8 @@
     },
     {
       "paths": [
-        "packages/status-db/**",
-        "schema/status.dbs"
+        "packages/fsm-db/**",
+        "schema/fsm.dbs"
       ],
       "targets": [
         "db-test",
@@ -116,7 +134,7 @@
     },
     {
       "paths": [
-        "packages/status-npm/**"
+        "packages/fsm-npm/**"
       ],
       "targets": [
         "layout-check",
@@ -128,7 +146,7 @@
     },
     {
       "paths": [
-        "packages/status-go/**"
+        "packages/fsm-go/**"
       ],
       "targets": [
         "layout-check",
@@ -149,7 +167,7 @@
     },
     {
       "paths": [
-        "packages/status-gui/**"
+        "packages/fsm-gui/**"
       ],
       "targets": [
         "gui-test",
@@ -158,13 +176,13 @@
     },
     {
       "paths": [
-        "packages/status-compiler/**",
-        "schema/status.schema.json",
+        "packages/fsm-compiler/**",
+        "schema/fsm.schema.json",
         "machines/**",
-        "status.lock.json",
+        "fsm.lock.json",
         "conformance/**",
         "contracts/features.json",
-        "status.config.json"
+        "fsm.config.json"
       ],
       "targets": [
         "compiler-test",
@@ -173,8 +191,8 @@
     },
     {
       "paths": [
-        "packages/status-db/**",
-        "schema/status.dbs"
+        "packages/fsm-db/**",
+        "schema/fsm.dbs"
       ],
       "targets": [
         "db-test",
@@ -183,7 +201,7 @@
     },
     {
       "paths": [
-        "packages/status-php/**"
+        "packages/fsm-php/**"
       ],
       "targets": [
         "layout-check",
@@ -216,7 +234,7 @@
     },
     {
       "paths": [
-        "packages/status-rust/**"
+        "packages/fsm-rust/**"
       ],
       "targets": [
         "layout-check",
@@ -228,7 +246,7 @@
     },
     {
       "paths": [
-        "packages/status-npm/**"
+        "packages/fsm-npm/**"
       ],
       "targets": [
         "layout-check",
@@ -239,7 +257,7 @@
     },
     {
       "paths": [
-        "packages/status-python/**"
+        "packages/fsm-python/**"
       ],
       "targets": [
         "layout-check",
@@ -251,7 +269,7 @@
     },
     {
       "paths": [
-        "packages/status-php-ext/**"
+        "packages/fsm-php-ext/**"
       ],
       "targets": [
         "layout-check",

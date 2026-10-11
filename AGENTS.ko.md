@@ -1,13 +1,13 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 8ee479e6f9713cfbcc21b338b58a2451cb3fc3b3018b50bd8c881e12dce11ead -->
+<!-- source-sha256: ada150ae56a68a063218c612f786b43fca11c2e3861c04e3f7dcf5b62e3f34af -->
 # 개발
 
 [English](AGENTS.md)
 
 ## 목적
 
-status는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, python, rust용 코드를 생성한다. 계획, 범위(R1–R10),
-설계는 `docs/plans/status-v1.md`에 있고, 정의는 `docs/spec/status.md`에 고정한다.
+fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, python, rust용 코드를 생성한다. 계획, 범위(R1–R12),
+설계는 `docs/plans/fsm-v1.md`에 있고, 정의는 `docs/spec/fsm.md`에 고정한다.
 
 ## 판단
 
@@ -48,11 +48,12 @@ status는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext
 - 기록은 실제 이유를 적는다. 항목과 무관한 변경은 자기 이유와 함께 따로 커밋한다.
 
 도구가 강제하는 것: 메시지 형식(`commits-check`, commit-msg hook), 커밋당 항목 하나와 완료 항목의 changelog(commit-msg hook),
-체크리스트 형식(`documents-check`), `[~]` 상태 push 금지(`push-gate`), 경로 소유(`owner-validate`, pre-commit hook). 도구 없는
+체크리스트 형식(`documents-check`), `[~]` 상태 push 금지(`push-gate`), 경로 소유(`owner-validate`, pre-commit hook), 추적 파일이 라이브러리를
+옛 이름 `status`로 부르지 않음(`scripts/check-name.mjs`의 이유 붙은 항목 제외, `name-check`). 도구 없는
 리뷰 규칙: 명령조와 What/Why, GREEN 전 RED, 테스트 위치, 브랜치 이름과 삭제, 외부 출처 금지, 실험 코드 제거, WIP 통제, 의존 고정,
 conformance 검사가 벡터의 기대값을 단언하는지.
 
 ## 브랜치와 워크트리
 
-`main`에서 직접 작업해도 된다. 브랜치는 `{type}/{shortname}-{id}`, 워크트리는 `status-{shortname}-{id}`이며 둘 다 `main`에 병합한
+`main`에서 직접 작업해도 된다. 브랜치는 `{type}/{shortname}-{id}`, 워크트리는 `fsm-{shortname}-{id}`이며 둘 다 `main`에 병합한
 즉시 삭제한다. `main`에 들어갈 수 없는 실험 코드는 커밋 전에 제거한다. 바로 제거할 수 없으면 하위 항목에 제거 조건을 적는다.

@@ -1,0 +1,11 @@
+# The crudui list declaration of the machine list (docs/plans/fsm-v1.md, C-7). The rows are the machine keys that the
+# store loads (`{machine}`). The declaration holds no validation rule: every rule belongs to the core (docs/spec/fsm.md,
+# B-5), and the list only displays the keys.
+columns:
+  machine:
+    field: machine
+    label: Machine
+    format:
+      type: link
+      href: "/machines/{=machine}"
+empty: No machines are defined.

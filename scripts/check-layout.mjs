@@ -3,7 +3,7 @@
 //
 //   layout-config    contracts/layout.json exists and matches the schema below; a kind is one of the six targets and
 //                    names the generated globs of its package (the files that gen-check compares)
-//   layout-kinds     the directories of packages/ are exactly the tools and the kinds (packages/status-<kind>)
+//   layout-kinds     the directories of packages/ are exactly the tools and the kinds (packages/fsm-<kind>)
 //   layout-file      every file of a kind package matches a canonical file, a required file or an allowed glob of the kind
 //   layout-missing   every canonical file and every required file of the kind exists, and every canonical directory holds a file
 //   layout-php-twin  the php and the php-ext packages hold the same tests/ files with the same bytes
@@ -38,7 +38,7 @@ const SCHEMA = {
   properties: {
     schema: { type: 'integer', const: 1 },
     comment: { type: 'string' },
-    tools: { type: 'array', items: { type: 'string', pattern: '^status-[a-z][a-z-]*$' } },
+    tools: { type: 'array', items: { type: 'string', pattern: '^fsm-[a-z][a-z-]*$' } },
     canonical: {
       type: 'object',
       required: ['files', 'directories'],
@@ -68,16 +68,16 @@ export function layoutFindings(root) {
   const found = [];
   const packages = [...new Set(files.map(entry => entry.split('/')[1]))].sort();
   const kinds = Object.keys(layout.kinds).sort();
-  const declared = new Set([...layout.tools, ...kinds.map(kind => `status-${kind}`)]);
+  const declared = new Set([...layout.tools, ...kinds.map(kind => `fsm-${kind}`)]);
   for (const name of packages.filter(entry => !declared.has(entry))) {
     found.push(finding('layout-kinds', `packages/${name} is neither a tool nor a kind of ${LAYOUT}; declare it or remove it`));
   }
-  for (const kind of kinds.filter(entry => !packages.includes(`status-${entry}`))) {
-    found.push(finding('layout-kinds', `the kind ${kind} has no package packages/status-${kind}`));
+  for (const kind of kinds.filter(entry => !packages.includes(`fsm-${entry}`))) {
+    found.push(finding('layout-kinds', `the kind ${kind} has no package packages/fsm-${kind}`));
   }
 
-  for (const kind of kinds.filter(entry => packages.includes(`status-${entry}`))) {
-    const base = `packages/status-${kind}/`;
+  for (const kind of kinds.filter(entry => packages.includes(`fsm-${entry}`))) {
+    const base = `packages/fsm-${kind}/`;
     const own = files.filter(entry => entry.startsWith(base)).map(entry => entry.slice(base.length));
     const rule = layout.kinds[kind];
     const exact = new Set([...layout.canonical.files, ...rule.required]);
@@ -93,15 +93,15 @@ export function layoutFindings(root) {
     }
   }
 
-  if (['php', 'php-ext'].every(kind => kinds.includes(kind) && packages.includes(`status-${kind}`))) {
-    const tests = kind => files.filter(entry => entry.startsWith(`packages/status-${kind}/tests/`)).map(entry => entry.slice(`packages/status-${kind}/`.length));
+  if (['php', 'php-ext'].every(kind => kinds.includes(kind) && packages.includes(`fsm-${kind}`))) {
+    const tests = kind => files.filter(entry => entry.startsWith(`packages/fsm-${kind}/tests/`)).map(entry => entry.slice(`packages/fsm-${kind}/`.length));
     const php = tests('php');
     const ext = tests('php-ext');
     for (const entry of [...new Set([...php, ...ext])].sort()) {
-      const a = php.includes(entry) ? readFileSync(path.join(root, 'packages/status-php', entry)) : null;
-      const b = ext.includes(entry) ? readFileSync(path.join(root, 'packages/status-php-ext', entry)) : null;
+      const a = php.includes(entry) ? readFileSync(path.join(root, 'packages/fsm-php', entry)) : null;
+      const b = ext.includes(entry) ? readFileSync(path.join(root, 'packages/fsm-php-ext', entry)) : null;
       if (a === null || b === null || !a.equals(b)) {
-        found.push(finding('layout-php-twin', `${entry} differs between packages/status-php and packages/status-php-ext; the two packages run the same tests`));
+        found.push(finding('layout-php-twin', `${entry} differs between packages/fsm-php and packages/fsm-php-ext; the two packages run the same tests`));
       }
     }
   }
