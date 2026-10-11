@@ -256,6 +256,8 @@ test('copy --from mermaid --root fills the empty database; a second copy is E_ST
       events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
     }],
     lock: { order: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },
+    // The baseline of the db store is the stored lock rows (spec B-3), so after the copy it equals the lock.
+    baseline: { order: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },
     findings: [],
   });
   const before = await rowsOf(p.dsn);

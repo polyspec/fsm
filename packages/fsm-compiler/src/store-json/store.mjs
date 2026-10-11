@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { jsonText, writeAtomic } from '../../../../scripts/kit/files.mjs';
-import { readLockFile, writeLockFile } from '../store-lock/lock-file.mjs';
+import { committedLock, readLockFile, writeLockFile } from '../store-lock/lock-file.mjs';
 
 /** The $schema of every machine file: the editor schema, relative to machines/. */
 const SCHEMA = '../schema/fsm.schema.json';
@@ -41,7 +41,7 @@ function canonicalDefinition({ machine, states, events }) {
   };
 }
 
-/** The JSON store of the root directory `root`: { load() -> Promise<{ definitions, lock, findings }>, save({ definitions, lock }) -> Promise }. */
+/** The JSON store of the root directory `root`: { load() -> Promise<{ definitions, lock, baseline, findings }>, save({ definitions, lock }) -> Promise }. */
 export function jsonStore(root) {
   const machines = path.join(root, 'machines');
 
@@ -78,8 +78,9 @@ export function jsonStore(root) {
       }
     }
     const read = readLockFile(root);
-    findings.push(...read.findings);
-    return { definitions, lock: read.lock, findings };
+    const committed = committedLock(root);
+    findings.push(...read.findings, ...committed.findings);
+    return { definitions, lock: read.lock, baseline: committed.lock, findings };
   }
 
   async function save({ definitions, lock }) {

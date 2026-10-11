@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 080a153075ec8139221851e27344ba56de721e181653684d99f1262dc8d6bd7f -->
+<!-- source-sha256: f85caa30b7c432708d09a1d6863a220fc93378912414394676a247c48a46f98a -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -234,7 +234,7 @@ packages/fsm-<kind>/
   - `lock [--rename]`
   - `gen --kind <k> --out <dir>` (php는 `--php-namespace` 필수, php-ext는 `--php-namespace`와 `--php-ext-name` 필수, go는 `--go-module <module path>` 필수: 생성된 machine이 공용 패키지 `<module>/src/fsm`를 import하며 backend는 go.mod를 읽을 수 없다)
   - `vectors [--kind <k>] --out <path>`
-  - `check`: 전 정의 검증 + lock 일치
+  - `check`: 전 정의 검증 + lock 일치 + lock이 커밋된 code를 모두 유지(B-3)
   - `copy --to json|mermaid --root <dir>`
 - 루트 `gen-check`
   1. `fsm-gen vectors --out var/gen-check/conformance/vectors` 실행

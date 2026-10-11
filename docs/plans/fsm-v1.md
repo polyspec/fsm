@@ -240,7 +240,7 @@ Vectors (exhaustive; the core generates the oracle):
   - `lock [--rename]`
   - `gen --kind <k> --out <dir>` (php requires `--php-namespace`; php-ext requires `--php-namespace` and `--php-ext-name`; go requires `--go-module <module path>`, because a generated machine imports the shared package `<module>/src/fsm` and the backend cannot read go.mod)
   - `vectors [--kind <k>] --out <path>`
-  - `check`: validates every definition and the lock match
+  - `check`: validates every definition and the lock match, and the lock keeps every committed code (B-3)
   - `copy --to json|mermaid --root <dir>`
 - Root `gen-check`
   1. Run `fsm-gen vectors --out var/gen-check/conformance/vectors`.

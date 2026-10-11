@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4ea6c7a1315e78733e4fd4cd792793cd216c61ea5642a57607f6fae79f23f939 -->
+<!-- source-sha256: a94fbb0709114b6207936d8ddf6b9ca02352d78a30a73b5e734050fc6b25fe4a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-30: 커밋된 code는 lock을 잃어도 의미가 바뀌지 않는다(R1, 명세 B-3·B-5). 모든 store의 `load()`는 커밋된 lock을 `baseline`으로 돌려준다(json·mermaid는 git HEAD의 `fsm.lock.json`, db는 저장된 행). `check`, `gen`, `vectors`, `lock`, `save`, `copy`는 커밋된 code를 잃거나, 커밋된 reserved code를 상태에 주거나, 커밋된 key를 다른 code로 옮기는 lock을 `E_LOCK_REGRESSED`로 거부한다. 이름 변경은 커밋 전에도 받아들인다. 감사 사례(code 두 개를 바꾸고 `fsm.lock.json`을 비운 뒤 `lock`)는 `lock: ok`를 출력했으나 이제 거부된다. git 밖이나 추적되지 않는 lock은 커밋된 것이 없으므로 저장된 lock만 판정한다. db store에서 SQL로 바뀐 행은 감지하지 못한다. `lock`은 커밋된 code를 유지할 때만 삭제된 lock을 복구한다.
 - S-22-2: GUI 폼을 쓸 수 있다. `make gui-build`가 crudui stylesheet `@polyspec/crudui-generator-core/styles/crudui.css`를 `public/assets/crudui.css`로 복사해 `hyper-build-assets --static`에 넘기고, layout은 `/assets/crudui.css`를 링크하므로 행 버튼이 아이콘과 크기를 보인다. 상태 행의 새 field는 `New key`로 label을 붙인다(저장된 key는 `Key` 그대로다). 한 행의 두 field가 label을 공유하지 않는다. `public/favicon.ico`(`scripts/make-favicon.mjs`가 쓰는 ICO)가 `/favicon.ico`에 404 대신 200으로 응답하며, layout이 이를 링크한다. 브라우저 테스트가 세 가지를 모두 확인한다.
 - S-22-1: GUI 폼이 행 변경 뒤 다시 렌더링한다. 편집 폼(`packages/fsm-gui/client/main.ts`)은 crudui instance를 구독하고, `patchContent(host, renderForm(instance, render))`로 다시 렌더링한 뒤 `connection.sync()`를 호출한다. `connectForm`의 계약이다. 수정 전에는 행의 add·remove 버튼 클릭이 instance만 바꾸고 페이지는 바꾸지 않았다. `render`는 페이지의 crudui render 옵션(action, `_csrf` token, 오류)이며 페이지 state에 실리고, 폼은 `#fsm-form` host 요소 안에 있다. `packages/fsm-gui/tests/browser/browser.test.mjs`(`make gui-browser-test`)는 고정된 Playwright 1.64.0(정확한 버전 devDependency, `make gui-browsers`가 브라우저를 내려받음)의 headless Chromium으로 폼을 조작하며 add, save, remove, 제안 code를 확인한다. `make gui-test`는 최상위 테스트만 실행한다. 수정 전 첫 브라우저 단정은 `5 !== 6`으로 실패했다.
 
