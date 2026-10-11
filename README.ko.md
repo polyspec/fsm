@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: af7fdf9bcce2644d74d5f4d85a1cf79e7dae47b8f1c7f4e3e41dd3f2477701d1 -->
+<!-- source-sha256: cf5609e572e1f1e3c20d5106227e7542a7328801ba3597eb3a20cd9a540dd425 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -269,13 +269,15 @@ toolchain만 필요로 한다:
 ```sh
 git clone https://github.com/polyspec/fsm.git
 cd fsm
+make install                                       # once, online: the toolchains and every package dependency
 npm install -g ./packages/fsm-compiler             # fsm-gen: no dependencies
 make db-deps && npm install -g ./packages/fsm-db   # fsm-db: needs the orm packages
 make gui-build && npm install -g ./packages/fsm-gui # fsm-gui: builds the browser assets first
 ```
 
-json과 mermaid store에는 첫 명령만 있으면 된다. `make db-deps`는 `packages/fsm-db`의 orm 패키지를 release tarball에서 설치하고,
-`make gui-build`는 GUI를 설치하고 browser asset을 빌드한다.
+`make install`은 `var/tools`의 toolchain과 모든 패키지 의존성을 한 번 내려받는다. 나중의 실행은 이미 설치된 것을 찾고 아무것도
+내려받지 않는다. json과 mermaid store에는 첫 `npm install -g` 명령만 있으면 된다. `make db-deps`는 `packages/fsm-db`의 orm 패키지를
+release tarball에서 설치하고, `make gui-build`는 GUI를 설치하고 browser asset을 빌드한다.
 
 ## fsm-gen 명령
 
@@ -419,7 +421,7 @@ $ fsm-gen check --project ./broken
 ## 검사
 
 `make check`는 커밋된 트리에 대해 저장소의 전체 검사를 한 번 실행한다(`node scripts/kit/full-run.mjs run`, Makefile의 `CHECK_TARGETS`
-대상). 위의 모든 toolchain과 의존성이 설치되어 있어야 한다. 문서가 기대는 검사는 하나씩 실행할 수 있다:
+대상). 위의 모든 toolchain이 있어야 한다. 새 clone에서는 먼저 `make install`을 한 번 실행한다: toolchain은 `make install`에서만 오고, `make check`의 타깃은 필요한 패키지 의존성을 스스로 설치한다. 문서가 기대는 검사는 하나씩 실행할 수 있다:
 
 | 명령 | 검사 |
 |---|---|

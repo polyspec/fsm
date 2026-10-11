@@ -275,13 +275,15 @@ clone, so the command runs the code of that clone.
 ```sh
 git clone https://github.com/polyspec/fsm.git
 cd fsm
+make install                                       # once, online: the toolchains and every package dependency
 npm install -g ./packages/fsm-compiler             # fsm-gen: no dependencies
 make db-deps && npm install -g ./packages/fsm-db   # fsm-db: needs the orm packages
 make gui-build && npm install -g ./packages/fsm-gui # fsm-gui: builds the browser assets first
 ```
 
-The first command is all that the json and mermaid stores need. `make db-deps` installs the orm packages of
-`packages/fsm-db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
+`make install` downloads the toolchains of `var/tools` and every package dependency once; a later run finds them installed and
+downloads nothing. The first `npm install -g` is all that the json and mermaid stores need. `make db-deps` installs the orm
+packages of `packages/fsm-db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
 
 ## The fsm-gen CLI
 
@@ -427,8 +429,9 @@ table uses the machine `order` of the example above (B-6 of the definition).
 ## Checks
 
 `make check` runs the full suite of the repository once, over the committed tree (`node scripts/kit/full-run.mjs run` with the
-targets of `CHECK_TARGETS` in the Makefile). It needs every toolchain above and the dependencies installed. The checks that the
-documents depend on can be run one at a time:
+targets of `CHECK_TARGETS` in the Makefile). It needs every toolchain above. On a fresh clone, run `make install` once before it:
+the toolchains come only from `make install`, while the targets of `make check` install the package dependencies they need. The
+checks that the documents depend on can be run one at a time:
 
 | command | checks |
 |---|---|

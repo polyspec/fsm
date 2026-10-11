@@ -341,6 +341,16 @@
       "targets": [
         "install-python-test"
       ]
+    },
+    {
+      "paths": [
+        "Makefile",
+        "packages/*/Makefile",
+        "tests/make-install/**"
+      ],
+      "targets": [
+        "make-install-test"
+      ]
     }
   ]
 }
