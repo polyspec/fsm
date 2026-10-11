@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { check } from '../../scripts/check-python-lock.mjs';
+import { check, checkExport } from '../../scripts/check-python-lock.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const SCRIPT = path.join(ROOT, 'scripts/check-python-lock.mjs');
@@ -167,4 +167,28 @@ test('the command prints each finding and exits 1, and exits 0 on the committed 
   assert.match(failed.stderr, /\[python-lock\] .*uv\.lock gamma:/);
   const passed = spawnSync(process.execPath, [SCRIPT, COMMITTED], { encoding: 'utf8' });
   assert.equal(passed.status, 0, passed.stdout + passed.stderr);
+});
+
+// The export rule (S-34-2): the committed pylock.toml is the body of a fresh `uv export --format pylock.toml --frozen
+// --no-emit-project`. The header comment names the command and its flags, so only the body is compared.
+test('a pylock.toml whose body differs from a fresh export fails the export rule', (t) => {
+  const dir = fixture(t, {});
+  writeFileSync(path.join(dir, 'pylock.toml'), '# header\nlock-version = "1.0"\n# stale\n');
+  const findings = checkExport(dir, () => '# header\nlock-version = "1.0"\nrequires-python = ">=3.11"\n');
+  assert.ok(findings.some(finding => finding.rule === 'export'), `no export finding: ${JSON.stringify(findings)}`);
+});
+
+test('a pylock.toml whose body equals a fresh export passes, whatever its header says', (t) => {
+  const dir = fixture(t, {});
+  writeFileSync(path.join(dir, 'pylock.toml'), '# another header\nlock-version = "1.0"\n');
+  assert.deepEqual(checkExport(dir, () => '# header\nlock-version = "1.0"\n'), []);
+});
+
+test('a missing pylock.toml fails the export rule', (t) => {
+  const findings = checkExport(fixture(t, {}), () => 'lock-version = "1.0"\n');
+  assert.ok(findings.some(finding => finding.rule === 'export'), `no export finding: ${JSON.stringify(findings)}`);
+});
+
+test('the committed pylock.toml equals a fresh uv export of uv.lock', () => {
+  assert.deepEqual(checkExport(COMMITTED), []);
 });

@@ -13,7 +13,9 @@
   "pythonManifests": [
     "packages/fsm-python/pyproject.toml"
   ],
-  "pythonLocks": [],
+  "pythonLocks": [
+    "packages/fsm-python/pylock.toml"
+  ],
   "npmLocks": [
     "docs/package-lock.json",
     "packages/fsm-db/package-lock.json",

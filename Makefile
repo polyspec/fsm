@@ -101,8 +101,10 @@ make-install-test:
 # python-lock-test runs the tests of scripts/check-python-lock.mjs; python-lock-check checks that uv.lock of packages/fsm-python locks
 # every package with an exact version, hashes (git packages: a commit) and agrees with pyproject.toml. The kit dependency gate
 # reads no uv.lock, so this check covers the python lock (docs/plans/fsm-v1.md, C-1; docs/plans/execution-checklist.md, S-34).
+# It also requires the committed pylock.toml (the kit gate reads it through pythonLocks) to have the body of a fresh uv export of the
+# lock (S-34-2): a change of uv.lock without a new export fails here.
 python-lock-test:
-	node scripts/kit/run-tests.mjs node --results .results/python-lock-test.json --inputs scripts/check-python-lock.mjs --inputs tests/check-python-lock --inputs packages/fsm-python/pyproject.toml --inputs $(PYTHON_LOCK) -- tests/check-python-lock
+	node scripts/kit/run-tests.mjs node --results .results/python-lock-test.json --inputs scripts/check-python-lock.mjs --inputs tests/check-python-lock --inputs packages/fsm-python/pyproject.toml --inputs $(PYTHON_LOCK) --inputs packages/fsm-python/pylock.toml -- tests/check-python-lock
 
 python-lock-check:
 	node scripts/check-python-lock.mjs

@@ -10,11 +10,14 @@
 //   tag      a git requirement of pyproject.toml names the tag that the lock records (rev=) for the same package
 //   current  the dependencies of the project in the lock are the requirements of pyproject.toml
 //   closure  every dependency of a locked package is itself locked
+//   export   the committed pylock.toml (PEP 751) has the body of a fresh `uv export --format pylock.toml --frozen
+//            --no-emit-project` of uv.lock (S-34-2). The header comment names the command and its flags, so it is not compared.
 //
 //   node scripts/check-python-lock.mjs [<package directory>]
 //
 // The directory defaults to packages/fsm-python of this checkout. A finding is { rule, subject, problem, fix }; the command
-// prints one line per finding and exits 1 when there is one.
+// prints one line per finding and exits 1 when there is one. The export rule runs uv (no network: --frozen).
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -26,6 +29,7 @@ export const RULES = {
   tag: 'a git requirement of pyproject.toml is locked at the tag it names',
   current: 'the requirements of pyproject.toml are the dependencies of the project in uv.lock',
   closure: 'every dependency of a locked package is locked',
+  export: 'the committed pylock.toml has the body of a fresh uv export of uv.lock (--format pylock.toml --frozen --no-emit-project)',
 };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -144,6 +148,46 @@ export function check(directory = DEFAULT_DIRECTORY) {
   return findings;
 }
 
+/** The body of a PEP 751 file: its lines without the header comment, with the line ends of the file kept. */
+export const pylockBody = text => text.split('\n').filter(line => !line.startsWith('#')).join('\n').replace(/\n+$/, '\n');
+
+/**
+ * Runs uv export of the package directory and returns its text: the pylock.toml of uv.lock, in the form the lock gate reads.
+ * `--color never` keeps the output free of escape codes; a uv that fails throws with its stderr.
+ */
+export function uvExport(directory) {
+  const result = spawnSync('uv', ['export', '--format', 'pylock.toml', '--frozen', '--no-emit-project', '--color', 'never'], {
+    cwd: directory,
+    encoding: 'utf8',
+  });
+  if (result.error) throw new Error(`uv export could not run: ${result.error.message}`);
+  if (result.status !== 0) throw new Error(`uv export failed with exit ${result.status}: ${result.stderr.trim()}`);
+  return result.stdout;
+}
+
+/**
+ * The export rule: pylock.toml of `directory` has the body of `exporter(directory)`, a fresh export of uv.lock. A missing file
+ * is a finding, and the exporter may throw (the command reports that and exits 2).
+ */
+export function checkExport(directory = DEFAULT_DIRECTORY, exporter = uvExport) {
+  const relative = path.relative(ROOT, directory) || '.';
+  const subject = `${relative}/pylock.toml`;
+  const pylockPath = path.join(directory, 'pylock.toml');
+  if (!existsSync(pylockPath)) {
+    return [{ rule: 'export', subject, problem: 'the file does not exist', fix: `run make -C ${relative} install, which exports it from uv.lock` }];
+  }
+  const committed = pylockBody(readFileSync(pylockPath, 'utf8'));
+  const fresh = pylockBody(exporter(directory));
+  if (committed === fresh) return [];
+  const line = committed.split('\n').findIndex((text, index) => text !== fresh.split('\n')[index]) + 1;
+  return [{
+    rule: 'export',
+    subject,
+    problem: `the body differs from a fresh export of uv.lock at body line ${line}`,
+    fix: `run make -C ${relative} install, which exports it from uv.lock, and commit the file`,
+  }];
+}
+
 /** The line of a finding. */
 export const findingLine = finding => `[python-lock] ${finding.subject}: ${finding.problem}. Rule: ${RULES[finding.rule]}. Fix: ${finding.fix}.`;
 
@@ -154,11 +198,11 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     process.exit(2);
   }
   const directory = args.length ? path.resolve(args[0]) : DEFAULT_DIRECTORY;
-  const findings = check(directory);
+  const findings = [...check(directory), ...checkExport(directory)];
   if (findings.length) {
     for (const finding of findings) console.error(findingLine(finding));
     console.error(`[python-lock] ${findings.length} finding${findings.length === 1 ? '' : 's'}; the check reads only the files of the package directory`);
     process.exit(1);
   }
-  process.stdout.write(`[python-lock] ${path.relative(ROOT, directory) || '.'}: every package of uv.lock is locked at a version, hashes and commits, and matches pyproject.toml\n`);
+  process.stdout.write(`[python-lock] ${path.relative(ROOT, directory) || '.'}: every package of uv.lock is locked at a version, hashes and commits, matches pyproject.toml, and pylock.toml is its export\n`);
 }
