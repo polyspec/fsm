@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 43eff0e1e91ac0083512382b96aa95ee92199bdd12e9982c117a6a57d4807d42 -->
+<!-- source-sha256: 8ad303f7de0af4e4f4785e05db6afa6caa8dbead74a52a02f05387769c4c1775 -->
 # 실행 체크리스트
 
 ## status v1
@@ -25,7 +25,7 @@
 | S-10-1 | go 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-go`와 `parity-go` | 생성물 없이 `test-go` RED → GREEN, `layout-check`와 `parity-go` 통과 | [o] |
 | S-11 | python backend + `vectors --kind python`(golden) | golden RED → GREEN | [o] |
 | S-11-1 | python 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-python`와 `parity-python` | 생성물 없이 `test-python` RED → GREEN, `layout-check`와 `parity-python` 통과 | [o] |
-| S-11-2 | python 패키지: kit K22(run-tests python이 color 없이 실행)를 sync하면 packages/status-python/Makefile의 `PYTHON_COLORS=0`을 제거한다. 제거 조건: K22가 든 kit release를 `make kit-sync`로 채택 | FORCE_COLOR가 있고 Makefile에 PYTHON_COLORS가 없어도 test-python 통과 | [ ] |
+| S-11-2 | python 패키지: kit K22(run-tests python이 color 없이 실행)를 sync하면 packages/status-python/Makefile의 `PYTHON_COLORS=0`을 제거한다. 제거 조건: K22가 든 kit release를 `make kit-sync`로 채택 | FORCE_COLOR가 있고 Makefile에 PYTHON_COLORS가 없어도 test-python 통과 | [o] |
 | S-11-3 | `make install-python`은 uv를 `--no-bin`으로 실행하므로 uv는 사용자 bin 디렉터리(기본 `~/.local/bin`)에 아무것도 쓰지 않는다. `var/tools/bin/python3`만 uv 관리 인터프리터를 가리킨다 | `UV_PYTHON_BIN_DIR`를 임시 디렉터리로 지정하면 install-python이 그곳에 `python3.14`를 쓴다 RED → GREEN; `--no-bin`이면 그 디렉터리는 비어 있고 `~/.local/bin`은 바뀌지 않는다 | [o] |
 | S-12 | php backend + `vectors --kind php`(golden) | golden RED → GREEN | [o] |
 | S-12-1 | php 패키지: conformance + persist + `examples/model/`, `kinds`에 kind 추가, toolchain과 의존 고정, `test-php`와 `parity-php` | 생성물 없이 `test-php` RED → GREEN, `layout-check`와 `parity-php` 통과 | [o] |

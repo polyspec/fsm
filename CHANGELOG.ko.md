@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e3a9c0cd8b9457334182fea752f8e583b5099dad08bf41ab51bf33362609d76e -->
+<!-- source-sha256: 5603ea2fd52fb4a9f3caf64e932297e8b6946d1de4315890628112451b025428 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-11-2: python 패키지가 color 우회 설정을 제거한다. kit v0.0.15(K22)가 run-tests python에서 `NO_COLOR=1`과 `PYTHON_COLORS=0`을 직접 설정하므로, `packages/status-python/Makefile`의 `make test`는 더 이상 `PYTHON_COLORS=0`을 설정하지 않는다. kit 설정이 없으면 `FORCE_COLOR=3`에서 unittest가 verbose 줄에 color를 넣고 reporter가 이를 읽지 못한다. 줄을 제거한 상태에서 v0.0.14 runner는 10번 중 10번 실패했고, v0.0.15 runner는 10번 중 10번 통과했다. `make test-python`은 `FORCE_COLOR=3`에서도, 없어도 89개 case를 모두 통과한다.
 - S-16-1: GUI test hang을 원인에서 고쳤다. kit v0.0.15 sync(K23)는 test child의 stdout 파이프를 blocking으로 만든다(`scripts/kit/test-load-check.mjs`). 비동기 파이프에서는 test child의 `process.exit`이 파이프에 남은 결과를 버렸다. 그래서 파일이 실행한 test보다 적은 결과를 보고할 수 있었고, runner는 "the test did not finish"를 출력할 수 있었다. case 600개짜리 파일에서 v0.0.14는 30번 중 12번, v0.0.15는 30번 중 0번 결과를 잃었고, blocking 줄만 되돌린 v0.0.15는 30번 중 10번 잃었다. 이 sync는 K21(`--cwd` 아래 node 파일 group)과 K22(run-tests python이 `NO_COLOR=1`과 `PYTHON_COLORS=0`을 설정)도 가져온다. test 변경 전에는 `make gui-test`가 4개씩 병렬로 20번 중 20번 통과했고(각 210개 결과), `make compiler-test`도 20번 중 20번 통과했다(각 302개 결과). 이 checkout에서는 hang이 재현되지 않았다. `packages/status-gui/tests/mermaid-parse.test.mjs`의 호출별 20초 deadline은 hang을 가렸을 뿐이어서 제거했다. runner가 이미 case마다 자체 timeout을 준다. flat test(예약 단어와 위치마다 하나, 일반 key마다 하나)는 각 case가 자기 이름과 결과를 가지므로 유지했다. 변경 후 `make gui-test`는 20번 중 20번 통과했다.
 - S-11-3: `make install-python`은 `uv python install --no-bin 3.14`를 실행하므로, uv가 사용자 bin 디렉터리(기본 `~/.local/bin`)에 `python3.14` 실행 파일을 쓰지 않는다. 인터프리터는 여전히 uv 관리 설치이며, `var/tools/bin/python3`만 그것을 가리킨다. 변경 전에는 `UV_PYTHON_BIN_DIR`를 임시 디렉터리로 지정하면 target이 그곳에 `python3.14`를 썼고, 변경 후에는 그 디렉터리가 비어 있고 `~/.local/bin`은 바뀌지 않는다.
 - S-14-3: `gen`과 `vectors --kind`는 출력 디렉터리의 git-ignored 파일을 건너뛴다(`packages/status-compiler/src/cli/write-generated.mjs`). 무시된 파일은 손으로 쓴 파일이 아니라 빌드 산출물이므로 `E_NOT_GENERATED`로 생성기를 막지도 않고 stale 파일로 지우지도 않는다. 그래서 `packages/status-php-ext`에서는 `make test` 뒤에 `make clean` 없이 `make gen`을 실행한다. 추적 파일이나 git이 무시하지 않는 파일은 여전히 `E_NOT_GENERATED`이며, git work tree 밖에서는 무시되는 파일이 없다. 무시된 파일은 출력 디렉터리의 `git ls-files --others --ignored --exclude-standard`로 구한다. `make clean`은 phpize 출력을 지우는 목표로 남는다. 테스트는 `packages/status-compiler/tests/write-generated.test.mjs`에 있다.

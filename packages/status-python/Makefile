@@ -6,7 +6,7 @@
 # from the root schema/persist.dbs. DEST names the directory of the generated files (DEST ?= .), so that gen-check can write them
 # into var/gen-check/python and compare them with the working tree. test runs offline with the venv first on PATH, so that
 # python3 is the Python of the venv, and it runs from the checkout root with root-relative paths, because the kit reporter names
-# the file group relative to the working directory. PYTHON_COLORS=0 keeps the outcome words plain, which the kit reporter reads.
+# the file group relative to the working directory.
 ROOT := ../..
 DEST ?= .
 PYTHON ?= $(abspath $(ROOT))/var/tools/bin/python3
@@ -29,8 +29,6 @@ gen:
 	$(STATUS_GEN) vectors --project $(ROOT) --kind python --out $(DEST)/tests/vectors.py
 	$(VENV)/bin/orm-gen gen --schema $(ROOT)/schema/persist.dbs --out $(DEST)/examples/model
 
-# PYTHON_COLORS=0 keeps unittest's outcome words plain for the kit reporter. TODO(K22): kit item K22 moves this setting into the kit
-# run-tests; remove the PYTHON_COLORS=0 of this recipe after the kit sync that brings K22.
 test:
 	@test -x $(VENV)/bin/python || { echo "test: $(VENV) is missing; run make install first"; exit 1; }
-	PYTHON_COLORS=0 PATH=$(CURDIR)/$(VENV)/bin:$$PATH node $(ROOT)/scripts/kit/run-tests.mjs python --results .results/python.json --inputs packages/status-python --inputs schema/persist.dbs -- discover -s packages/status-python/tests -t packages/status-python/tests
+	PATH=$(CURDIR)/$(VENV)/bin:$$PATH node $(ROOT)/scripts/kit/run-tests.mjs python --results .results/python.json --inputs packages/status-python --inputs schema/persist.dbs -- discover -s packages/status-python/tests -t packages/status-python/tests
