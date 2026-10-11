@@ -222,3 +222,14 @@ test('make -n check prints no make warning: no target of the repository replaces
   const warnings = result.stderr.split('\n').filter((line) => line.includes('warning:'));
   assert.deepEqual(warnings, []);
 });
+
+// The full suite runs fsm's vector parity check (scripts/check-parity.mjs), not the parity-check of kit K33, which fsm has not
+// adopted (docs/plans/fsm-v1.md, C-4; S-42). A rebase once put the kit name back into CHECK_TARGETS, so the suite ran the kit
+// checker and no vector parity at all, with no make warning (S-35-3).
+test('make check runs vector-parity-check and not the parity-check of kit K33 (S-35-3)', () => {
+  const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  const targets = result.stdout.split('\n').find((line) => line.includes('full-run.mjs run')).split(/\s+/);
+  assert.ok(targets.includes('vector-parity-check'), 'CHECK_TARGETS does not run vector-parity-check');
+  assert.ok(!targets.includes('parity-check'), 'CHECK_TARGETS runs the parity-check of kit K33');
+});
