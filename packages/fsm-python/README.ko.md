@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: d7d0b96006d539d459b1705c90072f59cbd489a307cbaae68a4b150e641b35de -->
+<!-- source-sha256: 5189a22d6c03a41e6d9150f9a6e4e97972d90b45ddc60792f3a5435390e183ff -->
 # polyspec-fsm-python
 
 [English](README.md)
@@ -64,7 +64,7 @@ except fsm.Error as error:
     print(error.code, error.expected, error.actual, error.event)
 ```
 
-이 program은 checkout의 `.venv`의 Python 3.14와 이 checkout의 생성 파일(패키지 디렉터리 `src/app_fsm`)로 실행했다. 출력은 다음과 같다:
+이 program은 checkout의 `.venv`의 Python 3.14로, 위 명령이 `./app/order_fsm`에 쓴 패키지로 실행했다. module 경로에는 `app/`을 넣었다(`PYTHONPATH=app`). 출력은 다음과 같다:
 
 ```text
 Step(to=<State.PAID: 2>, changed=True)

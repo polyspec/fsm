@@ -1,5 +1,5 @@
 <!-- doc-id: readme-go -->
-<!-- source-sha256: b2bde937afd2b013f97ab2211fba107cc9431f29931dea68f9b868cfdeda702c -->
+<!-- source-sha256: b04bcc27f2f8a72e14e54b2b81ba1e07a4e19eba971c3e9b4970fc48f8e014ad -->
 # github.com/polyspec/fsm-go
 
 [English](README.md)
@@ -180,6 +180,8 @@ func Transition(db *orm.DB, id int64, decide Decide) (int32, bool, error) {
 `decide`의 오류(`Apply`의 오류)는 callback에서 돌아오므로 transaction이 되돌아가고 저장된 상태는 그대로 남는다. 같은 `expected`로
 다시 시도하면 `changed`가 false가 되어 아무것도 쓰지 않는다. 모델 `examples/model`은 `go tool orm-gen`이 `schema/persist.dbs`로부터
 생성한다. 같은 파일의 `Open`, `Seed`, `StatusOf`는 table을 만들고 row를 읽는다.
+위 발췌와 파일은 test bed의 model package `github.com/polyspec/fsm-go/examples/model`을 쓴다. `examples/persist.go`를 복사해 쓰는
+소비자는 자기 module의 model package(자기 schema로부터 `orm-gen`이 생성한)를 같은 자리에서 import한다.
 
 ## 테스트
 
