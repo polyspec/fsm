@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { venvProblem } from '../../scripts/kit/run-tests.mjs';
+import { venvProblem } from '../../scripts/kit/python-venv.mjs';
 import { declaredToolchain } from '../../scripts/kit/toolchain-declared.mjs';
 import { put, tree } from '../kit/tree.mjs';
 
@@ -50,13 +50,18 @@ function sandbox(t) {
   return dir;
 }
 
-/** The result of `make -n <goal>` in dir, with no inherited make flags. */
-function dryRun(dir, goal) {
+/** The environment of a make run, with no inherited make flags. */
+function cleanEnv() {
   const env = { ...process.env };
   delete env.MAKEFLAGS;
   delete env.MAKELEVEL;
   delete env.MFLAGS;
-  return spawnSync('make', ['-n', goal], { cwd: dir, encoding: 'utf8', env });
+  return env;
+}
+
+/** The result of `make -n <goal>` in dir, with no inherited make flags. */
+function dryRun(dir, goal) {
+  return spawnSync('make', ['-n', goal], { cwd: dir, encoding: 'utf8', env: cleanEnv() });
 }
 
 /** The output of `make -n <goal>`, which must succeed. */
@@ -132,10 +137,19 @@ test('a venv made by uv venv is refused by the runner, because it holds symbolic
   assert.ok(venvProblem(path.join(dir, 'venv'), ROOT), 'the runner accepted a uv venv with symbolic links');
 });
 
+test('make -n install of the package makes the venv with the kit python-venv, never with -m venv (S-41-1, kit K44)', (t) => {
+  const dir = sandbox(t);
+  const result = spawnSync('make', ['-n', 'install'], { cwd: path.join(dir, 'packages/fsm-python'), encoding: 'utf8', env: cleanEnv() });
+  assert.equal(result.status, 0, `make -n install failed:\n${result.stdout}${result.stderr}`);
+  assert.match(result.stdout, /python-venv DIR=packages\/fsm-python\/\.venv|python-venv\.mjs packages\/fsm-python\/\.venv/, `install does not call the kit python-venv:\n${result.stdout}`);
+  assert.doesNotMatch(result.stdout, /-m venv/, `install runs -m venv itself:\n${result.stdout}`);
+});
+
 test('the package Makefile exports pylock.toml from uv.lock and builds the venv without uv venv or uv sync', () => {
   const makefile = readFileSync(path.join(PACKAGE, 'Makefile'), 'utf8');
   assert.match(makefile, /\$\(UV\) export --format pylock\.toml --frozen --no-emit-project/);
-  assert.match(makefile, /-m venv --copies --without-pip/);
+  assert.doesNotMatch(makefile, /-m venv/, 'the package Makefile runs -m venv itself; the kit python-venv makes the venv');
+  assert.match(makefile, /python-venv DIR=packages\/fsm-python\/\.venv/);
   assert.match(makefile, /--link-mode copy/);
   const recipes = makefile.split('\n').filter(line => !line.startsWith('#')).join('\n');
   assert.doesNotMatch(recipes, /(^|[^$(\w])uv (venv|sync)\b/m, 'a recipe runs uv venv or uv sync');
