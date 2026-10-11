@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 208dbca41e4ca517c32586e9cc36b12b1ffd32c6914a581901f4f46c0e10bdf3 -->
+<!-- source-sha256: 68898f57486243dafaf52e65cb1c42728746de1753d7020d3c1a5c3f330fd1d0 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -387,6 +387,17 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - 한국어 펜스 코드 블록은 영어 블록과 같다(`documents-check`가 요구한다). 따라서 코드와 명령 출력은 번역하지 않고, 그 둘을 둘러싼 산문만 번역한다.
 - 테스트는 `tests/check-readmes/`(`make readme-test`)이고, `make readme-check`는 저장소에 검사를 실행한다.
 
+### C-10. CI와 Pages(S-21)
+- `.github/workflows/ci.yml`은 main의 모든 push와 수동 실행(workflow_dispatch)에서 돈다. 한 job인 `check`는 ubuntu-24.04에서 실행되며 정확히 두 target을 호출한다: `make install`, 그다음 CHECK_TARGETS의 전체 검사인 `make check`. `make check` 전에 `packages/fsm-gui`에서 sudo로 `npx playwright install-deps chromium`을 실행한다(`gui-browser-test`가 구동하는 Chromium의 시스템 라이브러리다. 브라우저 자체는 `make check`가 `gui-browsers`로 설치한다).
+- job은 PostgreSQL 17과 MySQL 8.4를 서비스로 띄우고 `FSM_TEST_*` 변수 네 개를 설정한다. 서비스와 env는 C-6의 yaml 블록을 그대로 옮긴 것이다. `make workflows-test`가 job에 그 블록이 있는지 확인하므로 계획과 워크플로가 어긋나지 않는다.
+- 버전은 그것을 선언하는 파일에서 온다. Node.js는 `.node-version`(setup-node), Go는 `packages/fsm-go/go.mod`(setup-go, 모듈 캐시 없음), PHP는 `config/toolchain.json`의 `php`(setup-php, 확장 `pdo_pgsql`과 `pdo_mysql`: php-ext 빌드와 영속화 테스트가 쓴다), Rust는 `rust-toolchain.toml`(rustup으로 minimal 프로필을 설치한다. `RUSTUP_AUTO_INSTALL`은 `0`이다).
+- uv는 이 계획에서 `uv==0.12.11`로 고정하고, 워크플로가 `pipx install`로 설치한다. 결정: S-21 이전에는 어떤 파일도 uv를 고정하지 않았고, `config/toolchain.json`은 고정값을 담을 수 없다. 그 스키마(`scripts/kit/schema`에 vendored)가 이름이 없는 키를 금지하기 때문이다. `make workflows-test`는 워크플로가 그 버전을 설치하는지 확인한다.
+- 모든 action은 전체 commit으로 고정하고 버전 주석(`# vX`, 태그에 `v`가 없으면 태그 이름)을 붙인다. commit은 템플릿 저장소가 같은 버전에 대해 검증한 것이다.
+- job은 `var/full-run.json`과 `.results/`를 `!cancelled()` 조건으로 artifact에 올린다. 실패한 실행도 기록을 남긴다.
+- `.github/workflows/pages.yml`은 main의 모든 push와 수동 실행에서 돈다. `VITEPRESS_BASE=/fsm/`(사이트의 base이며 `docs/.vitepress/config.mts`가 읽는다)로 `make docs-build`를 실행하고, `docs/.vitepress/dist`를 upload-pages-artifact로 올린 뒤 deploy-pages로 배포한다. 사이트는 https://polyspec.github.io/fsm/ 에 게시된다.
+- 두 워크플로는 최상위에 `permissions: contents: read`를 두고, concurrency 그룹은 실행을 취소하지 않는다. 새 push가 이전 실행을 취소하지 않는다.
+- 테스트는 `tests/workflows/`(`make workflows-test`)이다. 워크플로를 텍스트로 읽고 네트워크가 필요 없다. 모든 pin, check job의 두 make 호출, 서비스와 env, 버전, artifact, 사이트의 base와 배포를 확인한다.
+
 ## D. 체크리스트와 owner 검사
 
 항목의 상태는 [docs/plans/execution-checklist.ko.md](execution-checklist.ko.md)에 있다. 이 계획의 유일한 체크리스트이며(AGENTS.ko.md, 체크리스트), 이 절은 상태를 담지 않는다. kit 항목 K17~K19는 kit 저장소의 항목이라 이 체크리스트에 없으며, E절이 이름을 든다.
@@ -425,6 +436,7 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `install-python-test` (`tests/install-python`: the install-python recipe in a temporary checkout with a stub uv, S-11-3)
   - `python-lock-test` (`tests/check-python-lock`: the lock rules on fixtures and on the committed uv.lock, S-34) and `python-lock-check` (the same rules on `packages/fsm-python`)
+  - `workflows-test`(`tests/workflows`: CI와 Pages 워크플로의 pin, 버전, 서비스, C-10, S-21)
   - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
   - `test-<kind>`, `parity-<kind>`(`parity-<kind>: test-<kind>`), `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
