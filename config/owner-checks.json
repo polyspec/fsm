@@ -291,6 +291,25 @@
     },
     {
       "paths": [
+        "scripts/check-readmes.mjs",
+        "tests/check-readmes/**"
+      ],
+      "targets": [
+        "readme-test",
+        "readme-check"
+      ]
+    },
+    {
+      "paths": [
+        "**/README.md",
+        "**/README.ko.md"
+      ],
+      "targets": [
+        "readme-check"
+      ]
+    },
+    {
+      "paths": [
         "docs/package.json",
         "docs/package-lock.json"
       ],

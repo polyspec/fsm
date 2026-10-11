@@ -1,29 +1,90 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: 099e70b4798321c66fdea0ef27c82cb7c45ae2d22fe77ba37557e0e83aca433b -->
+<!-- source-sha256: 41330881f12978fda5efdd78da6e8a2a33de4dafe23dbe709e4b9364e721ede8 -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
 
-fsm의 PHP extension kind다(`docs/plans/fsm-v1.md`, C-2). 이 패키지는 비공개이며 테스트 벤치다. 배포하지 않는다.
-fsm 정의의 생성된 상태 기계를 하나의 PHP extension `polyspec_fsm_test`로 빌드하고, 그 extension을 php 패키지와 같은
-conformance vector로 검사한다. 공개 API는 php kind의 것과 같다. namespace는 `Polyspec\FsmTest`이고, machine마다 하위
-namespace `<ns>\<Pascal machine key>`(예: `Polyspec\FsmTest\Order`)가 있으며, enum `State`와 `Event`, class `Step`, 함수
-`initial`, `code`, `key`, `fromCode`, `isFinal`, `eventsFrom`, `target`, `apply`를 담는다. 공용 `Polyspec\FsmTest\Fsm`는
-enum `Code`와 exception `Error`를 담는다.
+fsm의 PHP extension 종류(`docs/plans/fsm-v1.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의의 생성된 상태
+기계를 `polyspec_fsm_test`라는 PHP extension 하나로 빌드하고, 그 extension을 php 패키지와 같은 conformance vector로 검사한다. 공개 API는
+php 종류의 API다. namespace `Polyspec\FsmTest`, 기계마다 하위 namespace(예: `Polyspec\FsmTest\Order`)에 enum `State`와 `Event`, class
+`Step`, 함수 `initial`, `code`, `key`, `fromCode`, `isFinal`, `eventsFrom`, `target`, `apply`를 둔다. 공유 `Polyspec\FsmTest\Fsm`은 enum
+`Code`와 예외 `Error`를 가진다. 함수는 C로 쓰여 namespace에 등록되므로, 소비자는 php 종류와 같이 호출한다.
 
-- `src/`: `fsm-gen gen --kind php-ext`가 생성한다(직접 편집하지 않는다). `order.c`는 machine 하나이고, `fsm.c`는 공용 class와
-  module entry이며, `php_polyspec_fsm_test.h`는 header, `polyspec_fsm_test_arginfo.h`는 arginfo, `polyspec_fsm_test.stub.php`는
-  편집기용 선언, `config.m4`는 phpize가 읽는 build 선언이다. `make build`는 `src/`에 phpize 출력을 더하며, Git은 이를 무시한다.
-- `tests/Vectors.php`: 모든 machine의 vector case이며 `fsm-gen vectors --kind php-ext`가 생성한다. php 패키지의
-  `tests/Vectors.php`와 byte 단위로 같다.
-- `tests/ConformanceTest.php`: php 패키지 파일의 복사본이며 `make gen`이 만든다. vector case마다 PHPUnit test 하나를
-  `test_<feature>__<id>` 이름으로 실행한다. 공개 API만 쓰므로 두 패키지가 같은 파일을 실행한다.
-- `examples/persist.php`: php 패키지 파일의 복사본이며 `make gen`이 만든다. SQLite에서 polyspec orm으로 `docs/spec/fsm.md`(B-4)의
-  persistence 패턴을 실행하며, persist case가 이를 실행한다.
-- `examples/model/`: 루트 `schema/persist.dbs`에서 orm-gen이 생성한 orm model이다.
+## 프로젝트에 생성
 
-이 디렉터리에서 `make install`은 고정된 의존(`composer.lock`, php 패키지와 같은 패키지)을 설치하고, `make gen`은 위 파일을
-다시 생성하며, `make build`는 `src/`에서 `phpize`, `./configure`, `make`로 extension을 빌드한다. `make test`는 빌드한 뒤
-`scripts/kit/run-tests.mjs`로 테스트를 실행하며, 빌드한 module을 `--php-extension`으로 올린다. `make gen`은 build 뒤에
-`make clean` 없이 실행한다. phpize 출력은 git이 무시하므로 gen은 그것을 건너뛴다(막지도 지우지도 않는다). `make clean`은 build의 phpize 출력을 지운다. 루트 `make gen-check`는 생성 파일과
-복사본이 최신인지 확인하고, `make parity-php-ext`는 모든 vector case가 한 번씩 통과했는지 확인한다.
+extension의 소스 디렉터리에 쓴다. namespace와 extension 이름이 필요하다:
+
+```sh
+fsm-gen gen --project /path/to/order-machines --kind php-ext --php-namespace 'Acme\Fsm' --php-ext-name acme_fsm --out ./ext/src
+```
+
+```text
+[fsm-gen] gen: ok
+```
+
+extension은 그 디렉터리에서 PHP 빌드 도구로 빌드한다. test bed가 `make build`로 하는 것과 같다:
+
+```sh
+cd ext/src && phpize && ./configure && make
+```
+
+module은 `modules/acme_fsm.so`다. `php -d extension=/absolute/path/to/modules/acme_fsm.so`로 읽는다. vector는
+`fsm-gen vectors --kind php-ext --php-namespace 'Acme\Fsm' --out <file>`로 쓴다. 이는 php 종류의 vector와 같은 바이트를 쓴다.
+
+## 생성 파일
+
+| 파일 | 내용 |
+|---|---|
+| `config.m4` | `phpize`가 읽는 빌드 선언(extension 이름, 소스) |
+| `order.c` | 기계 하나: enum `State`와 `Event`, class `Step`, namespace 함수. `zend_register_internal_enum`과 `ZEND_NS_NAMED_FE`로 등록한다 |
+| `fsm.c` | 공유 namespace `Fsm`의 enum `Code`와 예외 `Error`, 그리고 정의 순서로 모든 기계를 초기화하는 module 진입점 |
+| `php_acme_fsm.h` | extension의 header |
+| `acme_fsm_arginfo.h` | 함수의 인자 정보 |
+| `acme_fsm.stub.php` | 편집기와 정적 분석을 위한 선언 |
+
+생성된 `src/` 파일은 생성 header를 가진다. `make build`가 만든 phpize 출력(configure 스크립트, object, `modules/` 디렉터리)은 `src/`에
+쓰이고 Git이 무시한다. `fsm-gen gen`은 무시되는 파일을 건너뛰므로 빌드 뒤에도 `gen`을 실행할 수 있다. test bed의 `make clean`이
+phpize 출력을 지운다.
+
+## API
+
+API는 php 종류의 것이다([php README](../fsm-php/README.ko.md), API 절). extension은 같은 이름, 같은 타입, 같은 예외를 준다:
+
+```php
+<?php
+use Polyspec\FsmTest\Order\State;
+use Polyspec\FsmTest\Order\Event;
+use Polyspec\FsmTest\Order;
+
+$step = Order\apply(State::Draft, Event::Next, State::Draft);   // Step with ->to and ->changed
+```
+
+순수 호출과 영속화 패턴은 php 패키지의 코드와 같다. test bed는 php 패키지의 `tests/ConformanceTest.php`와 `examples/persist.php`를
+복사하며, `tests/Vectors.php`는 php 패키지의 파일과 바이트가 같다.
+
+## 오류
+
+함수는 `Polyspec\FsmTest\Fsm\Error`를 던진다. `\Exception`이며, `getCode()`(문자열 `E_CONFLICT`, `E_INVALID_TRANSITION`,
+`E_UNKNOWN_CODE` 또는 `E_RESERVED_CODE`)와 속성 `expected`, `actual`, `event`(`?int`, 설정되지 않으면 `null`)를 가진다. 오류 code는
+enum `Code`의 값이다. C 쪽은 php 쪽과 같은 class를 던진다(class의 생성자는 `fsm.c`에 등록된다). 그러므로 php 종류용으로 쓴 `catch`는
+그대로 동작한다.
+
+## 영속화
+
+`examples/persist.php`는 `make gen`이 만든, php 패키지 파일의 복사본이다. `docs/spec/fsm.md`, B-4의 SQLite와 polyspec orm 영속화 패턴이다
+([php README](../fsm-php/README.ko.md), 영속화 절). transaction은 row를 잠금 아래 읽고, event를 호출자가 관찰한 상태에 적용하며,
+바뀐 상태만 쓴다. 영속화 case는 빌드된 module로 이 파일을 실행한다.
+
+## 테스트
+
+checkout에서 실행한다:
+
+```sh
+make -C packages/fsm-php-ext install   # composer install: the same packages as the php package (composer.lock)
+make -C packages/fsm-php-ext test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
+make test-php-ext                      # the same from the root
+```
+
+실행 결과는 89개 case 중 89개 통과다. `tests/ConformanceTest.php`(php 패키지 파일의 복사본)는 빌드된 module을 대상으로 vector case마다
+하나의 PHPUnit test를 `test_<feature>__<id>` 이름으로 실행한다. `make gen`은 `make clean` 없이 빌드 뒤에 실행한다. 루트의
+`make gen-check`는 생성 파일과 복사본이 최신인지 검사하며, `make parity-php-ext`는 모든 vector case가 한 번씩 실행되어 통과했는지 검사한다.

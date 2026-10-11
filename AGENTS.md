@@ -57,7 +57,9 @@ starting: the number of `[~]` tasks does not grow while none becomes `[o]`.
 Enforced by tools: the message format (`commits-check`, commit-msg hook), one item per commit and the changelog of a
 finished item (commit-msg hook), the checklist format (`documents-check`), no push in the `[~]` state (`push-gate`) and
 path ownership (`owner-validate`, pre-commit hook), and that no tracked file names the library by its
-old name `status` except the reasoned entries of `scripts/check-name.mjs` (`name-check`). Review rules without a tool: imperative mood and What/Why, RED before
+old name `status` except the reasoned entries of `scripts/check-name.mjs` (`name-check`), and that every README pair
+(root, compiler, db, GUI, language packages) has its required sections and a Korean twin with the same headings
+(`scripts/check-readmes.mjs`, `readme-check`). Review rules without a tool: imperative mood and What/Why, RED before
 GREEN, the test location, branch naming and deletion, no external sources, experimental code removed, WIP control,
 dependency pins, and that a conformance check asserts the expected value of its vector.
 

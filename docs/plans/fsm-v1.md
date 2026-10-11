@@ -323,6 +323,15 @@ Vectors (exhaustive; the core generates the oracle):
 
 ---
 
+### C-9. User documentation (R11)
+- The README pairs are the ones that `scripts/check-readmes.mjs` declares in `README_PAIRS`: the root, `fsm-compiler`, `fsm-db`, `fsm-gui` and the six language packages.
+- Each pair has an English file and a Korean twin. The check requires the English `##` headings of its kind (the list is fixed in the script) and a Korean twin with the same number of headings per level. A heading inside a fenced code block is not a section.
+- Kinds of sections: root (what fsm is and is not, the model, codes and the lock, transitions, validation errors, project files, requirements and setup, the fsm-gen CLI, the tools, generated names, checks); compiler (architecture, the store contract, commands, backend options, vectors); db (what it is, set up, the six tables, DSN, commands, moving a project to the database, checks); gui (what it does, setup, running, screens, rules; its testing section is written by S-22-2); language (generate into your project, generated files, API, errors, persistence, tests).
+- The command names in the documents are `fsm-gen`, `fsm-db` and `fsm-gui`, the bare names of the commands that S-18-1 installs; the install and invocation are in the root README, and no document runs `node packages/...`.
+- Every documented command is run for real through the installed command, in a temporary copy of a project, and its output is pasted. A code excerpt is copied from a repository file with its path. A snippet that is not a repository file is run in a temporary consumer project before it is written, and its output is quoted with it (the go, npm, php, python and rust APIs).
+- A Korean fenced code block is identical to its English block (`documents-check` requires it), so code and command output are not translated; the prose around them is.
+- The tests are `tests/check-readmes/` (`make readme-test`); `make readme-check` runs the check on the repository.
+
 ## D. Checklist draft
 
 **kit checklist (done first in the kit repository → release → kit-sync in fsm; written in kit's own 5-column format when added there)**

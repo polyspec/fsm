@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: f85caa30b7c432708d09a1d6863a220fc93378912414394676a247c48a46f98a -->
+<!-- source-sha256: 84f2cc712af28d375aab3ab41a9a8bab8648d88cbde6476d2cc9042a25ccb045 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -316,6 +316,15 @@ packages/fsm-<kind>/
 - 테스트: `tests/docs-build`(`make docs-build-test`, 기록 `.results/docs-build-test.json`을 남기는 루트 도구 테스트)는 저장소 문서의 임시 복사본에 존재하지 않는 파일로 가는 링크를 가진 문서를 넣고, 빌드가 dead link로 실패해야 한다고 요구한다. 그다음 저장소 자체를 빌드하여 `index.html`, `README.ko.html`, `packages/fsm-go/index.html`, `docs/spec/fsm.html`, `docs/plans/fsm-v1.html` 페이지, `AGENTS.md`의 GitHub 재작성, 그리고 `AGENTS.md` 페이지가 없음을 요구한다. `docs-build`와 `docs-build-test`는 `CHECK_TARGETS`에 있으며, 소유 규칙은 `config/owner-checks.json`에 있다. `config/documents.json`은 `siteLinks`를 설정하므로 `documents-check`가 사이트의 링크 형식을 받아들인다: `/`로 시작하는 링크, 그리고 확장자 없이 `.md`, `.ko.md` 또는 `index.md` 파일을 가리키는 링크.
 
 ---
+
+### C-9. 사용자 문서(R11)
+- README 쌍은 `scripts/check-readmes.mjs`의 `README_PAIRS`가 선언한 것이다: root, `fsm-compiler`, `fsm-db`, `fsm-gui`와 여섯 언어 패키지.
+- 각 쌍은 영어 파일과 한국어 짝을 가진다. 검사는 종류별 영어 `##` 제목(목록은 스크립트에 고정)과, 단계별 제목 수가 같은 한국어 짝을 요구한다. 펜스 코드 블록 안의 제목은 절이 아니다.
+- 절의 종류: root(fsm의 정의와 비정의, 모델, code와 lock, 전이, 검증 오류, 프로젝트 파일, 요구사항과 설정, fsm-gen CLI, 도구, 생성 이름, 검사); compiler(구조, store 계약, 명령, backend 옵션, vectors); db(정의, 설정, 여섯 테이블, DSN, 명령, json·mermaid 프로젝트 이전, 검사); gui(기능, 설정, 실행, 화면, 규칙; 테스트 절은 S-22-2가 쓴다); 언어 패키지(프로젝트에 생성, 생성 파일, API, 오류, 영속화, 테스트).
+- 문서의 명령 이름은 `fsm-gen`, `fsm-db`, `fsm-gui`다. S-18-1이 설치하는 명령의 짧은 이름이며, 설치와 호출은 root README에 있고, 어떤 문서도 `node packages/...`를 실행하지 않는다.
+- 문서의 모든 명령은 설치된 명령으로 임시 프로젝트 복사본에서 실제로 실행하고, 그 출력을 붙인다. 코드 발췌는 저장소 파일에서 경로와 함께 옮긴다. 저장소 파일이 아닌 snippet은 쓰기 전에 임시 소비자 프로젝트에서 실행하고, 출력을 함께 인용한다(go, npm, php, python, rust의 API).
+- 한국어 펜스 코드 블록은 영어 블록과 같다(`documents-check`가 요구한다). 따라서 코드와 명령 출력은 번역하지 않고, 그 둘을 둘러싼 산문만 번역한다.
+- 테스트는 `tests/check-readmes/`(`make readme-test`)이고, `make readme-check`는 저장소에 검사를 실행한다.
 
 ## D. 체크리스트 초안
 

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: a00a6c6109ff0232ae9b0e1e155f76fc761544608867c939de83f3adf16c6818 -->
+<!-- source-sha256: cc0423112fdc0df5f23d982e27f4755b996c6e66745f31a62b230be57bb68a40 -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -71,6 +71,13 @@ sqlite:///var/lib/orm_example.sqlite?_pragma=busy_timeout(5000)
 
 ```sh
 export FSM_DSN=sqlite:///var/lib/fsm/order.sqlite
+```
+
+변수가 설정되지 않았으면 모든 명령은 database에 닿기 전에 멈춘다:
+
+```sh
+$ fsm-db check --project ./order-machines
+[fsm-db] E_STORE_NOT_CONFIGURED - $.dsnEnv: the environment variable FSM_DSN is not set
 ```
 
 ## 명령
@@ -181,3 +188,19 @@ $ echo '{"store":"json"}' > ./export/fsm.config.json
 $ fsm-gen check --project ./export
 [fsm-gen] check: ok
 ```
+
+## 검사
+
+`make db-test`는 이 패키지의 테스트를 `scripts/kit/run-tests.mjs`로 실행한다. 먼저 `make db-deps`가 필요하다. 모든 테스트는
+SQLite에서 실행한다.
+
+- `tests/db-store.test.mjs`는 store를 검사한다: json → db → json과 db → json → db가 같은 파일과 행을 준다. 64자 key는 바뀌지 않고
+  되돌아온다. 실패한 쓰기는 지우고 쓴 행을 모두 되돌린다. 빈 것이 아닌 database에 대한 `copy`는 `E_STORE_NOT_EMPTY`이며 아무것도
+  쓰지 않는다. 생성된 model은 orm-gen이 schema와 scan에서 쓰는 것과 같다.
+- `tests/cli.test.mjs`는 `fsm-db`를 프로세스로 실행한다: 사용 오류(종료 코드 2), 설정 없음과 설정되지 않은 DSN 변수
+  (`E_STORE_NOT_CONFIGURED`), 두 방향의 `copy`, 저장된 lock을 고치는 `lock`, 새 database·설치된 database·일부만 설치된 database에서의
+  `install`.
+- `tests/command.test.mjs`는 임시 npm prefix에 패키지를 offline으로 설치하고 그곳의 `fsm-db`를 실행한다. 테스트되는 명령은
+  설치된 명령이다.
+
+store가 기대는 core 규칙은 compiler(`make compiler-test`)에서 검사하며, store 계약은 거기서 json, mermaid store와 공유된다.

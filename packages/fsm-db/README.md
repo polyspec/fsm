@@ -76,6 +76,13 @@ sqlite:///var/lib/orm_example.sqlite?_pragma=busy_timeout(5000)
 export FSM_DSN=sqlite:///var/lib/fsm/order.sqlite
 ```
 
+When the variable is not set, every command stops before it touches a database:
+
+```sh
+$ fsm-db check --project ./order-machines
+[fsm-db] E_STORE_NOT_CONFIGURED - $.dsnEnv: the environment variable FSM_DSN is not set
+```
+
 ## Commands
 
 Every command takes `--project <dir>`. An `E_...` finding prints as `[fsm-db] <code> <machine> <path>: <message>` on
@@ -184,3 +191,20 @@ $ echo '{"store":"json"}' > ./export/fsm.config.json
 $ fsm-gen check --project ./export
 [fsm-gen] check: ok
 ```
+
+## Checks
+
+`make db-test` runs the tests of this package through `scripts/kit/run-tests.mjs`; it needs `make db-deps` first. Everything
+runs on SQLite.
+
+- `tests/db-store.test.mjs` checks the store: json → db → json and db → json → db give the same files and rows, a 64-character
+  key round-trips unchanged, a failed write rolls back every row that it deleted and wrote, `copy` into a non-empty database is
+  `E_STORE_NOT_EMPTY` and writes nothing, and the generated models are the ones that orm-gen writes from the schema.
+- `tests/cli.test.mjs` runs `fsm-db` as a process: the usage errors (exit 2), a missing configuration and a DSN variable that is
+  not set (`E_STORE_NOT_CONFIGURED`), `copy` in both directions, `lock` repairing a stored lock, and `install` on a new database,
+  on an installed one and on a partly installed one.
+- `tests/command.test.mjs` installs the package offline into a temporary npm prefix and runs `fsm-db` from there, so the command
+  that is tested is the installed one.
+
+The core rules that the store relies on are tested in the compiler (`make compiler-test`), and the store contract is shared
+with the json and mermaid stores there.
