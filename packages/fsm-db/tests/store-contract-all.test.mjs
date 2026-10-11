@@ -83,7 +83,7 @@ async function outputsOf(store) {
   }
   const vectors = await run('vectors', store, {});
   assert.deepEqual(vectors.findings, []);
-  for (const kind of KINDS) vectorFiles[kind] = backendOf(kind).vectorsFile(vectors.vectors, { phpNamespace: KIND_OPTIONS[kind].phpNamespace });
+  for (const kind of KINDS) vectorFiles[kind] = backendOf(kind).vectorsFile(vectors.vectors, { phpNamespace: KIND_OPTIONS[kind].phpNamespace, module: KIND_OPTIONS[kind].goModule });
   return { gen, vectors: vectors.vectors, vectorFiles };
 }
 
