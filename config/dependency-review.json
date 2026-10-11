@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mjs) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-11T06:15:36.950Z",
+  "reviewed": "2026-10-11T06:24:02.838Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -31,6 +31,11 @@
     {
       "lock": "packages/fsm-php-ext/composer.lock",
       "sha256": "7edc097a278714abd7cffc0cefc577c44adc9153e5191cc12bab65b1ccf21c6f",
+      "advisories": []
+    },
+    {
+      "lock": "packages/fsm-python/pylock.toml",
+      "sha256": "93b24b9bb2a010b5342c183c12aa25bcdc92d2291f76246a514a26b5ef2d6016",
       "advisories": []
     },
     {
@@ -131,6 +136,69 @@
     },
     {
       "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "cffi",
+      "version": "2.1.1",
+      "latest": "2.1.1"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "cryptography",
+      "version": "50.0.2",
+      "latest": "50.0.2"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "psycopg",
+      "version": "3.3.6",
+      "latest": "3.3.6"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "psycopg-binary",
+      "version": "3.3.6",
+      "latest": "3.3.6"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "pycparser",
+      "version": "3.11",
+      "latest": "3.11"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "pymysql",
+      "version": "1.2.3",
+      "latest": "1.2.3"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "pyyaml",
+      "version": "6.0.3",
+      "latest": "6.0.3"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "typing-extensions",
+      "version": "4.16.0",
+      "latest": "4.16.0"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/fsm-python/pylock.toml",
+      "package": "tzdata",
+      "version": "2026.5",
+      "latest": "2026.5"
+    },
+    {
+      "ecosystem": "pypi",
       "manifest": "packages/fsm-python/pyproject.toml",
       "package": "setuptools",
       "version": "84.0.0",
@@ -144,5 +212,20 @@
       "latest": "v0.0.7"
     }
   ],
-  "vcs": []
+  "vcs": [
+    {
+      "lock": "packages/fsm-python/pylock.toml",
+      "package": "polyspec-ordered-json",
+      "url": "https://github.com/polyspec/ordered-json",
+      "requestedRevision": "v0.0.7",
+      "commitId": "f8647806b9ca0288c57994132147a4137ce017f9"
+    },
+    {
+      "lock": "packages/fsm-python/pylock.toml",
+      "package": "polyspec-orm",
+      "url": "https://github.com/polyspec/orm",
+      "requestedRevision": "v0.0.7",
+      "commitId": "af585c4d6146f4094712bbb6be247caf7ce48605"
+    }
+  ]
 }
