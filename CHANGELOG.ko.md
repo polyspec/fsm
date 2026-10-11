@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 7090cbc6985563b8ea840bf2240ca8aa7e5d3c9b12a5a1cf07cf068ac9d12631 -->
+<!-- source-sha256: 2ed88975299b0f59f07574db5ccfaff882a76a2e5b86310860ccab94112674a9 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-34-3: python lock은 registry package와 release archive만 담는다: orm과 ordered-json은 v0.0.7 tag의 archive와 sha256으로 받으므로 uv와 pip 모두 lock을 hash와 함께 설치하고, lock 검사는 git source를 거부한다.
 - S-42-1: vector parity가 kit의 parity 검사(K33)로 실행된다: config/parity.json, case마다 이름을 가진 vector 파일 하나 conformance/vectors.json, case마다의 PHPUnit method. scripts/check-parity.mjs는 기록, 시간 제한, feature 커버리지 규칙만 남긴다.
 - S-21: fsm은 https://github.com/polyspec/fsm 에 공개되어 있다. CI workflow(`.github/workflows/ci.yml`)는 main의 모든 push에서 PostgreSQL과 MySQL service와 함께 `make install`과 `make check`를 실행하고 전체 검사를 통과했으며(run 38121153369), Pages workflow는 문서 사이트를 https://polyspec.github.io/fsm/ 에 게시한다. 로컬 저장소 디렉터리 이름은 `fsm`이다.
 - S-21-1: CI와 Pages는 ubuntu-26.04에서 돈다. orm의 PHP client는 SQLite 3.46을 요구하는데 ubuntu-24.04의 PHP는 SQLite 3.45.1에 연결되기 때문이다. CI run 38121153369가 그곳에서 전체 검사 47개 target을 모두 통과했다(tree 4963dbe).

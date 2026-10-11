@@ -169,12 +169,12 @@ wheels = [
 [[packages]]
 name = "polyspec-ordered-json"
 version = "0.0.7"
-vcs = { type = "git", url = "https://github.com/polyspec/ordered-json", requested-revision = "v0.0.7", commit-id = "f8647806b9ca0288c57994132147a4137ce017f9", subdirectory = "packages/ordered-json-python" }
+archive = { url = "https://github.com/polyspec/ordered-json/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/ordered-json-python", subdirectory = "packages/ordered-json-python", hashes = { sha256 = "b2f645a0bf4b9427213288a7ccefc65a6dd1dc50ed82fd94855c98482a559a39" } }
 
 [[packages]]
 name = "polyspec-orm"
 version = "0.0.7"
-vcs = { type = "git", url = "https://github.com/polyspec/orm", requested-revision = "v0.0.7", commit-id = "af585c4d6146f4094712bbb6be247caf7ce48605", subdirectory = "packages/orm-python" }
+archive = { url = "https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/orm-python", subdirectory = "packages/orm-python", hashes = { sha256 = "79d9c99b00a0813106511b26d14e1f8b14e92c2472049b3dbcd95e8f668eca16" } }
 
 [[packages]]
 name = "psycopg"

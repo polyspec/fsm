@@ -1,5 +1,6 @@
 // Tests of scripts/check-python-lock.mjs (docs/plans/execution-checklist.md, S-34; docs/plans/fsm-v1.md, C-1): the uv.lock of
-// packages/fsm-python locks every package of the environment with an exact version and a hash (a git source with its commit),
+// packages/fsm-python locks every package of the environment with an exact version and a hash (a polyspec library from the
+// archive of its release tag, never from git, S-34-3),
 // and it agrees with pyproject.toml. The kit gate reads only build-system and optional requirements of a Python manifest, so a
 // runtime dependency without a pin passes it (the RED of S-34). Each fixture is written in a temporary directory; nothing is
 // committed. The committed lock is checked too.
@@ -17,7 +18,6 @@ const SCRIPT = path.join(ROOT, 'scripts/check-python-lock.mjs');
 const COMMITTED = path.join(ROOT, 'packages/fsm-python');
 const HASH_A = `sha256:${'a'.repeat(64)}`;
 const HASH_B = `sha256:${'b'.repeat(64)}`;
-const COMMIT = 'c'.repeat(40);
 
 /** A registry package block: its sdist and wheel, each with a hash unless `hashes` says otherwise. */
 function registry(name, version, { deps = [], hashes = [HASH_A, HASH_A], artifacts = true } = {}) {
@@ -38,17 +38,20 @@ function registry(name, version, { deps = [], hashes = [HASH_A, HASH_A], artifac
   return lines.join('\n');
 }
 
-/** A git package block: its source names the tag `rev` and the commit `commit`. */
-function git(name, { rev = 'v1.0.0', commit = COMMIT, deps = [] } = {}) {
-  const source = `git+https://github.com/x/${name}?subdirectory=py&rev=${rev}${commit ? `#${commit}` : ''}`;
+/** A release archive block: its source is the archive of the tag `tag` of a polyspec repository, with the sdist hash `hash`. */
+function archive(name, { tag = 'v1.0.0', url = `https://github.com/polyspec/${name}/archive/refs/tags/${tag}.tar.gz`, hash = HASH_B, deps = [] } = {}) {
   return [
     '[[package]]',
     `name = "${name}"`,
     'version = "1.0.0"',
-    `source = { git = "${source}" }`,
+    `source = { url = "${url}", subdirectory = "py" }`,
     deps.length ? `dependencies = [\n${deps.map(dep => `    { name = "${dep}" },`).join('\n')}\n]` : 'dependencies = []',
-  ].join('\n');
+    hash ? `sdist = { hash = "${hash}" }` : '',
+  ].filter(Boolean).join('\n');
 }
+
+/** A git package block, which the lock refuses (S-34-3). */
+const git = name => ['[[package]]', `name = "${name}"`, 'version = "1.0.0"', `source = { git = "git+https://github.com/polyspec/${name}?rev=v1.0.0#${'c'.repeat(40)}" }`, 'dependencies = []'].join('\n');
 
 /** The editable project block of the fixture, whose dependencies are `deps`. */
 const project = deps => [
@@ -71,7 +74,7 @@ const PYPROJECT = [
   'version = "0.0.0"',
   'dependencies = [',
   '    "alpha==1.0.0",',
-  '    "beta @ git+https://github.com/x/beta@v1.0.0#subdirectory=py",',
+  '    "beta @ https://github.com/polyspec/beta/archive/refs/tags/v1.0.0.tar.gz#subdirectory=py",',
   ']',
   '',
 ].join('\n');
@@ -80,7 +83,7 @@ function goodPackages() {
   return [
     registry('alpha', '1.0.0', { deps: ['gamma'] }),
     registry('gamma', '2.0.0'),
-    git('beta', { deps: [] }),
+    archive('beta', { deps: [] }),
     project(['alpha', 'beta']),
   ];
 }
@@ -99,7 +102,7 @@ function fixture(t, { blocks = goodPackages(), pyproject = PYPROJECT, lock } = {
 /** Whether a finding of `rule` names the package `name`: the last word of its subject is the name. */
 const has = (findings, rule, name) => findings.some(finding => finding.rule === rule && finding.subject.split(' ').pop() === name);
 
-test('the committed lock of packages/fsm-python locks every package with a version, hashes and commits', () => {
+test('the committed lock of packages/fsm-python locks every package with a version and hashes, from the registry or a release archive', () => {
   assert.deepEqual(check(COMMITTED), [], 'the committed uv.lock fails the lock check');
 });
 
@@ -131,15 +134,27 @@ test('a registry version other than the pin of pyproject.toml fails the pin rule
   assert.ok(has(findings, 'pin', 'alpha'), `no pin finding for alpha: ${JSON.stringify(findings)}`);
 });
 
-test('a git source without a commit fails the commit rule', (t) => {
-  const blocks = goodPackages().map(block => (block.includes('name = "beta"') ? git('beta', { commit: null }) : block));
+test('a git source fails the archive rule: the lock holds registry packages and release archives only (S-34-3)', (t) => {
+  const blocks = goodPackages().map(block => (block.includes('name = "beta"') ? git('beta') : block));
   const findings = check(fixture(t, { blocks }));
-  assert.ok(has(findings, 'commit', 'beta'), `no commit finding: ${JSON.stringify(findings)}`);
+  assert.ok(has(findings, 'archive', 'beta'), `no archive finding: ${JSON.stringify(findings)}`);
 });
 
-test('a git source whose tag differs from the tag of pyproject.toml fails the tag rule', (t) => {
-  const blocks = goodPackages().map(block => (block.includes('name = "beta"') ? git('beta', { rev: 'v0.9.0' }) : block));
-  const findings = check(fixture(t, { blocks }));
+test('an archive that is not a polyspec release tag, has no sha256, or is of another version fails the archive rule', (t) => {
+  for (const block of [
+    archive('beta', { url: 'https://example.com/beta-1.0.0.tar.gz' }),
+    archive('beta', { hash: null }),
+    archive('beta', { tag: 'v0.9.0' }),
+  ]) {
+    const blocks = goodPackages().map(item => (item.includes('name = "beta"') ? block : item));
+    const findings = check(fixture(t, { blocks }));
+    assert.ok(has(findings, 'archive', 'beta'), `no archive finding for ${block}: ${JSON.stringify(findings)}`);
+  }
+});
+
+test('a release archive whose tag differs from the tag of pyproject.toml fails the tag rule', (t) => {
+  const pyproject = PYPROJECT.replace('archive/refs/tags/v1.0.0.tar.gz', 'archive/refs/tags/v0.9.0.tar.gz');
+  const findings = check(fixture(t, { pyproject }));
   assert.ok(has(findings, 'tag', 'beta'), `no tag finding: ${JSON.stringify(findings)}`);
 });
 
