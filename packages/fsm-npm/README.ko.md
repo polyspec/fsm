@@ -1,5 +1,5 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: 667b6962e99ab5b3d02be1bee27d67fa20fd31f1c716ba5a8a18261f1e883154 -->
+<!-- source-sha256: d0a3de0e760723146c63de56f94c25658dcf9dc422bc8c6a646eff6fe4526ab4 -->
 # @polyspec/fsm-npm
 
 [English](README.md)
@@ -92,6 +92,16 @@ true E_CONFLICT 1 3 1
 | `event` | event 위치(1부터). 없으면 `undefined` |
 
 `error instanceof fsm.Error`로 검사하고 `error.code`를 읽는다.
+
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/vectors.mjs`의 vector가 이를 단언한다:
+
+| Code | `expected` | `actual` | `event` |
+|---|---|---|---|
+| `E_CONFLICT` | 설정됨 | 설정됨 | 설정됨 |
+| `E_INVALID_TRANSITION` | 설정됨 | `undefined` | 설정됨 |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | `undefined` | `undefined` | `undefined` |
+
+메시지는 기계 이름을 담으며, `E_UNKNOWN_CODE`에서는 값도 담는다(`order: 99 is not a state of order`).
 
 ## 영속화
 

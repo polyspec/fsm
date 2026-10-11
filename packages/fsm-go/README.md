@@ -21,8 +21,24 @@ fsm-gen gen --project /path/to/order-machines --kind go --go-module example.com/
 [fsm-gen] gen: ok
 ```
 
-The generated files are not edited by hand. Run the command again after every change of the definition. The vectors are
-written by `fsm-gen vectors --kind go` into a test file of your own; the test bed writes them to `tests/vectors_test.go`.
+The generated files are not edited by hand. Run the command again after every change of the definition.
+
+The vectors are written by `fsm-gen vectors --kind go`, which takes the module path of the package too (`--go-module` is
+required, as for `gen`):
+
+```sh
+fsm-gen vectors --project /path/to/order-machines --kind go --go-module example.com/app --out ./tests/vectors_test.go
+```
+
+```text
+[fsm-gen] vectors: ok
+```
+
+The file `tests/vectors_test.go` is in the package `tests`. It holds the key tables of every machine, one `vectorCase` literal
+per case, and one adapter per machine that maps the keys of a case to the constants of the machine. Its import of the
+persistence example is `github.com/polyspec/fsm-go/examples`, not the `examples` package of your module, so a copy of
+`examples/persist.go` in your module needs that import changed before the file builds (checklist item S-26-1-1 records the
+backend change that removes this).
 
 ## Generated files
 
@@ -85,48 +101,86 @@ Every error is `error`; the concrete value is `*fsm.Error` (`src/fsm/fsm.go`):
 Use `errors.As` to read the fields. `Code` values are constants of `fsm`: `fsm.CodeConflict` and so on. A zero field means
 unset, because a state code is at least 1 and an event position starts at 1.
 
+Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/vectors_test.go` assert it:
+
+| Code | `Expected` | `Actual` | `Event` |
+|---|---|---|---|
+| `E_CONFLICT` | set | set | set |
+| `E_INVALID_TRANSITION` | set | 0 (unset) | set |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | 0 | 0 | 0 |
+
+The message of every code names the machine, and the value of `E_UNKNOWN_CODE` or `E_RESERVED_CODE` is in the message
+(`order: 99 is not a state of order`). Go has no null, so the zero value is the absent field.
+
 ## Persistence
 
 `examples/persist.go` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a
-row. A transition runs in one transaction: the row is read under its lock, the event is applied to the state the caller
-observed, and the row is written only when the result is `Changed`:
+row. `Transition` runs one attempt in one transaction: it reads the row under its lock, passes the stored code to `decide`, and
+writes the row only when `decide` reports a change. `Decide` is `func(stored int64) (to int32, changed bool, err error)`, so
+the file serves every machine: a machine's `decide` is the `Apply` of the observed state and the event on the `FromCode` of the
+stored code. The `decide` of each machine is written in `tests/vectors_test.go`; the one of the order machine is:
+
+```go
+// packages/fsm-go/tests/vectors_test.go, orderMachine.decide
+func (m orderMachine) decide(expected, event string) examples.Decide {
+	return func(stored int64) (int32, bool, error) {
+		from, err := lookup(orderStates, "state", expected)
+		if err != nil {
+			return 0, false, err
+		}
+		value, err := lookup(orderEvents, "event", event)
+		if err != nil {
+			return 0, false, err
+		}
+		observed, err := order.FromCode(stored)
+		if err != nil {
+			return 0, false, err
+		}
+		step, err := order.Apply(from, value, observed)
+		if err != nil {
+			return 0, false, err
+		}
+		code, err := order.Code(step.To)
+		return code, step.Changed, err
+	}
+}
+```
+
+The transaction of the persistence example is this function:
 
 ```go
 // packages/fsm-go/examples/persist.go, Transition
-func Transition(db *orm.DB, id int64, expected order.State, event order.Event) (order.Step, error) {
-	var step order.Step
+// Transition is one attempt on the row id: the row is read under its lock, decide runs on the stored code, and the row is updated
+// only when the stored state changed. It returns the code of the target and whether the stored state changed. An error of decide
+// (E_CONFLICT, E_INVALID_TRANSITION or E_UNKNOWN_CODE) is returned, and the transaction rolls back, so the stored state stays as it
+// was.
+func Transition(db *orm.DB, id int64, decide Decide) (int32, bool, error) {
+	var to int32
+	var changed bool
 	err := db.Transaction(func() error {
 		row, err := model.Item().Connect(db).ForUpdate().GetById(id)
 		if err != nil {
 			return err
 		}
-		state, err := order.FromCode(int64(row.GetStatus()))
+		to, changed, err = decide(int64(row.GetStatus()))
 		if err != nil {
 			return err
 		}
-		step, err = order.Apply(expected, event, state)
-		if err != nil {
-			return err
-		}
-		if !step.Changed {
+		if !changed {
 			return nil
 		}
-		code, err := order.Code(step.To)
-		if err != nil {
-			return err
-		}
-		_, err = row.SetStatus(code).Update()
+		_, err = row.SetStatus(to).Update()
 		return err
 	})
 	if err != nil {
-		return order.Step{}, err
+		return 0, false, err
 	}
-	return step, nil
+	return to, changed, nil
 }
 ```
 
-An error of `Apply` returns from the callback, so the transaction rolls back and the stored state stays as it was. A retry
-with the same `expected` returns `Unchanged` and writes nothing. The model `examples/model` is generated from
+An error of `decide` (an error of `Apply`) returns from the callback, so the transaction rolls back and the stored state stays as
+it was. A retry with the same `expected` returns `Changed` false and writes nothing. The model `examples/model` is generated from
 `schema/persist.dbs` by `go tool orm-gen`; `Open`, `Seed` and `StatusOf` in the same file create the tables and read a row.
 
 ## Tests

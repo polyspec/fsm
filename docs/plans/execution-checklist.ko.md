@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: b22815b6d30784aa1ed616b14b9ea2ca06c720eef5d77e664c52c2be458f5ede -->
+<!-- source-sha256: cec44caf1734042403a5df83d98a9e35ab568572235b6bcfc7b142a9b6492437 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -56,7 +56,8 @@
 | S-24 | php-ext backend가 모든 C 이름을 `--php-ext-name`에서 만든다: 옵션과 무관하게 machine `.c`가 `php_polyspec_fsm_test.h`와 `polyspec_fsm_test_arginfo.h`를 include하고 `Polyspec_FsmTest_Fsm_Error`를 쓴다(감사 2) | 두 번째 extension 이름의 backend 테스트와 그 phpize 빌드 RED → GREEN | [o] |
 | S-25 | conformance machine이 정의를 덮는다: `machines/`에 event 없는 machine, underscore key machine, reserved code machine, code 2147483647 machine을 더해 여러 machine이 함께 돈다. go harness가 order 외 machine을 거부하지 않는다(key 표를 vectors_test.go에 생성). 모든 kind가 모든 vector를 통과한다(감사 3) | S-23·S-24 전에는 rust와 php-ext 결함으로 packages-test 실패 RED → 모든 kind 통과 GREEN | [o] |
 | S-26 | 모든 vector가 결과 전체를 단언한다: 오류 vector가 `code`, `expected`, `actual`, `event`(B-4, B-6)를 갖고 모든 언어가 이를 단언한다. `from_code`에 음수, 2^31, 64비트 최댓값을 준다. 언어 타입이 허용하면 `code`, `key`, `is_final`, `apply`에 잘못된 state 값을 준다(감사 4, 15) | expected와 actual을 바꾸거나 잘못된 값에 다른 분기를 돌려주는 backend가 실패 RED → GREEN | [o] |
-| S-26-1 | 언어 README가 S-25와 S-26을 따른다. 두 항목은 S-19가 쓴 뒤 사실을 바꿨다: go `vectors --kind go`에 `--go-module`이 필요하고, `examples/persist.go`가 `Decide`를 받으며(README 발췌를 실제 파일에서 다시 옮김), php는 composer `autoload.files`가 이름 붙인 `src/functions.php`로 모든 machine을 싣고(composer 예시와 파일 표), 모든 언어의 Errors 절이 spec B-6의 field 규칙(어떤 code가 expected, actual, event 중 무엇을 채우는지)을 적는다 | 문서의 모든 명령과 발췌를 실제 파일과 출력에 대조. 옛 발췌나 composer files를 보이는 README RED → GREEN | [ ] |
+| S-26-1 | 언어 README가 S-25와 S-26을 따른다. 두 항목은 S-19가 쓴 뒤 사실을 바꿨다: go `vectors --kind go`에 `--go-module`이 필요하고, `examples/persist.go`가 `Decide`를 받으며(README 발췌를 실제 파일에서 다시 옮김), php는 composer `autoload.files`가 이름 붙인 `src/functions.php`로 모든 machine을 싣고(composer 예시와 파일 표), 모든 언어의 Errors 절이 spec B-6의 field 규칙(어떤 code가 expected, actual, event 중 무엇을 채우는지)을 적는다 | 문서의 모든 명령과 발췌를 실제 파일과 출력에 대조. 옛 발췌나 composer files를 보이는 README RED → GREEN | [o] |
+| S-26-1-1 | go vectors 파일은 모든 소비자에게 test bed의 examples(`github.com/polyspec/fsm-go/examples`)를 import하며, `--go-module`로 받은 module의 `examples` package를 쓰지 않는다(S-26-1이 찾음: 소비자의 `vectors --kind go` 파일을 `go vet`하면 `cannot find module providing package github.com/polyspec/fsm-go/examples`로 실패한다). go backend `vectorsFile`을 고치며, import는 machine import와 같이 module 경로를 쓴다 | 임시 소비자 module에서, 파일이 import하는 자기 `examples` package(model 포함)가 있을 때 `go vet`이 실패 RED → 통과하고 case가 통과 GREEN | [ ] |
 | S-27 | `name-check`가 줄이 아니라 출현마다 판정한다: 허용 구절을 줄에서 지우고 남은 부분을 다시 검사하며, model과 CHANGELOG 항목은 자기 구절만 허용한다. rename 잔재를 고친다(`Makefile`의 "old name `fsm`", 테스트 helper의 "returns its fsm", python과 rust의 status column용 `fsm_of`)(감사 6, 12) | 감사 probe 줄이 검사를 통과 RED → finding GREEN | [o] |
 | S-28 | spec B-2의 store 계약 테스트가 존재한다: 모든 유효 fixture가 json → db → mermaid → json으로 바이트 동일하게 왕복하고, `run` gen과 vectors가 세 store에서 바이트 동일한 출력을 낸다(감사 7) | field를 버리는 store가 지금은 통과 RED → GREEN | [o] |
 | S-29 | 새 clone에서 `make check`가 통과한다: root install 타깃 하나가 모든 package 의존성(npm, composer, python, cargo, 각 package의 orm-gen)을 설치하고, 필요한 타깃의 선행 조건이다. CI는 정확히 `make check`를 돈다(감사 8) | 새 clone의 make check가 orm-gen, tsc, phpunit, .venv에서 실패 RED → 통과 GREEN | [o] |

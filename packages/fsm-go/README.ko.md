@@ -1,5 +1,5 @@
 <!-- doc-id: readme-go -->
-<!-- source-sha256: 3694933cb165a65556b45bd38fe17bebfd8a7d01ccb84119bfa38cbd102f2d8a -->
+<!-- source-sha256: fe550e62d23777201f9f98ce817f3747bc066fe477c64144eac701b9b15a885c -->
 # github.com/polyspec/fsm-go
 
 [English](README.md)
@@ -22,8 +22,22 @@ fsm-gen gen --project /path/to/order-machines --kind go --go-module example.com/
 [fsm-gen] gen: ok
 ```
 
-생성된 파일은 손으로 고치지 않는다. 정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --kind go`로 자신의 test
-파일에 쓴다. test bed는 `tests/vectors_test.go`에 쓴다.
+생성된 파일은 손으로 고치지 않는다. 정의를 바꿀 때마다 명령을 다시 실행한다.
+
+vector는 `fsm-gen vectors --kind go`로 쓴다. 이 명령도 package의 module 경로를 받는다(`gen`과 같이 `--go-module`이 필요하다):
+
+```sh
+fsm-gen vectors --project /path/to/order-machines --kind go --go-module example.com/app --out ./tests/vectors_test.go
+```
+
+```text
+[fsm-gen] vectors: ok
+```
+
+파일 `tests/vectors_test.go`는 package `tests`에 속한다. 기계마다 key 표, case마다 `vectorCase` literal 하나, 그리고 case의 key를
+기계의 상수에 대응시키는 adapter 하나를 담는다. 이 파일이 가져오는 persistence 예제는 `github.com/polyspec/fsm-go/examples`이며
+사용자 module의 `examples` package가 아니다. 그러므로 사용자 module에 복사한 `examples/persist.go`를 쓰려면 파일이 빌드되기 전에
+이 import를 바꿔야 한다(checklist 항목 S-26-1-1이 이를 없애는 backend 변경을 기록한다).
 
 ## 생성 파일
 
@@ -85,49 +99,87 @@ E_CONFLICT 1 3 1
 필드는 `errors.As`로 읽는다. `Code` 값은 `fsm`의 상수다: `fsm.CodeConflict` 등. 0인 필드는 설정되지 않은 값이다. 상태 code는 최소 1이고
 event 위치는 1부터 시작하기 때문이다.
 
+필드가 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/vectors_test.go`의 vector가 이를 단언한다:
+
+| Code | `Expected` | `Actual` | `Event` |
+|---|---|---|---|
+| `E_CONFLICT` | 설정됨 | 설정됨 | 설정됨 |
+| `E_INVALID_TRANSITION` | 설정됨 | 0(설정되지 않음) | 설정됨 |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | 0 | 0 | 0 |
+
+메시지는 기계 이름을 담으며, `E_UNKNOWN_CODE`나 `E_RESERVED_CODE`의 값은 메시지 안에 있다(`order: 99 is not a state of order`).
+Go에는 null이 없으므로 0 값이 설정되지 않은 필드다.
+
 ## 영속화
 
 `packages/fsm-go/examples/persist.go`는 SQLite와 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다.
-전이는 한 transaction 안에서 실행한다. row를 잠금 아래 읽고, event를 호출자가 관찰한 상태에 적용하며, 결과가 `Changed`일 때만
-row를 쓴다:
+`Transition`은 한 transaction 안에서 시도 한 번을 실행한다. row를 잠금 아래 읽고, 저장된 code를 `decide`에 넘기며, `decide`가 변경을
+알릴 때만 row를 쓴다. `Decide`는 `func(stored int64) (to int32, changed bool, err error)`이므로 이 파일은 모든 기계에 쓰인다. 기계의
+`decide`는 관찰한 상태와 event에 대한 `Apply`를 저장된 code의 `FromCode`에 적용하는 것이다. 기계마다의 `decide`는
+`tests/vectors_test.go`에 쓰인다. order 기계의 것은 다음과 같다:
+
+```go
+// packages/fsm-go/tests/vectors_test.go, orderMachine.decide
+func (m orderMachine) decide(expected, event string) examples.Decide {
+	return func(stored int64) (int32, bool, error) {
+		from, err := lookup(orderStates, "state", expected)
+		if err != nil {
+			return 0, false, err
+		}
+		value, err := lookup(orderEvents, "event", event)
+		if err != nil {
+			return 0, false, err
+		}
+		observed, err := order.FromCode(stored)
+		if err != nil {
+			return 0, false, err
+		}
+		step, err := order.Apply(from, value, observed)
+		if err != nil {
+			return 0, false, err
+		}
+		code, err := order.Code(step.To)
+		return code, step.Changed, err
+	}
+}
+```
+
+영속화 예제의 transaction 본체는 이 함수다:
 
 ```go
 // packages/fsm-go/examples/persist.go, Transition
-func Transition(db *orm.DB, id int64, expected order.State, event order.Event) (order.Step, error) {
-	var step order.Step
+// Transition is one attempt on the row id: the row is read under its lock, decide runs on the stored code, and the row is updated
+// only when the stored state changed. It returns the code of the target and whether the stored state changed. An error of decide
+// (E_CONFLICT, E_INVALID_TRANSITION or E_UNKNOWN_CODE) is returned, and the transaction rolls back, so the stored state stays as it
+// was.
+func Transition(db *orm.DB, id int64, decide Decide) (int32, bool, error) {
+	var to int32
+	var changed bool
 	err := db.Transaction(func() error {
 		row, err := model.Item().Connect(db).ForUpdate().GetById(id)
 		if err != nil {
 			return err
 		}
-		state, err := order.FromCode(int64(row.GetStatus()))
+		to, changed, err = decide(int64(row.GetStatus()))
 		if err != nil {
 			return err
 		}
-		step, err = order.Apply(expected, event, state)
-		if err != nil {
-			return err
-		}
-		if !step.Changed {
+		if !changed {
 			return nil
 		}
-		code, err := order.Code(step.To)
-		if err != nil {
-			return err
-		}
-		_, err = row.SetStatus(code).Update()
+		_, err = row.SetStatus(to).Update()
 		return err
 	})
 	if err != nil {
-		return order.Step{}, err
+		return 0, false, err
 	}
-	return step, nil
+	return to, changed, nil
 }
 ```
 
-`Apply`의 오류는 callback에서 돌아오므로 transaction이 되돌아가고 저장된 상태는 그대로 남는다. 같은 `expected`로 다시 시도하면
-`Unchanged`가 되어 아무것도 쓰지 않는다. 모델 `examples/model`은 `go tool orm-gen`이 `schema/persist.dbs`로부터 생성한다. 같은 파일의
-`Open`, `Seed`, `StatusOf`는 table을 만들고 row를 읽는다.
+`decide`의 오류(`Apply`의 오류)는 callback에서 돌아오므로 transaction이 되돌아가고 저장된 상태는 그대로 남는다. 같은 `expected`로
+다시 시도하면 `changed`가 false가 되어 아무것도 쓰지 않는다. 모델 `examples/model`은 `go tool orm-gen`이 `schema/persist.dbs`로부터
+생성한다. 같은 파일의 `Open`, `Seed`, `StatusOf`는 table을 만들고 row를 읽는다.
 
 ## 테스트
 

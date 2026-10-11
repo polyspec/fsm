@@ -94,6 +94,14 @@ The functions return `Result<_, fsm::Error>`. `Error` (`src/fsm.rs`) is a struct
 
 `Error` implements `Display` (`E_CONFLICT: the stored state ...`) and `std::error::Error`.
 
+Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/vectors.rs` assert it:
+
+| Code | `expected` | `actual` | `event` |
+|---|---|---|---|
+| `E_CONFLICT` | `Some` | `Some` | `Some` |
+| `E_INVALID_TRANSITION` | `Some` | `None` | `Some` |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | `None` | `None` | `None` |
+
 ## Persistence
 
 `examples/persist.rs` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a row.

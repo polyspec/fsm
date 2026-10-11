@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 0272867fe249f7b89cf9221af2aa466246dfb1457766b87057c7078964f466f0 -->
+<!-- source-sha256: fe4b796d636c156c63319ac18a4ed16b448b52dde0f9fe1f4008ce6f54af9e29 -->
 # fsm-rust
 
 [English](README.md)
@@ -92,6 +92,14 @@ E_CONFLICT Some(1) Some(3) Some(1)
 | `event` | `Option<i32>` | event 위치(1부터), 또는 `None` |
 
 `Error`는 `Display`(`E_CONFLICT: the stored state ...`)와 `std::error::Error`를 구현한다.
+
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/vectors.rs`의 vector가 이를 단언한다:
+
+| Code | `expected` | `actual` | `event` |
+|---|---|---|---|
+| `E_CONFLICT` | `Some` | `Some` | `Some` |
+| `E_INVALID_TRANSITION` | `Some` | `None` | `Some` |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | `None` | `None` | `None` |
 
 ## 영속화
 

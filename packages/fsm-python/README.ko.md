@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: 2a210012f910aa88221398b561657e15b5e5f3b1064bfa04c110fc04b5a16821 -->
+<!-- source-sha256: 66d3950b2305087d0f4812d1cc8dc733c06782990e1cdaded385ab017d798afc -->
 # polyspec-fsm-python
 
 [English](README.md)
@@ -83,6 +83,16 @@ E_CONFLICT 1 3 1
 | `event` | event 위치(1부터), 또는 `None` |
 
 메시지는 예외의 첫 인자이며 기계 이름을 담는다.
+
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/vectors.py`의 vector가 이를 단언한다:
+
+| Code | `expected` | `actual` | `event` |
+|---|---|---|---|
+| `E_CONFLICT` | 설정됨 | 설정됨 | 설정됨 |
+| `E_INVALID_TRANSITION` | 설정됨 | `None` | 설정됨 |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | `None` | `None` | `None` |
+
+`E_UNKNOWN_CODE`에서는 메시지가 값을 담는다(`order: 99 is not a state of order`).
 
 ## 영속화
 
