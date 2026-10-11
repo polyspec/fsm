@@ -10,14 +10,15 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/fsm-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test docs-build-test gui-browser-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test docs-build-test gui-browser-test readme-test
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check
+
 
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
@@ -40,6 +41,14 @@ name-test:
 
 name-check:
 	node scripts/check-name.mjs
+
+# readme-test runs the tests of scripts/check-readmes.mjs; readme-check requires every declared README pair to have its required
+# sections and a Korean twin with the same headings (docs/plans/fsm-v1.md, C-9; docs/plans/execution-checklist.md, S-19).
+readme-test:
+	node scripts/kit/run-tests.mjs node --results .results/readme-test.json --inputs scripts/check-readmes.mjs --inputs tests/check-readmes -- tests/check-readmes
+
+readme-check:
+	node scripts/check-readmes.mjs
 
 # docs-deps installs the packages of the documentation site: the exact vitepress release of docs/package.json, locked in
 # docs/package-lock.json (docs/plans/fsm-v1.md, C-8).

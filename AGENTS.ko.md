@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 5e2eaab14efcab38f0ef9d4c3bb19a374a91eba7f3c806d85d8ab66d80ba3e67 -->
+<!-- source-sha256: a2d3f5e6cf16c154bf0fb5113dc5608d638f69bda3f52a2e6000ac1901a9db88 -->
 # 개발
 
 [English](AGENTS.md)
@@ -49,7 +49,8 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
 
 도구가 강제하는 것: 메시지 형식(`commits-check`, commit-msg hook), 커밋당 항목 하나와 완료 항목의 changelog(commit-msg hook),
 체크리스트 형식(`documents-check`), `[~]` 상태 push 금지(`push-gate`), 경로 소유(`owner-validate`, pre-commit hook), 추적 파일이 라이브러리를
-옛 이름 `status`로 부르지 않음(`scripts/check-name.mjs`의 이유 붙은 항목 제외, `name-check`). 도구 없는
+옛 이름 `status`로 부르지 않음(`scripts/check-name.mjs`의 이유 붙은 항목 제외, `name-check`), 모든 README 쌍(root, compiler, db, GUI,
+언어 패키지)에 필수 절과 같은 제목을 가진 한국어 짝이 있음(`scripts/check-readmes.mjs`, `readme-check`). 도구 없는
 리뷰 규칙: 명령조와 What/Why, GREEN 전 RED, 테스트 위치, 브랜치 이름과 삭제, 외부 출처 금지, 실험 코드 제거, WIP 통제, 의존 고정,
 conformance 검사가 벡터의 기대값을 단언하는지.
 

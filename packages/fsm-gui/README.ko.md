@@ -1,85 +1,113 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: 625df1de6103f54de12a75e8cd696331cbfcaadcd7f0373ac6ea0deb9c4e8304 -->
+<!-- source-sha256: 7a12c8132da7f766b780245b6e6594bfabe89193148b11590456a26c59db3142 -->
 # fsm GUI
 
-[English](README.md)
+[English](README.md).
 
-fsm의 GUI(`docs/plans/fsm-v1.md`, C-7)다. hyper 서버로 프로젝트의 상태 기계를 보여준다. 목록 페이지는 모든 기계를 보여주고,
-상세 페이지는 상태, edge가 있는 event, `docs/spec/fsm.md`의 B-1 정규 형식으로 쓴 Mermaid 다이어그램을 보여준다. GUI는
-규칙을 소유하지 않는다. 정의는 `fsm.config.json`이 지정한 store(json, mermaid 또는 db)에서 오고, 모든 검사는 core `run`을
-거친다. 같은 페이지에서 기계를 편집한다(편집 절 참고).
+## 기능
+
+`fsm-gui`는 fsm 프로젝트의 상태 기계를 편집하는 browser GUI다(`docs/plans/fsm-v1.md`, C-7). 목록 페이지는 모든 기계를
+보여준다. 상세 페이지는 상태, edge가 있는 event, 그리고 `docs/spec/fsm.md`의 B-1 정규 형식으로 쓴 Mermaid 다이어그램을
+보여준다. 같은 페이지에서 기계를 편집한다. 상태와 event를 추가하고, 바꾸고, 이름을 바꾸고, 삭제하며, 기계를 추가하고 삭제한다.
+
+GUI는 규칙을 소유하지 않는다. 정의는 `fsm.config.json`이 지정한 store(json, mermaid 또는 db)에서 오며, 모든 검사와 모든 쓰기는
+`packages/fsm-compiler`의 core `run`을 거친다. `fsm-gen`과 `fsm-db`가 적용하는 규칙과 같다. core가 거부한 저장은 아무것도
+쓰지 않으며, 페이지가 검사 결과를 보여준다.
+
+## 설정
+
+GUI는 이 저장소의 clone에서 빌드한다. 한 번 설치하고 빌드한다.
+
+```sh
+make gui-build                      # installs the GUI's packages and builds build/ and public/assets/ (git-ignored)
+npm install -g ./packages/fsm-gui   # puts the command fsm-gui on the PATH, linked to this clone
+```
+
+`make gui-build`는 고정된 패키지(hyper v0.0.11, crudui v0.0.5, template v0.0.5, mermaid 12.1.0)를 받으려고 한 번 네트워크가
+필요하다. 서버는 `.node-version`의 Node.js 26.8.1로 실행한다. store가 database인 프로젝트는 `packages/fsm-db`의 orm 패키지도
+설치해야 한다: `make db-deps`(`make gui-build`가 먼저 실행한다).
 
 ## 실행
 
-빌드된 browser asset을 한 번 준비한다. 빌드 결과인 `build/`와 `public/assets/`는 git이 무시한다.
-
-```sh
-make gui-build
-```
-
-저장소 루트에서 명령 `fsm-gui`를 PATH에 둔다. npm은 clone의 package를 link하므로 명령은 clone의 코드와 빌드된 asset을
-실행한다.
-
-```sh
-npm install -g ./packages/fsm-gui
-```
-
-프로젝트 디렉터리에서 서버를 시작하거나 `--project`로 지정한다.
+프로젝트 디렉터리에서 서버를 시작하거나 `--project`로 프로젝트를 지정한다.
 
 ```sh
 fsm-gui --project /path/to/project --port 8080
 ```
 
-서버는 `127.0.0.1`에서 listen하고 주소를 출력한다. 기계 목록은 `http://127.0.0.1:8080/`, 기계는
-`http://127.0.0.1:8080/machines/<machine>`에서 연다. 세션은 `<project>/var/sessions`에 보관한다.
+서버는 `127.0.0.1`에서 듣고, 주소와 제공하는 프로젝트를 출력한다.
 
-| 옵션 | 의미 |
+```text
+[fsm-gui] http://127.0.0.1:8080 project /path/to/project
+```
+
+기계 목록은 `http://127.0.0.1:8080/`, 기계 하나는 `http://127.0.0.1:8080/machines/<machine>`에서 연다. session은
+`<project>/var/sessions`에 보관한다. Ctrl+C로 서버를 멈춘다.
+
+| 옵션 | 뜻 |
 |---|---|
-| `--project <dir>` | 프로젝트 루트. 그 안의 `fsm.config.json`이 store를 고른다. 기본값은 현재 디렉터리다. |
-| `--port <n>` | `127.0.0.1`의 port. 0부터 65535까지. 기본값은 8080이다. |
+| `--project <dir>` | 프로젝트 루트. `fsm.config.json`이 store를 고른다. 기본값은 현재 디렉터리다. |
+| `--port <n>` | `127.0.0.1`의 port, 0부터 65535까지. 기본값은 8080이다. |
 
 store는 `fsm.config.json`을 따른다.
 
 | 설정 | Store |
 |---|---|
 | `{"store":"json"}` | `machines/*.fsm.json`과 `fsm.lock.json` |
-| `{"store":"mermaid"}` | `machines/*.fsm.mmd`과 `fsm.lock.json` |
-| `{"store":"db","dsnEnv":"FSM_DSN"}` | DSN이 `FSM_DSN` 환경 변수의 값인 데이터베이스. `packages/fsm-db`의 orm 패키지가 설치되어 있어야 한다(`make db-deps`) |
+| `{"store":"mermaid"}` | `machines/*.fsm.mmd`와 `fsm.lock.json` |
+| `{"store":"db","dsnEnv":"FSM_DSN"}` | DSN이 `FSM_DSN`의 값인 database. `packages/fsm-db`의 orm 패키지를 설치해야 한다(`make db-deps`) |
 
-GUI가 사용할 수 없는 설정은 종료 코드 1로 끝나며 `E_STORE_NOT_CONFIGURED` 같은 finding을 출력한다. 모든 페이지는 프로젝트의
-finding을 오류로 보여주며, 읽을 수 없는 파일의 load finding도 포함한다. 자신의 finding이 있는 기계는 finding을 보여주고
-다이어그램은 보여주지 않는다.
+GUI가 쓸 수 없는 설정이면 시작이 종료 상태 1로 멈추고 검사 결과를 출력한다. 사용 오류(알 수 없는 옵션, 0부터 65535가 아닌 port)는
+종료 상태 2로 끝난다.
 
-## 편집
+```sh
+$ fsm-gui --project ./no-config --port 8098
+[fsm-gui] E_STORE_NOT_CONFIGURED - $: fsm.config.json is missing in /path/to/no-config
+$ echo $?
+1
+$ fsm-gui --port 70000
+[fsm-gui] --port takes a port number from 0 to 65535
+usage: fsm-gui [--project <dir>] [--port <n>]
+$ echo $?
+2
+```
 
-기계의 상세 페이지는 편집 화면과 이름 바꾸기 화면으로 가는 링크를 두고, 기계를 삭제하는 버튼을 둔다. 새 기계 화면은 `/new`다.
+모든 페이지는 프로젝트의 검사 결과도 보여준다. 읽을 수 없는 파일과 기계마다의 검사 결과가 여기에 든다. 자신의 검사 결과가
+있는 기계는 검사 결과만 보여주고 다이어그램은 보여주지 않는다.
 
-| 화면 | 경로 | 저장할 때 하는 일 |
+## 화면
+
+| 화면 | 경로 | 보여주거나 저장하는 것 |
 |---|---|---|
-| 편집 | `/machines/<machine>/edit` | 상태(key, code, `initial`, `final`)와 edge가 있는 event를 저장한다. |
-| 이름 바꾸기 | `/machines/<machine>/rename` | 상태에 새 key를 주며 code는 그대로 둔다. |
-| 새 기계 | `/new` | 초기이면서 final인 상태 하나와 event가 없는 기계를 만든다. |
-| 삭제 | 상세 페이지의 버튼 | 그 기계 없이 store를 저장한다. |
+| 기계 목록 | `/` | 프로젝트의 모든 기계와 각 기계로 가는 링크 |
+| 상세 | `/machines/<machine>` | 상태(key, code, initial, final), edge가 있는 event, Mermaid 다이어그램. 편집과 이름 바꾸기로 가는 링크, 기계를 삭제하는 버튼 |
+| 편집 | `/machines/<machine>/edit` | 상태(key, code, `initial`, `final`)와 edge가 있는 event를 저장한다. 행은 browser가 추가하고 제거한다 |
+| 이름 바꾸기 | `/machines/<machine>/rename` | 저장된 상태에 새 key를 주고 code는 유지한다 |
+| 새 기계 | `/new` | 상태 하나(초기이면서 최종 상태)와 event가 없는 기계를 만든다 |
+| 삭제 | 상세 페이지의 버튼 | 기계를 뺀 store를 저장한다 |
 
-저장마다 core `run`을 부른다. 편집, 새 기계, 삭제는 `save`를, 이름 바꾸기는 이름 변경을 담은 `lock`을 부르므로 규칙은 core의
-것이다.
+상세 페이지의 Mermaid 다이어그램은 mermaid store의 정규 출력이다. browser가 첫 로드 때 그리고 페이지가 바뀔 때마다 다시 그린다.
 
-- 거부된 저장은 아무것도 쓰지 않는다. 저장의 모든 finding을 페이지에 보여주며, 폼의 필드를 가리키는 finding은 그 필드에
-  보여준다. 필드가 없는 finding(기계 전체에 대한 finding 등)은 폼 오류다.
-- 편집 폼에서 저장된 상태의 key와 code는 읽기 전용이다. 요청을 손으로 고쳐도 core가 code 변경(`E_CODE_CHANGED`)과 key 변경
-  (`E_CODE_KEY_CHANGED`)을 거부한다. key는 이름 바꾸기 화면에서만 바뀐다.
-- 새 상태는 저장할 때 code를 받는다. 편집 페이지는 기계의 core `nextCode`가 제안한 code를 내장 폼 상태(`nextCode`)에 담고,
-  브라우저는 폼에서 추가한 상태마다 그 code와 그 뒤의 code를 순서대로 준다(`client/new-codes.ts`). 저장은 모든 code를
-  검사하며, 빈 code는 서버가 `nextCode`로 채운다. `nextCode`가 code를 내지 못하면(`E_CODE_RANGE`) 페이지는 null을 담고,
-  브라우저는 code를 주지 않으며, 저장이 그 finding을 보여준다.
-- 기계나 상태를 삭제하면 그 code는 `fsm.lock.json`의 `reserved`로 옮겨가므로 나중의 상태가 그 code를 받지 않는다
-  (`docs/spec/fsm.md`, B-3). 삭제된 기계를 다시 추가하면 그 reserved code 다음부터 시작한다.
-- 저장, 이름 바꾸기, 삭제 요청은 그 요청을 보낸 페이지의 `_csrf` 토큰을 가져야 한다. 없으면 서버는 403으로 응답하고 아무것도
-  쓰지 않는다.
-- 편집 폼의 행 추가와 삭제는 browser에서 한다. `client/main.ts`가 페이지 로드 후와 htmx swap마다 렌더링된 폼을 crudui
-  `connectForm`으로 묶고, 행을 바꿀 때마다 페이지의 render 옵션으로 host에 폼을 다시 렌더링한다(`patchContent` 뒤 `connection.sync()`). 행 조작에는 browser가 필요하다. JavaScript가 없으면 폼은 보이는 행을 그대로 저장한다.
+## 규칙
 
-형식이 틀린 요청, 예를 들어 `form[...]`이 아닌 필드 이름이나 반복된 필드는 400으로 응답하며 아무것도 쓰지 않는다.
+모든 저장은 core `run`을 호출한다. 편집, 새 기계, 삭제는 `save`를, 이름 바꾸기는 이름 변경과 함께 `lock`을 쓴다. 규칙은 core의
+것이다(`docs/spec/fsm.md`, B-3과 B-5).
+
+- 거부된 저장은 아무것도 쓰지 않는다. 저장의 모든 검사 결과를 페이지에 보여준다. form의 field를 가리키는 결과는 그 field에,
+  기계 전체에 관한 결과처럼 field가 없는 결과는 form 오류로 보여준다.
+- 편집 form에서 저장된 상태는 key와 code를 유지하며, 둘 다 읽기 전용이다. core는 바뀐 code(`E_CODE_CHANGED`)와 바뀐 key
+  (`E_CODE_KEY_CHANGED`)를 거부한다. 요청을 손으로 고쳤더라도 그렇다. key는 이름 바꾸기 화면에서만 바뀌며, 그때 code는 유지된다.
+- 새 상태는 form을 저장할 때 code를 받는다. 편집 페이지는 기계에 대해 core `nextCode`가 제안하는 code를 싣고, browser는 form에
+  추가된 각 상태에 다음 code, 그 뒤의 code를 준다(`client/new-codes.ts`). 저장은 모든 code를 검사하고, 빈 code는 서버의
+  `nextCode`가 채운다. `nextCode`가 code를 주지 못하면(`E_CODE_RANGE`) 페이지는 null을 싣고, browser는 code를 주지 않으며,
+  저장이 검사 결과를 보여준다.
+- 기계나 상태를 삭제하면 그 code가 `fsm.lock.json`의 `reserved`로 옮겨가서, 나중의 상태가 그 code를 받지 못한다
+  (`docs/spec/fsm.md`, B-3). 삭제한 기계를 다시 추가하면 그 reserved code 뒤에서 시작한다.
+- 저장, 이름 바꾸기, 삭제는 보낸 페이지의 `_csrf` token을 가져야 한다. 없으면 서버는 403으로 응답하고 아무것도 쓰지 않는다.
+- 편집 form의 행은 browser에서 추가하고 제거한다. `client/main.ts`가 페이지 로드 뒤와 htmx swap 뒤마다 렌더된 form에 crudui
+  `connectForm`을 붙이고, 행을 바꿀 때마다 페이지의 render 옵션으로 host에 form을 다시 렌더링한다(`patchContent` 뒤
+  `connection.sync()`). 행에는 browser가 필요하다. JavaScript가 없으면 form은 보이는 행만 저장한다.
+- 형식이 잘못된 본문(예: `form[...]` 형식이 아닌 field 이름, 되풀이된 field)은 400으로 응답하고 아무것도 쓰지 않는다.
 
 ## 테스트
 
@@ -91,9 +119,9 @@ make gui-browser-test
 
 `gui-browsers`는 고정된 Playwright 패키지(이 패키지의 정확한 버전 devDependency)의 Chromium을 Playwright CDN에서 내려받는다.
 ONLINE이며 머신마다 한 번 실행한다. `gui-browser-test`는 asset을 빌드하고, 임시 프로젝트에 GUI를 띄운 뒤 그 Chromium으로
-편집 폼을 조작한다(`tests/browser/browser.test.mjs`). 상태 행을 추가하고, 엣지와 함께 상태를 저장하고, 삭제하고, 제안 code,
-저장된 머신과 lock, Mermaid 다이어그램을 확인한다. 또한 행의 모든 버튼이 crudui 크기와 아이콘을 보이는지, 편집과 이름 바꾸기 폼에서
-한 행의 필드가 서로 다른 label을 갖는지, `/favicon.ico`가 아이콘을 돌려주는지 확인한다.
+편집 form을 조작한다(`tests/browser/browser.test.mjs`). 상태 행을 추가하고, edge와 함께 상태를 저장하고, 삭제하고, 제안 code,
+저장된 machine과 lock, Mermaid 다이어그램을 확인한다. 또한 행의 모든 버튼이 crudui 크기와 아이콘을 보이는지, 편집과 이름 바꾸기
+form에서 한 행의 field가 서로 다른 label을 갖는지, `/favicon.ico`가 아이콘을 돌려주는지 확인한다.
 
 `gui-test`는 asset을 빌드한 뒤 `tests/`의 최상위 테스트를 실행한다. hyper 애플리케이션을 HTTP 없이 거치는 페이지, HTTP로 응답하는 서버
 프로세스, store 선택, 고정된 Mermaid 패키지로 정규 형식을 파싱하는 테스트다. 파싱 테스트는 Node에서 Mermaid를 읽을 때
@@ -105,22 +133,23 @@ json과 mermaid 프로젝트는 저장 뒤 `check`를 통과한다.
 
 | 경로 | 역할 |
 |---|---|
-| `app/app.json` | hyper manifest: page region과 경로 `/`, `/machines/{machine}`, 편집·이름 바꾸기·새 기계·삭제 |
+| `app/app.json` | hyper manifest: page 영역과 `/`, `/machines/{machine}` 경로 |
 | `templates/` | layout, title과 기계 목록·상세 페이지 |
 | `crud/machines.yml` | 기계 목록의 crudui 선언. 검증 규칙은 없다 |
-| `crud/machine.yml` | 편집 화면의 crudui 폼: 상태와 event를 반복 행으로 둔다. 검증 규칙은 없다 |
-| `crud/rename.yml` | 이름 바꾸기 화면의 crudui 폼: 저장된 상태와 새 key |
-| `crud/new-machine.yml` | 새 기계 화면의 crudui 폼 |
-| `src/forms.mjs` | 폼: 저장된 기계의 데이터, 각 폼의 렌더, finding의 필드 대응, code 제안 |
-| `src/form-data.mjs` | 제출된 폼의 파서: `form[...]` 이름을 행 key 객체로, 그다음 정의로 바꾼다 |
-| `client/main.ts` | browser 진입점: hyper client, 첫 로드와 htmx swap마다 실행되는 Mermaid, 편집 폼의 crudui `connectForm` |
-| `src/main.mjs` | 서버 진입점 |
+| `crud/machine.yml` | 편집 화면의 crudui form. 상태와 event를 반복 행으로 둔다. 검증 규칙은 없다 |
+| `crud/rename.yml` | 이름 바꾸기 화면의 crudui form. 저장된 상태에 새 key를 준다 |
+| `crud/new-machine.yml` | 새 기계 화면의 crudui form |
+| `src/forms.mjs` | form: 저장된 기계의 데이터, 각 form의 render, field에 대응시킨 검사 결과, code 제안 |
+| `src/form-data.mjs` | 제출된 form의 parser: `form[...]` 이름을 row-key 객체로, 그다음 정의로 바꾼다 |
+| `client/main.ts` | browser 진입점: hyper client, 첫 로드와 htmx swap 뒤의 Mermaid, 편집 form의 crudui `connectForm` |
+| `src/main.mjs` | 서버 진입점(명령 `fsm-gui`) |
 | `src/store.mjs` | `fsm.config.json`에서 store를 고른다 |
 | `src/handlers.mjs` | 화면의 loader와 action: 목록, 상세, 편집, 이름 바꾸기, 새 기계, 삭제 |
-| `build/` | `make gui-build`의 결과: `templates.index.json`, `manifest.json`(무시됨) |
-| `public/assets/` | client bundle과 chunk, `make gui-build`가 `@polyspec/crudui-generator-core`에서 복사하는 `crudui.css`(무시됨) |
+| `build/` | `make gui-build`의 출력: `templates.index.json`, `manifest.json`(git이 무시) |
+| `public/assets/` | client bundle과 chunk, `make gui-build`가 `@polyspec/crudui-generator-core`에서 복사하는 `crudui.css`(git이 무시) |
 | `public/favicon.ico` | `/favicon.ico`의 아이콘. `scripts/make-favicon.mjs`가 쓴다(ICO 파일이다. 계획 C-7 참고) |
 | `scripts/make-favicon.mjs` | `public/favicon.ico`를 쓴다. 아이콘을 바꿀 때만 손으로 실행한다 |
+| `tests/browser/` | form의 브라우저 테스트(`make gui-browser-test`) |
 
-의존성 버전은 `package.json`과 `package-lock.json`에 고정하고 `config/dependency-policy.json`에 기록한다. hyper v0.0.11,
-crudui v0.0.5, template v0.0.5, mermaid를 고정하며, 그 `@polyspec/*` 패키지의 전이 의존성은 같은 release URL을 `overrides`에 둔다.
+의존성 버전은 `package.json`과 `package-lock.json`에 고정하며 `config/dependency-policy.json`에 기록한다: hyper v0.0.11, crudui
+v0.0.5, template v0.0.5, mermaid. `@polyspec/*` 패키지 중 이들이 의존하는 것은 `overrides`에 같은 release URL을 준다.
