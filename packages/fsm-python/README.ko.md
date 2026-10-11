@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: 66d3950b2305087d0f4812d1cc8dc733c06782990e1cdaded385ab017d798afc -->
+<!-- source-sha256: d7d0b96006d539d459b1705c90072f59cbd489a307cbaae68a4b150e641b35de -->
 # polyspec-fsm-python
 
 [English](README.md)
@@ -130,11 +130,11 @@ python 패키지는 가상환경의 Python 3.14가 필요하다. checkout 루트
 
 ```sh
 make install-python                    # online: Python 3.14 with uv, linked into var/tools/bin/python3 (no system path changes)
-make -C packages/fsm-python install    # online: .venv with Python 3.14 and the orm release pinned in pyproject.toml (v0.0.7)
+make -C packages/fsm-python install    # online: .venv with Python 3.14 and every package of uv.lock (orm v0.0.7 by commit, artifacts by sha256)
 make test-python                       # offline: the vector cases and the persist cases, with the venv's python3 first on PATH
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/test_conformance.py`는 vector case마다 unittest method 하나를 `test_<feature>__<id>`
 이름으로 만들고, 생성 함수나 오류 code의 결과를 단언한다. 생성 파일은 commit되어 있으므로 `test`는 생성기를 필요로 하지 않는다.
 `make -C packages/fsm-python gen`이 다시 생성하며, 루트의 `make gen-check`가 최신인지 검사한다. `make parity-python`은 모든 case의
-결과 기록을 검사한다. 이 종류에는 lock 파일이 없다. `pyproject.toml`의 정확한 고정 버전이 의존성 트리를 정한다.
+결과 기록을 검사한다. `uv.lock`이 트리의 모든 package를 잠근다(정확한 버전, sha256 hash, git commit). `make python-lock-check`가 이를 `pyproject.toml`과 대조한다.

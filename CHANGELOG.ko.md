@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 51daddfbd252c0d042bdd67fec1b5b15e8043fd4567bd48729c0bd1b3aeede2a -->
+<!-- source-sha256: cd86f39e943fa9bd690770ed566b440f34cd40e8deb9732ce4c3a72345851b75 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-34: python 의존성을 잠갔다(감사 16). `packages/fsm-python/uv.lock`(`uv lock`)이 트리의 모든 package를 정확한 버전, 각 artifact의 sha256, 각 git package의 commit과 함께 담는다(orm과 ordered-json은 `v0.0.7`). `make -C packages/fsm-python install`은 이 lock으로 `uv sync --locked`를 실행하므로 uv가 각 artifact를 hash와 대조한다. `make install`의 python stamp는 `pyproject.toml` 대신 `uv.lock`으로 키를 정한다. kit dependency gate는 Python lock을 읽지 않으므로 `scripts/check-python-lock.mjs`(`make python-lock-check`)가 lock의 pin, commit, tag, current, closure 규칙을 검사한다(계획 C-1). 전이 package의 최신 릴리스와 advisory 리뷰는 S-34-1로 등록했다.
 - S-37: 영속화와 DB store를 SQLite, PostgreSQL, MySQL에서 증명한다(감사 23, 24). `packages/fsm-npm/tests/persist-dialects.test.mjs`는 한 row의 전이 두 개를 두 연결에서 동시에 실행한다. 같은 (expected, event)는 Changed 하나와 Unchanged 하나를, 한 expected 상태의 서로 다른 event 두 개는 Changed 하나와 E_CONFLICT 하나를 낸다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이기 때문이다. `forUpdate()`가 없으면 PostgreSQL과 MySQL에서 두 전이가 모두 Changed를 보고한다(RED). `make db-test-postgres`와 `make db-test-mysql`은 `packages/fsm-db/tests/dialect.mjs`를 통해 두 서버에서 DB store 테스트와 store 계약을 실행한다. `FSM_TEST_PG_DSN`이나 `FSM_TEST_MYSQL_DSN`이 없으면 target이 실패하며 case를 건너뛰지 않는다(RED: 변수 없이 실행하여 실패를 확인). 문서는 테스트한 dialect를 적는다(명세 B-2, B-4; fsm-db README; 루트 README). S-21을 위한 CI service 줄은 계획 C-6에 있다.
 - S-31-1: layout 계약이 rust retry test를 허용한다(S-31 감사). `contracts/layout.json`은 `tests/persist_retry.rs`를 차이로 선언했지만 check-layout은 그 파일이 rust의 허용 glob에도 있을 것을 요구한다. S-31 commit은 layout-check를 실행하지 않아 이를 놓쳤다. `make layout-check`와 `make layout-test`가 통과한다.
 - S-31: rust 영속화 예제가 deadlock을 재시도한다(명세 B-4). `examples/persist.rs`는 콜백을 한 번만 실행하는 `transaction_once`를 썼지만, B-4는 deadlock이면 orm이 콜백을 다시 실행한다고 적는다. 이제 orm v0.0.7의 `transaction`을 쓴다(기본 세 번 재시도). 콜백은 `Fn`이다. machine 오류는 `transaction` 콜백이 orm 오류로만 실패하므로 값으로 돌려준다. `persist_runs_again_on_a_deadlock`(RED: 한 번 시도, 기대는 두 번)과 `persist_does_not_run_again_on_another_error`가 `packages/fsm-rust/tests/persist_retry.rs` (`make rust-persist-test`)에 있다. 명세 B-4는 조건부 update 하나 대신 transaction + `forUpdate()`로 잠그는 이유를 적는다. orm v0.0.7에는 영향 행 수를 돌려주는 공개 update가 없고, 이를 다시 볼 조건을 함께 적는다.

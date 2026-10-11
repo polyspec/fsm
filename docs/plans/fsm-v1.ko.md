@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: e1315e67f2504123b8daa3ccb498626f6e4bb6dd075adc621b2ed5fe4abffd31 -->
+<!-- source-sha256: d48d52717879bfebc07ccd52ca926eca14fab3b23a72b8406c9a63baafc06e23 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -134,7 +134,7 @@ fsm/
   .gitignore            # anchored only: /var/, /.results/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/fsm-python/**/__pycache__/, php-ext phpize output under /packages/fsm-php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/fsm-gui/build/, /packages/fsm-gui/public/assets/, /packages/fsm-php*/.phpunit.result.cache, /packages/fsm-php*/.phpunit.cache/
   config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review}.json
   scripts/kit/ tests/kit/                    # vendored from kit
-  scripts/check-layout.mjs scripts/check-parity.mjs scripts/check-name.mjs scripts/gen-check.mjs   tests/check-layout/ tests/check-name/ tests/check-parity/ tests/docs-build/ tests/gen-check/ tests/install-python/
+  scripts/check-layout.mjs scripts/check-parity.mjs scripts/check-name.mjs scripts/gen-check.mjs scripts/check-python-lock.mjs   tests/check-layout/ tests/check-name/ tests/check-parity/ tests/docs-build/ tests/gen-check/ tests/install-python/ tests/check-python-lock/
   contracts/layout.json (tools, kinds, canonical tree, allowed differences)   contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
@@ -152,7 +152,8 @@ fsm/
   - python: `polyspec-orm @ git+https://github.com/polyspec/orm@v0.0.7#subdirectory=packages/orm-python`
   - cargo: `{ git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }`
   - `.node-version`에는 정확한 26.y.z 릴리스를 쓴다(hyper 요구. kit toolchain-declared.mjs는 `<major>.<minor>.<patch>`만 받는다).
-- 고정은 manifest와 lock 파일에 하고 `config/dependency-policy.json`에 적는다. kit gate는 npm URL, Composer `package` dist URL, python `git+…@tag`, cargo tag를 검사하지 않는다. 고정 확인은 리뷰 규칙이다(이를 도구로 요구하는 R은 없다).
+- 고정은 manifest와 lock 파일에 하고 `config/dependency-policy.json`에 적는다. kit gate는 npm URL, Composer `package` dist URL, python `git+…@tag`, cargo tag를 검사하지 않는다. 고정 확인은 리뷰 규칙이다(이를 도구로 요구하는 R은 없다). 단 python lock은 예외로 `make python-lock-check`가 검사한다(아래 결정).
+  - 결정(python lock, S-34): python 의존성 트리는 `packages/fsm-python/uv.lock`(`uv lock`, version 1)으로 잠근다. 레지스트리 package마다 정확한 버전과 각 artifact의 sha256을, git package마다 태그의 commit을 적는다(orm과 ordered-json은 `v0.0.7`). `make -C packages/fsm-python install`은 이 lock으로 `uv sync --locked`를 실행하므로 uv가 각 artifact를 hash와 대조한다(측정: 변조한 wheel hash는 `Hash mismatch for pyyaml==6.0.3`으로 거부된다). 형식을 hash가 든 requirements 파일이 아니라 uv.lock으로 정한 이유: `pip install --require-hashes`는 git requirement를 거부하므로(pip 26.2.1로 측정: `Can't verify hashes for these requirements because we don't have a way to hash version control repositories`) git package를 두 번째 설치 단계로 옮겨야 한다. kit gate는 Python manifest의 build-system과 optional requirement(`pythonManifests`)만 읽고 Python lock은 읽지 않으므로 고정되지 않은 런타임 의존성을 통과시킨다(측정: 추적 파일의 복사본에 `requests>=2`를 더하고 lock이 없으면 `check-dependency-policy.mjs`가 통과한다). `scripts/check-python-lock.mjs`(`make python-lock-check`)가 pin, commit, tag, current, closure 규칙으로 lock을 검사한다. 덮지 않는 것: 전이 package의 최신 릴리스와 advisory 리뷰는 kit 리뷰 기록이 Python lock을 읽지 않으므로 빠진다. 이는 kit 변경이며 S-34-1로 등록한다. build backend `setuptools==84.0.0`은 pyproject.toml에서 버전으로 고정되고 격리된 환경에서 빌드되며, uv는 그 hash를 검사하지 않는다.
 
 ### C-2. 언어 패키지 정규 구조 (6개 동일)
 ```
@@ -161,7 +162,7 @@ packages/fsm-<kind>/
   Makefile          # gen (gen + vectors --kind; flags only here; DEST ?= .)
                     # test (run-tests --cwd packages/fsm-<kind> --results .results/<kind>.json; paths resolve against the checkout root)
   <manifest>        # [allowed difference] depends on orm (SQLite) for tests and examples
-  <lock>            # [allowed difference] go.sum, package-lock.json, composer.lock, Cargo.lock (read by the kit dependency gate); python has none
+  <lock>            # [allowed difference] go.sum, package-lock.json, composer.lock, Cargo.lock (read by the kit dependency gate); python has `uv.lock` (S-34; `python-lock-check` reads it)
   src/…             # fsm-gen output only
   tests/conformance.<ext>   # hand-written check functions; except in rust, iterates the vectors and registers one test per case
   tests/vectors.<ext>       # fsm-gen output (language-native data); in rust, one #[test] per case
@@ -397,6 +398,7 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 | `scripts/gen-check.mjs`, `tests/gen-check/**` | `gen-check-test gen-check` |
 | `scripts/check-parity.mjs`, `tests/check-parity/**` | `parity-test` |
 | `tests/install-python/**` | `install-python-test` |
+| `scripts/check-python-lock.mjs`, `tests/check-python-lock/**`, `packages/fsm-python/pyproject.toml`, `packages/fsm-python/uv.lock` | `python-lock-test python-lock-check` |
 | `packages/fsm-compiler/**`, `schema/fsm.schema.json`, `machines/**`, `fsm.lock.json`, `conformance/**`, `contracts/features.json`, `fsm.config.json` | `compiler-test gen-check` |
 | `schema/persist.dbs` | `gen-check packages-test` |
 | `schema/fsm.dbs`, `packages/fsm-db/**` | `db-test` |
@@ -417,11 +419,12 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
   - `layout-test`, `layout-check`, `parity-test`, `parity-check`
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `install-python-test` (`tests/install-python`: the install-python recipe in a temporary checkout with a stub uv, S-11-3)
+  - `python-lock-test` (`tests/check-python-lock`: the lock rules on fixtures and on the committed uv.lock, S-34) and `python-lock-check` (the same rules on `packages/fsm-python`)
   - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
   - `test-<kind>`, `parity-<kind>`(`parity-<kind>: test-<kind>`), `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test parity-check`
-- 패키지 의존성(S-29): `make install`(ONLINE, clone마다 한 번)은 `install-tools`의 toolchain을 `var/tools`에 설치하고 모든 패키지 의존성을 설치한다: `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui`, `docs`의 lock으로 `npm ci`; `packages/fsm-php`와 `packages/fsm-php-ext`의 `composer install`(`composer.lock`); `make install-python`의 Python 3.14 link와 `packages/fsm-python`의 venv(`pip install -e .`); go module과 cargo crate(`var/deps/go`, `var/deps/rust`). 각각은 자기 lock을 키로 하는 file target이므로, 나중의 실행은 최신 상태를 확인하고 네트워크가 필요 없다. package를 쓰는 타깃은 그 file을 선행 조건으로 둔다: `npm-types`, `gen-check`, `test-<kind>`(따라서 `parity-<kind>`와 `packages-test`), `db-test`, `gui-test`, `gui-browser-test`, `docs-build`, `docs-build-test`. 새 clone은 `make install`을 한 번 실행한 뒤 `make check`를 실행한다: toolchain은 `make install`에서만 온다. `make make-install-test`(`tests/make-install/`)는 Makefile 사본에서, 의존성이 하나도 없는 경우와 모두 있는 경우에 선행 조건을 검사한다.
+  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check python-lock-test python-lock-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test parity-check`
+- 패키지 의존성(S-29): `make install`(ONLINE, clone마다 한 번)은 `install-tools`의 toolchain을 `var/tools`에 설치하고 모든 패키지 의존성을 설치한다: `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui`, `docs`의 lock으로 `npm ci`; `packages/fsm-php`와 `packages/fsm-php-ext`의 `composer install`(`composer.lock`); `make install-python`의 Python 3.14 link와 `packages/fsm-python`의 venv(`uv sync --locked`, `uv.lock` 기준; python stamp는 `uv.lock`으로 키를 정한다); go module과 cargo crate(`var/deps/go`, `var/deps/rust`). 각각은 자기 lock을 키로 하는 file target이므로, 나중의 실행은 최신 상태를 확인하고 네트워크가 필요 없다. package를 쓰는 타깃은 그 file을 선행 조건으로 둔다: `npm-types`, `gen-check`, `test-<kind>`(따라서 `parity-<kind>`와 `packages-test`), `db-test`, `gui-test`, `gui-browser-test`, `docs-build`, `docs-build-test`. 새 clone은 `make install`을 한 번 실행한 뒤 `make check`를 실행한다: toolchain은 `make install`에서만 온다. `make make-install-test`(`tests/make-install/`)는 Makefile 사본에서, 의존성이 하나도 없는 경우와 모두 있는 경우에 선행 조건을 검사한다.
 - 항목 개발 중에는 owner-checks 매핑만 실행한다.
 - GUI 수동 확인: json·mermaid·db store 각각으로 다음을 확인한다.
   1. 상태를 추가·삭제·rename한 뒤 저장한다(lock은 save가 함께 갱신).

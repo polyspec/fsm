@@ -276,7 +276,8 @@
         "gen-check",
         "parity-python",
         "dependency-policy-check",
-        "toolchain-check"
+        "toolchain-check",
+        "python-lock-check"
       ]
     },
     {
@@ -361,6 +362,18 @@
       ],
       "targets": [
         "make-install-test"
+      ]
+    },
+    {
+      "paths": [
+        "scripts/check-python-lock.mjs",
+        "tests/check-python-lock/**",
+        "packages/fsm-python/pyproject.toml",
+        "packages/fsm-python/uv.lock"
+      ],
+      "targets": [
+        "python-lock-test",
+        "python-lock-check"
       ]
     }
   ]

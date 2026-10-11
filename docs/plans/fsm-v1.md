@@ -133,7 +133,7 @@ fsm/
   .gitignore            # anchored only: /var/, /.results/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/fsm-python/**/__pycache__/, php-ext phpize output under /packages/fsm-php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/fsm-gui/build/, /packages/fsm-gui/public/assets/, /packages/fsm-php*/.phpunit.result.cache, /packages/fsm-php*/.phpunit.cache/
   config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review}.json
   scripts/kit/ tests/kit/                    # vendored from kit
-  scripts/check-layout.mjs scripts/check-parity.mjs scripts/check-name.mjs scripts/gen-check.mjs   tests/check-layout/ tests/check-name/ tests/check-parity/ tests/docs-build/ tests/gen-check/ tests/install-python/
+  scripts/check-layout.mjs scripts/check-parity.mjs scripts/check-name.mjs scripts/gen-check.mjs scripts/check-python-lock.mjs   tests/check-layout/ tests/check-name/ tests/check-parity/ tests/docs-build/ tests/gen-check/ tests/install-python/ tests/check-python-lock/
   contracts/layout.json (tools, kinds, canonical tree, allowed differences)   contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
@@ -151,7 +151,8 @@ fsm/
   - python: `polyspec-orm @ git+https://github.com/polyspec/orm@v0.0.7#subdirectory=packages/orm-python`
   - cargo: `{ git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }`
   - `.node-version` holds an exact 26.y.z release (required by hyper; kit toolchain-declared.mjs accepts only `<major>.<minor>.<patch>`).
-- The pins live in the manifests and lock files and are listed in `config/dependency-policy.json`. The kit gate does not check npm URLs, the Composer `package` dist URL, python `git+…@tag` or cargo tags; pin verification is a review rule (no R requires a tool for it).
+- The pins live in the manifests and lock files and are listed in `config/dependency-policy.json`. The kit gate does not check npm URLs, the Composer `package` dist URL, python `git+…@tag` or cargo tags; pin verification is a review rule (no R requires a tool for it), except the python lock, which `make python-lock-check` checks (the decision below).
+  - Decision (python lock, S-34): the python tree is locked by `packages/fsm-python/uv.lock` (`uv lock`, version 1): every registry package with its exact version and the sha256 of each artifact, every git package at the commit of its tag (orm and ordered-json at `v0.0.7`). `make -C packages/fsm-python install` runs `uv sync --locked` from it, so uv checks each artifact against its hash (measured: a tampered wheel hash is refused with `Hash mismatch for pyyaml==6.0.3`). The form is uv.lock and not a requirements file with hashes, because `pip install --require-hashes` refuses a git requirement (measured with pip 26.2.1: `Can't verify hashes for these requirements because we don't have a way to hash version control repositories`), so the git packages would need a second install step. The kit gate reads only the build-system and optional requirements of a Python manifest (`pythonManifests`) and no Python lock, so it passes an unpinned runtime dependency (measured: a copy of the tracked files with `requests>=2` added to pyproject.toml and no lock passes `check-dependency-policy.mjs`). `scripts/check-python-lock.mjs` (`make python-lock-check`) checks the lock by the rules pin, commit, tag, current and closure. Not covered: the latest-release and advisory review of the transitive packages, because the kit review record reads no Python lock; that is a kit change, filed as S-34-1. The build backend `setuptools==84.0.0` is pinned by version in pyproject.toml and built in an isolated environment, which uv does not hash.
 
 ### C-2. Canonical structure of a language package (identical for all six)
 ```
@@ -160,7 +161,7 @@ packages/fsm-<kind>/
   Makefile          # gen (gen + vectors --kind; flags only here; DEST ?= .)
                     # test (run-tests --cwd packages/fsm-<kind> --results .results/<kind>.json; paths resolve against the checkout root)
   <manifest>        # [allowed difference] depends on orm (SQLite) for tests and examples
-  <lock>            # [allowed difference] go.sum, package-lock.json, composer.lock, Cargo.lock (read by the kit dependency gate); python has none
+  <lock>            # [allowed difference] go.sum, package-lock.json, composer.lock, Cargo.lock (read by the kit dependency gate); python has `uv.lock` (S-34; `python-lock-check` reads it)
   src/…             # fsm-gen output only
   tests/conformance.<ext>   # hand-written check functions; except in rust, iterates the vectors and registers one test per case
   tests/vectors.<ext>       # fsm-gen output (language-native data); in rust, one #[test] per case
@@ -408,6 +409,7 @@ owner-checks mapping (each item adds its own part):
 | `scripts/gen-check.mjs`, `tests/gen-check/**` | `gen-check-test gen-check` |
 | `scripts/check-parity.mjs`, `tests/check-parity/**` | `parity-test` |
 | `tests/install-python/**` | `install-python-test` |
+| `scripts/check-python-lock.mjs`, `tests/check-python-lock/**`, `packages/fsm-python/pyproject.toml`, `packages/fsm-python/uv.lock` | `python-lock-test python-lock-check` |
 | `packages/fsm-compiler/**`, `schema/fsm.schema.json`, `machines/**`, `fsm.lock.json`, `conformance/**`, `contracts/features.json`, `fsm.config.json` | `compiler-test gen-check` |
 | `schema/persist.dbs` | `gen-check packages-test` |
 | `schema/fsm.dbs`, `packages/fsm-db/**` | `db-test` |
@@ -428,11 +430,12 @@ owner-checks mapping (each item adds its own part):
   - `layout-test`, `layout-check`, `parity-test`, `parity-check`
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `install-python-test` (`tests/install-python`: the install-python recipe in a temporary checkout with a stub uv, S-11-3)
+  - `python-lock-test` (`tests/check-python-lock`: the lock rules on fixtures and on the committed uv.lock, S-34) and `python-lock-check` (the same rules on `packages/fsm-python`)
   - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
   - `test-<kind>`, `parity-<kind>` (`parity-<kind>: test-<kind>`), `packages-test` (the `test-<kind>` of `kinds` with `make -j6`)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test parity-check`
-- Package dependencies (S-29): `make install` (ONLINE, once per clone) installs the toolchains of `install-tools` into `var/tools` and every package dependency: `npm ci` of the locks of `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui` and `docs`; `composer install` of `packages/fsm-php` and `packages/fsm-php-ext` (`composer.lock`); the Python 3.14 link of `make install-python` and the venv of `packages/fsm-python` (`pip install -e .`); the go modules and the cargo crates (`var/deps/go` and `var/deps/rust`). Each one is a file target keyed on its lock, so a later run finds it up to date and needs no network. The targets that use a package name its file as a prerequisite: `npm-types`, `gen-check`, `test-<kind>` (and so `parity-<kind>` and `packages-test`), `db-test`, `gui-test`, `gui-browser-test`, `docs-build` and `docs-build-test`. A fresh clone runs `make install` once, then `make check`: the toolchains come only from `make install`. `make make-install-test` (`tests/make-install/`) checks the prerequisites on a copy of the Makefile, with no dependency installed and with every dependency present.
+  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check python-lock-test python-lock-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test parity-check`
+- Package dependencies (S-29): `make install` (ONLINE, once per clone) installs the toolchains of `install-tools` into `var/tools` and every package dependency: `npm ci` of the locks of `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui` and `docs`; `composer install` of `packages/fsm-php` and `packages/fsm-php-ext` (`composer.lock`); the Python 3.14 link of `make install-python` and the venv of `packages/fsm-python` (`uv sync --locked` from its `uv.lock`; the python stamp is keyed on `uv.lock`); the go modules and the cargo crates (`var/deps/go` and `var/deps/rust`). Each one is a file target keyed on its lock, so a later run finds it up to date and needs no network. The targets that use a package name its file as a prerequisite: `npm-types`, `gen-check`, `test-<kind>` (and so `parity-<kind>` and `packages-test`), `db-test`, `gui-test`, `gui-browser-test`, `docs-build` and `docs-build-test`. A fresh clone runs `make install` once, then `make check`: the toolchains come only from `make install`. `make make-install-test` (`tests/make-install/`) checks the prerequisites on a copy of the Makefile, with no dependency installed and with every dependency present.
 - During item work only the owner-checks mapping runs.
 - GUI manual check, for each of the json, mermaid and db stores:
   1. Add, delete and rename states, then save (save updates the lock too).
