@@ -2,7 +2,7 @@
 // its checkout in a temporary directory with result records written as run-tests.mjs writes them, so no fixture is committed.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -176,4 +176,14 @@ test('the command prints each finding and exits 1, and passes on a passing check
   const failed = command('--kind', 'npm');
   assert.equal(failed.status, 1);
   assert.match(failed.stderr, /\[check-parity\] the kind npm has no result \.results\/npm\.json; run make test-npm/);
+});
+
+// The Makefile runs one parity tool: vector-parity-check (scripts/check-parity.mjs). The kit target parity-check (K33, kit's
+// own checker of config/parity.json) must not be in CHECK_TARGETS nor be defined by this repository (docs/plans/fsm-v1.md, C-4).
+test('make check runs one parity tool: vector-parity-check is in CHECK_TARGETS, and parity-check of kit is not', () => {
+  const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
+  const targets = makefile.match(/^CHECK_TARGETS\s*:=\s*(.*)$/m)?.[1].split(/\s+/).filter(Boolean) ?? [];
+  assert.ok(targets.includes('vector-parity-check'), 'CHECK_TARGETS lacks vector-parity-check');
+  assert.ok(!targets.includes('parity-check'), 'CHECK_TARGETS holds the kit target parity-check');
+  assert.ok(!/^parity-check\s*:/m.test(makefile), 'the Makefile defines the kit target parity-check');
 });

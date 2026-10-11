@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 6343f3ceaf589f043cbfbe11a355726ca74e3caa42dd6029eaad743e76e9885e -->
+<!-- source-sha256: c9920e9d764f568053fd5b312fd4c8550f8f40b2b84aa4dd8a1d6de40184f81d -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -244,7 +244,16 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 
 - 영속화 패턴의 동시성(S-37, 결정): 동시성 증명은 npm에 한 번만 쓴다(`packages/fsm-npm/tests/persist-dialects.test.mjs`, 기록 `npm-persist-test`, `npm-persist-test-postgres`, `npm-persist-test-mysql`, 모두 `TOOL_TESTS`에 있다). 이유: npm client는 한 database에 실제 연결 두 개를 열므로, 한 row의 transaction 두 개가 PostgreSQL과 MySQL에서 동시에 실행되며, B-4가 기대는 잠금은 database 자체의 잠금이다. 다른 kind가 이 테스트를 반드시 되풀이할 필요는 없다. 그 kind들은 동시성 테스트를 되풀이하지 않는다. persist case는 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`로 PostgreSQL과 MySQL에서 실행한다(S-37-1, 기록은 `TOOL_TESTS`에 있다). `FSM_TEST_DIALECT`가 dialect를 고르고, `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, case마다 persist table을 비우고, 서버 dialect의 case는 차례로 실행한다(rust는 static 잠금을 쓰고, 다른 kind는 순차 실행한다). DSN이 비어 있으면 각 target은 exit 2로 멈추며(Makefile의 `require_dsn`), 테스트도 실패한다. kind별 RED: 테스트가 `FSM_TEST_DIALECT`를 읽기 전에는 PostgreSQL target이 SQLite의 persist case 11개를 통과시켰다(rust, php, php-ext, python). go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이라, 같은 프로세스의 두 번째 `BEGIN IMMEDIATE`가 첫 번째를 커밋할 thread를 막고, 5000밀리초 busy timeout 뒤 `CANCELED: sqlite: database is locked`로 실패하기 때문이다. RED: `examples/persist.mjs`에서 `forUpdate()`를 빼면 PostgreSQL 17.11과 MySQL 8.4.11 모두에서 두 전이가 Changed를 보고하고 두 테스트가 실패한다. 복원한 패턴은 세 dialect에서 통과한다.
 
-- 이름(S-35-2, 결정): 벡터 기록을 검사하는 이 저장소의 타깃은 `parity-check`(scripts/check-parity.mjs)다. kit v0.0.23은 자기 `parity-check`(kit K33, config/parity.json의 language-parity 검사기)를 정의하므로 `parity-check` 이름은 kit의 것이며, fsm 타깃은 더 이상 그것을 가리지 않는다(make가 "overriding commands for target `parity-check`"를 출력했었다). kit의 `parity-check`는 아직 채택하지 않는다: 그 선언(config/parity.json)은 check-parity.mjs와 같은 주장을 검사하는 두 번째 검사기를 만든다. 평가는 후속 S-42이며, 도구를 하나로 유지한다.
+- 이름(S-35-2, 결정): 벡터 기록을 검사하는 타깃은 `vector-parity-check`(scripts/check-parity.mjs)다. kit v0.0.23은 자기 `parity-check`(kit K33, config/parity.json의 language-parity 검사기)를 정의하므로 그 이름은 kit의 것이다. S-35-2는 fsm 타깃의 이름을 바꿨지만 `CHECK_TARGETS`에는 `parity-check`가 남아, `make check`가 이 검사가 아니라 kit의 타깃을 돌렸다. S-42가 목록을 고쳤다.
+- kit K33과 이 검사의 비교(S-42, 결정: 도구는 `vector-parity-check` 하나이며, kit의 `parity-check`는 이 저장소의 어떤 타깃에도 없고 아무도 실행하지 않는다). kit의 검사기는 각 binding을 스스로 실행하고 결과 기록을 읽지 않으므로, 기록과 벡터 데이터에 관한 규칙을 표현할 수 없다. kit K33이 덮지 않는 규칙은 다음과 같다:
+  - `.results/<kind>.json`이 없거나, 낡았거나(inputs digest), 다른 패키지를 덮는 경우, 그리고 600000 ms를 넘긴 기록: kit에는 기록도 시간 제한도 없다(kit의 `execute`는 timeout 없는 `spawnSync`이며, binding은 `run-tests.mjs`를 거치지 않는다).
+  - 한 실행에서 케이스가 두 번 실행된 경우: kit은 케이스 이름마다 결과 하나만 두므로 같은 케이스의 두 번째 줄을 보지 못한다.
+  - `kinds`: kind가 admit하고 실행하지 않은 케이스, kind가 `kinds`에서 제외하고도 실행한 케이스, 비었거나 알 수 없는 `kinds` 목록. kit의 suite unit에는 케이스별 admission이 없다. 이를 표현하는 유일한 방법은 admission마다 벡터 파일을 하나씩 두는 것이며, 그러면 생성되는 벡터가 바뀐다.
+  - feature: 케이스가 없는 feature, `contracts/features.json`에 없는 feature의 케이스, 케이스 id 형식과 machine 접두사. kit은 features 파일도 벡터 id 규칙도 읽지 않는다.
+  - owner 검사 `parity-<kind>`(계획 D)와 `TOOL_TESTS`의 도구 기록: kit의 검사는 저장소 전체 단위이며 도구 테스트 개념이 없다.
+  - 두 케이스를 가리키는 케이스 id, 또는 아무 케이스도 가리키지 않으면서 부모도 아닌 id: kit은 `PASS|FAIL <unit>/<case>` 줄만 읽으며 다른 형식의 줄에 대한 규칙이 없다.
+  - `timeout` 상태: kit에는 binding의 시간 제한이 없으므로 멈춘 binding은 finding이 아니다.
+  채택하면 모든 패키지가 바뀐다. 각 언어의 harness(node, php, python, cargo)가 `PASS <unit>/<case>`를 출력해야 하고, Go는 각 케이스를 `<symbol>/<case>` 하위 테스트로 실행해야 하며, 각 binding은 두 번 실행되므로(R3) kind마다 테스트 시간이 두 배가 된다. 채택을 가능하게 할 kit 항목은 S-42 보고서에 제안하며, 이 계획에는 적지 않는다.
 
 ### C-5. compiler `packages/fsm-compiler`
 - Import(S-32): `packages/fsm-compiler/src`는 다음만 import한다: (1) node 내장 모듈, `node:` specifier로; (2) 자기 파일, `src` 안에 머무르는 상대 경로; (3) 이 clone의 벤더 kit `scripts/kit/`(상대 경로, 복사하지 않는다). npm 패키지, bare 내장 이름, 동적 `import()`·`require()`는 없다. `src/core`는 `node:` 모듈을 전혀 import하지 않는다. `packages/fsm-compiler/tests/imports.test.mjs`가 `src`의 모든 import specifier를 검사하고 그 밖이면 실패한다.

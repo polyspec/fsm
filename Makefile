@@ -156,7 +156,7 @@ docs-build-test: $(DOCS_DEP)
 # parity-test runs the tests of scripts/check-parity.mjs. vector-parity-check, the last target of the full suite, requires that every
 # kind ran every vector case once and passed and that every tool test left a current record (docs/plans/fsm-v1.md, C-4).
 parity-test:
-	node scripts/kit/run-tests.mjs node --results .results/parity-test.json --inputs scripts/check-parity.mjs --inputs tests/check-parity -- tests/check-parity
+	node scripts/kit/run-tests.mjs node --results .results/parity-test.json --inputs scripts/check-parity.mjs --inputs tests/check-parity --inputs Makefile -- tests/check-parity
 
 # compiler-test runs the tests of packages/fsm-compiler, the core validation of a definition (docs/plans/fsm-v1.md, C-5)
 # with the editor schema schema/fsm.schema.json, which the tests check against the core.
