@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: af5efe02c46bf98a5f8a46727c34649589cf1f57fef2e57274e3208dad503566 -->
+<!-- source-sha256: 4a957ac1b43924f55c4ab249d08a8975433e09a54de5df2e4b52e50d227733eb -->
 # fsm GUI
 
 [English](README.md).
@@ -123,8 +123,7 @@ make gui-test
 make gui-browser-test
 ```
 
-`gui-browsers`는 고정된 Playwright 패키지(이 패키지의 정확한 버전 devDependency)의 Chromium을 Playwright CDN에서 내려받는다.
-ONLINE이며 머신마다 한 번 실행한다. `gui-browser-test`는 asset을 빌드하고, 임시 프로젝트에 GUI를 띄운 뒤 그 Chromium으로
+`gui-browsers`는 고정된 Playwright 패키지(이 패키지의 정확한 버전 devDependency)의 Chromium을 Playwright CDN에서 내려받는다. ONLINE이며 고정 버전마다 한 번 실행한다. checkout에 stamp `var/deps/playwright-<version>`을 남기므로 이후 `gui-browser-test`는 네트워크가 필요 없다. 다시 내려받으려면 그 stamp를 지운다. `gui-browser-test`는 asset을 빌드하고, 임시 프로젝트에 GUI를 띄운 뒤 그 Chromium으로
 편집 form을 조작한다(`tests/browser/browser.test.mjs`). 상태 행을 추가하고, edge와 함께 상태를 저장하고, 삭제하고, 제안 code,
 저장된 machine과 lock, Mermaid 다이어그램을 확인한다. 또한 행의 모든 버튼이 crudui 크기와 아이콘을 보이는지, 편집과 이름 바꾸기
 form에서 한 행의 field가 서로 다른 label을 갖는지, `/favicon.ico`가 아이콘을 돌려주는지 확인한다.
