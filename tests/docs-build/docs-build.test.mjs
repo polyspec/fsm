@@ -29,6 +29,15 @@ function markdownFiles(base, relative = '') {
   return found;
 }
 
+// A build warning is a line of the build output (ANSI colour codes removed) that starts with `(!)`, `warn` or `warning`, or
+// that names a circular chunk or dependency. A build with any such line fails the test (S-20-1): the warning is a defect of the
+// configuration, not output to accept.
+const ANSI = /\u001b\[[0-9;]*m/g;
+const WARNING = /^(?:\(!\)|warn\b|warning\b)|Circular (?:chunk|dependency)/i;
+export function warningLines(output) {
+  return output.replace(ANSI, '').split('\n').filter(line => WARNING.test(line.trim()));
+}
+
 /** Runs the VitePress build of the site whose docs directory is `docs`, without VITEPRESS_BASE. */
 function build(docs) {
   const env = { ...process.env };
@@ -60,6 +69,7 @@ test('a link to a document that does not exist fails the build', { timeout: TIME
 test('the site builds from the repository documents, with the English and Korean roots and a package page', { timeout: TIMEOUT_MS }, () => {
   const result = build(path.join(REPO, 'docs'));
   assert.equal(result.status, 0, `the build failed\n${result.stdout}${result.stderr}`);
+  assert.deepEqual(warningLines(result.stdout + result.stderr), [], 'the build prints a warning');
   const out = path.join(REPO, 'docs/.vitepress/dist');
   for (const page of ['index.html', 'README.ko.html', 'packages/fsm-go/index.html', 'docs/spec/fsm.html', 'docs/plans/fsm-v1.html']) {
     assert.ok(existsSync(path.join(out, page)), `the build produced no ${page}`);

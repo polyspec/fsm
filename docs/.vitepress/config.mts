@@ -155,11 +155,13 @@ export default defineConfig({
   rewrites: Object.fromEntries([...SITE_PAGES].filter(file => /(?:^|\/)README\.md$/.test(file)).map(file => [file, indexOf(file)])),
   cleanUrls: true,
   // The pages live at the repository root, where no node_modules holds vue, so the bare imports of the page modules name the
-  // ESM entries of vue in docs/node_modules (the entries the theme imports, so one copy of vue is bundled).
+  // ESM entries of vue in docs/node_modules (the entries the theme imports, so one copy of vue is bundled). `vue` names the
+  // runtime entry of its exports` import condition, not index.mjs: that file re-exports the CommonJS build and made vite print
+  // "Circular chunk: framework -> theme -> framework" (docs/plans/fsm-v1.md, C-8, S-20-1).
   vite: {
     resolve: {
       alias: [
-        { find: /^vue$/, replacement: path.join(VUE_DIR, 'index.mjs') },
+        { find: /^vue$/, replacement: path.join(VUE_DIR, 'dist/vue.runtime.esm-bundler.js') },
         { find: /^vue\/server-renderer$/, replacement: path.join(VUE_DIR, 'server-renderer/index.mjs') },
       ],
     },

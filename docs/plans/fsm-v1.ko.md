@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 34adbec4efea6ed70c1d08444e9c51e47f1510193a8868a8ae1776f22d619611 -->
+<!-- source-sha256: a44ce6ab885f83e4ffe86b351acea195bb8d4835ca24668e7a259c00bd45972d -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -314,9 +314,9 @@ packages/fsm-<kind>/
 - 탐색: nav와 sidebar에는 각각 English 그룹과 한국어 그룹이 있다(locale 전환 없음). 그룹은 Overview, Specification, Plan, Packages, Verification, Changelog를 담는다. Packages에는 README 쌍이 있는 패키지마다 항목이 하나 있으며, `fsm-compiler`와 `fsm-db`는 README가 쓰이면(S-19) 추가된다. Verification은 그 페이지가 있을 때 나타난다.
 - Base: `VITEPRESS_BASE`(기본값 `/`). polyspec/fsm의 GitHub Pages 사이트는 `/fsm/` 아래에서 제공되므로, S-21의 Pages workflow가 `VITEPRESS_BASE=/fsm/`을 설정한다. 사이트 경로에는 base가 붙고, GitHub 링크는 절대 경로다.
 - 본문의 마크업: VitePress는 Markdown을 Vue 템플릿으로 컴파일하므로, 본문의 꺾쇠 괄호 자리표시자(예: `<major>`)는 빌드를 실패시킨다. 그런 자리표시자는 코드 스팬에 쓴다. changelog의 `<a id="...">` 앵커는 HTML이며 그대로 렌더링된다.
-- 루트 페이지의 Vue: 페이지가 저장소 루트에 있으며, 그곳에는 `vue`를 담은 `node_modules`가 없다. `docs/.vitepress/config.mts`는 `vue`와 `vue/server-renderer`를 `docs/node_modules`의 ESM 진입점으로 alias하므로, 번들에는 vue가 한 벌만 들어간다.
-- 알려진 출력: VitePress 빌드는 `Circular chunk: framework -> theme -> framework`를 출력한다. 그대로 출력되며, 빌드는 성공한다.
-- 테스트: `tests/docs-build`(`make docs-build-test`, 기록 `.results/docs-build-test.json`을 남기는 루트 도구 테스트)는 저장소 문서의 임시 복사본에 존재하지 않는 파일로 가는 링크를 가진 문서를 넣고, 빌드가 dead link로 실패해야 한다고 요구한다. 그다음 저장소 자체를 빌드하여 `index.html`, `README.ko.html`, `packages/fsm-go/index.html`, `docs/spec/fsm.html`, `docs/plans/fsm-v1.html` 페이지, `AGENTS.md`의 GitHub 재작성, 그리고 `AGENTS.md` 페이지가 없음을 요구한다. `docs-build`와 `docs-build-test`는 `CHECK_TARGETS`에 있으며, 소유 규칙은 `config/owner-checks.json`에 있다. `config/documents.json`은 `siteLinks`를 설정하므로 `documents-check`가 사이트의 링크 형식을 받아들인다: `/`로 시작하는 링크, 그리고 확장자 없이 `.md`, `.ko.md` 또는 `index.md` 파일을 가리키는 링크.
+- 루트 페이지의 Vue: 페이지가 저장소 루트에 있으며, 그곳에는 `vue`를 담은 `node_modules`가 없다. `docs/.vitepress/config.mts`는 `vue`를 exports의 `import` 조건이 가리키는 런타임 진입점 `dist/vue.runtime.esm-bundler.js`로, `vue/server-renderer`를 `docs/node_modules`의 ESM 진입점으로 alias하므로, 번들에는 vue가 한 벌만 들어간다.
+- Circular chunk(S-20-1): 빌드는 `Circular chunk: framework -> theme -> framework`를 출력했다. 이를 제거했고 원인과 근거를 여기 기록한다. 재현: `make docs-build`가 그 줄을 출력했다. 원인이 아닌 것: vite 6.4.4 override(같은 vitepress와 설정으로 vite 5.4.21을 쓰면 같은 줄이 나왔다)와 vitepress 자체(기본 설정의 최소 vitepress 1.6.4 프로젝트는 아무것도 출력하지 않았다). 원인: `vue`의 alias 대상 `vue/index.mjs`는 `export * from './index.js'`, 즉 `dist/vue.cjs.js`를 감싸는 CommonJS다. vitepress의 manual chunk가 ESM `@vue/*` 모듈은 `framework`에, 감싸는 모듈은 `theme`에 넣어 순환을 만들었고, 그 alias를 둔 최소 프로젝트가 같은 줄을 출력했다. 수정은 alias를 `dist/vue.runtime.esm-bundler.js`로 향하게 하는 것이며, 이후 `make docs-build`는 경고를 출력하지 않는다. `docs-build-test`는 빌드 출력에 경고 줄, 즉 `(!)`, `warn`, `warning`으로 시작하거나 circular chunk 또는 dependency를 가리키는 줄이 있으면 실패한다(`tests/docs-build`).
+- 테스트: `tests/docs-build`(`make docs-build-test`, 기록 `.results/docs-build-test.json`을 남기는 루트 도구 테스트)는 저장소 문서의 임시 복사본에 존재하지 않는 파일로 가는 링크를 가진 문서를 넣고, 빌드가 dead link로 실패해야 한다고 요구한다. 그다음 저장소 자체를 빌드하여 `index.html`, `README.ko.html`, `packages/fsm-go/index.html`, `docs/spec/fsm.html`, `docs/plans/fsm-v1.html` 페이지, `AGENTS.md`의 GitHub 재작성, 그리고 `AGENTS.md` 페이지가 없고, 출력에 경고 줄이 없음(S-20-1)을 요구한다. `docs-build`와 `docs-build-test`는 `CHECK_TARGETS`에 있으며, 소유 규칙은 `config/owner-checks.json`에 있다. `config/documents.json`은 `siteLinks`를 설정하므로 `documents-check`가 사이트의 링크 형식을 받아들인다: `/`로 시작하는 링크, 그리고 확장자 없이 `.md`, `.ko.md` 또는 `index.md` 파일을 가리키는 링크.
 
 ---
 
