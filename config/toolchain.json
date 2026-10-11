@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "Node.js is declared in .node-version and Rust in rust-toolchain.toml; the npm kind adds nothing, because the kit declares npm only in a root package.json, which this repository does not have. The go kind declares the Go release in packages/fsm-go/go.mod (its toolchain line) and the govulncheck release of the dependency review. The php kind declares the PHP and Composer releases that run its tests; its dependencies resolve for PHP 8.4.0 (config.platform.php in packages/fsm-php/composer.json), the minimum of polyspec/orm. The rust kind adds cargoAudit, which the dependency review runs on the Cargo locks. The python kind declares Python 3.14, which make install-python installs with uv and links as var/tools/bin/python3. Each remaining kind item adds the toolchain of its kind.",
+  "comment": "Node.js is declared in .node-version and Rust in rust-toolchain.toml; the npm kind adds nothing, because the kit declares npm only in a root package.json, which this repository does not have. The go kind declares the Go release in packages/fsm-go/go.mod (its toolchain line) and the govulncheck release of the dependency review. The php kind declares the PHP and Composer releases that run its tests; its dependencies resolve for PHP 8.4.0 (config.platform.php in packages/fsm-php/composer.json), the minimum of polyspec/orm. The rust kind adds cargoAudit, which the dependency review runs on the Cargo locks. The python kind declares Python 3.14 and its pythonBuild, the exact python-build-standalone release that make install-tools installs into var/tools, linked as var/tools/bin/python3; no uv installs an interpreter (docs/plans/execution-checklist.md, S-41). The repository publishes no wheel, so it declares no pythonBackend. Each remaining kind item adds the toolchain of its kind.",
   "go": {
     "mod": "packages/fsm-go/go.mod"
   },
@@ -13,5 +13,15 @@
     "sha256": "7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6"
   },
   "cargoAudit": "0.22.2",
-  "python": "3.14"
+  "python": "3.14",
+  "pythonBuild": {
+    "version": "3.14.8",
+    "release": "20261009",
+    "sha256": {
+      "darwin-arm64": "ff8e1ddc02a9df3190b62d5af475cb642a02cfc77901ef780f9826cc23b51934",
+      "darwin-x64": "9694bf8c8c1fb1250dd6f05e7914ebbbe7180e0f11b7feaf5edb2f6acebe4153",
+      "linux-arm64": "2a99838d2ba71c91d9c72929ee73cdfad2ccd093d7746a14094f50e583989ec3",
+      "linux-x64": "83f9cb480b702548c592443f86209cf0fc03448d90692df257f095c01791dccc"
+    }
+  }
 }

@@ -10,14 +10,14 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/fsm-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records vector-parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test docs-build-test gui-browser-test readme-test install-python-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test docs-build-test gui-browser-test readme-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check workflows-test vector-parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check workflows-test parity-check
 
-.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test vector-parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test python-lock-test python-lock-check workflows-test
+.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test python-lock-test python-lock-check workflows-test
 
 
 
@@ -28,7 +28,8 @@ CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-ch
 # A dependency is a file target keyed on the lock or manifest it installs from. A fresh clone installs it once; a later run finds
 # the file newer than its lock, runs nothing and needs no network. A target that uses a package names its file as a prerequisite,
 # so make installs what that target needs before the target's recipe and nothing else. go and cargo leave no file of their own:
-# their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the uv.lock of packages/fsm-python and on the Python 3.14 link of install-python.
+# their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the uv.lock of packages/fsm-python and on the
+# Python 3.14 that install-tools puts in var/tools/bin/python3 (S-41).
 # install builds every dependency, with the toolchains of install-tools. ONLINE marks each download, as it does in kit.mk.
 NPM_DEP := packages/fsm-npm/node_modules/.package-lock.json
 PHP_DEP := packages/fsm-php/vendor/composer/installed.json
@@ -54,8 +55,10 @@ $(PHP_EXT_DEP): packages/fsm-php-ext/composer.lock packages/fsm-php-ext/composer
 	$(ONLINE) $(MAKE) -C packages/fsm-php-ext install
 	touch $@
 
+# The interpreter is made by install-tools, which installs the pythonBuild of config/toolchain.json into var/tools and links
+# var/tools/bin/python3 to it (docs/plans/execution-checklist.md, S-41). No uv installs an interpreter.
 $(PYTHON_BIN):
-	$(MAKE) install-python
+	$(ONLINE) $(MAKE) install-tools TOOLS=python
 
 $(PYTHON_DEP): $(PYTHON_LOCK) $(PYTHON_BIN)
 	$(ONLINE) $(MAKE) -C packages/fsm-python install UV=$(UV)
@@ -297,22 +300,15 @@ rust-persist-test: $(RUST_DEP)
 # run once and passed (docs/plans/fsm-v1.md, C-4 and D).
 parity-rust: test-rust
 	node scripts/check-parity.mjs --kind rust
-# install-python installs Python 3.14 (config/toolchain.json python) with uv and links var/tools/bin/python3 to it, as install-tools
-# puts the other declared tools into var/tools. The interpreter is uv's managed install, so the link never points outside the
-# checkout's tools; no system path changes. --no-bin keeps uv from writing an executable into a user bin directory
-# (~/.local/bin by default). ONLINE, because uv downloads the interpreter. The PATH above puts var/tools/bin first,
-# so toolchain-check and the python package use this python3.
+# uv resolves and installs the packages of the python package (`uv export` of uv.lock, then `uv pip install --link-mode copy` into a
+# copied venv, PYTHON_DEP); it installs no interpreter.
 UV ?= uv
-install-python:
-	$(ONLINE) $(UV) python install --no-bin 3.14
-	mkdir -p var/tools/bin
-	p="$$($(UV) python find --managed-python 3.14)" && test -x "$$p" && ln -sfn "$$p" var/tools/bin/python3
 
-# install-python-test runs the tests of install-python in a temporary checkout with a stub uv: the target installs with --no-bin
-# and writes no link outside var/tools, and a recipe without --no-bin is shown to write one (tests/install-python, S-11-3 and
-# S-35). It needs no network and writes nothing outside its temporary directory.
-install-python-test:
-	node scripts/kit/run-tests.mjs node --results .results/install-python-test.json --inputs Makefile --inputs contracts/layout.json --inputs scripts/kit --inputs tests/install-python -- tests/install-python
+# python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/bin/python3
+# is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
+# declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
+python-tools-test:
+	node scripts/kit/run-tests.mjs node --results .results/python-tools-test.json --inputs Makefile --inputs contracts/layout.json --inputs scripts/kit --inputs config/toolchain.json --inputs tests/python-tools -- tests/python-tools
 
 # test-python runs the tests of packages/fsm-python: the conformance cases and the persist example, offline, with the Python 3.14
 # venv of `make -C packages/fsm-python install` (docs/plans/fsm-v1.md, C-2).
@@ -376,8 +372,8 @@ php-ext-persist-test-mysql: $(PHP_EXT_DEP)
 
 python-persist-test-postgres: $(PYTHON_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres PATH=$(CURDIR)/packages/fsm-python/.venv/bin:$$PATH node scripts/kit/run-tests.mjs python --results .results/python-persist-test-postgres.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist
+	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs python --venv packages/fsm-python/.venv --results .results/python-persist-test-postgres.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist
 
 python-persist-test-mysql: $(PYTHON_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql PATH=$(CURDIR)/packages/fsm-python/.venv/bin:$$PATH node scripts/kit/run-tests.mjs python --results .results/python-persist-test-mysql.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist
+	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs python --venv packages/fsm-python/.venv --results .results/python-persist-test-mysql.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist

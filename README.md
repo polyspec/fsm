@@ -266,7 +266,7 @@ only the toolchain of its own language:
 | generated go code | Go 1.27 (`go 1.27` in the module, toolchain go1.27.2 in the checkout) |
 | generated php code | PHP 8.4 or later (the orm client requires 8.4); the checkout tests with PHP 8.5 and Composer 2.10.3 (`config/toolchain.json`) |
 | generated php-ext code | the php requirements, plus `phpize`, `autoconf` and a C compiler |
-| generated python code | Python 3.14 (`config/toolchain.json`); the checkout installs it with `make install-python` |
+| generated python code | Python 3.14 (`config/toolchain.json` `pythonBuild`); `make install` installs it into `var/tools` (`make install-tools`); no uv installs an interpreter |
 | generated rust code | Rust 1.98.0 (`rust-toolchain.toml`); the generated library uses only the standard library |
 
 The commands come from a clone of this repository. Install each one onto your PATH from the clone: npm links the package of the
@@ -281,7 +281,7 @@ make db-deps && npm install -g ./packages/fsm-db   # fsm-db: needs the orm packa
 make gui-build && npm install -g ./packages/fsm-gui # fsm-gui: builds the browser assets first
 ```
 
-`make install` downloads the toolchains of `var/tools` and every package dependency once; a later run finds them installed and
+`make install` downloads the toolchains of `var/tools` (the Python 3.14 of `pythonBuild` among them) and every package dependency once; a later run finds them installed and
 downloads nothing. The first `npm install -g` is all that the json and mermaid stores need. `make db-deps` installs the orm
 packages of `packages/fsm-db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
 

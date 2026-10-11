@@ -1,7 +1,8 @@
 # Continuous integration (docs/plans/fsm-v1.md, C-10 and Verification; docs/plans/execution-checklist.md, S-21). One job runs
 # `make install` and then `make check`, the full suite of the repository, with the PostgreSQL and MySQL services of plan C-6.
 # The versions come from the files that declare them: Node.js from .node-version, Go from packages/fsm-go/go.mod, PHP from
-# config/toolchain.json, Rust from rust-toolchain.toml and uv from the pin of plan C-10. The workflow runs on every push to
+# config/toolchain.json, Python from the pythonBuild of config/toolchain.json (installed by make install through install-tools, S-41),
+# Rust from rust-toolchain.toml and uv from the pin of plan C-10, which resolves the python package only. The workflow runs on every push to
 # main and on a manual run (workflow_dispatch). A newer push does not cancel the run of an earlier one.
 name: CI
 

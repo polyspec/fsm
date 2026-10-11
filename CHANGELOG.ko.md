@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: db2271589730af1bee3df77aaa04f0904137707e54c24fab740baa038ac1dc57 -->
+<!-- source-sha256: b06eaa890547eb586519f9e1fb620d1429d931173f66e7dadee1bcbd35a21c85 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-41: python은 uv가 아니라 `make install-tools`(config/toolchain.json의 `pythonBuild` 3.14.8, 플랫폼별 sha256)에서 온다. `install-python`과 `tests/install-python`은 `tests/python-tools`(`make python-tools-test`)로 바뀌었다. package venv는 그 interpreter의 복사본이다(`python3 -m venv --copies --without-pip packages/fsm-python/.venv`). `packages/fsm-python/pylock.toml`(uv.lock에서 uv가 export)을 `uv pip install --link-mode copy`로 채운다. `uv venv`와 `uv sync`는 kit runner가 거부하는 link를 쓴다. python 테스트는 PATH 항목이 아니라 `run-tests.mjs python --venv`로 실행하며, main의 `make test-python`("No module named 'polyspec'")을 고친다. RED: python-tools-test가 uv로 만든 checkout venv에서 실패한다. GREEN: test-python 290 case, python-persist-test-postgres와 python-persist-test-mysql(실행 중인 서버), parity-python, toolchain-check, make-install-test, workflows-test가 통과한다.
 - S-35-2: vendored kit은 v0.0.23이다(`make kit-sync KIT_TAG=v0.0.23`, kit K36과 K37). `config/dependency-policy.json`에 필수 필드 `pythonLocks`를 더했다(S-34-2가 lock을 이름 붙이기 전까지 `[]`): kit gate와 review가 그것이 나열한 PEP 751 `pylock.toml` 파일을 읽는다. review record `config/dependency-review.json`은 `make dependency-review RECORD=1`로 필수 `vcs` 목록(`[]`)을 받는다. fsm 타깃 `parity-check`는 `vector-parity-check`로 이름을 바꿨다(kit v0.0.23이 `parity-check`를 정의하며, 저장소 타깃이 그것을 make warning과 함께 대체했었다). tests/make-install의 테스트는 `make -n check`의 make warning마다 실패한다. kit의 `parity-check`는 아직 채택하지 않는다: S-42가 평가한다(계획 C-4). `run-tests.mjs python --venv`는 `pyvenv.cfg`가 install-tools Python을 가리킬 때만 venv interpreter를 실행한다. 알려진 상태: python package 테스트(`make test-python`, python persist 타깃)는 S-41까지 깨진 채 남는다. kit 0.0.18부터 python 도구는 `var/tools/bin/python3`로만 실행되며 PATH를 무시하는데, fsm-python 테스트는 venv를 PATH에 올리기 때문이다("No module named 'polyspec'", CI 실행 38115497717). RED: lock을 v0.0.20으로 둔 채 v0.0.23 파일로 kit-check를 돌리자 29개 finding. GREEN: kit-check, owner-validate, documents-check, toolchain-check, dependency-policy-check, hooks-check, name-check, commits-check와 kit-test가 통과한다.
 - S-35-1: vendored kit은 v0.0.20이다(`make kit-sync KIT_TAG=v0.0.20`). `kit-test`가 vendored 테스트를 `scripts/kit/run-tests.mjs`로 실행하므로(kit K32, 0.0.19로 릴리스) 다른 모든 테스트처럼 케이스별 진행과 timeout을 보고한다. 0.0.18과 0.0.19의 vendored python-real 테스트가 소비자의 toolchain을 읽어 여기서 실패했고 kit K34-1이 이를 vendored 테스트 밖으로 옮겼으므로 0.0.20을 받는다.
 - S-29-2: `packages/fsm-php`와 `packages/fsm-php-ext`의 composer vendor는 `composer.lock`뿐 아니라 `composer.json`도 키로 하고, 설치 뒤 stamp를 갱신한다. `composer.json`의 autoload는 lock에 없어서, 기존 checkout이 S-25 이전의 autoload를 유지했고 persist case가 정의되지 않은 함수로 실패했다.

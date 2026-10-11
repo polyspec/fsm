@@ -24,6 +24,7 @@ const LOCKS = [
   'packages/fsm-php-ext/composer.lock',
   'packages/fsm-php-ext/composer.json',
   'packages/fsm-python/uv.lock',
+  'packages/fsm-python/pyproject.toml',
   'packages/fsm-go/go.sum',
   'packages/fsm-rust/Cargo.lock',
 ];
@@ -32,8 +33,8 @@ const LOCKS = [
 const PLAYWRIGHT = '1.64.0';
 const BROWSER = `var/deps/playwright-${PLAYWRIGHT}`;
 
-// The stamps that an installed dependency leaves, each newer than its lock. var/tools/bin/python3 is the link of
-// make install-python, which the Python environment depends on.
+// The stamps that an installed dependency leaves, each newer than its lock. var/tools/bin/python3 is the wrapper that
+// install-tools writes (S-41), which the Python environment depends on.
 const STAMPS = [
   'packages/fsm-npm/node_modules/.package-lock.json',
   'packages/fsm-db/node_modules/.package-lock.json',
@@ -173,11 +174,11 @@ test('gui-browser-test downloads the browser once, then needs no network', (t) =
   assert.ok(lineIndex(out, /browser\.test\.mjs/) >= 0, `gui-browser-test does not run its tests:\n${out}`);
 });
 
-test('the python environment is created with the Python 3.14 link of install-python', (t) => {
+test('the python environment is created with the Python 3.14 of install-tools', (t) => {
   const out = dryRun(sandbox(t), 'test-python');
-  const link = lineIndex(out, /install-python/);
+  const interpreter = lineIndex(out, /install-tools\.mjs python/);
   const install = lineIndex(out, INSTALL.python);
-  assert.ok(link >= 0 && link < install, `no install-python before the python install:\n${out}`);
+  assert.ok(interpreter >= 0 && interpreter < install, `no install-tools python before the python install:\n${out}`);
 });
 
 test('install builds every dependency and the toolchains', (t) => {

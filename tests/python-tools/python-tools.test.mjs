@@ -1,0 +1,154 @@
+// Tests of the Python of the checkout (docs/plans/execution-checklist.md, S-41; docs/plans/fsm-v1.md, C-1 and Verification).
+// The Python 3.14 of the python package comes from `make install-tools`: the kit installs the pythonBuild of
+// config/toolchain.json into var/tools and links var/tools/bin/python3 to it. No uv installs an interpreter, and the
+// Makefile has no install-python target. The tests run `make -n` on a copy of the Makefile, the kit targets, the layout and
+// the package Makefiles in a temporary directory: make only prints the recipes, so no network is used and nothing is installed.
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { venvProblem } from '../../scripts/kit/run-tests.mjs';
+import { declaredToolchain } from '../../scripts/kit/toolchain-declared.mjs';
+import { put, tree } from '../kit/tree.mjs';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const PYTHON_BIN = 'var/tools/bin/python3';
+const INSTALL_TOOLS_PYTHON = /install-tools\.mjs python/;
+const UV_INTERPRETER = /uv python/;
+
+// The lock or manifest that each package dependency is keyed on: an empty file in the copy (make -n reads none of them).
+const LOCKS = [
+  'packages/fsm-npm/package-lock.json',
+  'packages/fsm-db/package-lock.json',
+  'packages/fsm-gui/package-lock.json',
+  'docs/package-lock.json',
+  'packages/fsm-php/composer.lock',
+  'packages/fsm-php/composer.json',
+  'packages/fsm-php-ext/composer.lock',
+  'packages/fsm-php-ext/composer.json',
+  'packages/fsm-python/uv.lock',
+  'packages/fsm-python/pyproject.toml',
+  'packages/fsm-go/go.sum',
+  'packages/fsm-rust/Cargo.lock',
+];
+
+/** A copy of the Makefile and of the files that it reads, without any installed dependency. */
+function sandbox(t) {
+  const dir = tree(t, {});
+  for (const file of ['Makefile', 'scripts/kit/kit.mk', 'contracts/layout.json']) {
+    mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+    copyFileSync(path.join(ROOT, file), path.join(dir, file));
+  }
+  for (const kind of readdirSync(path.join(ROOT, 'packages'))) {
+    const makefile = path.join(ROOT, 'packages', kind, 'Makefile');
+    if (existsSync(makefile)) put(dir, { [`packages/${kind}/Makefile`]: readFileSync(makefile, 'utf8') });
+  }
+  put(dir, Object.fromEntries(LOCKS.map(file => [file, '\n'])));
+  return dir;
+}
+
+/** The result of `make -n <goal>` in dir, with no inherited make flags. */
+function dryRun(dir, goal) {
+  const env = { ...process.env };
+  delete env.MAKEFLAGS;
+  delete env.MAKELEVEL;
+  delete env.MFLAGS;
+  return spawnSync('make', ['-n', goal], { cwd: dir, encoding: 'utf8', env });
+}
+
+/** The output of `make -n <goal>`, which must succeed. */
+function printed(dir, goal) {
+  const result = dryRun(dir, goal);
+  assert.equal(result.status, 0, `make -n ${goal} failed:\n${result.stdout}${result.stderr}`);
+  return result.stdout;
+}
+
+/** The index of the first line of `output` that matches `pattern`, or -1. */
+function lineIndex(output, pattern) {
+  return output.split('\n').findIndex(line => pattern.test(line));
+}
+
+test('the interpreter var/tools/bin/python3 is made by install-tools, never by uv', (t) => {
+  const out = printed(sandbox(t), PYTHON_BIN);
+  assert.ok(lineIndex(out, INSTALL_TOOLS_PYTHON) >= 0, `var/tools/bin/python3 is not made by install-tools python:\n${out}`);
+  assert.equal(lineIndex(out, UV_INTERPRETER), -1, `var/tools/bin/python3 is made with uv:\n${out}`);
+});
+
+test('make install prints no uv interpreter install and runs install-tools', (t) => {
+  const out = printed(sandbox(t), 'install');
+  assert.equal(lineIndex(out, UV_INTERPRETER), -1, `make install installs an interpreter with uv:\n${out}`);
+  assert.ok(lineIndex(out, /install-tools\.mjs/) >= 0, `make install does not run install-tools:\n${out}`);
+});
+
+test('the python package environment follows the install-tools interpreter', (t) => {
+  const out = printed(sandbox(t), 'test-python');
+  const interpreter = lineIndex(out, INSTALL_TOOLS_PYTHON);
+  const venv = lineIndex(out, /-C packages\/fsm-python install/);
+  assert.ok(interpreter >= 0 && venv > interpreter, `the python environment does not follow install-tools python:\n${out}`);
+  assert.equal(lineIndex(out, UV_INTERPRETER), -1, `test-python installs an interpreter with uv:\n${out}`);
+});
+
+test('there is no install-python target, so no uv-installed interpreter remains as an alias', (t) => {
+  const result = dryRun(sandbox(t), 'install-python');
+  assert.notEqual(result.status, 0, `install-python still exists and prints:\n${result.stdout}`);
+});
+
+test('the Makefile holds no uv python install and no link of a uv interpreter', () => {
+  const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
+  assert.doesNotMatch(makefile, /python install --no-bin/);
+  assert.doesNotMatch(makefile, /python find --managed-python/);
+});
+
+test('config/toolchain.json declares the pythonBuild of the python minor, and no pythonBackend', () => {
+  const declared = declaredToolchain(ROOT);
+  assert.equal(declared.python?.minor, '3.14', 'python must declare the minor 3.14');
+  assert.ok(declared.pythonBuild, 'config/toolchain.json must declare pythonBuild, the exact Python that install-tools installs');
+  assert.equal(declared.pythonBuild.version, '3.14.8');
+  assert.equal(declared.pythonBuild.release, '20261009');
+  for (const platform of ['darwin-arm64', 'linux-x64']) {
+    assert.match(declared.pythonBuild.sha256[platform] ?? '', /^[0-9a-f]{64}$/, `no sha256 of ${platform} in pythonBuild`);
+  }
+  assert.equal(declared.pythonBackend, undefined, 'fsm publishes no wheel, so it declares no pythonBackend');
+});
+
+// The environment of the python package (S-41): uv venv and uv sync write symbolic links that the runner refuses, so the
+// package makes its venv with the install-tools interpreter (--copies, --without-pip) and fills it with --link-mode copy.
+const PACKAGE = path.join(ROOT, 'packages/fsm-python');
+const VENV = path.join(PACKAGE, '.venv');
+
+test('the package venv is accepted by the runner: it holds no link and names the install-tools Python (S-41, kit K37)', () => {
+  assert.ok(existsSync(path.join(VENV, 'pyvenv.cfg')), 'packages/fsm-python/.venv is missing: run make install first');
+  assert.equal(venvProblem(VENV, ROOT), undefined, 'the runner refuses packages/fsm-python/.venv');
+});
+
+test('a venv made by uv venv is refused by the runner, because it holds symbolic links (S-41 RED case)', (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'python-tools-uv-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const made = spawnSync('uv', ['venv', '--python', path.join(ROOT, 'var/tools/bin/python3'), path.join(dir, 'venv')], { encoding: 'utf8' });
+  assert.equal(made.status, 0, `uv venv failed: ${made.stderr}`);
+  assert.ok(venvProblem(path.join(dir, 'venv'), ROOT), 'the runner accepted a uv venv with symbolic links');
+});
+
+test('the package Makefile exports pylock.toml from uv.lock and builds the venv without uv venv or uv sync', () => {
+  const makefile = readFileSync(path.join(PACKAGE, 'Makefile'), 'utf8');
+  assert.match(makefile, /\$\(UV\) export --format pylock\.toml --frozen --no-emit-project/);
+  assert.match(makefile, /-m venv --copies --without-pip/);
+  assert.match(makefile, /--link-mode copy/);
+  const recipes = makefile.split('\n').filter(line => !line.startsWith('#')).join('\n');
+  assert.doesNotMatch(recipes, /(^|[^$(\w])uv (venv|sync)\b/m, 'a recipe runs uv venv or uv sync');
+});
+
+test('test-python runs the runner with --venv and no PATH entry for the venv', (t) => {
+  const out = printed(sandbox(t), 'test-python');
+  assert.match(out, /run-tests\.mjs python --venv /, 'test-python does not pass --venv to the runner');
+  assert.doesNotMatch(makefileOf('packages/fsm-python'), /PATH=\$\(CURDIR\)\/\$\(VENV\)/);
+  assert.doesNotMatch(readFileSync(path.join(ROOT, 'Makefile'), 'utf8'), /PATH=\$\(CURDIR\)\/packages\/fsm-python/);
+});
+
+/** The Makefile text of the package directory relative to the checkout root. */
+function makefileOf(relative) {
+  return readFileSync(path.join(ROOT, relative, 'Makefile'), 'utf8');
+}

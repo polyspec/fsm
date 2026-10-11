@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: 16f0c5c9cce05eb2be6e521c7de4800278f6e23dd076f7a18ea504c7d492451a -->
+<!-- source-sha256: 0d7c9f604f008de570fa6a3bba743e28bba977500b241ccbac9e67f1d1771f82 -->
 # polyspec-fsm-python
 
 [English](README.md)
@@ -129,14 +129,14 @@ table을 만들고 row를 읽는다. 모델 `Item`은 `orm-gen`이 `schema/persi
 python 패키지는 가상환경의 Python 3.14가 필요하다. checkout 루트에서 실행한다:
 
 ```sh
-make install-python                    # online: Python 3.14 with uv, linked into var/tools/bin/python3 (no system path changes)
-make -C packages/fsm-python install    # online: .venv with Python 3.14 and every package of uv.lock (orm v0.0.7 by commit, artifacts by sha256)
-make test-python                       # offline: the vector cases and the persist cases, with the venv's python3 first on PATH
+make install-tools TOOLS=python            # online: Python 3.14 of pythonBuild in config/toolchain.json, into var/tools (var/tools/bin/python3; no system path changes)
+make -C packages/fsm-python install    # online: .venv, a copy of the install-tools Python 3.14, filled from pylock.toml (exported from uv.lock: orm v0.0.7 by commit, artifacts by sha256)
+make test-python                       # offline: the vector cases and the persist cases, run by the kit runner with --venv .venv (no PATH change)
 make python-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `tests/test_conformance.py`는 vector case마다 unittest method 하나를 `test_<feature>__<id>`
+실행 결과는 290개 case 중 290개 통과다. `tests/test_conformance.py`는 vector case마다 unittest method 하나를 `test_<feature>__<id>`
 이름으로 만들고, 생성 함수나 오류 code의 결과를 단언한다. 생성 파일은 commit되어 있으므로 `test`는 생성기를 필요로 하지 않는다.
 `make -C packages/fsm-python gen`이 다시 생성하며, 루트의 `make gen-check`가 최신인지 검사한다. `make parity-python`은 모든 case의
 결과 기록을 검사한다. `uv.lock`이 트리의 모든 package를 잠근다(정확한 버전, sha256 hash, git commit). `make python-lock-check`가 이를 `pyproject.toml`과 대조한다.
