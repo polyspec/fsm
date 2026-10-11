@@ -286,7 +286,8 @@ Vectors (exhaustive; the core generates the oracle):
   - rename
 - Forms (crudui)
   - The server loader/action runs generator-core `compileForm`/`createForm` → generator-html `renderForm(instance, {action, hidden: {_csrf}, errors, formErrors})` and puts the resulting string into the template with `{= form | raw}`.
-  - `connectForm` in `client/main.ts` handles adding and removing rows.
+  - `client/main.ts` binds the edit form with crudui `connectForm(crudui-form, instance)` and subscribes to the instance (S-22-1). Every change of the instance runs `patchContent(host, renderForm(instance, render))` and then `connection.sync()`, the contract of form-runtime.md. `host` is the `#fsm-form` element that wraps the server's form. `render` is the page's crudui render options (`editRenderOptions`: the action, the hidden `_csrf` and the errors of the page), embedded in the page state, so the re-rendered markup equals the server markup for the same data. Before S-22-1 a click on a row's add or remove button changed the instance but not the page, because nothing re-rendered it; the browser test found it.
+  - A row added in the browser takes the next code (`client/main.ts` writes the codes into the DOM after each re-render), and a remove takes the row out of the instance.
   - `crud/*.yml` holds no validation rules, and form-binding is not used. The only rules are the core's.
   - `src/form-data.mjs` parses the flat `form[…]` names of a submitted body into crudui row-key objects. An invalid or duplicate name is `BadRequest` (with a RED test).
   - A core error carries `{machine, path}` (the definition JSON path).
@@ -301,6 +302,9 @@ Vectors (exhaustive; the core generates the oracle):
   - hyper handler unit tests (node:test)
   - `check` passes after a save
   - crudui owns form rendering correctness; hyper owns routing correctness.
+  - Browser test (S-22-1, `make gui-browser-test`): `tests/browser/browser.test.mjs` drives the edit form in a headless Chromium of the pinned Playwright package (`playwright` 1.64.0, an exact devDependency of `packages/fsm-gui`; `make gui-browsers` downloads the browser, so it is ONLINE). It runs `node src/main.mjs --project <temp> --port 0` on a temporary project holding the repository's `machines/order.fsm.json` and `fsm.lock.json` and `{"store":"json"}`, and checks in order: add on the last state row adds a row with the suggested code 6; a final state `refunded` with the cancel edge shipped to refunded is saved to the machine and the lock, and the show page lists it with its Mermaid svg; remove of that row and its edge, then Save, removes the state and reserves code 6; the next added row suggests 7. The first run, before the fix, failed at the first assertion (`5 !== 6`: the click left the rows unchanged).
+  - `gui-test` runs the top-level `tests/*.test.mjs` files only (`$(wildcard ...)`): `node --test` on a directory also runs the nested files, so the browser test in `tests/browser/` would otherwise need a browser in `gui-test`.
+  - Decisions: the browser test uses the Playwright release that the dependency review of 2026-10-11 names as latest (1.64.0, recorded with `make dependency-review UPDATE=1 RECORD=1`); the page waits for `networkidle` before its first action, because the client loads its chunks after the load event.
 
 ### C-8. Documentation site (`docs/.vitepress`, `make docs-build`)
 - Build: `make docs-build` runs `docs-deps` (`npm ci --no-audit --no-fund` from `docs/package-lock.json`), then VitePress builds the site into `docs/.vitepress/dist`. `docs/node_modules`, `docs/.vitepress/dist` and `docs/.vitepress/cache` are git-ignored.

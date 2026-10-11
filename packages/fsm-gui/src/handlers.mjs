@@ -79,7 +79,7 @@ export const handlers = {
         return {
           machine,
           form: renderEdit(machine, data, { csrf: request.csrfToken() }),
-          state: editState(data, nextCodeOf(machine, definitions, lock)),
+          state: editState(machine, data, nextCodeOf(machine, definitions, lock), { csrf: request.csrfToken() }),
           hasFindings: findings.length > 0,
           findings: findings.map(view),
         };
@@ -107,7 +107,7 @@ export const handlers = {
         return Result.invalid({
           machine,
           form: renderEdit(machine, shown, { csrf: request.csrfToken(), errors, formErrors }),
-          state: editState(shown, nextCodeOf(machine, loaded.definitions, loaded.lock)),
+          state: editState(machine, shown, nextCodeOf(machine, loaded.definitions, loaded.lock), { csrf: request.csrfToken(), errors, formErrors }),
           hasFindings: true,
           findings: saved.findings.map(view),
         });

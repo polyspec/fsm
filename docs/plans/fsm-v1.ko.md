@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: d64735a43e7442f1e52629ef9137082f5be35c9373211e535011e48207e6ae91 -->
+<!-- source-sha256: cbdf76831924b99a3310707f8825fcdde9b69165aa417f393fe8f6dd75e5e6ad -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -280,7 +280,8 @@ packages/fsm-<kind>/
   - rename
 - 폼(crudui)
   - 서버 loader/action에서 generator-core `compileForm`/`createForm` → generator-html `renderForm(instance, {action, hidden: {_csrf}, errors, formErrors})`를 거쳐 나온 문자열을 템플릿 `{= form | raw}`로 넣는다.
-  - 행 추가·삭제는 `client/main.ts`의 `connectForm`이 처리한다.
+  - `client/main.ts`는 편집 폼을 crudui `connectForm(crudui-form, instance)`에 묶고 instance를 구독한다(S-22-1). instance가 바뀔 때마다 `patchContent(host, renderForm(instance, render))`를 실행한 뒤 `connection.sync()`를 호출한다. form-runtime.md의 계약이다. `host`는 서버 form을 감싸는 `#fsm-form` 요소다. `render`는 페이지의 crudui render 옵션(`editRenderOptions`: action, hidden `_csrf`, 페이지의 오류)이며 페이지 state에 실려 있어서, 다시 렌더링한 마크업이 같은 데이터의 서버 마크업과 같다. S-22-1 이전에는 행의 add·remove 버튼 클릭이 instance만 바꾸고 페이지는 바꾸지 않았다. 아무것도 다시 렌더링하지 않았기 때문이며, 브라우저 테스트가 이를 찾았다.
+  - 브라우저에서 추가한 행은 다음 code를 받고(`client/main.ts`가 다시 렌더링할 때마다 code를 DOM에 쓴다), remove는 instance에서 그 행을 뺀다.
   - `crud/*.yml`에는 검증 규칙을 쓰지 않는다. form-binding도 쓰지 않는다. 규칙은 core 하나다.
   - 제출 본문은 `src/form-data.mjs`가 `form[…]` 평면 이름을 crudui 행 키 객체로 파싱한다. 잘못되거나 중복된 이름은 `BadRequest`(RED 테스트 있음).
   - core 오류는 `{machine, path}`(정의 JSON 경로)를 갖는다.
@@ -295,6 +296,9 @@ packages/fsm-<kind>/
   - hyper handler 단위 테스트(node:test)
   - 저장 후 `check` 통과
   - 폼 렌더링 정확성은 crudui가, 라우팅 정확성은 hyper가 소유한다.
+  - 브라우저 테스트(S-22-1, `make gui-browser-test`): `tests/browser/browser.test.mjs`는 고정된 Playwright 패키지의 headless Chromium으로 편집 폼을 조작한다(`playwright` 1.64.0, `packages/fsm-gui`의 정확한 버전 devDependency. `make gui-browsers`가 브라우저를 내려받으므로 ONLINE이다). 저장소의 `machines/order.fsm.json`과 `fsm.lock.json`, `{"store":"json"}`을 담은 임시 프로젝트에 `node src/main.mjs --project <temp> --port 0`을 실행하고, 순서대로 확인한다. 마지막 상태 행의 add는 제안 code 6인 행을 추가한다. final 상태 `refunded`와 cancel 엣지 shipped→refunded를 저장하면 머신과 lock에 저장되고, show 페이지가 그 상태를 Mermaid svg와 함께 보여 준다. 그 행과 엣지를 remove하고 Save하면 상태가 지워지고 code 6이 예약된다. 다음 추가 행은 7을 제안한다. 수정 전 첫 실행은 첫 단정에서 실패했다(`5 !== 6`: 클릭이 행을 바꾸지 않았다).
+  - `gui-test`는 최상위 `tests/*.test.mjs` 파일만 실행한다(`$(wildcard ...)`). `node --test`는 디렉터리를 주면 하위 테스트 파일도 실행하므로, `tests/browser/`의 브라우저 테스트가 `gui-test`에 브라우저를 요구하게 된다.
+  - 결정: 브라우저 테스트는 2026-10-11 의존성 검토가 최신 stable로 적은 Playwright release(1.64.0, `make dependency-review UPDATE=1 RECORD=1`로 기록)를 쓴다. 페이지는 첫 동작 전에 `networkidle`을 기다린다. 클라이언트가 chunk를 load 이벤트 뒤에 읽기 때문이다.
 
 ### C-8. 문서 사이트 (`docs/.vitepress`, `make docs-build`)
 - 빌드: `make docs-build`는 `docs-deps`(`docs/package-lock.json`으로 `npm ci --no-audit --no-fund`)를 실행한 뒤, VitePress로 사이트를 `docs/.vitepress/dist`에 빌드한다. `docs/node_modules`, `docs/.vitepress/dist`, `docs/.vitepress/cache`는 git-ignore한다.

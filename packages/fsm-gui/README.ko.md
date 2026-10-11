@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: e038dc4a4e5ed6d2c6a78959a445ad968ec164d41f7a90e26829a1289738f73d -->
+<!-- source-sha256: 434b89f99f76e5d0c91f05edc6f1f36f5d9d5b6f0f1459448b97d730811308ea -->
 # fsm GUI
 
 [English](README.md)
@@ -77,17 +77,24 @@ finding을 오류로 보여주며, 읽을 수 없는 파일의 load finding도 �
 - 저장, 이름 바꾸기, 삭제 요청은 그 요청을 보낸 페이지의 `_csrf` 토큰을 가져야 한다. 없으면 서버는 403으로 응답하고 아무것도
   쓰지 않는다.
 - 편집 폼의 행 추가와 삭제는 browser에서 한다. `client/main.ts`가 페이지 로드 후와 htmx swap마다 렌더링된 폼을 crudui
-  `connectForm`으로 묶는다. 행 조작에는 browser가 필요하다. JavaScript가 없으면 폼은 보이는 행을 그대로 저장한다.
+  `connectForm`으로 묶고, 행을 바꿀 때마다 페이지의 render 옵션으로 host에 폼을 다시 렌더링한다(`patchContent` 뒤 `connection.sync()`). 행 조작에는 browser가 필요하다. JavaScript가 없으면 폼은 보이는 행을 그대로 저장한다.
 
 형식이 틀린 요청, 예를 들어 `form[...]`이 아닌 필드 이름이나 반복된 필드는 400으로 응답하며 아무것도 쓰지 않는다.
 
 ## 테스트
 
 ```sh
+make gui-browsers
 make gui-test
+make gui-browser-test
 ```
 
-`gui-test`는 asset을 빌드한 뒤 `tests/`의 테스트를 실행한다. hyper 애플리케이션을 HTTP 없이 거치는 페이지, HTTP로 응답하는 서버
+`gui-browsers`는 고정된 Playwright 패키지(이 패키지의 정확한 버전 devDependency)의 Chromium을 Playwright CDN에서 내려받는다.
+ONLINE이며 머신마다 한 번 실행한다. `gui-browser-test`는 asset을 빌드하고, 임시 프로젝트에 GUI를 띄운 뒤 그 Chromium으로
+편집 폼을 조작한다(`tests/browser/browser.test.mjs`). 상태 행을 추가하고, 엣지와 함께 상태를 저장하고, 삭제하고, 제안 code,
+저장된 머신과 lock, Mermaid 다이어그램을 확인한다.
+
+`gui-test`는 asset을 빌드한 뒤 `tests/`의 최상위 테스트를 실행한다. hyper 애플리케이션을 HTTP 없이 거치는 페이지, HTTP로 응답하는 서버
 프로세스, store 선택, 고정된 Mermaid 패키지로 정규 형식을 파싱하는 테스트다. 파싱 테스트는 Node에서 Mermaid를 읽을 때
 `tests/support/`의 최소 DOMPurify stub을 쓴다. Mermaid는 label 텍스트를 browser DOM으로 정화하는데 Node에는 DOM이 없기 때문이다.
 편집 테스트(`edit-machine`, `rename-machine`, `machine-lifecycle`, `edit-http`)는 화면마다 json, mermaid, db store에서 실행하며,

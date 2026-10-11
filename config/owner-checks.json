@@ -171,6 +171,7 @@
       ],
       "targets": [
         "gui-test",
+        "gui-browser-test",
         "dependency-policy-check"
       ]
     },

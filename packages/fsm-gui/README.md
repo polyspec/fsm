@@ -79,7 +79,8 @@ Every save calls core `run` with `save` (edit, new and delete) or `lock` with re
 - Each save, rename or delete must carry the `_csrf` token of the page that it was sent from; without it the server answers
   403 and writes nothing.
 - The rows of the edit form are added and removed in the browser: `client/main.ts` binds the rendered form with crudui
-  `connectForm` after the page loads and after every htmx swap. The rows need the browser; without JavaScript the form
+  `connectForm` after the page loads and after every htmx swap, and re-renders the form into its host after every row change
+  (`patchContent` with the page's render options, then `connection.sync()`). The rows need the browser; without JavaScript the form
   saves the rows that it shows.
 
 A malformed body, such as a field name that is not `form[...]` or a repeated field, answers 400 and writes nothing.
@@ -87,10 +88,17 @@ A malformed body, such as a field name that is not `form[...]` or a repeated fie
 ## Tests
 
 ```sh
+make gui-browsers
 make gui-test
+make gui-browser-test
 ```
 
-`gui-test` builds the assets, then runs the tests of `tests/`: the pages through the hyper application without HTTP, the
+`gui-browsers` downloads the Chromium of the pinned Playwright package (an exact devDependency of this package) from the
+Playwright CDN; it is ONLINE and runs once per machine. `gui-browser-test` builds the assets, starts the GUI on a temporary
+project and drives the edit form in that Chromium (`tests/browser/browser.test.mjs`): add a state row, save a state with an
+edge, remove it, and check the suggested codes, the stored machine and lock, and the Mermaid diagram.
+
+`gui-test` builds the assets, then runs the top-level tests of `tests/`: the pages through the hyper application without HTTP, the
 server process over HTTP, the store selection, and the parse of the canonical form with the pinned Mermaid package. The
 parse test loads Mermaid in Node with a minimal DOMPurify stub (`tests/support/`), because Mermaid sanitizes label text
 with a browser DOM that Node does not have. The edit tests (`edit-machine`, `rename-machine`, `machine-lifecycle` and
