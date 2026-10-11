@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: ae32a2e02cafe005c8a5f32e424c70f60c3364528d8927d02c36b43e75b3f1f6 -->
+<!-- source-sha256: a5283ccffba71a16a567ff1c60589c4c01b8f98f2ea495bbafaba23ecc6cefb5 -->
 # fsm-rust
 
 [English](README.md)
@@ -163,5 +163,5 @@ make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_D
 ```
 
 실행 결과는 89개 case 중 89개 통과이며, crate 컴파일을 포함해 약 100초가 걸린다. `tests/vectors.rs`는 vector case마다 `#[test]` 하나를 가지며
-이름은 `test_<feature>__<id>`다. 각 test는 `tests/conformance.rs`의 검사 함수를 부른다. 영속화 case는 `#[tokio::test]`다. toolchain은
+이름은 case 이름 `<feature>__<id>`다(`vectors::<feature>__<id>`). 각 test는 `tests/conformance.rs`의 검사 함수를 부른다. 영속화 case는 `#[tokio::test]`다. toolchain은
 루트의 `rust-toolchain.toml`(Rust 1.98.0)이다. 루트의 `make gen-check`는 생성 파일이 `fsm-gen`이 지금 쓰는 것과 같은지 검사한다.

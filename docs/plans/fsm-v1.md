@@ -138,7 +138,7 @@ fsm/
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
   schema/fsm.schema.json  schema/fsm.dbs  schema/persist.dbs   # persist.dbs = shared by the six language package examples
-  fsm.config.json  machines/order.fsm.json  fsm.lock.json  conformance/vectors/<machine>.json
+  fsm.config.json  machines/order.fsm.json  fsm.lock.json  conformance/vectors.json
   packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-lock/, src/store-mermaid/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
   packages/fsm-db/        {src/, tests/}   # DbStore + fsm-db CLI, depends on orm
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
@@ -174,7 +174,7 @@ packages/fsm-<kind>/
 |---|---|---|---|
 | go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (in Go a package is a directory) | `conformance_test.go` (generic: it runs each case through the adapter of its machine), `vectors_test.go` (generated: the vector cases, the key tables of every machine and one adapter per machine, which implements the interface of `conformance_test.go`; its only imports are the machine packages `<module>/src/<machine>`, so `vectors --kind go` takes `--go-module`; the persist example belongs to the test bed and is not imported, because `decide` returns the func type that `examples.Decide` names (S-26-1-1)) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts` (`export * as order`) | `conformance.test.mjs`, `vectors.mjs` |
-| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, and the loader `functions.php` (requires every machine's `Order/functions.php`; composer `autoload.files` names only this file, because PSR-4 cannot load functions) | `ConformanceTest.php`, `Vectors.php` |
+| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, and the loader `functions.php` (requires every machine's `Order/functions.php`; composer `autoload.files` names only this file, because PSR-4 cannot load functions) | `ConformanceCase.php` (hand-written checks), `ConformanceTest.php` (generated, one method per case) |
 | php-ext | composer.json (`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c` (shared `<ns>\Fsm\Error` and error code constants), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | tests **byte-identical** to php; `make test` builds with phpize, then runs with `--php-extension <.so>`; gen requires `--php-namespace` and `--php-ext-name` |
 | python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py` (generates methods named exactly after the cases), `vectors.py` |
 | rust | Cargo.toml (`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs` (`pub mod order; pub mod fsm;`), `order.rs`, `fsm.rs` | `conformance.rs` (`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`); persist cases are `#[tokio::test]`; generated `tests/vectors.rs` starts with `#![allow(non_snake_case)]` |
@@ -191,7 +191,7 @@ packages/fsm-<kind>/
 - The counts that kit `test-progress.mjs` writes in `close()` gain `cases: [{id, status, elapsedMs}]`.
 - With `run-tests --results <file>`, the runner adds `{tool, inputs, elapsedMs}` and writes the file once through a temporary file + rename.
 - `inputs` = kit `inputsDigest(root, paths)`, built from the paths and sha256 of tracked and non-ignored new files under `paths` (the package directory and `schema/persist.dbs`).
-- A case name is `test_<featureId>__<vectorId>`.
+- A case name is `<featureId>__<vectorId>`, the `name` of the case in conformance/vectors.json. go runs it as the subtest `TestConformance/<name>`, npm as the node:test test `<name>`, rust as `vectors::<name>`, and php and python as the method `test_<name>`: the names that kit's parity check (K33, `config/parity.json`, S-42-1) reads.
   - Both ids match `^[a-z][a-z0-9]*(_[a-z0-9]+)*$` and contain no `__`.
   - A vectorId starts with `<machine>_`.
   - Language tests use this name as is.
@@ -209,7 +209,7 @@ Fails when (no exemptions):
 
 Case name extraction: `/\btest_[a-z][a-z0-9]*(?:_[a-z0-9]+)*__[a-z][a-z0-9]*(?:_[a-z0-9]+)*\b/` is applied to each result id. An id with exactly one distinct match is that case; an id with zero or with two or more distinct matches is judged by the result-id bullet above. There are no per-tool rules.
 
-`contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. A vector file is `conformance/vectors/<machine>.json` = `{machine, cases: [{feature, id, …}]}`; the case name is `test_<feature>__<id>`.
+`contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. The vector file is `conformance/vectors.json` = `{machines: [{machine, cases: [{feature, id, name, …}]}]}`, one suite for kit's parity check; the case name is `name` = `<feature>__<id>`.
 
 Conformance machines (`machines/`, S-25): every kind runs the vectors of every machine in `machines/`, so the definition's shapes are covered by all six kinds: `order` (the example); `standby` (no events: one state, which is initial and final); `in_review` (underscore keys in the machine, state and event keys); `ticket` (reserved codes 2 and 4, which are states removed after a first lock; the lock keeps them as reserved); `limits` (the code 2147483647). Each kind passes 209 cases (`vector-parity-check`).
 
@@ -281,9 +281,9 @@ Vectors (exhaustive; the core generates the oracle):
   - `check`: validates every definition and the lock match, and the lock keeps every committed code (B-3)
   - `copy --to json|mermaid --root <dir>`
 - Root `gen-check`
-  1. Run `fsm-gen vectors --out var/gen-check/conformance/vectors`.
+  1. Run `fsm-gen vectors --out var/gen-check/conformance/vectors.json`.
   2. In each package of `kinds`, run `make gen DEST=$(CURDIR)/var/gen-check/<kind>`.
-  3. `scripts/gen-check.mjs` compares with the working tree through kit `trackedFiles` (tracked and non-ignored files only, so ignored outputs such as `__pycache__/` and the phpize output in php-ext `src/` are not read). `conformance/vectors` and each package's `src/`, `tests/vectors.<ext>` and `examples/model/` (except rust) must hold the same file set with byte-identical content; the compared files of each package are the ones matched by its kind's `generated` globs in `contracts/layout.json`, and a kind without them is a `layout-config` finding.
+  3. `scripts/gen-check.mjs` compares with the working tree through kit `trackedFiles` (tracked and non-ignored files only, so ignored outputs such as `__pycache__/` and the phpize output in php-ext `src/` are not read). `conformance/vectors.json` and each package's `src/`, `tests/vectors.<ext>` and `examples/model/` (except rust) must hold the same file set with byte-identical content; the compared files of each package are the ones matched by its kind's `generated` globs in `contracts/layout.json`, and a kind without them is a `layout-config` finding.
   - `gen-check-test` (`tests/gen-check/`) RED: a one-byte change fixture, an added file fixture, an ignored file that must not be read
 
 ### C-6. fsm-db `packages/fsm-db`

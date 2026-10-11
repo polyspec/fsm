@@ -1,6 +1,6 @@
 // Tests of the php-ext backend (packages/fsm-compiler/src/backends/php-ext.mjs, docs/spec/fsm.md, B-4 and B-6): the files of
 // the order example are the golden files under tests/golden/php-ext/src, byte for byte, in the order the backend returns them.
-// The test module is the golden tests/golden/php-ext/Vectors.php, which equals the php golden Vectors.php byte for byte, because
+// The test module is the golden tests/golden/php-ext/ConformanceTest.php, which equals the php golden ConformanceTest.php byte for byte, because
 // the php-ext package runs the same tests (docs/plans/fsm-v1.md, C-2). The golden files were written by the generator once,
 // after a review of its output against B-6 (docs/plans/fsm-v1.md, C-5). The config.m4 and the stub are checked by their own
 // tools in the package tests; here the stub passes the php linter, and the namespace and the extension name that the command
@@ -67,12 +67,12 @@ test('every generated file carries the fsm-gen header of its machine or of fsm, 
   }
 });
 
-test('the test module is the php golden Vectors.php, byte for byte, and equals the php backend output', async () => {
+test('the test module is the php golden ConformanceTest.php, byte for byte, and equals the php backend output', async () => {
   const { irs, lock } = await orderIrs();
   const generated = irs.map(ir => vectors(ir, lock));
   const module = vectorsFile(generated, { phpNamespace: NAMESPACE });
-  assert.equal(module, readFileSync(path.join(GOLDEN, 'Vectors.php'), 'utf8'));
-  assert.equal(module, readFileSync(path.join(GOLDEN_PHP, 'Vectors.php'), 'utf8'));
+  assert.equal(module, readFileSync(path.join(GOLDEN, 'ConformanceTest.php'), 'utf8'));
+  assert.equal(module, readFileSync(path.join(GOLDEN_PHP, 'ConformanceTest.php'), 'utf8'));
   assert.equal(module, phpVectorsFile(generated, { phpNamespace: NAMESPACE }));
 });
 

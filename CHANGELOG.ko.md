@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d44aad51f11b354b47bf480e6421f1071b9e58b1f23c257e15c4020c9f154f6a -->
+<!-- source-sha256: 7090cbc6985563b8ea840bf2240ca8aa7e5d3c9b12a5a1cf07cf068ac9d12631 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-42-1: vector parity가 kit의 parity 검사(K33)로 실행된다: config/parity.json, case마다 이름을 가진 vector 파일 하나 conformance/vectors.json, case마다의 PHPUnit method. scripts/check-parity.mjs는 기록, 시간 제한, feature 커버리지 규칙만 남긴다.
 - S-21: fsm은 https://github.com/polyspec/fsm 에 공개되어 있다. CI workflow(`.github/workflows/ci.yml`)는 main의 모든 push에서 PostgreSQL과 MySQL service와 함께 `make install`과 `make check`를 실행하고 전체 검사를 통과했으며(run 38121153369), Pages workflow는 문서 사이트를 https://polyspec.github.io/fsm/ 에 게시한다. 로컬 저장소 디렉터리 이름은 `fsm`이다.
 - S-21-1: CI와 Pages는 ubuntu-26.04에서 돈다. orm의 PHP client는 SQLite 3.46을 요구하는데 ubuntu-24.04의 PHP는 SQLite 3.45.1에 연결되기 때문이다. CI run 38121153369가 그곳에서 전체 검사 47개 target을 모두 통과했다(tree 4963dbe).
 - S-41-1: python package venv는 fsm Makefile의 `python -m venv`가 아니라 kit 도구(`make python-venv DIR=packages/fsm-python/.venv`, kit v0.0.24의 K44)로 만든다. Linux에서 CPython venv는 `lib64 -> lib` link를 만들며 run-tests --venv가 이를 거부했고, 이것이 S-41의 ubuntu CI를 실패시켰다(실행 38118092530). kit 도구가 그 link를 지운다. tests/python-tools의 테스트는 `make -n install`이 kit 도구를 부르는지 단언한다(`-m venv`일 때 RED). `make install`은 이전과 같이 새 venv를 만들기 전에 기존 venv를 지운다.

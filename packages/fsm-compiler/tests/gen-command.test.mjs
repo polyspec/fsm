@@ -138,12 +138,12 @@ test('gen --kind php recognizes the header on the second line after <?php: a sta
   assert.equal(readFileSync(path.join(out, 'Order', 'Hand.php'), 'utf8'), '<?php\n// hand written\n');
 });
 
-test('vectors --kind php writes the golden tests/Vectors.php for --php-namespace', () => {
-  const file = path.join(tempDir(), 'tests', 'Vectors.php');
+test('vectors --kind php writes the golden tests/ConformanceTest.php for --php-namespace', () => {
+  const file = path.join(tempDir(), 'tests', 'ConformanceTest.php');
   assert.deepEqual(gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'php', '--php-namespace', PHP_NAMESPACE, '--out', file]), { status: 0, stdout: '[fsm-gen] vectors: ok\n', stderr: '' });
-  assert.equal(readFileSync(file, 'utf8'), readFileSync(path.join(GOLDEN_PHP, 'Vectors.php'), 'utf8'));
+  assert.equal(readFileSync(file, 'utf8'), readFileSync(path.join(GOLDEN_PHP, 'ConformanceTest.php'), 'utf8'));
 });
 
 test('vectors --kind php without --php-namespace is a usage error with exit 2', () => {
-  assert.equal(gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'php', '--out', path.join(tempDir(), 'Vectors.php')]).status, 2);
+  assert.equal(gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'php', '--out', path.join(tempDir(), 'ConformanceTest.php')]).status, 2);
 });

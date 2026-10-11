@@ -136,6 +136,6 @@ make test-npm                      # the same from the root
 ```
 
 The run passes 89 of 89 cases. `tests/conformance.test.mjs` runs one test per vector case of `tests/vectors.mjs`, named
-`test_<feature>__<id>`; the persist cases run `examples/persist.mjs` on SQLite. `tests/types.test.mjs` checks the `.d.ts` files
+by its case name `<feature>__<id>`; the persist cases run `examples/persist.mjs` on SQLite. `tests/types.test.mjs` checks the `.d.ts` files
 with the TypeScript compiler (`make npm-types`). The root `make gen-check` checks that the generated files are the ones
 `fsm-gen` writes today.

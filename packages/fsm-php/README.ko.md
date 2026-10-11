@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: d9cf2409e97dadb1332878e69a38af96ca5a1378ce260820483f1546cc6c7aa3 -->
+<!-- source-sha256: 0611e330954da3b4786a688fcfa5534a5ccb28a48cd84de077138caf235b2419 -->
 # polyspec/fsm-php
 
 [English](README.md)
@@ -41,7 +41,7 @@ test bed의 namespace는 `Polyspec\FsmTest`다. 이 README의 namespace(`Acme\Fs
 `composer dump-autoload`를 한 번 실행한다. 생성된 파일은 새 dump를 필요로 하지 않는다.
 
 정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --kind php --php-namespace 'Acme\Fsm' --out <file>`로 자신의 test
-파일에 쓴다(test bed는 `tests/Vectors.php`에 쓴다).
+파일에 쓴다(test bed는 `tests/ConformanceTest.php`에 쓴다).
 
 ## 생성 파일
 
@@ -111,7 +111,7 @@ E_CONFLICT 1 3 1
 
 `Error`를 잡아 `getCode()`와 세 속성을 읽는다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/Vectors.php`의 vector가 이를 단언한다:
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/ConformanceTest.php`의 vector가 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -160,7 +160,7 @@ make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG
 make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `tests/ConformanceTest.php`는 `tests/Vectors.php`의 vector case마다 하나의 PHPUnit test를
-data set 이름 `test_<feature>__<id>`로 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 루트의 `make gen-check`는
+실행 결과는 89개 case 중 89개 통과다. `fsm-gen vectors --kind php`가 생성하는 `tests/ConformanceTest.php`는 vector case마다 PHPUnit test
+`test_<feature>__<id>` 하나를 가지며, 각 test는 손으로 쓴 `tests/ConformanceCase.php`의 검사를 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 루트의 `make gen-check`는
 생성 파일이 `fsm-gen`이 지금 쓰는 것과 같은지 검사한다. checkout의 PHP 릴리스는 8.5(`config/toolchain.json`)이며, `composer.json`의
 `config.platform.php`는 orm client의 최소 버전인 8.4.0이다.

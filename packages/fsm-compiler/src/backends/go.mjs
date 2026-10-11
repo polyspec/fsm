@@ -237,10 +237,10 @@ const DATA_FIELDS = {
 
 /** The Go literal of one vector case: its feature and id, its data fields, and its expectation (docs/plans/fsm-v1.md, C-4). */
 function caseLiteral(entry) {
-  const fields = [`feature: ${quoted(entry.feature)}`, `id: ${quoted(entry.id)}`];
+  const fields = [`feature: ${quoted(entry.feature)}`, `id: ${quoted(entry.id)}`, `name: ${quoted(entry.name)}`];
   const want = [];
   for (const [name, value] of Object.entries(entry)) {
-    if (name === 'feature' || name === 'id' || name === 'expect') continue;
+    if (name === 'feature' || name === 'id' || name === 'name' || name === 'expect') continue;
     if (name === 'value' || name === 'expected_value' || name === 'actual_value') {
       const flag = { value: 'hasValue', expected_value: 'expectedIsValue', actual_value: 'actualIsValue' }[name];
       fields.push(`${DATA_FIELDS[name]}: ${integerLiteral(value, entry.id)}`, `${flag}: true`);

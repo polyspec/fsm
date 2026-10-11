@@ -1,4 +1,4 @@
-# The php package (docs/plans/fsm-v1.md, C-2). gen writes the generated files: src/ and tests/Vectors.php with the fsm-gen
+# The php package (docs/plans/fsm-v1.md, C-2). gen writes the generated files: src/ and tests/ConformanceTest.php with the fsm-gen
 # of the compiler, and examples/model with orm-gen from the root schema/persist.dbs. DEST names the directory of the generated
 # files (DEST ?= .), so that gen-check can write them into var/gen-check/php and compare them with the working tree. NAMESPACE is
 # the namespace of the generated code: the test bench uses Polyspec\FsmTest, which the php-ext package shares for its tests.
@@ -17,7 +17,7 @@ install:
 
 gen:
 	$(FSM_GEN) gen --project $(ROOT) --kind php --php-namespace '$(NAMESPACE)' --out $(DEST)/src
-	$(FSM_GEN) vectors --project $(ROOT) --kind php --php-namespace '$(NAMESPACE)' --out $(DEST)/tests/Vectors.php
+	$(FSM_GEN) vectors --project $(ROOT) --kind php --php-namespace '$(NAMESPACE)' --out $(DEST)/tests/ConformanceTest.php
 	./vendor/bin/orm-gen gen --out $(DEST)/examples/model --namespace '$(NAMESPACE)\Model' $(ROOT)/schema/persist.dbs
 
 test:

@@ -36,7 +36,7 @@ export function forKind(vectorList, kind) {
 
 /**
  * The vectors of `ir` (the IR of normalize) with `lock` (the lock of the machine, which holds its reserved codes):
- * { machine, cases: [{ feature, id, ...data, expect }] }. The cases follow docs/plans/fsm-v1.md, C-4: initial; per state
+ * { machine, cases: [{ feature, id, name, ...data, expect }] }. The cases follow docs/plans/fsm-v1.md, C-4: initial; per state
  * code, key, from_code, is_final, events_from; the from_code errors; target for every (state, event); apply for every defined
  * (expected, event) and then for every undefined one; persist.
  *
@@ -71,7 +71,9 @@ export function vectors(ir, lock) {
     // Internal assertion: ids are unique by construction (every key is an index), so this never fails.
     if (ids.has(id)) throw new Error(`vectors: internal error, the id ${id} is given twice`);
     ids.add(id);
-    cases.push({ feature, id, ...data, expect, ...(kinds === undefined ? {} : { kinds }) });
+    // name is the case name of every language (docs/plans/fsm-v1.md, C-4): `<feature>__<id>`, the name that the parity check of
+    // kit reads at $.machines[*].cases[*].name.
+    cases.push({ feature, id, name: `${feature}__${id}`, ...data, expect, ...(kinds === undefined ? {} : { kinds }) });
   };
 
   add('initial', 'initial', {}, { state: initial });

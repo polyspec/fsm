@@ -9,232 +9,232 @@ use fsm_rust::standby;
 use fsm_rust::ticket;
 
 #[test]
-fn test_initial__in_review_initial() {
+fn initial__in_review_initial() {
     crate::check_value(in_review::initial(), in_review::State::ToDo);
 }
 
 #[test]
-fn test_code__in_review_code_s0() {
+fn code__in_review_code_s0() {
     crate::check_value(in_review::code(in_review::State::ToDo), 1);
 }
 
 #[test]
-fn test_key__in_review_key_s0() {
+fn key__in_review_key_s0() {
     crate::check_result(in_review::from_code(1).map(in_review::key), Ok("to_do"));
 }
 
 #[test]
-fn test_from_code__in_review_from_code_s0() {
+fn from_code__in_review_from_code_s0() {
     crate::check_result(in_review::from_code(1), Ok(in_review::State::ToDo));
 }
 
 #[test]
-fn test_is_final__in_review_is_final_s0() {
+fn is_final__in_review_is_final_s0() {
     crate::check_value(in_review::is_final(in_review::State::ToDo), false);
 }
 
 #[test]
-fn test_events_from__in_review_events_from_s0() {
+fn events_from__in_review_events_from_s0() {
     crate::check_slice(in_review::events_from(in_review::State::ToDo), &[in_review::Event::StartWork]);
 }
 
 #[test]
-fn test_code__in_review_code_s1() {
+fn code__in_review_code_s1() {
     crate::check_value(in_review::code(in_review::State::InProgress), 2);
 }
 
 #[test]
-fn test_key__in_review_key_s1() {
+fn key__in_review_key_s1() {
     crate::check_result(in_review::from_code(2).map(in_review::key), Ok("in_progress"));
 }
 
 #[test]
-fn test_from_code__in_review_from_code_s1() {
+fn from_code__in_review_from_code_s1() {
     crate::check_result(in_review::from_code(2), Ok(in_review::State::InProgress));
 }
 
 #[test]
-fn test_is_final__in_review_is_final_s1() {
+fn is_final__in_review_is_final_s1() {
     crate::check_value(in_review::is_final(in_review::State::InProgress), false);
 }
 
 #[test]
-fn test_events_from__in_review_events_from_s1() {
+fn events_from__in_review_events_from_s1() {
     crate::check_slice(in_review::events_from(in_review::State::InProgress), &[in_review::Event::FinishWork, in_review::Event::ReopenWork]);
 }
 
 #[test]
-fn test_code__in_review_code_s2() {
+fn code__in_review_code_s2() {
     crate::check_value(in_review::code(in_review::State::DoneNow), 3);
 }
 
 #[test]
-fn test_key__in_review_key_s2() {
+fn key__in_review_key_s2() {
     crate::check_result(in_review::from_code(3).map(in_review::key), Ok("done_now"));
 }
 
 #[test]
-fn test_from_code__in_review_from_code_s2() {
+fn from_code__in_review_from_code_s2() {
     crate::check_result(in_review::from_code(3), Ok(in_review::State::DoneNow));
 }
 
 #[test]
-fn test_is_final__in_review_is_final_s2() {
+fn is_final__in_review_is_final_s2() {
     crate::check_value(in_review::is_final(in_review::State::DoneNow), true);
 }
 
 #[test]
-fn test_events_from__in_review_events_from_s2() {
+fn events_from__in_review_events_from_s2() {
     crate::check_slice(in_review::events_from(in_review::State::DoneNow), &[]);
 }
 
 #[test]
-fn test_from_code__in_review_from_code_zero() {
+fn from_code__in_review_from_code_zero() {
     crate::check_result(in_review::from_code(0), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__in_review_from_code_unknown() {
+fn from_code__in_review_from_code_unknown() {
     crate::check_result(in_review::from_code(4), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__in_review_from_code_negative() {
+fn from_code__in_review_from_code_negative() {
     crate::check_result(in_review::from_code(-1), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__in_review_from_code_int32_overflow() {
+fn from_code__in_review_from_code_int32_overflow() {
     crate::check_result(in_review::from_code(2147483648), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__in_review_from_code_int64_max() {
+fn from_code__in_review_from_code_int64_max() {
     crate::check_result(in_review::from_code(9223372036854775807), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_target__in_review_target_s0_e0() {
+fn target__in_review_target_s0_e0() {
     crate::check_result(in_review::target(in_review::State::ToDo, in_review::Event::StartWork), Ok(in_review::State::InProgress));
 }
 
 #[test]
-fn test_target__in_review_target_s0_e1() {
+fn target__in_review_target_s0_e1() {
     crate::check_result(in_review::target(in_review::State::ToDo, in_review::Event::FinishWork), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_target__in_review_target_s0_e2() {
+fn target__in_review_target_s0_e2() {
     crate::check_result(in_review::target(in_review::State::ToDo, in_review::Event::ReopenWork), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_target__in_review_target_s1_e0() {
+fn target__in_review_target_s1_e0() {
     crate::check_result(in_review::target(in_review::State::InProgress, in_review::Event::StartWork), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(2), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_target__in_review_target_s1_e1() {
+fn target__in_review_target_s1_e1() {
     crate::check_result(in_review::target(in_review::State::InProgress, in_review::Event::FinishWork), Ok(in_review::State::DoneNow));
 }
 
 #[test]
-fn test_target__in_review_target_s1_e2() {
+fn target__in_review_target_s1_e2() {
     crate::check_result(in_review::target(in_review::State::InProgress, in_review::Event::ReopenWork), Ok(in_review::State::ToDo));
 }
 
 #[test]
-fn test_target__in_review_target_s2_e0() {
+fn target__in_review_target_s2_e0() {
     crate::check_result(in_review::target(in_review::State::DoneNow, in_review::Event::StartWork), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_target__in_review_target_s2_e1() {
+fn target__in_review_target_s2_e1() {
     crate::check_result(in_review::target(in_review::State::DoneNow, in_review::Event::FinishWork), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_target__in_review_target_s2_e2() {
+fn target__in_review_target_s2_e2() {
     crate::check_result(in_review::target(in_review::State::DoneNow, in_review::Event::ReopenWork), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s0_e0_s0() {
+fn apply__in_review_apply_s0_e0_s0() {
     crate::check_result(in_review::apply(in_review::State::ToDo, in_review::Event::StartWork, in_review::State::ToDo), Ok(in_review::Step { to: in_review::State::InProgress, changed: true }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s0_e0_s1() {
+fn apply__in_review_apply_s0_e0_s1() {
     crate::check_result(in_review::apply(in_review::State::ToDo, in_review::Event::StartWork, in_review::State::InProgress), Ok(in_review::Step { to: in_review::State::InProgress, changed: false }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s0_e0_s2() {
+fn apply__in_review_apply_s0_e0_s2() {
     crate::check_result(in_review::apply(in_review::State::ToDo, in_review::Event::StartWork, in_review::State::DoneNow), Err(crate::Expected { code: Code::Conflict, expected: Some(1), actual: Some(3), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s1_e1_s1() {
+fn apply__in_review_apply_s1_e1_s1() {
     crate::check_result(in_review::apply(in_review::State::InProgress, in_review::Event::FinishWork, in_review::State::InProgress), Ok(in_review::Step { to: in_review::State::DoneNow, changed: true }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s1_e1_s2() {
+fn apply__in_review_apply_s1_e1_s2() {
     crate::check_result(in_review::apply(in_review::State::InProgress, in_review::Event::FinishWork, in_review::State::DoneNow), Ok(in_review::Step { to: in_review::State::DoneNow, changed: false }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s1_e1_s0() {
+fn apply__in_review_apply_s1_e1_s0() {
     crate::check_result(in_review::apply(in_review::State::InProgress, in_review::Event::FinishWork, in_review::State::ToDo), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(1), event: Some(2) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s1_e2_s1() {
+fn apply__in_review_apply_s1_e2_s1() {
     crate::check_result(in_review::apply(in_review::State::InProgress, in_review::Event::ReopenWork, in_review::State::InProgress), Ok(in_review::Step { to: in_review::State::ToDo, changed: true }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s1_e2_s0() {
+fn apply__in_review_apply_s1_e2_s0() {
     crate::check_result(in_review::apply(in_review::State::InProgress, in_review::Event::ReopenWork, in_review::State::ToDo), Ok(in_review::Step { to: in_review::State::ToDo, changed: false }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s1_e2_s2() {
+fn apply__in_review_apply_s1_e2_s2() {
     crate::check_result(in_review::apply(in_review::State::InProgress, in_review::Event::ReopenWork, in_review::State::DoneNow), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(3), event: Some(3) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s0_e1_s0() {
+fn apply__in_review_apply_s0_e1_s0() {
     crate::check_result(in_review::apply(in_review::State::ToDo, in_review::Event::FinishWork, in_review::State::ToDo), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s0_e2_s0() {
+fn apply__in_review_apply_s0_e2_s0() {
     crate::check_result(in_review::apply(in_review::State::ToDo, in_review::Event::ReopenWork, in_review::State::ToDo), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s1_e0_s1() {
+fn apply__in_review_apply_s1_e0_s1() {
     crate::check_result(in_review::apply(in_review::State::InProgress, in_review::Event::StartWork, in_review::State::InProgress), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(2), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s2_e0_s2() {
+fn apply__in_review_apply_s2_e0_s2() {
     crate::check_result(in_review::apply(in_review::State::DoneNow, in_review::Event::StartWork, in_review::State::DoneNow), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s2_e1_s2() {
+fn apply__in_review_apply_s2_e1_s2() {
     crate::check_result(in_review::apply(in_review::State::DoneNow, in_review::Event::FinishWork, in_review::State::DoneNow), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_apply__in_review_apply_s2_e2_s2() {
+fn apply__in_review_apply_s2_e2_s2() {
     crate::check_result(in_review::apply(in_review::State::DoneNow, in_review::Event::ReopenWork, in_review::State::DoneNow), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(3) }));
 }
 
 #[tokio::test]
-async fn test_persist__in_review_persist_first() {
+async fn persist__in_review_persist_first() {
     crate::check_persist(
         in_review::code(in_review::State::ToDo),
         |stored| {
@@ -248,7 +248,7 @@ async fn test_persist__in_review_persist_first() {
 }
 
 #[tokio::test]
-async fn test_persist__in_review_persist_retry() {
+async fn persist__in_review_persist_retry() {
     crate::check_persist(
         in_review::code(in_review::State::InProgress),
         |stored| {
@@ -262,7 +262,7 @@ async fn test_persist__in_review_persist_retry() {
 }
 
 #[tokio::test]
-async fn test_persist__in_review_persist_conflict() {
+async fn persist__in_review_persist_conflict() {
     crate::check_persist(
         in_review::code(in_review::State::DoneNow),
         |stored| {
@@ -276,112 +276,112 @@ async fn test_persist__in_review_persist_conflict() {
 }
 
 #[test]
-fn test_initial__limits_initial() {
+fn initial__limits_initial() {
     crate::check_value(limits::initial(), limits::State::Floor);
 }
 
 #[test]
-fn test_code__limits_code_s0() {
+fn code__limits_code_s0() {
     crate::check_value(limits::code(limits::State::Floor), 1);
 }
 
 #[test]
-fn test_key__limits_key_s0() {
+fn key__limits_key_s0() {
     crate::check_result(limits::from_code(1).map(limits::key), Ok("floor"));
 }
 
 #[test]
-fn test_from_code__limits_from_code_s0() {
+fn from_code__limits_from_code_s0() {
     crate::check_result(limits::from_code(1), Ok(limits::State::Floor));
 }
 
 #[test]
-fn test_is_final__limits_is_final_s0() {
+fn is_final__limits_is_final_s0() {
     crate::check_value(limits::is_final(limits::State::Floor), false);
 }
 
 #[test]
-fn test_events_from__limits_events_from_s0() {
+fn events_from__limits_events_from_s0() {
     crate::check_slice(limits::events_from(limits::State::Floor), &[limits::Event::Rise]);
 }
 
 #[test]
-fn test_code__limits_code_s1() {
+fn code__limits_code_s1() {
     crate::check_value(limits::code(limits::State::Ceiling), 2147483647);
 }
 
 #[test]
-fn test_key__limits_key_s1() {
+fn key__limits_key_s1() {
     crate::check_result(limits::from_code(2147483647).map(limits::key), Ok("ceiling"));
 }
 
 #[test]
-fn test_from_code__limits_from_code_s1() {
+fn from_code__limits_from_code_s1() {
     crate::check_result(limits::from_code(2147483647), Ok(limits::State::Ceiling));
 }
 
 #[test]
-fn test_is_final__limits_is_final_s1() {
+fn is_final__limits_is_final_s1() {
     crate::check_value(limits::is_final(limits::State::Ceiling), true);
 }
 
 #[test]
-fn test_events_from__limits_events_from_s1() {
+fn events_from__limits_events_from_s1() {
     crate::check_slice(limits::events_from(limits::State::Ceiling), &[]);
 }
 
 #[test]
-fn test_from_code__limits_from_code_zero() {
+fn from_code__limits_from_code_zero() {
     crate::check_result(limits::from_code(0), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__limits_from_code_unknown() {
+fn from_code__limits_from_code_unknown() {
     crate::check_result(limits::from_code(2), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__limits_from_code_negative() {
+fn from_code__limits_from_code_negative() {
     crate::check_result(limits::from_code(-1), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__limits_from_code_int32_overflow() {
+fn from_code__limits_from_code_int32_overflow() {
     crate::check_result(limits::from_code(2147483648), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__limits_from_code_int64_max() {
+fn from_code__limits_from_code_int64_max() {
     crate::check_result(limits::from_code(9223372036854775807), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_target__limits_target_s0_e0() {
+fn target__limits_target_s0_e0() {
     crate::check_result(limits::target(limits::State::Floor, limits::Event::Rise), Ok(limits::State::Ceiling));
 }
 
 #[test]
-fn test_target__limits_target_s1_e0() {
+fn target__limits_target_s1_e0() {
     crate::check_result(limits::target(limits::State::Ceiling, limits::Event::Rise), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(2147483647), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_apply__limits_apply_s0_e0_s0() {
+fn apply__limits_apply_s0_e0_s0() {
     crate::check_result(limits::apply(limits::State::Floor, limits::Event::Rise, limits::State::Floor), Ok(limits::Step { to: limits::State::Ceiling, changed: true }));
 }
 
 #[test]
-fn test_apply__limits_apply_s0_e0_s1() {
+fn apply__limits_apply_s0_e0_s1() {
     crate::check_result(limits::apply(limits::State::Floor, limits::Event::Rise, limits::State::Ceiling), Ok(limits::Step { to: limits::State::Ceiling, changed: false }));
 }
 
 #[test]
-fn test_apply__limits_apply_s1_e0_s1() {
+fn apply__limits_apply_s1_e0_s1() {
     crate::check_result(limits::apply(limits::State::Ceiling, limits::Event::Rise, limits::State::Ceiling), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(2147483647), actual: None, event: Some(1) }));
 }
 
 #[tokio::test]
-async fn test_persist__limits_persist_first() {
+async fn persist__limits_persist_first() {
     crate::check_persist(
         limits::code(limits::State::Floor),
         |stored| {
@@ -395,7 +395,7 @@ async fn test_persist__limits_persist_first() {
 }
 
 #[tokio::test]
-async fn test_persist__limits_persist_retry() {
+async fn persist__limits_persist_retry() {
     crate::check_persist(
         limits::code(limits::State::Ceiling),
         |stored| {
@@ -409,452 +409,452 @@ async fn test_persist__limits_persist_retry() {
 }
 
 #[test]
-fn test_initial__order_initial() {
+fn initial__order_initial() {
     crate::check_value(order::initial(), order::State::Draft);
 }
 
 #[test]
-fn test_code__order_code_s0() {
+fn code__order_code_s0() {
     crate::check_value(order::code(order::State::Draft), 1);
 }
 
 #[test]
-fn test_key__order_key_s0() {
+fn key__order_key_s0() {
     crate::check_result(order::from_code(1).map(order::key), Ok("draft"));
 }
 
 #[test]
-fn test_from_code__order_from_code_s0() {
+fn from_code__order_from_code_s0() {
     crate::check_result(order::from_code(1), Ok(order::State::Draft));
 }
 
 #[test]
-fn test_is_final__order_is_final_s0() {
+fn is_final__order_is_final_s0() {
     crate::check_value(order::is_final(order::State::Draft), false);
 }
 
 #[test]
-fn test_events_from__order_events_from_s0() {
+fn events_from__order_events_from_s0() {
     crate::check_slice(order::events_from(order::State::Draft), &[order::Event::Next, order::Event::Cancel]);
 }
 
 #[test]
-fn test_code__order_code_s1() {
+fn code__order_code_s1() {
     crate::check_value(order::code(order::State::Paid), 2);
 }
 
 #[test]
-fn test_key__order_key_s1() {
+fn key__order_key_s1() {
     crate::check_result(order::from_code(2).map(order::key), Ok("paid"));
 }
 
 #[test]
-fn test_from_code__order_from_code_s1() {
+fn from_code__order_from_code_s1() {
     crate::check_result(order::from_code(2), Ok(order::State::Paid));
 }
 
 #[test]
-fn test_is_final__order_is_final_s1() {
+fn is_final__order_is_final_s1() {
     crate::check_value(order::is_final(order::State::Paid), false);
 }
 
 #[test]
-fn test_events_from__order_events_from_s1() {
+fn events_from__order_events_from_s1() {
     crate::check_slice(order::events_from(order::State::Paid), &[order::Event::Next, order::Event::Prev, order::Event::Cancel]);
 }
 
 #[test]
-fn test_code__order_code_s2() {
+fn code__order_code_s2() {
     crate::check_value(order::code(order::State::Shipped), 3);
 }
 
 #[test]
-fn test_key__order_key_s2() {
+fn key__order_key_s2() {
     crate::check_result(order::from_code(3).map(order::key), Ok("shipped"));
 }
 
 #[test]
-fn test_from_code__order_from_code_s2() {
+fn from_code__order_from_code_s2() {
     crate::check_result(order::from_code(3), Ok(order::State::Shipped));
 }
 
 #[test]
-fn test_is_final__order_is_final_s2() {
+fn is_final__order_is_final_s2() {
     crate::check_value(order::is_final(order::State::Shipped), false);
 }
 
 #[test]
-fn test_events_from__order_events_from_s2() {
+fn events_from__order_events_from_s2() {
     crate::check_slice(order::events_from(order::State::Shipped), &[order::Event::Next, order::Event::Prev]);
 }
 
 #[test]
-fn test_code__order_code_s3() {
+fn code__order_code_s3() {
     crate::check_value(order::code(order::State::Done), 4);
 }
 
 #[test]
-fn test_key__order_key_s3() {
+fn key__order_key_s3() {
     crate::check_result(order::from_code(4).map(order::key), Ok("done"));
 }
 
 #[test]
-fn test_from_code__order_from_code_s3() {
+fn from_code__order_from_code_s3() {
     crate::check_result(order::from_code(4), Ok(order::State::Done));
 }
 
 #[test]
-fn test_is_final__order_is_final_s3() {
+fn is_final__order_is_final_s3() {
     crate::check_value(order::is_final(order::State::Done), true);
 }
 
 #[test]
-fn test_events_from__order_events_from_s3() {
+fn events_from__order_events_from_s3() {
     crate::check_slice(order::events_from(order::State::Done), &[]);
 }
 
 #[test]
-fn test_code__order_code_s4() {
+fn code__order_code_s4() {
     crate::check_value(order::code(order::State::Canceled), 5);
 }
 
 #[test]
-fn test_key__order_key_s4() {
+fn key__order_key_s4() {
     crate::check_result(order::from_code(5).map(order::key), Ok("canceled"));
 }
 
 #[test]
-fn test_from_code__order_from_code_s4() {
+fn from_code__order_from_code_s4() {
     crate::check_result(order::from_code(5), Ok(order::State::Canceled));
 }
 
 #[test]
-fn test_is_final__order_is_final_s4() {
+fn is_final__order_is_final_s4() {
     crate::check_value(order::is_final(order::State::Canceled), true);
 }
 
 #[test]
-fn test_events_from__order_events_from_s4() {
+fn events_from__order_events_from_s4() {
     crate::check_slice(order::events_from(order::State::Canceled), &[]);
 }
 
 #[test]
-fn test_from_code__order_from_code_zero() {
+fn from_code__order_from_code_zero() {
     crate::check_result(order::from_code(0), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__order_from_code_unknown() {
+fn from_code__order_from_code_unknown() {
     crate::check_result(order::from_code(6), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__order_from_code_negative() {
+fn from_code__order_from_code_negative() {
     crate::check_result(order::from_code(-1), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__order_from_code_int32_overflow() {
+fn from_code__order_from_code_int32_overflow() {
     crate::check_result(order::from_code(2147483648), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__order_from_code_int64_max() {
+fn from_code__order_from_code_int64_max() {
     crate::check_result(order::from_code(9223372036854775807), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_target__order_target_s0_e0() {
+fn target__order_target_s0_e0() {
     crate::check_result(order::target(order::State::Draft, order::Event::Next), Ok(order::State::Paid));
 }
 
 #[test]
-fn test_target__order_target_s0_e1() {
+fn target__order_target_s0_e1() {
     crate::check_result(order::target(order::State::Draft, order::Event::Prev), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_target__order_target_s0_e2() {
+fn target__order_target_s0_e2() {
     crate::check_result(order::target(order::State::Draft, order::Event::Cancel), Ok(order::State::Canceled));
 }
 
 #[test]
-fn test_target__order_target_s1_e0() {
+fn target__order_target_s1_e0() {
     crate::check_result(order::target(order::State::Paid, order::Event::Next), Ok(order::State::Shipped));
 }
 
 #[test]
-fn test_target__order_target_s1_e1() {
+fn target__order_target_s1_e1() {
     crate::check_result(order::target(order::State::Paid, order::Event::Prev), Ok(order::State::Draft));
 }
 
 #[test]
-fn test_target__order_target_s1_e2() {
+fn target__order_target_s1_e2() {
     crate::check_result(order::target(order::State::Paid, order::Event::Cancel), Ok(order::State::Canceled));
 }
 
 #[test]
-fn test_target__order_target_s2_e0() {
+fn target__order_target_s2_e0() {
     crate::check_result(order::target(order::State::Shipped, order::Event::Next), Ok(order::State::Done));
 }
 
 #[test]
-fn test_target__order_target_s2_e1() {
+fn target__order_target_s2_e1() {
     crate::check_result(order::target(order::State::Shipped, order::Event::Prev), Ok(order::State::Paid));
 }
 
 #[test]
-fn test_target__order_target_s2_e2() {
+fn target__order_target_s2_e2() {
     crate::check_result(order::target(order::State::Shipped, order::Event::Cancel), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_target__order_target_s3_e0() {
+fn target__order_target_s3_e0() {
     crate::check_result(order::target(order::State::Done, order::Event::Next), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(4), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_target__order_target_s3_e1() {
+fn target__order_target_s3_e1() {
     crate::check_result(order::target(order::State::Done, order::Event::Prev), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(4), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_target__order_target_s3_e2() {
+fn target__order_target_s3_e2() {
     crate::check_result(order::target(order::State::Done, order::Event::Cancel), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(4), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_target__order_target_s4_e0() {
+fn target__order_target_s4_e0() {
     crate::check_result(order::target(order::State::Canceled, order::Event::Next), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_target__order_target_s4_e1() {
+fn target__order_target_s4_e1() {
     crate::check_result(order::target(order::State::Canceled, order::Event::Prev), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_target__order_target_s4_e2() {
+fn target__order_target_s4_e2() {
     crate::check_result(order::target(order::State::Canceled, order::Event::Cancel), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e0_s0() {
+fn apply__order_apply_s0_e0_s0() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Next, order::State::Draft), Ok(order::Step { to: order::State::Paid, changed: true }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e0_s1() {
+fn apply__order_apply_s0_e0_s1() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Next, order::State::Paid), Ok(order::Step { to: order::State::Paid, changed: false }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e0_s2() {
+fn apply__order_apply_s0_e0_s2() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Next, order::State::Shipped), Err(crate::Expected { code: Code::Conflict, expected: Some(1), actual: Some(3), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e0_s3() {
+fn apply__order_apply_s0_e0_s3() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Next, order::State::Done), Err(crate::Expected { code: Code::Conflict, expected: Some(1), actual: Some(4), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e0_s4() {
+fn apply__order_apply_s0_e0_s4() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Next, order::State::Canceled), Err(crate::Expected { code: Code::Conflict, expected: Some(1), actual: Some(5), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e2_s0() {
+fn apply__order_apply_s0_e2_s0() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Cancel, order::State::Draft), Ok(order::Step { to: order::State::Canceled, changed: true }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e2_s4() {
+fn apply__order_apply_s0_e2_s4() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Cancel, order::State::Canceled), Ok(order::Step { to: order::State::Canceled, changed: false }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e2_s1() {
+fn apply__order_apply_s0_e2_s1() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Cancel, order::State::Paid), Err(crate::Expected { code: Code::Conflict, expected: Some(1), actual: Some(2), event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e2_s2() {
+fn apply__order_apply_s0_e2_s2() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Cancel, order::State::Shipped), Err(crate::Expected { code: Code::Conflict, expected: Some(1), actual: Some(3), event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e2_s3() {
+fn apply__order_apply_s0_e2_s3() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Cancel, order::State::Done), Err(crate::Expected { code: Code::Conflict, expected: Some(1), actual: Some(4), event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e0_s1() {
+fn apply__order_apply_s1_e0_s1() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Next, order::State::Paid), Ok(order::Step { to: order::State::Shipped, changed: true }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e0_s2() {
+fn apply__order_apply_s1_e0_s2() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Next, order::State::Shipped), Ok(order::Step { to: order::State::Shipped, changed: false }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e0_s0() {
+fn apply__order_apply_s1_e0_s0() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Next, order::State::Draft), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(1), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e0_s3() {
+fn apply__order_apply_s1_e0_s3() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Next, order::State::Done), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(4), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e0_s4() {
+fn apply__order_apply_s1_e0_s4() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Next, order::State::Canceled), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(5), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e1_s1() {
+fn apply__order_apply_s1_e1_s1() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Prev, order::State::Paid), Ok(order::Step { to: order::State::Draft, changed: true }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e1_s0() {
+fn apply__order_apply_s1_e1_s0() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Prev, order::State::Draft), Ok(order::Step { to: order::State::Draft, changed: false }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e1_s2() {
+fn apply__order_apply_s1_e1_s2() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Prev, order::State::Shipped), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(3), event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e1_s3() {
+fn apply__order_apply_s1_e1_s3() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Prev, order::State::Done), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(4), event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e1_s4() {
+fn apply__order_apply_s1_e1_s4() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Prev, order::State::Canceled), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(5), event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e2_s1() {
+fn apply__order_apply_s1_e2_s1() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Cancel, order::State::Paid), Ok(order::Step { to: order::State::Canceled, changed: true }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e2_s4() {
+fn apply__order_apply_s1_e2_s4() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Cancel, order::State::Canceled), Ok(order::Step { to: order::State::Canceled, changed: false }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e2_s0() {
+fn apply__order_apply_s1_e2_s0() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Cancel, order::State::Draft), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(1), event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e2_s2() {
+fn apply__order_apply_s1_e2_s2() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Cancel, order::State::Shipped), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(3), event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s1_e2_s3() {
+fn apply__order_apply_s1_e2_s3() {
     crate::check_result(order::apply(order::State::Paid, order::Event::Cancel, order::State::Done), Err(crate::Expected { code: Code::Conflict, expected: Some(2), actual: Some(4), event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e0_s2() {
+fn apply__order_apply_s2_e0_s2() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Next, order::State::Shipped), Ok(order::Step { to: order::State::Done, changed: true }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e0_s3() {
+fn apply__order_apply_s2_e0_s3() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Next, order::State::Done), Ok(order::Step { to: order::State::Done, changed: false }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e0_s0() {
+fn apply__order_apply_s2_e0_s0() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Next, order::State::Draft), Err(crate::Expected { code: Code::Conflict, expected: Some(3), actual: Some(1), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e0_s1() {
+fn apply__order_apply_s2_e0_s1() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Next, order::State::Paid), Err(crate::Expected { code: Code::Conflict, expected: Some(3), actual: Some(2), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e0_s4() {
+fn apply__order_apply_s2_e0_s4() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Next, order::State::Canceled), Err(crate::Expected { code: Code::Conflict, expected: Some(3), actual: Some(5), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e1_s2() {
+fn apply__order_apply_s2_e1_s2() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Prev, order::State::Shipped), Ok(order::Step { to: order::State::Paid, changed: true }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e1_s1() {
+fn apply__order_apply_s2_e1_s1() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Prev, order::State::Paid), Ok(order::Step { to: order::State::Paid, changed: false }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e1_s0() {
+fn apply__order_apply_s2_e1_s0() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Prev, order::State::Draft), Err(crate::Expected { code: Code::Conflict, expected: Some(3), actual: Some(1), event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e1_s3() {
+fn apply__order_apply_s2_e1_s3() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Prev, order::State::Done), Err(crate::Expected { code: Code::Conflict, expected: Some(3), actual: Some(4), event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e1_s4() {
+fn apply__order_apply_s2_e1_s4() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Prev, order::State::Canceled), Err(crate::Expected { code: Code::Conflict, expected: Some(3), actual: Some(5), event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s0_e1_s0() {
+fn apply__order_apply_s0_e1_s0() {
     crate::check_result(order::apply(order::State::Draft, order::Event::Prev, order::State::Draft), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s2_e2_s2() {
+fn apply__order_apply_s2_e2_s2() {
     crate::check_result(order::apply(order::State::Shipped, order::Event::Cancel, order::State::Shipped), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s3_e0_s3() {
+fn apply__order_apply_s3_e0_s3() {
     crate::check_result(order::apply(order::State::Done, order::Event::Next, order::State::Done), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(4), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s3_e1_s3() {
+fn apply__order_apply_s3_e1_s3() {
     crate::check_result(order::apply(order::State::Done, order::Event::Prev, order::State::Done), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(4), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s3_e2_s3() {
+fn apply__order_apply_s3_e2_s3() {
     crate::check_result(order::apply(order::State::Done, order::Event::Cancel, order::State::Done), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(4), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_apply__order_apply_s4_e0_s4() {
+fn apply__order_apply_s4_e0_s4() {
     crate::check_result(order::apply(order::State::Canceled, order::Event::Next, order::State::Canceled), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_apply__order_apply_s4_e1_s4() {
+fn apply__order_apply_s4_e1_s4() {
     crate::check_result(order::apply(order::State::Canceled, order::Event::Prev, order::State::Canceled), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_apply__order_apply_s4_e2_s4() {
+fn apply__order_apply_s4_e2_s4() {
     crate::check_result(order::apply(order::State::Canceled, order::Event::Cancel, order::State::Canceled), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(3) }));
 }
 
 #[tokio::test]
-async fn test_persist__order_persist_first() {
+async fn persist__order_persist_first() {
     crate::check_persist(
         order::code(order::State::Draft),
         |stored| {
@@ -868,7 +868,7 @@ async fn test_persist__order_persist_first() {
 }
 
 #[tokio::test]
-async fn test_persist__order_persist_retry() {
+async fn persist__order_persist_retry() {
     crate::check_persist(
         order::code(order::State::Paid),
         |stored| {
@@ -882,7 +882,7 @@ async fn test_persist__order_persist_retry() {
 }
 
 #[tokio::test]
-async fn test_persist__order_persist_conflict() {
+async fn persist__order_persist_conflict() {
     crate::check_persist(
         order::code(order::State::Shipped),
         |stored| {
@@ -896,297 +896,297 @@ async fn test_persist__order_persist_conflict() {
 }
 
 #[test]
-fn test_initial__standby_initial() {
+fn initial__standby_initial() {
     crate::check_value(standby::initial(), standby::State::Ready);
 }
 
 #[test]
-fn test_code__standby_code_s0() {
+fn code__standby_code_s0() {
     crate::check_value(standby::code(standby::State::Ready), 1);
 }
 
 #[test]
-fn test_key__standby_key_s0() {
+fn key__standby_key_s0() {
     crate::check_result(standby::from_code(1).map(standby::key), Ok("ready"));
 }
 
 #[test]
-fn test_from_code__standby_from_code_s0() {
+fn from_code__standby_from_code_s0() {
     crate::check_result(standby::from_code(1), Ok(standby::State::Ready));
 }
 
 #[test]
-fn test_is_final__standby_is_final_s0() {
+fn is_final__standby_is_final_s0() {
     crate::check_value(standby::is_final(standby::State::Ready), true);
 }
 
 #[test]
-fn test_events_from__standby_events_from_s0() {
+fn events_from__standby_events_from_s0() {
     crate::check_slice(standby::events_from(standby::State::Ready), &[]);
 }
 
 #[test]
-fn test_from_code__standby_from_code_zero() {
+fn from_code__standby_from_code_zero() {
     crate::check_result(standby::from_code(0), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__standby_from_code_unknown() {
+fn from_code__standby_from_code_unknown() {
     crate::check_result(standby::from_code(2), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__standby_from_code_negative() {
+fn from_code__standby_from_code_negative() {
     crate::check_result(standby::from_code(-1), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__standby_from_code_int32_overflow() {
+fn from_code__standby_from_code_int32_overflow() {
     crate::check_result(standby::from_code(2147483648), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__standby_from_code_int64_max() {
+fn from_code__standby_from_code_int64_max() {
     crate::check_result(standby::from_code(9223372036854775807), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_initial__ticket_initial() {
+fn initial__ticket_initial() {
     crate::check_value(ticket::initial(), ticket::State::Open);
 }
 
 #[test]
-fn test_code__ticket_code_s0() {
+fn code__ticket_code_s0() {
     crate::check_value(ticket::code(ticket::State::Open), 1);
 }
 
 #[test]
-fn test_key__ticket_key_s0() {
+fn key__ticket_key_s0() {
     crate::check_result(ticket::from_code(1).map(ticket::key), Ok("open"));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_s0() {
+fn from_code__ticket_from_code_s0() {
     crate::check_result(ticket::from_code(1), Ok(ticket::State::Open));
 }
 
 #[test]
-fn test_is_final__ticket_is_final_s0() {
+fn is_final__ticket_is_final_s0() {
     crate::check_value(ticket::is_final(ticket::State::Open), false);
 }
 
 #[test]
-fn test_events_from__ticket_events_from_s0() {
+fn events_from__ticket_events_from_s0() {
     crate::check_slice(ticket::events_from(ticket::State::Open), &[ticket::Event::Submit]);
 }
 
 #[test]
-fn test_code__ticket_code_s1() {
+fn code__ticket_code_s1() {
     crate::check_value(ticket::code(ticket::State::Review), 3);
 }
 
 #[test]
-fn test_key__ticket_key_s1() {
+fn key__ticket_key_s1() {
     crate::check_result(ticket::from_code(3).map(ticket::key), Ok("review"));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_s1() {
+fn from_code__ticket_from_code_s1() {
     crate::check_result(ticket::from_code(3), Ok(ticket::State::Review));
 }
 
 #[test]
-fn test_is_final__ticket_is_final_s1() {
+fn is_final__ticket_is_final_s1() {
     crate::check_value(ticket::is_final(ticket::State::Review), false);
 }
 
 #[test]
-fn test_events_from__ticket_events_from_s1() {
+fn events_from__ticket_events_from_s1() {
     crate::check_slice(ticket::events_from(ticket::State::Review), &[ticket::Event::Approve, ticket::Event::Reject]);
 }
 
 #[test]
-fn test_code__ticket_code_s2() {
+fn code__ticket_code_s2() {
     crate::check_value(ticket::code(ticket::State::Closed), 5);
 }
 
 #[test]
-fn test_key__ticket_key_s2() {
+fn key__ticket_key_s2() {
     crate::check_result(ticket::from_code(5).map(ticket::key), Ok("closed"));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_s2() {
+fn from_code__ticket_from_code_s2() {
     crate::check_result(ticket::from_code(5), Ok(ticket::State::Closed));
 }
 
 #[test]
-fn test_is_final__ticket_is_final_s2() {
+fn is_final__ticket_is_final_s2() {
     crate::check_value(ticket::is_final(ticket::State::Closed), true);
 }
 
 #[test]
-fn test_events_from__ticket_events_from_s2() {
+fn events_from__ticket_events_from_s2() {
     crate::check_slice(ticket::events_from(ticket::State::Closed), &[]);
 }
 
 #[test]
-fn test_from_code__ticket_from_code_zero() {
+fn from_code__ticket_from_code_zero() {
     crate::check_result(ticket::from_code(0), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_unknown() {
+fn from_code__ticket_from_code_unknown() {
     crate::check_result(ticket::from_code(6), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_r2() {
+fn from_code__ticket_from_code_r2() {
     crate::check_result(ticket::from_code(2), Err(crate::Expected { code: Code::ReservedCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_r4() {
+fn from_code__ticket_from_code_r4() {
     crate::check_result(ticket::from_code(4), Err(crate::Expected { code: Code::ReservedCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_negative() {
+fn from_code__ticket_from_code_negative() {
     crate::check_result(ticket::from_code(-1), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_int32_overflow() {
+fn from_code__ticket_from_code_int32_overflow() {
     crate::check_result(ticket::from_code(2147483648), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_from_code__ticket_from_code_int64_max() {
+fn from_code__ticket_from_code_int64_max() {
     crate::check_result(ticket::from_code(9223372036854775807), Err(crate::Expected { code: Code::UnknownCode, expected: None, actual: None, event: None }));
 }
 
 #[test]
-fn test_target__ticket_target_s0_e0() {
+fn target__ticket_target_s0_e0() {
     crate::check_result(ticket::target(ticket::State::Open, ticket::Event::Submit), Ok(ticket::State::Review));
 }
 
 #[test]
-fn test_target__ticket_target_s0_e1() {
+fn target__ticket_target_s0_e1() {
     crate::check_result(ticket::target(ticket::State::Open, ticket::Event::Approve), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_target__ticket_target_s0_e2() {
+fn target__ticket_target_s0_e2() {
     crate::check_result(ticket::target(ticket::State::Open, ticket::Event::Reject), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_target__ticket_target_s1_e0() {
+fn target__ticket_target_s1_e0() {
     crate::check_result(ticket::target(ticket::State::Review, ticket::Event::Submit), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_target__ticket_target_s1_e1() {
+fn target__ticket_target_s1_e1() {
     crate::check_result(ticket::target(ticket::State::Review, ticket::Event::Approve), Ok(ticket::State::Closed));
 }
 
 #[test]
-fn test_target__ticket_target_s1_e2() {
+fn target__ticket_target_s1_e2() {
     crate::check_result(ticket::target(ticket::State::Review, ticket::Event::Reject), Ok(ticket::State::Open));
 }
 
 #[test]
-fn test_target__ticket_target_s2_e0() {
+fn target__ticket_target_s2_e0() {
     crate::check_result(ticket::target(ticket::State::Closed, ticket::Event::Submit), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_target__ticket_target_s2_e1() {
+fn target__ticket_target_s2_e1() {
     crate::check_result(ticket::target(ticket::State::Closed, ticket::Event::Approve), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_target__ticket_target_s2_e2() {
+fn target__ticket_target_s2_e2() {
     crate::check_result(ticket::target(ticket::State::Closed, ticket::Event::Reject), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s0_e0_s0() {
+fn apply__ticket_apply_s0_e0_s0() {
     crate::check_result(ticket::apply(ticket::State::Open, ticket::Event::Submit, ticket::State::Open), Ok(ticket::Step { to: ticket::State::Review, changed: true }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s0_e0_s1() {
+fn apply__ticket_apply_s0_e0_s1() {
     crate::check_result(ticket::apply(ticket::State::Open, ticket::Event::Submit, ticket::State::Review), Ok(ticket::Step { to: ticket::State::Review, changed: false }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s0_e0_s2() {
+fn apply__ticket_apply_s0_e0_s2() {
     crate::check_result(ticket::apply(ticket::State::Open, ticket::Event::Submit, ticket::State::Closed), Err(crate::Expected { code: Code::Conflict, expected: Some(1), actual: Some(5), event: Some(1) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s1_e1_s1() {
+fn apply__ticket_apply_s1_e1_s1() {
     crate::check_result(ticket::apply(ticket::State::Review, ticket::Event::Approve, ticket::State::Review), Ok(ticket::Step { to: ticket::State::Closed, changed: true }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s1_e1_s2() {
+fn apply__ticket_apply_s1_e1_s2() {
     crate::check_result(ticket::apply(ticket::State::Review, ticket::Event::Approve, ticket::State::Closed), Ok(ticket::Step { to: ticket::State::Closed, changed: false }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s1_e1_s0() {
+fn apply__ticket_apply_s1_e1_s0() {
     crate::check_result(ticket::apply(ticket::State::Review, ticket::Event::Approve, ticket::State::Open), Err(crate::Expected { code: Code::Conflict, expected: Some(3), actual: Some(1), event: Some(2) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s1_e2_s1() {
+fn apply__ticket_apply_s1_e2_s1() {
     crate::check_result(ticket::apply(ticket::State::Review, ticket::Event::Reject, ticket::State::Review), Ok(ticket::Step { to: ticket::State::Open, changed: true }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s1_e2_s0() {
+fn apply__ticket_apply_s1_e2_s0() {
     crate::check_result(ticket::apply(ticket::State::Review, ticket::Event::Reject, ticket::State::Open), Ok(ticket::Step { to: ticket::State::Open, changed: false }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s1_e2_s2() {
+fn apply__ticket_apply_s1_e2_s2() {
     crate::check_result(ticket::apply(ticket::State::Review, ticket::Event::Reject, ticket::State::Closed), Err(crate::Expected { code: Code::Conflict, expected: Some(3), actual: Some(5), event: Some(3) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s0_e1_s0() {
+fn apply__ticket_apply_s0_e1_s0() {
     crate::check_result(ticket::apply(ticket::State::Open, ticket::Event::Approve, ticket::State::Open), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s0_e2_s0() {
+fn apply__ticket_apply_s0_e2_s0() {
     crate::check_result(ticket::apply(ticket::State::Open, ticket::Event::Reject, ticket::State::Open), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(1), actual: None, event: Some(3) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s1_e0_s1() {
+fn apply__ticket_apply_s1_e0_s1() {
     crate::check_result(ticket::apply(ticket::State::Review, ticket::Event::Submit, ticket::State::Review), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(3), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s2_e0_s2() {
+fn apply__ticket_apply_s2_e0_s2() {
     crate::check_result(ticket::apply(ticket::State::Closed, ticket::Event::Submit, ticket::State::Closed), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(1) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s2_e1_s2() {
+fn apply__ticket_apply_s2_e1_s2() {
     crate::check_result(ticket::apply(ticket::State::Closed, ticket::Event::Approve, ticket::State::Closed), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(2) }));
 }
 
 #[test]
-fn test_apply__ticket_apply_s2_e2_s2() {
+fn apply__ticket_apply_s2_e2_s2() {
     crate::check_result(ticket::apply(ticket::State::Closed, ticket::Event::Reject, ticket::State::Closed), Err(crate::Expected { code: Code::InvalidTransition, expected: Some(5), actual: None, event: Some(3) }));
 }
 
 #[tokio::test]
-async fn test_persist__ticket_persist_first() {
+async fn persist__ticket_persist_first() {
     crate::check_persist(
         ticket::code(ticket::State::Open),
         |stored| {
@@ -1200,7 +1200,7 @@ async fn test_persist__ticket_persist_first() {
 }
 
 #[tokio::test]
-async fn test_persist__ticket_persist_retry() {
+async fn persist__ticket_persist_retry() {
     crate::check_persist(
         ticket::code(ticket::State::Review),
         |stored| {
@@ -1214,7 +1214,7 @@ async fn test_persist__ticket_persist_retry() {
 }
 
 #[tokio::test]
-async fn test_persist__ticket_persist_conflict() {
+async fn persist__ticket_persist_conflict() {
     crate::check_persist(
         ticket::code(ticket::State::Closed),
         |stored| {

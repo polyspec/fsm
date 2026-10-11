@@ -307,7 +307,7 @@ function testOf(machine, c) {
   const persist = c.feature === 'persist';
   return [
     persist ? '#[tokio::test]' : '#[test]',
-    `${persist ? 'async ' : ''}fn test_${c.feature}__${c.id}() {`,
+    `${persist ? 'async ' : ''}fn ${c.name}() {`,
     ...bodyOf(machine, c).map(line => `    ${line}`),
     '}',
   ];

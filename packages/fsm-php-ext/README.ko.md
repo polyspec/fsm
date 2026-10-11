@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: c6e278ea533ba571ac9f2b76548e35282e77116b81bb6ec1491e253bf28edc19 -->
+<!-- source-sha256: 2ac1cbff90e7b1ec3264c950b58da4de66d518467937ed6dd406b5a18a3755ce -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
@@ -59,8 +59,8 @@ use Polyspec\FsmTest\Order;
 $step = Order\apply(State::Draft, Event::Next, State::Draft);   // Step with ->to and ->changed
 ```
 
-순수 호출과 영속화 패턴은 php 패키지의 코드와 같다. test bed는 php 패키지의 `tests/ConformanceTest.php`와 `examples/persist.php`를
-복사하며, `tests/Vectors.php`는 php 패키지의 파일과 바이트가 같다.
+순수 호출과 영속화 패턴은 php 패키지의 코드와 같다. test bed는 php 패키지의 `tests/ConformanceCase.php`와 `examples/persist.php`를
+복사하며, `tests/ConformanceTest.php`는 php 패키지의 파일과 바이트가 같다.
 
 ## 오류
 
@@ -69,7 +69,7 @@ $step = Order\apply(State::Draft, Event::Next, State::Draft);   // Step with ->t
 enum `Code`의 값이다. C 쪽은 php 쪽과 같은 class를 던진다(class의 생성자는 `fsm.c`에 등록된다). 그러므로 php 종류용으로 쓴 `catch`는
 그대로 동작한다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며 php 종류와 같다. `tests/Vectors.php`의 vector가 빌드된
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며 php 종류와 같다. `tests/ConformanceTest.php`의 vector가 빌드된
 module에서 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
@@ -96,6 +96,6 @@ make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_P
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `tests/ConformanceTest.php`(php 패키지 파일의 복사본)는 빌드된 module을 대상으로 vector case마다
-하나의 PHPUnit test를 `test_<feature>__<id>` 이름으로 실행한다. `make gen`은 `make clean` 없이 빌드 뒤에 실행한다. 루트의
+실행 결과는 89개 case 중 89개 통과다. `tests/ConformanceTest.php`(php 패키지 파일과 바이트가 같다)는 빌드된 module을 대상으로 vector case마다
+하나의 PHPUnit test를 `test_<feature>__<id>` 이름으로, `tests/ConformanceCase.php`의 검사로 실행한다. `make gen`은 `make clean` 없이 빌드 뒤에 실행한다. 루트의
 `make gen-check`는 생성 파일과 복사본이 최신인지 검사하며, `make parity-php-ext`는 모든 vector case가 한 번씩 실행되어 통과했는지 검사한다.

@@ -1,5 +1,5 @@
 // The php backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1.md, C-2): the generated files of the php package
-// `src/` and the native test module `tests/Vectors.php`. It takes the IRs of the machines (normalize.mjs), in definition order,
+// `src/` and the native test module `tests/ConformanceTest.php`. It takes the IRs of the machines (normalize.mjs), in definition order,
 // and the lock and the php namespace, and returns the text of every file; it writes nothing. The output is deterministic: declaration
 // order, four spaces of indentation and a final line break. The core imports nothing from node:, and the generated code has no
 // runtime dependency.
@@ -312,25 +312,26 @@ export function files(irs, lock, { phpNamespace } = {}) {
 }
 
 /**
- * The native test module tests/Vectors.php of `vectorList`, the vectors of every machine in order, in the namespace <ns>\Tests:
- * the class Vectors whose cases() returns each case under its test name test_<feature>__<id> (docs/plans/fsm-v1.md, C-4).
+ * The native test module tests/ConformanceTest.php of `vectorList`, the vectors of every machine in order, in the namespace
+ * <ns>\Tests: the PHPUnit class ConformanceTest with one method test_<feature>__<id> per case (docs/plans/fsm-v1.md, C-4), the
+ * test name that the parity check of kit reads. Each method passes its machine and case to conformance() of the hand-written
+ * ConformanceCase.
  */
 export function vectorsFile(list, { phpNamespace } = {}) {
   const phpNs = checkedNamespace(phpNamespace);
-  const cases = forKind(list, KIND).flatMap(({ machine, cases: items }) => items.map(item => [`test_${item.feature}__${item.id}`, { machine, case: item }]));
-  const entries = cases.map(([name, data]) => `            ${literal(name)} => ${value(data, 3)},`);
+  const methods = forKind(list, KIND).flatMap(({ machine, cases: items }) => items.flatMap(item => [
+    '',
+    `    public function test_${item.name}(): void`,
+    '    {',
+    `        $this->conformance(${literal(machine)}, ${value(item, 2)});`,
+    '    }',
+  ]));
   return text([
     ...opening(SHARED, `${phpNs}\\Tests`),
-    '/** The vector cases of every machine, each under its test name (docs/plans/fsm-v1.md, C-4). */',
-    'final class Vectors',
+    '/** The vector cases of every machine, one test per case under its case name (docs/plans/fsm-v1.md, C-4). */',
+    'final class ConformanceTest extends ConformanceCase',
     '{',
-    '    /** @return array<string, array{machine: string, case: array<string, mixed>}> */',
-    '    public static function cases(): array',
-    '    {',
-    '        return [',
-    ...entries,
-    '        ];',
-    '    }',
+    ...methods.slice(1),
     '}',
   ]);
 }

@@ -63,8 +63,8 @@
       "required": [
         "composer.json",
         "composer.lock",
+        "tests/ConformanceCase.php",
         "tests/ConformanceTest.php",
-        "tests/Vectors.php",
         "examples/persist.php"
       ],
       "allowed": [
@@ -73,7 +73,7 @@
       ],
       "generated": [
         "src/**",
-        "tests/Vectors.php",
+        "tests/ConformanceTest.php",
         "examples/model/**"
       ]
     },
@@ -118,8 +118,8 @@
       "required": [
         "composer.json",
         "composer.lock",
+        "tests/ConformanceCase.php",
         "tests/ConformanceTest.php",
-        "tests/Vectors.php",
         "examples/persist.php"
       ],
       "allowed": [
@@ -128,8 +128,8 @@
       ],
       "generated": [
         "src/**",
+        "tests/ConformanceCase.php",
         "tests/ConformanceTest.php",
-        "tests/Vectors.php",
         "examples/persist.php",
         "examples/model/**"
       ]
