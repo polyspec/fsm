@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 057dd61426149aff455edc8bcda4ac943bc2ff30ca2389288e31597ee943b0b1 -->
+<!-- source-sha256: e36b99dc7f17223c451efe8182bf5edfbf30efa07c41f9e791e6aadf85a782a6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-39: go test 파일과 겹치는 machine key를 예약한다(스펙 B-5). `examples`, `vectors`, `machines`, `expectation`, `lookup`은 `fsm-gen check`를 통과하면서도 `packages/fsm-go`의 `go test ./...`를 깨뜨리므로(import 이름 중복, 또는 import로 이미 선언된 package 이름) 이제 `E_KEY_RESERVED`로 거부한다. `tests`는 측정에서 빌드되므로 예약하지 않는다. S-39 행은 이 이름을 들었으나, 측정이 그것을 바로잡는다.
 - S-33: `fromCode`은 모든 호출자에게서 정수가 아닌 값을 거부한다(감사 13, 14, 22). strict_types를 선언하지 않은 호출자에서 php와 php-ext는 `"2"`와 `2.0`을 2의 상태로, `true`를 1의 상태로 변환했다. 이제 python과 npm처럼 `E_UNKNOWN_CODE`를 던진다(스펙 B-6). GUI 편집 페이지는 저장 전에 거부된 다음 code(`E_CODE_RANGE`)를 보여 주며, core와 폼은 null을 돌려주지 않는다. 스펙 B-6은 생성된 코드가 가진 네 오류 상수를 적는다.
 - S-40: fsm-gui의 command 테스트는 machine 하나로 프로젝트를 만든다. `packages/fsm-gui/tests/command.test.mjs`는 root `fsm.lock.json` 전체를 order machine의 프로젝트에 복사했으므로, root lock에 machine을 더하면 테스트 프로젝트가 바뀌었다. 이제 테스트는 root lock의 `order` 항목만으로 프로젝트 lock을 쓰고(`{ order: rootLock.order }`), 프로젝트 lock이 `order`만 가짐을 단언한다. RED: 프로젝트 lock이 root의 다섯 machine(`in_review`, `limits`, `order`, `standby`, `ticket`)을 담았다. GREEN: `make gui-test`가 통과하며, command 테스트는 233개 case 중 하나로 통과한다.
 - S-26-1: 언어 README가 S-25와 S-26을 따른다(계획 C-9). go README는 `--go-module`을 붙인 `fsm-gen vectors --kind go`와 실제 출력을 적고, `tests/vectors_test.go`의 key 표와 adapter를 설명하며, `examples/persist.go`의 `Decide`를 파일에서 다시 옮긴다(`orderMachine.decide` adapter와 함께). php README는 `composer.json`의 실제 `autoload` block을 옮기고(`autoload.files`의 loader `src/functions.php`는 모든 machine을 require한다), 파일 표가 loader를 적는다. 모든 언어의 Errors 절이 그 언어의 field 이름으로 spec B-6의 field 규칙(어떤 code가 expected, actual, event를 채우는지)을 적는다. RED: go 명령은 `--go-module` 없이 실패했고, composer 예시는 Order 함수만 읽었으며, 어떤 Errors 절도 B-6을 적지 않았다. GREEN: 모든 발췌가 파일과 글자 그대로 같고, 한국어 code block이 영어와 같으며, 명령과 snippet을 임시 소비자 프로젝트에서 실행했다. go vectors 파일은 소비자가 아니라 test bed의 examples를 import하며, 이는 checklist 항목 S-26-1-1이 기록한다.
