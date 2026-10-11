@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: a2d3f5e6cf16c154bf0fb5113dc5608d638f69bda3f52a2e6000ac1901a9db88 -->
+<!-- source-sha256: dd409622a6f638d2fdc79ebb6e9a58f5c3c9920653ed24b1d4bc7a93ccc8083d -->
 # 개발
 
 [English](AGENTS.md)
@@ -33,6 +33,11 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
 - 오류 은폐 금지: fallback, 조용한 변환이나 버림, null 반환, 하위 호환 레이어를 두지 않는다.
 - git 파일에 외부 출처를 쓰지 않는다. 일반 구문의 채택/비채택 판정만 쓴다. polyspec 저장소(kit, orm, hyper, crudui, template 등)는
   내부 라이브러리이므로 인용할 수 있다.
+- 기존 외부 도구나 라이브러리가 이미 하는 일을 다시 만들지 않는다. 그 생태계의 표준 도구를 있는 그대로 쓰고(예: Python
+  interpreter, 환경, lock은 uv, PHP 의존성은 Composer), 그 도구가 만드는 symbolic link 같은 자체 동작을 받아들인다. 우리 규칙은
+  우리가 만드는 것을 다스린다.
+- 이 저장소가 만드는 것(추적 파일, 설정, 스크립트, 생성 출력)에는 symbolic link와 상대 경로를 두지 않는다. 경로는 선언적으로(추적
+  파일에 이름을 적어) 또는 탐색으로(명시된 탐색 규칙에 따라) 정한다.
 
 ## 체크리스트
 

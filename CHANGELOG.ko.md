@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 361f4e4f7102ab742a38161befd491f595f1ea2213227ca0b8668f9b1b9bde3c -->
+<!-- source-sha256: 32397bcb6215eb02d21c356689d83e8bd99e93b17fd887580ff4b11af7c08b90 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-43: AGENTS.md(.ko) 규칙을 추가했다: 기존 외부 도구는 있는 그대로 쓰고(그 도구의 symbolic link는 받아들임), 저장소는 symbolic link와 상대 경로를 만들지 않으며, 경로는 추적 파일에 이름을 적거나 명시된 탐색 규칙으로 찾는다.
 - S-34-4: python lock은 uv 자체가 검사한다(`uv lock --check`와 pylock.toml에 대한 uv.lock의 export 비교). fsm 자체의 lock 스크립트를 제거했다.
 - S-42-2: fsm 자체의 vector parity 스크립트(`scripts/check-parity.mjs`, `vector-parity-check`, `parity-<kind>`)를 제거했다. kit의 parity 검사가 그 일을 하고, kind의 소유 검사는 패키지 테스트를 실행한다.
 - S-34-3: python lock은 registry package와 release archive만 담는다: orm과 ordered-json은 v0.0.7 tag의 archive와 sha256으로 받으므로 uv와 pip 모두 lock을 hash와 함께 설치하고, lock 검사는 git source를 거부한다.
