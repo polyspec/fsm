@@ -359,10 +359,11 @@
     },
     {
       "paths": [
-        "tests/install-python/**"
+        "tests/python-tools/**",
+        "config/toolchain.json"
       ],
       "targets": [
-        "install-python-test"
+        "python-tools-test"
       ]
     },
     {
@@ -370,7 +371,7 @@
         "Makefile"
       ],
       "targets": [
-        "install-python-test"
+        "python-tools-test"
       ]
     },
     {

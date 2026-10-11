@@ -105,7 +105,8 @@
       ],
       "allowed": [
         "src/polyspec_fsm/*.py",
-        "examples/model/**"
+        "examples/model/**",
+   "pylock.toml"
       ],
       "generated": [
         "src/**",

@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 40a2c08bf4198986b753db92707426e2015c6915f25ff94b8774a9df6132ed1e -->
+<!-- source-sha256: 0a337ad1638d0b6d9724bb551dc0b82a70502b328fd903ca1e23bf1f820e4c4e -->
 # polyspec/fsm
 
 [English](README.md)
@@ -260,7 +260,7 @@ toolchain만 필요로 한다:
 | 생성된 go 코드 | Go 1.27(module에 `go 1.27`, checkout에서는 toolchain go1.27.2) |
 | 생성된 php 코드 | PHP 8.4 이상(orm client가 8.4를 요구한다). checkout은 PHP 8.5와 Composer 2.10.3으로 테스트한다(`config/toolchain.json`) |
 | 생성된 php-ext 코드 | php의 요구 사항, 그리고 `phpize`, `autoconf`, C 컴파일러 |
-| 생성된 python 코드 | Python 3.14(`config/toolchain.json`). checkout은 `make install-python`으로 설치한다 |
+| 생성된 python 코드 | Python 3.14(`config/toolchain.json`의 `pythonBuild`). `make install`이 `make install-tools`로 `var/tools`에 설치한다. uv는 인터프리터를 설치하지 않는다 |
 | 생성된 rust 코드 | Rust 1.98.0(`rust-toolchain.toml`). 생성된 library는 표준 라이브러리만 쓴다 |
 
 명령은 이 저장소의 clone에서 온다. clone에서 각 명령을 PATH에 설치한다. npm은 clone의 package를 link하므로 명령은 그 clone의 코드를
@@ -275,7 +275,7 @@ make db-deps && npm install -g ./packages/fsm-db   # fsm-db: needs the orm packa
 make gui-build && npm install -g ./packages/fsm-gui # fsm-gui: builds the browser assets first
 ```
 
-`make install`은 `var/tools`의 toolchain과 모든 패키지 의존성을 한 번 내려받는다. 나중의 실행은 이미 설치된 것을 찾고 아무것도
+`make install`은 `var/tools`의 toolchain(`pythonBuild`의 Python 3.14 포함)과 모든 패키지 의존성을 한 번 내려받는다. 나중의 실행은 이미 설치된 것을 찾고 아무것도
 내려받지 않는다. json과 mermaid store에는 첫 `npm install -g` 명령만 있으면 된다. `make db-deps`는 `packages/fsm-db`의 orm 패키지를
 release tarball에서 설치하고, `make gui-build`는 GUI를 설치하고 browser asset을 빌드한다.
 
