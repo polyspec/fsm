@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: a44ce6ab885f83e4ffe86b351acea195bb8d4835ca24668e7a259c00bd45972d -->
+<!-- source-sha256: ce1d713e70fba4301a25801890cc9aba34f44bf7e8d1000134e2bbf22e2ed92a -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -301,7 +301,10 @@ packages/fsm-<kind>/
   - 폼 렌더링 정확성은 crudui가, 라우팅 정확성은 hyper가 소유한다.
   - 브라우저 테스트(S-22-1, `make gui-browser-test`): `tests/browser/browser.test.mjs`는 고정된 Playwright 패키지의 headless Chromium으로 편집 폼을 조작한다(`playwright` 1.64.0, `packages/fsm-gui`의 정확한 버전 devDependency. `make gui-browsers`가 브라우저를 내려받으므로 ONLINE이다). 저장소의 `machines/order.fsm.json`과 `fsm.lock.json`, `{"store":"json"}`을 담은 임시 프로젝트에 `node src/main.mjs --project <temp> --port 0`을 실행하고, 순서대로 확인한다. 마지막 상태 행의 add는 제안 code 6인 행을 추가한다. final 상태 `refunded`와 cancel 엣지 shipped→refunded를 저장하면 머신과 lock에 저장되고, show 페이지가 그 상태를 Mermaid svg와 함께 보여 준다. 그 행과 엣지를 remove하고 Save하면 상태가 지워지고 code 6이 예약된다. 다음 추가 행은 7을 제안한다. 수정 전 첫 실행은 첫 단정에서 실패했다(`5 !== 6`: 클릭이 행을 바꾸지 않았다).
   - `gui-test`는 최상위 `tests/*.test.mjs` 파일만 실행한다(`$(wildcard ...)`). `node --test`는 디렉터리를 주면 하위 테스트 파일도 실행하므로, `tests/browser/`의 브라우저 테스트가 `gui-test`에 브라우저를 요구하게 된다.
-  - 결정: 브라우저 테스트는 2026-10-11 의존성 검토가 최신 stable로 적은 Playwright release(1.64.0, `make dependency-review UPDATE=1 RECORD=1`로 기록)를 쓴다. 페이지는 첫 동작 전에 `networkidle`을 기다린다. 클라이언트가 chunk를 load 이벤트 뒤에 읽기 때문이다.
+  - 준비 상태(S-22-3): 브라우저 테스트는 `networkidle`이 아니라 폼 자신의 준비 상태를 기다린다. `client/main.ts`는 `connectForm`과 구독이 자리 잡은 뒤 form host `#fsm-form`에 `data-fsm-connected="true"`를 설정하고, 연결이 끊기면(rebind 전에) 이를 제거한다. 테스트의 `openEdit`과 `connected()`는 `#fsm-form[data-fsm-connected="true"]`를 기다린다. layout의 CSS(`#fsm-form:not([data-fsm-connected]) button[data-crudui-action] { pointer-events: none }`)는 표시가 설정되기 전까지 행 버튼이 클릭을 받지 못하게 한다.
+  - 첫 실행 실패(S-22-3), 원인: 묶기 전 클릭이 아니라 새로 받은 Chromium의 첫 탐색이 느린 것이다. 새 다운로드 네 번(`PLAYWRIGHT_BROWSERS_PATH`를 빈 디렉터리로 두고 `playwright install chromium`)에서 첫 케이스는 4.7초, 12.4초(5초 제한에서 실패), 2.7초, 2.5초였고 이후 케이스는 모두 1.3초 이하였다. client가 늦게 묶일 수는 없다: 번들은 head의 `type="module"` script라 `DOMContentLoaded` 전에 실행되고 `load`를 늦추며, `load` 직후 클릭한 차가운 시도 30회(CPU throttle과 지연 포함)가 모두 행을 추가했다. 그래서 브라우저 테스트의 setup이 60초 제한으로 편집 페이지를 한 번 열어 번들 전체를 적재하고, 모든 케이스는 5초 제한을 유지한다. 표식 `data-fsm-connected`는 network idle 대신 케이스가 기다리는 명시적 준비 신호로 남는다.
+  - 결정(연결 전 행 버튼): 표시가 설정되기 전까지 행 버튼은 포인터 클릭을 받지 않는다(위 CSS). 느린 네트워크에서는 모듈이 실행되기 전에 폼이 그려지므로 원리상 창이 존재한다. 이 규칙은 연결 전 포커스된 버튼의 키보드 실행을 막지 않는다(알려진 틈이다. 그때 폼은 예전처럼 아무것도 하지 않는다).
+  - 결정: 브라우저 테스트는 2026-10-11 의존성 검토가 최신 stable로 적은 Playwright release(1.64.0, `make dependency-review UPDATE=1 RECORD=1`로 기록)를 쓴다.
   - 폼과 아이콘(S-22-2): crudui stylesheet는 번들의 일부다. `make gui-build`가 `@polyspec/crudui-generator-core/styles/crudui.css`를 `public/assets/crudui.css`로 복사하고 `hyper-build-assets --static`에 넘긴다. 이 옵션은 layout이 링크하는 stylesheet를 정적 배포에 넣는다. layout은 `/assets/crudui.css`를 링크한다. `client/main.ts`의 import로 넣을 수는 없었다. esbuild가 두 번째 output을 쓰고, 빌드는 `hyper-chunk-*`가 아닌 output을 거부하기 때문이다(`the client build wrote N entry files`). 아이콘은 `public/favicon.ico`(ICO 파일)다. browser가 `/favicon.ico`를 요청하고, hyper 서버는 `public/`의 파일만 확장자로 서빙하기 때문이다(`.ico`는 `application/octet-stream`). 원시 바이트를 돌려주는 route는 없다. `scripts/make-favicon.mjs`가 이 파일을 쓴다. 행의 저장된 key는 `Key`, 새 상태의 새 key는 `New key`로 label을 붙인다. 이름 바꾸기 폼의 새 key label과 같다. 브라우저 테스트는 `button[data-crudui-action]`마다 crudui 크기(28px), `::before`의 아이콘 mask, 접근 가능한 이름을 확인하고, 행마다 label이 서로 다른지, `/favicon.ico`가 ICO로 응답하는지 확인한다.
 
 ### C-8. 문서 사이트 (`docs/.vitepress`, `make docs-build`)

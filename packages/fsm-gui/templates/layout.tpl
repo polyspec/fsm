@@ -15,6 +15,7 @@ pre { overflow-x: auto; background: #f5f5f7; padding: 12px; }
 .errors { border: 1px solid #c00; color: #900; padding: 8px 14px; margin-bottom: 20px; }
 .errors code { font-size: 13px; }
 .notice { color: #555; }
+#fsm-form:not([data-fsm-connected]) button[data-crudui-action] { pointer-events: none; }
 </style>
 <link rel="stylesheet" href="/assets/crudui.css">
 <link rel="icon" href="/favicon.ico">

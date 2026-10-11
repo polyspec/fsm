@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 2b561c2c87a93a27bb95c360a57ea81f30999027489a887c4d28d9d699ab2e84 -->
+<!-- source-sha256: a40b68701dd7568454d7fde5a082b2fd284ace3a8ba24fedf709f7cdb6fa0fca -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -50,7 +50,7 @@
 | S-22 | 계획(Verification)의 GUI 수동 확인을 json, mermaid, db store 각각으로 한다: 상태 추가·삭제·rename 후 저장, `fsm-gen check` 또는 `fsm-db check` 통과, 브라우저의 Mermaid 표시, 추가한 행의 제안 code. 트리와 store별 단계·결과를 `docs/verification/gui.md(.ko)`에 기록한다 | 실패한 단계는 새 하위 항목 RED → 모든 store의 모든 단계가 통과하고 기록됨 GREEN | [ ] |
 | S-22-1 | GUI 폼의 추가·삭제 버튼이 페이지의 행을 바꾼다: client가 form instance를 구독해 다시 렌더링한다(`patchContent(host, renderForm(form))` 뒤 `connection.sync()`). 이것이 crudui `connectForm`의 계약이다. S-22 확인에서 클릭이 instance만 바꾸고 페이지는 바꾸지 않음을 발견했고, handler 테스트로는 보이지 않는다. `packages/fsm-gui/tests`의 브라우저 테스트(고정한 Playwright, 임시 프로젝트로 띄운 GUI)가 이를 소유한다 | add 클릭 뒤 행 수가 그대로 RED → 제안 code를 가진 행이 나타나고, remove가 없애고, save가 저장 GREEN | [o] |
 | S-22-2 | GUI 폼을 쓸 수 있다: crudui stylesheet `@polyspec/crudui-generator-core/crudui.css`가 asset bundle에 들어가 행 버튼이 동작을 보여 주고, 모든 field가 구별되는 label을 가지며(저장된 key와 새 key가 둘 다 "Key"가 아님), `/favicon.ico`가 404 대신 icon을 준다 | 브라우저 테스트가 label 없는 행 버튼, 한 행의 같은 label 두 개, 404를 찾음 RED → GREEN | [o] |
-| S-22-3 | 브라우저 테스트가 network idle이 아니라 폼 자신의 준비 상태를 기다린다: Chromium 다운로드 뒤 첫 실행은 client가 폼을 연결하기 전에 클릭이 와서 실패했고, S-22-1은 원인을 찾지 않고 `waitForLoadState('networkidle')`로 덮었다. client가 connectForm이 폼을 묶으면 form host에 표시(`data-fsm-connected` 같은 attribute)를 하고, 테스트는 그 표시를 기다리며, 첫 실행 실패의 원인을 plan C-7에 기록한다 | load event 직후, 표시 전에 클릭하는 테스트가 실패 RED → 차가운 browser에서 표시를 기다리면 통과 GREEN | [ ] |
+| S-22-3 | 브라우저 테스트가 network idle이 아니라 폼 자신의 준비 상태를 기다린다: client가 connectForm이 폼을 묶으면 form host에 표시(`data-fsm-connected`)를 하고, 케이스는 그 표시를 기다리며, 표시 전에는 행 버튼이 클릭을 받지 않고, 첫 실행 실패의 원인을 찾아 plan C-7에 기록한다(새로 받은 Chromium의 첫 탐색이 2.5~12.4초로 케이스 제한 5초를 넘고, client는 `load` 전에 묶인다). 그래서 setup이 자기 제한으로 편집 페이지를 한 번 연다. 행의 첫 기준은 묶기 전 클릭을 가정했고, 차가운 시도 30회가 이를 반박했다 | 표식 없는 client에서 표식 테스트 실패, 새 다운로드의 첫 케이스가 12.4초에서 실패 RED → 표식 테스트 통과, 새 다운로드 네 번 통과 GREEN | [o] |
 | S-23 | rust backend가 모든 유효한 machine을 compile한다: event가 없는 machine(GUI new 화면이 만드는 것)은 variant 없는 enum에 `#[repr(i32)]`를 받아 rustc가 거부한다(E0084)(감사 1) | compiler 테스트와 event 없는 package machine을 cargo로 빌드 RED → GREEN | [ ] |
 | S-24 | php-ext backend가 모든 C 이름을 `--php-ext-name`에서 만든다: 옵션과 무관하게 machine `.c`가 `php_polyspec_fsm_test.h`와 `polyspec_fsm_test_arginfo.h`를 include하고 `Polyspec_FsmTest_Fsm_Error`를 쓴다(감사 2) | 두 번째 extension 이름의 backend 테스트와 그 phpize 빌드 RED → GREEN | [ ] |
 | S-25 | conformance machine이 정의를 덮는다: `machines/`에 event 없는 machine, underscore key machine, reserved code machine, code 2147483647 machine을 더해 여러 machine이 함께 돈다. go harness가 order 외 machine을 거부하지 않는다(key 표를 vectors_test.go에 생성). 모든 kind가 모든 vector를 통과한다(감사 3) | S-23·S-24 전에는 rust와 php-ext 결함으로 packages-test 실패 RED → 모든 kind 통과 GREEN | [ ] |
