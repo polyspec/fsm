@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 177b059d581fdb9ed835df860e6b064ba6eeadc82ba4d1e664f60d120802e3c2 -->
+<!-- source-sha256: 430752e0c7f21c5e7e3b41f8337a1162585e4fef3263a8d0257a057abf80eadf -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -284,7 +284,8 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
   - CLI를 프로세스로 실행: 새 database에서 `install`(설치 전 `check`는 table이 없어 실패하고 설치 뒤에는 통과), 두 번째 `install`, orm이 거부하는 부분 설치, `install`의 usage
   - transaction 원자성 RED
   - dialect 차이는 orm 자신의 conformance 책임이다.
-- 테스트(S-37): `make db-test`는 패키지의 모든 테스트를 SQLite에서 실행한다. `make db-test-postgres`와 `make db-test-mysql`은 `tests/db-store.test.mjs`와 `tests/store-contract-all.test.mjs`를 PostgreSQL과 MySQL에서 실행한다. 두 파일은 `tests/dialect.mjs`로 database를 연다. `FSM_TEST_DIALECT`가 dialect를 고른다(기본 `sqlite`, `postgres` 또는 `mysql`). `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, DSN이 없으면 throw하므로 target이 실패하고 case를 건너뛰지 않는다. 각 파일은 schema를 설치하고(database가 이미 schema를 가지면 install은 아무것도 바꾸지 않는다) case 전에 여섯 table을 비우므로, case는 자신이 쓴 것만 읽는다. 두 파일은 database를 공유하므로 `--test-concurrency=1`로 실행한다. CLI와 command 테스트는 SQLite에만 남는다. orm client 밖의 DDL 없이는 공유 서버에 fsm table이 없는 database를 만들 수 없기 때문이다(S-37-2).
+- 테스트(S-37): `make db-test`는 패키지의 모든 테스트를 SQLite에서 실행한다. `make db-test-postgres`와 `make db-test-mysql`은 `tests/db-store.test.mjs`, `tests/store-contract-all.test.mjs`, `tests/cli.test.mjs`와 `tests/command.test.mjs`를 PostgreSQL과 MySQL에서 실행한다. 두 파일은 `tests/dialect.mjs`로 database를 연다. `FSM_TEST_DIALECT`가 dialect를 고른다(기본 `sqlite`, `postgres` 또는 `mysql`). `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, DSN이 없으면 throw하므로 target이 실패하고 case를 건너뛰지 않는다. 각 파일은 schema를 설치하고(database가 이미 schema를 가지면 install은 아무것도 바꾸지 않는다) case 전에 여섯 table을 비우므로, case는 자신이 쓴 것만 읽는다. 파일들은 서버를 공유하므로 `--test-concurrency=1`로 실행한다. CLI와 command 테스트는 자기 빈 database를 쓴다(다음 항목).
+- 빈 database(S-37-2, 결정): CLI와 command 테스트는 fsm table이 없는 database가 필요하며, 공유 서버에는 그런 database가 없다. case마다 자신의 빈 database를 쓴다. SQLite에서는 case의 임시 디렉터리에 있는 새 파일이다. PostgreSQL과 MySQL에서는 `createEmptyDatabase`(`packages/fsm-db/tests/dialect.mjs`)가 admin DSN(`FSM_TEST_PG_ADMIN_DSN` 또는 `FSM_TEST_MYSQL_ADMIN_DSN`, 로컬에서는 `postgres://fsm@127.0.0.1:55432/fsm_test?sslmode=disable`와 `mysql://root@127.0.0.1:33306/mysql`)을 통해 `fsm_test_<pid>_<time>_<random>` 이름의 database를 만든다. PostgreSQL은 `FSM_TEST_PG_DSN`의 사용자를 새 database의 owner로 두고, MySQL은 `FSM_TEST_MYSQL_DSN`의 사용자 각 account(`mysql.user`에서 찾는다)에 그 database의 모든 권한을 준다. case는 자기 dialect의 DSN에 새 database를 경로로 넣어 연결하므로, 서버와 사용자는 변수의 것 그대로다. 파일의 `after` hook이 자기가 만든 database를 모두 지운다(PostgreSQL에서는 `DROP DATABASE ... WITH (FORCE)`). orm이 주지 않는 문(부분 schema의 `DROP TABLE`)은 dialect의 driver로 실행한다(`runStatement`). driver는 fsm-db의 devDependencies `pg` 8.23.1과 `mysql2` 3.24.5이며, orm v0.0.7이 쓰는 버전이다. 검토했으나 택하지 않은 방법: 파일마다 database 하나(case가 table을 바꾸므로 case마다 빈 database가 필요하다), case 전에 여섯 table을 지우기(install case는 table이 없어야 하고 orm에는 drop이 없다), case마다 schema 하나(MySQL에는 database 아래 schema가 없다). 테이블 없음 검사는 각 메시지에 있는 인용된 table 이름 `machine`을 확인한다. 테스트의 PostgreSQL 서버가 메시지를 한국어로 쓰기 때문이다.
 - 로컬 서버(S-37, 이 항목의 실행): PostgreSQL 17.11(`initdb`, `pg_ctl`, 실행마다 data 디렉터리와 socket 디렉터리)과 MySQL 8.4.11(`mysqld --initialize-insecure`, `--daemonize`)을 각각 포트 55432와 33306에 띄웠다. database는 `fsm_test`, 사용자는 `fsm`이다. DSN은 `postgres://fsm@127.0.0.1:55432/fsm_test?sslmode=disable`와 `mysql://fsm:fsm@127.0.0.1:33306/fsm_test`였다. 실행 뒤 서버를 멈추고 data 디렉터리를 지웠다.
 - S-21을 위한 CI service(`make install`과 `make check`를 실행하는 job에 복사할 줄; 이미지는 위 버전이다):
 ```yaml
@@ -313,6 +314,8 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
     env:
       FSM_TEST_PG_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
       FSM_TEST_MYSQL_DSN: mysql://fsm:fsm@127.0.0.1:3306/fsm_test
+      FSM_TEST_PG_ADMIN_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
+      FSM_TEST_MYSQL_ADMIN_DSN: mysql://root:root@127.0.0.1:3306/mysql
 ```
 - npm의 동시성과 persist 테스트(`make npm-persist-test`, `-postgres`, `-mysql`)는 같은 변수를 읽는다. 그 결정은 C-4에 적었다.
 

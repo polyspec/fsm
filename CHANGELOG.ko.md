@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 346a00969d683e7519bff7c827bb8bfaa3990bed56febf5fac62964ec35c4b65 -->
+<!-- source-sha256: 9c5f5b0350287858dca2f7a2ce06900334c41358aaaf8c8382e6121dcc673f33 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-37-2: fsm-db CLI와 command 테스트를 PostgreSQL과 MySQL에서도 실행한다(감사 23, 24). case마다 빈 database를 쓴다. SQLite에서는 새 파일이고, 서버에서는 admin DSN `FSM_TEST_PG_ADMIN_DSN` 또는 `FSM_TEST_MYSQL_ADMIN_DSN`을 통해 `createEmptyDatabase`(`packages/fsm-db/tests/dialect.mjs`)가 만든 새 database이며, 파일이 다시 지운다. `db-test-postgres`와 `db-test-mysql` target은 `cli.test.mjs`와 `command.test.mjs`도 실행하고 admin DSN을 요구한다. CLI 테스트는 테이블 없음 메시지의 인용된 table 이름을 확인한다. PostgreSQL 서버가 메시지를 한국어로 쓰기 때문이다. RED: PostgreSQL target의 테스트는 SQLite에서 돌아(조용한 통과), 그다음 서버 메시지 `relation "machine" does not exist`(서버는 한국어로 썼다)에서 실패했다. GREEN: 각 서버에서 36개 case가 통과한다. 결정과 CI service 줄은 계획 C-6에 있으며, fsm-db의 devDependencies `pg`와 `mysql2`는 고정되고 검토되었다.
 - S-37-1: go, rust, php, php-ext, python의 persist case도 PostgreSQL과 MySQL에서 실행한다(감사 23). 각 kind에 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`이 있고 `TOOL_TESTS`와 `CHECK_TARGETS`에 든다. 테스트는 `FSM_TEST_DIALECT`를 읽고, DSN을 `FSM_TEST_PG_DSN` 또는 `FSM_TEST_MYSQL_DSN`에서 받으며, 연결의 driver가 그 dialect인지 확인하고, persist table을 비운 뒤 case를 차례로 실행한다. DSN이 비어 있는 서버 target은 exit 2로 멈춘다(`require_dsn`). db와 npm의 서버 target도 같은 방식이다. RED: 테스트가 dialect를 읽기 전에는 PostgreSQL target이 SQLite case로 통과했다(go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다). PostgreSQL 17과 MySQL 8.4에서 모든 kind가 GREEN이다. 동시성 증명은 npm에 남는다(계획 C-4).
 - S-26-2: S-26-1이 찾은 README 사실을 실제 출력에 맞춘다. compiler README는 `vectors --kind go`에 `--go-module`을 적는다. python README는 명령이 쓰는 package `./app/order_fsm`을 적는다(실제로 실행했다; 예제는 `app/`을 module 경로에 넣고 import한다). `src/app_fsm`은 checkout에 없는 경로였다. go README는 persistence 발췌가 test bed의 model package `examples/model`을 import하며 소비자는 자기 것을 import한다고 밝히고, 발췌는 파일과 대조했다. RED: compiler 명령이 `--go-module` 없이 실패했고, python 설명이 명령이 쓰지 않는 경로를 적었다. GREEN: 문서의 명령을 모두 실행했고, 한국어 fenced block은 영어와 같다.
 - S-26-1-1: go vectors 파일은 자기 module의 machine package(`<module>/src/<machine>`)만 import하므로, 소비자의 `vectors --kind go` 파일은 소비자 module에서 vet된다. 생성되는 `decide`는 `examples.Decide`가 이름 붙이던 함수 타입을 반환하므로 파일이 test bed의 `examples`(orm model이 필요한)를 더 이상 import하지 않는다. persistence 예제는 test bed의 것으로 남는다. RED: 소비자 module에서 `go vet`이 `cannot find module providing package github.com/polyspec/fsm-go/examples`로 실패; GREEN: `packages/fsm-compiler/tests/go-backend.test.mjs`의 소비자 테스트가 통과하고, golden vectors 파일과 `packages/fsm-go/tests/vectors_test.go`를 다시 생성했으며, `make test-go`, `make parity-go`, `make gen-check`가 통과한다. plan C-2와 C-5가 결정을 기록한다.

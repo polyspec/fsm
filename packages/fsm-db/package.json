@@ -17,5 +17,9 @@
   },
   "overrides": {
     "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.7/polyspec-ordered-json-npm-0.0.7.tgz"
+  },
+  "devDependencies": {
+    "mysql2": "3.24.5",
+    "pg": "8.23.1"
   }
 }

@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: e04bcea4e6397ed34591939cfef044608068f2ee962fed90d138320b7a1f9e13 -->
+<!-- source-sha256: ca9305e6fd51092abda1d3a7febd9e6da696b387217889f943fe0ea3fbf6e419 -->
 # fsm 정의
 
 [English](fsm.md)
@@ -130,7 +130,7 @@ stateDiagram-v2
   - 세 store에서 `run`한 결과가 바이트 동일해야 한다. 모든 kind의 `gen`(필수 옵션 포함: go는 `goModule`, php와 php-ext는 `phpNamespace`, php-ext는 `phpExtName`)과 `vectors`, 그리고 모든 kind의 vectors 파일을 포함한다.
   - 필드를 떨어뜨리는 store(예: `final`)는 이 케이스들에 실패한다. core가 왕복을 거부하거나 바이트가 달라진다.
 
-- dialect(S-37): db store는 SQLite에서 모든 테스트를 받는다(`make db-test`). 그 store 테스트는 PostgreSQL 17과 MySQL 8.4에서도 돈다(`make db-test-postgres`, `make db-test-mysql`, 계획 C-6). DSN 형식은 `packages/fsm-db/README.ko.md`의 orm 형식이다.
+- dialect(S-37): db store는 SQLite에서 모든 테스트를 받는다(`make db-test`). 그 store, CLI, command 테스트는 PostgreSQL 17과 MySQL 8.4에서도 돈다(`make db-test-postgres`, `make db-test-mysql`, 계획 C-6). CLI 테스트는 admin DSN으로 빈 database를 만든다. DSN 형식은 `packages/fsm-db/README.ko.md`의 orm 형식이다.
 
 ## B-3. code 불변 (lock)
 - code는 정체성이고 key는 이름이다. 배포된 code는 의미를 바꾸거나 재사용할 수 없다.

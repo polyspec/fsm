@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mjs) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-11T05:10:21.919Z",
+  "reviewed": "2026-10-11T05:15:36.565Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -10,7 +10,7 @@
     },
     {
       "lock": "packages/fsm-db/package-lock.json",
-      "sha256": "6982f17b80864bacdd14823ef1229c38018b96c862c572d01f76183f94505562",
+      "sha256": "92774d04bbc17d07f7193cb6cf73dfa255a534a7ee1663099d16c1278b5b5ac3",
       "advisories": []
     },
     {
@@ -51,6 +51,20 @@
       "package": "vitepress",
       "version": "1.6.4",
       "latest": "1.6.4"
+    },
+    {
+      "ecosystem": "npm",
+      "manifest": "packages/fsm-db/package.json",
+      "package": "mysql2",
+      "version": "3.24.5",
+      "latest": "3.24.5"
+    },
+    {
+      "ecosystem": "npm",
+      "manifest": "packages/fsm-db/package.json",
+      "package": "pg",
+      "version": "8.23.1",
+      "latest": "8.23.1"
     },
     {
       "ecosystem": "npm",
