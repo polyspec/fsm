@@ -437,6 +437,7 @@ checks that the documents depend on can be run one at a time:
 |---|---|
 | `make readme-check` | every README pair has its required sections and a Korean twin with the same headings (`scripts/check-readmes.mjs`) |
 | `make readme-test` | the tests of that check |
+| `make workflows-test` | the CI and Pages workflows: every action is pinned to a verified commit, the check job runs `make install` and `make check` with the services of plan C-6, and each version comes from the file that declares it (`tests/workflows`) |
 | `make docs-build` | the documentation site builds; a dead link fails the build |
 | `make docs-build-test` | the site's dead-link failure and the real build |
 | `make documents-check` | every document has its Korean twin with a current `source-sha256` stamp, and its links are valid |
@@ -444,6 +445,8 @@ checks that the documents depend on can be run one at a time:
 | `make gui-test`, `make compiler-test`, `make db-test` | the tests of each tool |
 | `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | the DB store, CLI and command tests, the persistence concurrency proof of npm and the persist cases of each kind on PostgreSQL and MySQL; they read `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` (and `FSM_TEST_PG_ADMIN_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN` for the empty databases of the CLI tests), stop with exit 2 without them, and skip no dialect (plan C-6). The tests run on SQLite too (`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
 | `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | the tests of each language package |
+
+CI (`.github/workflows/ci.yml`) runs `make install` and then `make check` on every push to main, with PostgreSQL and MySQL services. The documentation site is published to https://polyspec.github.io/fsm/ by `.github/workflows/pages.yml`.
 
 The conformance tests of each language package run the same vector cases, one test per case, named `test_<feature>__<id>`.
 `make gen-check` checks that the generated files of the packages are the ones that `fsm-gen` writes today.

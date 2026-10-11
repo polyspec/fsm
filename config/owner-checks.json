@@ -350,6 +350,15 @@
     },
     {
       "paths": [
+        ".github/workflows/**",
+        "tests/workflows/**"
+      ],
+      "targets": [
+        "workflows-test"
+      ]
+    },
+    {
+      "paths": [
         "tests/install-python/**"
       ],
       "targets": [

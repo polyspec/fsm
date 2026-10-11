@@ -1,0 +1,88 @@
+# Continuous integration (docs/plans/fsm-v1.md, C-10 and Verification; docs/plans/execution-checklist.md, S-21). One job runs
+# `make install` and then `make check`, the full suite of the repository, with the PostgreSQL and MySQL services of plan C-6.
+# The versions come from the files that declare them: Node.js from .node-version, Go from packages/fsm-go/go.mod, PHP from
+# config/toolchain.json, Rust from rust-toolchain.toml and uv from the pin of plan C-10. The workflow runs on every push to
+# main and on a manual run (workflow_dispatch). A newer push does not cancel the run of an earlier one.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+# rustup installs no toolchain on the first cargo; the job installs the toolchain of rust-toolchain.toml first.
+env:
+  RUSTUP_AUTO_INSTALL: '0'
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: fsm
+          POSTGRES_PASSWORD: fsm
+          POSTGRES_DB: fsm_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fsm -d fsm_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: fsm
+          MYSQL_PASSWORD: fsm
+          MYSQL_DATABASE: fsm_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      FSM_TEST_PG_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
+      FSM_TEST_MYSQL_DSN: mysql://fsm:fsm@127.0.0.1:3306/fsm_test
+      FSM_TEST_PG_ADMIN_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
+      FSM_TEST_MYSQL_ADMIN_DSN: mysql://root:root@127.0.0.1:3306/mysql
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .node-version
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: packages/fsm-go/go.mod
+          cache: false
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.5'
+          extensions: pdo_pgsql, pdo_mysql
+      - name: Install the Rust toolchain of rust-toolchain.toml
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)" --profile minimal
+      - name: Install uv, the version of plan C-10
+        run: |
+          pipx install uv==0.12.11
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install the toolchains and the package dependencies
+        run: make install
+      - name: Install the system libraries of Chromium
+        run: sudo env PATH="$PATH" npx playwright install-deps chromium
+        working-directory: packages/fsm-gui
+      - name: Run the full suite
+        run: make check
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: full-run
+          path: |
+            var/full-run.json
+            .results/
+          if-no-files-found: error

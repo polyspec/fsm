@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 6c9a5568e410abc053063770130f4acf67944ac659c84db5b7e97ff3e9f1b69b -->
+<!-- source-sha256: 40a2c08bf4198986b753db92707426e2015c6915f25ff94b8774a9df6132ed1e -->
 # polyspec/fsm
 
 [English](README.md)
@@ -427,6 +427,7 @@ $ fsm-gen check --project ./broken
 |---|---|
 | `make readme-check` | 모든 README 쌍이 필수 절과, 같은 제목을 가진 한국어 짝을 가지는지(`scripts/check-readmes.mjs`) |
 | `make readme-test` | 그 검사의 테스트 |
+| `make workflows-test` | CI와 Pages 워크플로: 모든 action이 검증된 commit에 고정되고, check job이 `make install`과 `make check`를 C-6의 서비스와 함께 실행하며, 각 버전이 그것을 선언하는 파일에서 오는지(`tests/workflows`) |
 | `make docs-build` | 문서 사이트가 빌드된다. dead link는 빌드를 실패시킨다 |
 | `make docs-build-test` | 사이트의 dead link 실패와 실제 빌드 |
 | `make documents-check` | 모든 문서에 현재의 `source-sha256` stamp를 가진 한국어 짝이 있고 링크가 유효한지 |
@@ -434,6 +435,8 @@ $ fsm-gen check --project ./broken
 | `make gui-test`, `make compiler-test`, `make db-test` | 각 도구의 테스트 |
 | `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | PostgreSQL과 MySQL에서의 DB store, CLI, command 테스트, npm의 영속화 동시성 증명, 각 kind의 persist case. `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`을 읽고(CLI 테스트의 빈 database에는 `FSM_TEST_PG_ADMIN_DSN`과 `FSM_TEST_MYSQL_ADMIN_DSN`도 읽으며), 없으면 exit 2로 멈추고 dialect를 건너뛰지 않는다(계획 C-6). SQLite에서도 돈다(`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
 | `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | 각 언어 패키지의 테스트 |
+
+CI(`.github/workflows/ci.yml`)는 main에 push될 때마다 `make install`과 `make check`를 실행하며, PostgreSQL과 MySQL 서비스를 띄운다. 문서 사이트는 `.github/workflows/pages.yml`이 https://polyspec.github.io/fsm/ 에 게시한다.
 
 각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 `test_<feature>__<id>`다.
 `make gen-check`는 패키지의 생성 파일이 `fsm-gen`이 지금 쓰는 파일과 같은지 검사한다.

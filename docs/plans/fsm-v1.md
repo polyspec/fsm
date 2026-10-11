@@ -398,6 +398,17 @@ Vectors (exhaustive; the core generates the oracle):
 - A Korean fenced code block is identical to its English block (`documents-check` requires it), so code and command output are not translated; the prose around them is.
 - The tests are `tests/check-readmes/` (`make readme-test`); `make readme-check` runs the check on the repository.
 
+### C-10. CI and Pages (S-21)
+- `.github/workflows/ci.yml` runs on every push to main and on a manual run (workflow_dispatch). Its one job, `check`, runs on ubuntu-24.04 and calls exactly two targets: `make install`, then `make check`, the full suite of CHECK_TARGETS. Before `make check` it runs `npx playwright install-deps chromium` in `packages/fsm-gui` with sudo (the system libraries of the Chromium that `gui-browser-test` drives; the browser itself is installed by `make check` through `gui-browsers`).
+- The job starts PostgreSQL 17 and MySQL 8.4 as services and sets the four `FSM_TEST_*` variables. Its services and env are the yaml block of C-6, copied exactly; `make workflows-test` requires the job to contain that block, so the plan and the workflow cannot drift apart.
+- The versions come from the files that declare them: Node.js from `.node-version` (setup-node); Go from `packages/fsm-go/go.mod` (setup-go, no module cache); PHP from `config/toolchain.json` (`php`, through setup-php with the extensions `pdo_pgsql` and `pdo_mysql`, which the php-ext build and the persistence tests need); Rust from `rust-toolchain.toml`, installed with rustup in the minimal profile, because `RUSTUP_AUTO_INSTALL` is `0`.
+- uv is pinned in this plan as `uv==0.12.11` and installed by `pipx install` in the workflow. Decision: no file of the checkout pinned uv before S-21, and `config/toolchain.json` cannot hold the pin, because its schema (vendored in `scripts/kit/schema`) forbids keys it does not name. `make workflows-test` requires the workflow to install that version.
+- Every action is pinned by its full commit with a version comment (`# vX`, or the tag where the tag has no `v`). The commits are the ones that the template repository verified for the same versions.
+- The job uploads `var/full-run.json` and `.results/` as an artifact under `!cancelled()`, so a failed run still keeps its record.
+- `.github/workflows/pages.yml` runs on every push to main and on a manual run. It runs `make docs-build` with `VITEPRESS_BASE=/fsm/` (the base of the site, read by `docs/.vitepress/config.mts`), uploads `docs/.vitepress/dist` with upload-pages-artifact and deploys it with deploy-pages. The site is published at https://polyspec.github.io/fsm/.
+- Both workflows set `permissions: contents: read` at the top level, and their concurrency group does not cancel a run: a newer push does not cancel the run of an earlier one.
+- The tests are `tests/workflows/` (`make workflows-test`). They read the workflows as text and need no network: every pin, the two make calls of the check job, the services and env, the versions, the artifact, the base of the site and the deployment.
+
 ## D. Checklist and owner checks
 
 The state of every item is in [docs/plans/execution-checklist.md](execution-checklist.md), the only checklist of this plan (AGENTS.md, Checklist). This section holds no state. The kit items K17 to K19 are items of the kit repository, not of this checklist; section E names them.
@@ -436,6 +447,7 @@ owner-checks mapping (each item adds its own part):
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `install-python-test` (`tests/install-python`: the install-python recipe in a temporary checkout with a stub uv, S-11-3)
   - `python-lock-test` (`tests/check-python-lock`: the lock rules on fixtures and on the committed uv.lock, S-34) and `python-lock-check` (the same rules on `packages/fsm-python`)
+  - `workflows-test` (`tests/workflows`: the CI and Pages workflows, their pins, versions and services, C-10, S-21)
   - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
   - `test-<kind>`, `parity-<kind>` (`parity-<kind>: test-<kind>`), `packages-test` (the `test-<kind>` of `kinds` with `make -j6`)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
