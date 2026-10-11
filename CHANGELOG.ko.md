@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ba8f53524f58453c42115e7915303c8dfb6372fba3b4b64882196f9d5d2ed948 -->
+<!-- source-sha256: aa6472dab52d5380c853898fcea56bc7c9abf9a4f6c0df52c3e328b98020937b -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-32: 컴파일러의 import를 명시하고 테스트한다(계획 C-5). `packages/fsm-compiler/src`는 `node:` 내장 모듈, 자기 파일, 이 clone의 벤더 kit(`scripts/kit/`)만 import하고 npm 패키지는 import하지 않는다. 계획은 의존성 0이라 했지만 kit import와 모순이었다. `tests/imports.test.mjs`가 `src`의 모든 import specifier(정적, 동적, 상대 경로)를 검사하고 그 집합 밖이면 실패한다. `src/core`는 `node:` 모듈을 import하지 않는다(감사 5).
 - S-27: `name-check`는 줄이 아니라 옛 이름의 출현마다 판정한다. 허용 구절은 줄에서 지운 뒤 남은 부분을 다시 검사한다. CHANGELOG 항목은 rename까지(S-01부터 S-18까지)의 bullet만 허용하고, model 항목은 orm-gen이 상태 열을 위해 쓰는 helper와 열 이름만 허용한다. 줄 전체를 허용하던 항목은 정확한 구절만 허용하며, 감사 probe 줄은 finding이다(`tests/check-name/`의 RED 테스트). rename 잔재를 고쳤다: Makefile 주석, 컴파일러와 gen-check 테스트 helper 주석, python과 rust 예제의 상태 열용 `status_of`(감사 6, 12).
 - S-19: 사용자 문서(R11, 계획 C-9). 루트 README와 모든 패키지 README(영어와 한국어)가 사용자에게 라이브러리를 설명한다: fsm이 무엇이고 무엇이 아닌지, JSON, Mermaid, database의 order 예제로 보는 모델, code와 lock, `apply`로 하는 전이와 `expected`가 재시도를 멱등하게 만드는 이유, 모든 검증 code, 프로젝트 파일, 요구사항과 설정, 모든 `fsm-gen` 명령과 옵션의 실제 출력과 종료 코드, 생성 이름, 검사. `packages/fsm-compiler/README.md`는 새로 만들었다(구조, store 계약, 명령, backend 옵션, vector). database와 GUI README는 필수 절을 추가했다(GUI는 Tests 절을 유지). 각 언어 README는 생성 명령, 생성 파일, apply 예제가 있는 API, 오류, `examples/persist.*`의 영속화 패턴, 테스트를 설명한다. `scripts/check-readmes.mjs`(`make readme-check`, 테스트는 `tests/check-readmes/`)는 각 README의 절과 같은 제목을 가진 한국어 짝을 요구한다. 문서를 쓰기 전에는 54개 검사 결과를 냈다. `make docs-build`는 새 페이지로 사이트를 빌드한다.
 - S-30: 커밋된 code는 lock을 잃어도 의미가 바뀌지 않는다(R1, 명세 B-3·B-5). 모든 store의 `load()`는 커밋된 lock을 `baseline`으로 돌려준다(json·mermaid는 git HEAD의 `fsm.lock.json`, db는 저장된 행). `check`, `gen`, `vectors`, `lock`, `save`, `copy`는 커밋된 code를 잃거나, 커밋된 reserved code를 상태에 주거나, 커밋된 key를 다른 code로 옮기는 lock을 `E_LOCK_REGRESSED`로 거부한다. 이름 변경은 커밋 전에도 받아들인다. 감사 사례(code 두 개를 바꾸고 `fsm.lock.json`을 비운 뒤 `lock`)는 `lock: ok`를 출력했으나 이제 거부된다. git 밖이나 추적되지 않는 lock은 커밋된 것이 없으므로 저장된 lock만 판정한다. db store에서 SQL로 바뀐 행은 감지하지 못한다. `lock`은 커밋된 code를 유지할 때만 삭제된 lock을 복구한다.
