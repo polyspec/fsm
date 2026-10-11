@@ -147,6 +147,8 @@ $ fsm-db copy --from json --root ./order-machines --project ./order-machines
 [fsm-db] E_STORE_NOT_EMPTY - $: the target store is not empty, so copy writes nothing
 $ fsm-db copy --to json --root ./exported --project ./order-machines
 [fsm-db] copy: ok
+$ fsm-db copy --to mermaid --root ./exported-mmd --project ./order-machines
+[fsm-db] copy: ok
 ```
 
 ### Exit codes

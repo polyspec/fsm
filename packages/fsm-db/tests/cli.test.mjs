@@ -4,11 +4,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { DatabaseSync } from 'node:sqlite';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { after } from 'node:test';
 import { jsonStore } from '../../fsm-compiler/src/store-json/store.mjs';
+import { mermaidStore } from '../../fsm-compiler/src/store-mermaid/store.mjs';
+import { dbStore } from '../src/db-store.mjs';
 import { SCHEMA, connect } from '../src/models/models.ts';
 
 const CLI = new URL('../src/cli/fsm-db.mjs', import.meta.url).pathname;
@@ -168,4 +170,98 @@ test('install takes only --project: any other option or a missing value exits 2 
   const missing = cli(['install', '--project'], p);
   assert.equal(missing.status, 2);
   assert.match(missing.stderr, /--project needs a value/);
+});
+
+/** The lock of the database and its definitions, read through the DB store (the rows of the six tables). */
+async function rowsOf(dsn) {
+  const db = await connect(dsn);
+  try {
+    return await dbStore(db).load();
+  } finally {
+    await db.close();
+  }
+}
+
+/** A canonical mermaid checkout with the same machine as checkout(), written by the mermaid store, and its root. */
+async function mermaidCheckout(name = 'order') {
+  const root = mkdtempSync(path.join(tmpdir(), 'fsm-db-mmd-'));
+  temp.push(root);
+  await mermaidStore(root).save({
+    definitions: [{
+      machine: name,
+      states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
+      events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
+    }],
+    lock: { [name]: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },
+  });
+  return root;
+}
+
+test('lock --rename renames the state in the rows and keeps its code: the output is ok and the rows after hold the new key', async () => {
+  const p = await project();
+  const source = await checkout();
+  assert.equal(cli(['copy', '--from', 'json', '--root', source], p).status, 0);
+  const renamed = cli(['lock', '--rename', 'order.draft=created'], p);
+  assert.equal(renamed.status, 0, renamed.stderr);
+  assert.equal(renamed.stdout, '[fsm-db] lock: ok\n');
+  assert.equal(renamed.stderr, '');
+  const { definitions, lock } = await rowsOf(p.dsn);
+  assert.deepEqual(definitions, [{
+    machine: 'order',
+    states: [{ key: 'created', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
+    events: [{ key: 'next', edges: [{ from: 'created', to: 'done' }] }],
+  }]);
+  assert.deepEqual(lock, { order: { codes: { 1: 'created', 2: 'done' }, reserved: [] } });
+  assert.equal(cli(['check'], p).status, 0);
+});
+
+test('lock --rename of an unknown state is the finding of the README and writes no row', async () => {
+  const p = await project();
+  const source = await checkout();
+  assert.equal(cli(['copy', '--from', 'json', '--root', source], p).status, 0);
+  const before = await rowsOf(p.dsn);
+  const result = cli(['lock', '--rename', 'order.nope=x'], p);
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr, '[fsm-db] E_UNKNOWN_STATE_REF order $.states: state nope is not a state of order\n');
+  assert.deepEqual(await rowsOf(p.dsn), before);
+});
+
+test('copy --to mermaid --root writes the canonical mermaid files and the lock of the database', async () => {
+  const p = await project();
+  const source = await checkout();
+  assert.equal(cli(['copy', '--from', 'json', '--root', source], p).status, 0);
+  const out = mkdtempSync(path.join(tmpdir(), 'fsm-db-out-'));
+  temp.push(out);
+  const result = cli(['copy', '--to', 'mermaid', '--root', out], p);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, '[fsm-db] copy: ok\n');
+  assert.equal(result.stderr, '');
+  const expected = await mermaidCheckout();
+  assert.equal(readFileSync(path.join(out, 'machines/order.fsm.mmd'), 'utf8'), readFileSync(path.join(expected, 'machines/order.fsm.mmd'), 'utf8'));
+  assert.equal(readFileSync(path.join(out, 'fsm.lock.json'), 'utf8'), readFileSync(path.join(expected, 'fsm.lock.json'), 'utf8'));
+  assert.deepEqual(readdirSync(path.join(out, 'machines')), ['order.fsm.mmd']);
+});
+
+test('copy --from mermaid --root fills the empty database; a second copy is E_STORE_NOT_EMPTY and writes nothing', async () => {
+  const p = await project();
+  const source = await mermaidCheckout();
+  const result = cli(['copy', '--from', 'mermaid', '--root', source], p);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, '[fsm-db] copy: ok\n');
+  assert.deepEqual(await rowsOf(p.dsn), {
+    definitions: [{
+      machine: 'order',
+      states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
+      events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
+    }],
+    lock: { order: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },
+    findings: [],
+  });
+  const before = await rowsOf(p.dsn);
+  const again = cli(['copy', '--from', 'mermaid', '--root', source], p);
+  assert.equal(again.status, 1);
+  assert.equal(again.stdout, '');
+  assert.equal(again.stderr, '[fsm-db] E_STORE_NOT_EMPTY - $: the target store is not empty, so copy writes nothing\n');
+  assert.deepEqual(await rowsOf(p.dsn), before);
 });
