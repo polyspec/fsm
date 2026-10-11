@@ -124,11 +124,12 @@ parity-rust: test-rust
 	node scripts/check-parity.mjs --kind rust
 # install-python installs Python 3.14 (config/toolchain.json python) with uv and links var/tools/bin/python3 to it, as install-tools
 # puts the other declared tools into var/tools. The interpreter is uv's managed install, so the link never points outside the
-# checkout's tools; no system path changes. ONLINE, because uv downloads the interpreter. The PATH above puts var/tools/bin first,
+# checkout's tools; no system path changes. --no-bin keeps uv from writing an executable into a user bin directory
+# (~/.local/bin by default). ONLINE, because uv downloads the interpreter. The PATH above puts var/tools/bin first,
 # so toolchain-check and the python package use this python3.
 UV ?= uv
 install-python:
-	$(ONLINE) $(UV) python install 3.14
+	$(ONLINE) $(UV) python install --no-bin 3.14
 	mkdir -p var/tools/bin
 	p="$$($(UV) python find --managed-python 3.14)" && test -x "$$p" && ln -sfn "$$p" var/tools/bin/python3
 

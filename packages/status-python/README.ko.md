@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: 23a7925c9b8adb5e6b465f6fedf097ddb7677814e4148b2b82b2f8f9ebfb6545 -->
+<!-- source-sha256: fa2df46bcac5b269b4d0f79aa7fa99afb4b4c81916246ecc656485ab83def036 -->
 # polyspec-status-python
 
 [English](README.md)
@@ -22,8 +22,9 @@ status 정의에서 생성된 python 코드를 어떻게 쓰는지 보여 주고
 checkout은 `config/toolchain.json`(`"python": "3.14"`)에서 Python 3.14를 선언한다. 이 패키지는 시스템의 `python3`를 쓰지 않는다.
 macOS의 `/usr/bin/python3`은 3.9이며, orm client는 Python 3.11 이상을 요구한다.
 
-- `make install-python`(온라인, 루트에서 실행)은 uv로 Python 3.14를 설치하고 `var/tools/bin/python3`를 그것에 연결한다. 이 연결이
-  유일한 변경이며 checkout 안에만 남는다. 시스템 경로는 바뀌지 않는다.
+- `make install-python`(온라인, 루트에서 실행)은 Python 3.14를 uv 자체 store에 설치하고(`uv python install --no-bin`이므로 uv는
+  `~/.local/bin` 같은 사용자 bin directory에 아무것도 쓰지 않는다) `var/tools/bin/python3`를 그것에 연결한다. checkout 안에서는 이
+  연결이 유일한 변경이며, 시스템 경로는 바뀌지 않는다.
 - `make install`(온라인)은 `PYTHON`이 이름 붙인 인터프리터(기본값은 루트의 `var/tools/bin/python3`의 절대 경로이며 PATH 조회가 아니다)로
   `.venv`를 만들고, 다른 minor release이면 거부하며, 이 패키지를 editable 모드와 의존성과 함께 설치한다. orm client는
   `pyproject.toml`에서 git tag `v0.0.7`로 고정된다.
