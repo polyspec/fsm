@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: c8d31087a27ef60286a44a31181c22b70a6150133b63506525f831dcf70c0dc8 -->
+<!-- source-sha256: 3730bdb32009657af9fafab47d4d9aa673c4e9bbf5494862e77636b66564304b -->
 # fsm 정의
 
 [English](fsm.md)
@@ -130,6 +130,8 @@ stateDiagram-v2
   - 세 store에서 `run`한 결과가 바이트 동일해야 한다. 모든 kind의 `gen`(필수 옵션 포함: go는 `goModule`, php와 php-ext는 `phpNamespace`, php-ext는 `phpExtName`)과 `vectors`, 그리고 모든 kind의 vectors 파일을 포함한다.
   - 필드를 떨어뜨리는 store(예: `final`)는 이 케이스들에 실패한다. core가 왕복을 거부하거나 바이트가 달라진다.
 
+- dialect(S-37): db store는 SQLite에서 모든 테스트를 받는다(`make db-test`). 그 store 테스트는 PostgreSQL 17과 MySQL 8.4에서도 돈다(`make db-test-postgres`, `make db-test-mysql`, 계획 C-6). DSN 형식은 `packages/fsm-db/README.ko.md`의 orm 형식이다.
+
 ## B-3. code 불변 (lock)
 - code는 정체성이고 key는 이름이다. 배포된 code는 의미를 바꾸거나 재사용할 수 없다.
 - lock = `{machine: {codes: {code: key}, reserved: [code…]}}`. lock은 `lock`(손으로 편집한 정의용), `save`(GUI), `copy`(원본을 B-5 전 규칙으로 검증한 뒤 원본 lock을 그대로 쓴다)만 갱신한다. `lock`과 `save`는 같은 lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`, `E_LOCK_REGRESSED`, 사라진 code → reserved)을 적용하고, 셋 모두 정의와 lock을 같은 `store.save`로 쓴다.
@@ -186,6 +188,8 @@ stateDiagram-v2
 - Rust(S-31): transaction은 orm `db.transaction`이다. 이는 orm v0.0.7의 재시도 transaction이며(deadlock이면 콜백을 다시 실행하고, 기본은 세 번이다), 한 번만 실행하는 `transaction_once`가 아니다. rust 콜백은 `Fn`이다. `decide`는 machine 오류를 값으로 돌려준다(`Failure::Machine`). `transaction`의 콜백은 orm 오류로만 실패하고, machine 오류는 어떤 쓰기보다 먼저 나므로 transaction은 아무것도 커밋하지 않는다. 재실행은 `persist_runs_again_on_a_deadlock`(`packages/fsm-rust/tests/persist_retry.rs` (`make rust-persist-test`))이 증명한다. 첫 시도의 DEADLOCK이 콜백을 두 번째로 실행한다. deadlock이 아닌 데이터베이스 오류는 한 번 시도한 뒤 돌려준다(`persist_does_not_run_again_on_another_error`). orm v0.0.7에 재시도가 있으므로 layout.json에 차이를 적지 않는다.
 - transaction + `forUpdate()`를 쓰고 조건부 문 하나(`UPDATE … SET <status column> = to WHERE id = x AND <status column> = expected`, 영향 행 수가 1일 때 승인)를 쓰지 않는 이유: orm v0.0.7의 공개 model API에는 그런 update가 없다. model `update`는 바뀐 열을 기본 키로 한 행에 쓴다(`packages/orm-rust/orm/src/model.rs`, `update`, 약 1067행). 그 유일한 조건은 갱신 시각 열의 optimistic 검사인 `update(true)`이고(`docs/dsl.md`), 쓰기는 영향 행 수를 호출자에게 돌려주지 않는다. 수는 그 검사를 위해서만 읽힌다(`model.rs` 약 858–862행). 내부 catalog는 행 수를 센다(`packages/orm-rust/orm-build/src/catalog/mutation.rs`, 약 201–204행). 그러나 공개 호출 중 수를 돌려주는 것은 없다. 그래서 잠금을 쓴다.
 - orm이 술어가 status column을 이름 짓고 영향 행 수를 호출자에게 돌려주는 update를 공개하면 이 규칙을 다시 본다. 그때 조건부 문 하나가 잠금을 대신하며, 이 절은 같은 항목에서 바뀐다.
+
+- dialect(S-37): 모든 kind는 패턴을 SQLite에서 테스트한다. npm은 동시성과 persist case를 PostgreSQL과 MySQL에서도 실행한다(`make npm-persist-test-postgres`, `make npm-persist-test-mysql`, 계획 C-4). `forUpdate()`가 없으면 같은 (expected, event)의 두 전이가 두 서버 모두에서 Changed를 보고하므로, 이 테스트가 잠금을 증명한다.
 
 ## B-5. 검증 규칙 (오류 코드 1개 = RED 케이스 1개, warning 없음)
 - finding: core `validate(definitions)`는 모든 finding을 `{code, machine, path, message}`로 돌려준다. `path`는 머신 객체 안의 JSON 경로(`$.states[1].code`), `machine`은 그 key이며, 정의에 문자열 key가 없으면 null이다. finding은 머신 안에서는 문서 순서, 머신 사이에서는 입력 순서를 따른다. `E_SCHEMA` finding이 있는 머신은 다른 finding을 받지 않는다. GUI는 `path`를 폼 필드에 연결하고, 필드가 없는 finding은 폼 오류로 보인다.

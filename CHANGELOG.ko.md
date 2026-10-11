@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ad4cd2423effd895474bb8c9905924fef1e2c869fe49a986d92cbafcfe97c19d -->
+<!-- source-sha256: 51daddfbd252c0d042bdd67fec1b5b15e8043fd4567bd48729c0bd1b3aeede2a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-37: 영속화와 DB store를 SQLite, PostgreSQL, MySQL에서 증명한다(감사 23, 24). `packages/fsm-npm/tests/persist-dialects.test.mjs`는 한 row의 전이 두 개를 두 연결에서 동시에 실행한다. 같은 (expected, event)는 Changed 하나와 Unchanged 하나를, 한 expected 상태의 서로 다른 event 두 개는 Changed 하나와 E_CONFLICT 하나를 낸다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이기 때문이다. `forUpdate()`가 없으면 PostgreSQL과 MySQL에서 두 전이가 모두 Changed를 보고한다(RED). `make db-test-postgres`와 `make db-test-mysql`은 `packages/fsm-db/tests/dialect.mjs`를 통해 두 서버에서 DB store 테스트와 store 계약을 실행한다. `FSM_TEST_PG_DSN`이나 `FSM_TEST_MYSQL_DSN`이 없으면 target이 실패하며 case를 건너뛰지 않는다(RED: 변수 없이 실행하여 실패를 확인). 문서는 테스트한 dialect를 적는다(명세 B-2, B-4; fsm-db README; 루트 README). S-21을 위한 CI service 줄은 계획 C-6에 있다.
 - S-31-1: layout 계약이 rust retry test를 허용한다(S-31 감사). `contracts/layout.json`은 `tests/persist_retry.rs`를 차이로 선언했지만 check-layout은 그 파일이 rust의 허용 glob에도 있을 것을 요구한다. S-31 commit은 layout-check를 실행하지 않아 이를 놓쳤다. `make layout-check`와 `make layout-test`가 통과한다.
 - S-31: rust 영속화 예제가 deadlock을 재시도한다(명세 B-4). `examples/persist.rs`는 콜백을 한 번만 실행하는 `transaction_once`를 썼지만, B-4는 deadlock이면 orm이 콜백을 다시 실행한다고 적는다. 이제 orm v0.0.7의 `transaction`을 쓴다(기본 세 번 재시도). 콜백은 `Fn`이다. machine 오류는 `transaction` 콜백이 orm 오류로만 실패하므로 값으로 돌려준다. `persist_runs_again_on_a_deadlock`(RED: 한 번 시도, 기대는 두 번)과 `persist_does_not_run_again_on_another_error`가 `packages/fsm-rust/tests/persist_retry.rs` (`make rust-persist-test`)에 있다. 명세 B-4는 조건부 update 하나 대신 transaction + `forUpdate()`로 잠그는 이유를 적는다. orm v0.0.7에는 영향 행 수를 돌려주는 공개 update가 없고, 이를 다시 볼 조건을 함께 적는다.
 - S-39: go test 파일과 겹치는 machine key를 예약한다(스펙 B-5). `examples`, `vectors`, `machines`, `expectation`, `lookup`은 `fsm-gen check`를 통과하면서도 `packages/fsm-go`의 `go test ./...`를 깨뜨리므로(import 이름 중복, 또는 import로 이미 선언된 package 이름) 이제 `E_KEY_RESERVED`로 거부한다. `tests`는 측정에서 빌드되므로 예약하지 않는다. S-39 행은 이 이름을 들었으나, 측정이 그것을 바로잡는다.

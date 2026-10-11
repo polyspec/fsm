@@ -10,14 +10,14 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/fsm-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test docs-build-test gui-browser-test readme-test install-python-test make-install-test rust-persist-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test docs-build-test gui-browser-test readme-test install-python-test make-install-test rust-persist-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test
 
 
 
@@ -147,6 +147,17 @@ gen-check-test:
 gen-check: $(NPM_DEP) $(GO_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP)
 	node scripts/gen-check.mjs
 
+# db-test-postgres and db-test-mysql run the DB store tests on the server dialects that the documents name (docs/plans/fsm-v1.md, C-6):
+# db-store.test.mjs and store-contract-all.test.mjs, which open the database of FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN through the dialect
+# helper of tests/dialect.mjs. The DSN names an existing database; a missing DSN fails the target and never skips it. The two files
+# share the database, so they run one after the other. The CLI and command tests stay on SQLite (docs/plans/execution-checklist.md, S-37-2).
+DB_DIALECT_TESTS := packages/fsm-db/tests/db-store.test.mjs packages/fsm-db/tests/store-contract-all.test.mjs
+db-test-postgres: $(DB_DEP)
+	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs node --results .results/db-test-postgres.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- --test-concurrency=1 $(DB_DIALECT_TESTS)
+
+db-test-mysql: $(DB_DEP)
+	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs node --results .results/db-test-mysql.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- --test-concurrency=1 $(DB_DIALECT_TESTS)
+
 # db-deps installs the packages of packages/fsm-db (orm and ordered-json from their release tarballs, pinned in its
 # package-lock.json). db-test runs the tests of packages/fsm-db: the DB store against the store contract, the round trips
 # of json and db, the atomicity of save, the CLI, and the generated models, which orm-gen must reproduce from schema/fsm.dbs
@@ -197,6 +208,19 @@ packages-test:
 # test-npm runs the tests of packages/fsm-npm: the conformance cases and the persist example (docs/plans/fsm-v1.md, C-2).
 test-npm: $(NPM_DEP)
 	$(MAKE) -C packages/fsm-npm test
+
+# npm-persist-test runs tests/persist-dialects.test.mjs of packages/fsm-npm: two concurrent transitions of one row give one Changed and one
+# Unchanged, and two events from one expected state give one Changed and one E_CONFLICT (docs/spec/fsm.md, B-4; docs/plans/fsm-v1.md, C-4).
+# The three targets run it on each dialect: sqlite (a temporary file), postgres (FSM_TEST_PG_DSN) and mysql (FSM_TEST_MYSQL_DSN).
+NPM_PERSIST_TESTS := packages/fsm-npm/tests/persist-dialects.test.mjs
+npm-persist-test: $(NPM_DEP) $(DB_DEP)
+	FSM_TEST_DIALECT=sqlite node scripts/kit/run-tests.mjs node --results .results/npm-persist-test.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
+
+npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP)
+	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs node --results .results/npm-persist-test-postgres.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
+
+npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP)
+	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs node --results .results/npm-persist-test-mysql.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
 
 # npm-types runs tests/types.test.mjs of packages/fsm-npm: tsc compiles tests/types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/execution-checklist.md, S-09-2). It is a tool test with

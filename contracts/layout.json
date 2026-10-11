@@ -50,7 +50,8 @@
         "src/*.d.ts",
         "examples/model/**",
         "tests/types.test.mjs",
-        "tests/types/**"
+        "tests/types/**",
+        "tests/persist-dialects.test.mjs"
       ],
       "generated": [
         "src/**",
@@ -147,6 +148,11 @@
       "kind": "rust",
       "path": "tests/persist_retry.rs",
       "reason": "the retry test of the persist example (B-4: a deadlock runs the transaction again, another error does not): a tool test with its own record (make rust-persist-test, S-31); the vector record of the kind holds the vector cases alone for check-parity"
+    },
+    {
+      "kind": "npm",
+      "path": "tests/persist-dialects.test.mjs",
+      "reason": "the concurrency proof of the persistence pattern (B-4, plan C-4): two transactions of one row, concurrent on postgres and mysql, run through the dialect helper of fsm-db; a tool test with its own record (make npm-persist-test*), so the vector record of the kind holds the vector cases alone"
     }
   ]
 }

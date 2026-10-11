@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: 4c19b3ab8951154c6bf0cbdda0d8e97f2923d8bbd3c814005aea8f9711f3e5d4 -->
+<!-- source-sha256: ac8dc15d33daf821b08c6818b6163b550c89a90b7aeadc0b3933be48f8db49bf -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -71,7 +71,7 @@ sqlite:///var/lib/orm_example.sqlite?_pragma=busy_timeout(5000)
   orm이 `CONFIG`로 거부한다. 예를 들어 `FSM_DSN=sqlite://fsm.sqlite`는
   `[fsm-db] OrmError: CONFIG: sqlite DSN must include an absolute database path`를 출력한다.
 - SQLite 연결은 다른 연결이 잡은 lock을 최대 5000밀리초 기다린다. `_pragma=busy_timeout(ms)` 파라미터가 이 기다림을 바꾼다.
-- 이 패키지의 테스트는 SQLite만 실행한다. orm은 MySQL과 PostgreSQL 형식도 받아들이지만, 이 패키지에는 그 형식의 테스트가 없다.
+- 이 패키지의 테스트는 SQLite에서 실행한다(`make db-test`). store 테스트(`db-store.test.mjs`와 `store-contract-all.test.mjs`)는 PostgreSQL과 MySQL에서도 돈다. `make db-test-postgres`와 `make db-test-mysql`은 `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`의 DSN을 읽고, 변수가 없으면 실패한다. CLI와 command 테스트는 SQLite에서만 실행한다(계획 C-6).
 
 ```sh
 export FSM_DSN=sqlite:///var/lib/fsm/order.sqlite
@@ -197,7 +197,7 @@ $ fsm-gen check --project ./export
 ## 검사
 
 `make db-test`는 이 패키지의 테스트를 `scripts/kit/run-tests.mjs`로 실행한다. 먼저 `make db-deps`가 필요하다. 모든 테스트는
-SQLite에서 실행한다.
+SQLite에서 실행한다. store 테스트는 PostgreSQL과 MySQL에서도 실행한다(`make db-test-postgres`, `make db-test-mysql`). 각각 `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`의 DSN을 쓴다.
 
 - `tests/db-store.test.mjs`는 store를 검사한다: json → db → json과 db → json → db가 같은 파일과 행을 준다. 64자 key는 바뀌지 않고
   되돌아온다. 실패한 쓰기는 지우고 쓴 행을 모두 되돌린다. 빈 것이 아닌 database에 대한 `copy`는 `E_STORE_NOT_EMPTY`이며 아무것도

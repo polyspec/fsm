@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: cf5609e572e1f1e3c20d5106227e7542a7328801ba3597eb3a20cd9a540dd425 -->
+<!-- source-sha256: f7ca2be9339eaaaca31a36ccd47d26ed2ed7e65b001e65acbb6c04e9fc4b6025 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -432,6 +432,7 @@ $ fsm-gen check --project ./broken
 | `make documents-check` | 모든 문서에 현재의 `source-sha256` stamp를 가진 한국어 짝이 있고 링크가 유효한지 |
 | `make name-check` | 추적 파일이 라이브러리를 옛 이름으로 부르지 않는지 |
 | `make gui-test`, `make compiler-test`, `make db-test` | 각 도구의 테스트 |
+| `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql` | PostgreSQL과 MySQL에서의 DB store 테스트와 영속화 동시성 증명. `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`을 읽으며 없으면 실패한다(계획 C-6). SQLite에서도 돈다(`make db-test`, `make npm-persist-test`) |
 | `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | 각 언어 패키지의 테스트 |
 
 각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 `test_<feature>__<id>`다.
