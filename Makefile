@@ -8,16 +8,16 @@ include scripts/kit/kit.mk
 
 # The targets of the full suite that make check runs through the guard of scripts/kit/full-run.mjs. Each checklist item
 # appends the targets that it defines (docs/plans/fsm-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
-# records parity-check requires.
+# records vector-parity-check requires.
 comma := ,
 TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test docs-build-test gui-browser-test readme-test install-python-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check workflows-test parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check workflows-test vector-parity-check
 
-.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test python-lock-test python-lock-check workflows-test
+.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test vector-parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test python-lock-test python-lock-check workflows-test
 
 
 
@@ -148,7 +148,7 @@ docs-build: $(DOCS_DEP)
 docs-build-test: $(DOCS_DEP)
 	node scripts/kit/run-tests.mjs node --timeout 600 --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- tests/docs-build
 
-# parity-test runs the tests of scripts/check-parity.mjs. parity-check, the last target of the full suite, requires that every
+# parity-test runs the tests of scripts/check-parity.mjs. vector-parity-check, the last target of the full suite, requires that every
 # kind ran every vector case once and passed and that every tool test left a current record (docs/plans/fsm-v1.md, C-4).
 parity-test:
 	node scripts/kit/run-tests.mjs node --results .results/parity-test.json --inputs scripts/check-parity.mjs --inputs tests/check-parity -- tests/check-parity
@@ -232,7 +232,7 @@ gui-browsers: $(GUI_BROWSERS)
 gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP)
 	node scripts/kit/run-tests.mjs node --timeout 120 --results .results/gui-browser-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db --inputs schema/fsm.dbs -- packages/fsm-gui/tests/browser/browser.test.mjs packages/fsm-gui/tests/browser/diagram.test.mjs
 
-parity-check:
+vector-parity-check:
 	node scripts/check-parity.mjs --tools $(subst $(eval) ,$(comma),$(TOOL_TESTS))
 
 # packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1.md, Verification). It refuses an empty kind list,

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Checks that every language package ran every vector case once and passed (`make parity-check`, `make parity-<kind>`):
+// Checks that every language package ran every vector case once and passed (`make vector-parity-check`, `make parity-<kind>`):
 //
 //   node scripts/check-parity.mjs [--tools <target>,...]   every kind of contracts/layout.json and the records of the tool tests
 //   node scripts/check-parity.mjs --kind <kind>            the record of one kind only

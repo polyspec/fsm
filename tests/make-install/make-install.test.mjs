@@ -211,3 +211,13 @@ test('each target installs its dependencies before its recipe', (t) => {
     }
   }
 });
+
+// `make -n check` evaluates the Makefile and the kit targets it includes and prints the recipes without running them. A make
+// warning on its stderr is a name that two definitions share (for example a repository target that replaces a kit target), so
+// the test fails on any warning line (docs/plans/fsm-v1.md, C-1; docs/plans/execution-checklist.md, S-35-2).
+test('make -n check prints no make warning: no target of the repository replaces a kit target (S-35-2)', () => {
+  const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  const warnings = result.stderr.split('\n').filter((line) => line.includes('warning:'));
+  assert.deepEqual(warnings, []);
+});
