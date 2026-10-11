@@ -32,6 +32,8 @@ the scope (R1–R10) and the design are in `docs/plans/status-v1.md`; the defini
   than 10 minutes; a longer one is reported with its reason.
 - During an item only the owner checks of the changed paths run (`config/owner-checks.json`). The full suite runs once
   per tree with `make check` after the last item is committed.
+- A change of a public API or of how the library is used updates, in the same item, the README of the root and of every
+  package it concerns (English and Korean) and the documentation site.
 - No hidden errors: no fallback, no silent conversion or drop, no null return, no backward-compatibility layer.
 - No external sources in git files: only adopt / not-adopt verdicts in generic wording. polyspec repositories (kit, orm,
   hyper, crudui, template and others) are internal libraries and may be cited.

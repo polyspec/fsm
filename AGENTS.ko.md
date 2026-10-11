@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: b980e6e44813885a23703c531992979a4dd615035a2532de4ece696757d3b58d -->
+<!-- source-sha256: 8ee479e6f9713cfbcc21b338b58a2451cb3fc3b3018b50bd8c881e12dce11ead -->
 # 개발
 
 [English](AGENTS.md)
@@ -29,6 +29,7 @@ status는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext
   timeout을 준다. 전체 timeout은 없으며, 테스트 프로세스는 10분을 넘지 않는다. 넘으면 이유와 함께 보고한다.
 - 항목 진행 중에는 바뀐 경로의 소유 검사(`config/owner-checks.json`)만 돌린다. 전체 스위트는 마지막 항목을 커밋한 뒤 `make check`로
   트리당 한 번 돌린다.
+- 공개 API나 라이브러리 사용법을 바꾸면 같은 항목 안에서 루트와 관련된 모든 패키지의 README(영문·한글)와 문서 사이트를 함께 갱신한다.
 - 오류 은폐 금지: fallback, 조용한 변환이나 버림, null 반환, 하위 호환 레이어를 두지 않는다.
 - git 파일에 외부 출처를 쓰지 않는다. 일반 구문의 채택/비채택 판정만 쓴다. polyspec 저장소(kit, orm, hyper, crudui, template 등)는
   내부 라이브러리이므로 인용할 수 있다.
