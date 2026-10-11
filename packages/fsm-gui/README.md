@@ -129,7 +129,8 @@ make gui-browser-test
 ```
 
 `gui-browsers` downloads the Chromium of the pinned Playwright package (an exact devDependency of this package) from the
-Playwright CDN; it is ONLINE and runs once per machine. `gui-browser-test` builds the assets, starts the GUI on a temporary
+Playwright CDN; it is ONLINE and runs once per pinned version: its stamp `var/deps/playwright-<version>` in the checkout is
+kept, so a later `gui-browser-test` needs no network. Delete that stamp to download again. `gui-browser-test` builds the assets, starts the GUI on a temporary
 project and drives the edit form in that Chromium (`tests/browser/browser.test.mjs`): add a state row, save a state with an
 edge, remove it, and check the suggested codes, the stored machine and lock, and the Mermaid diagram. It also checks that every
 row button shows its crudui size and icon, that the fields of one row have distinct labels on the edit and rename forms, and

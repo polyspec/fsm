@@ -26,6 +26,10 @@ const LOCKS = [
   'packages/fsm-rust/Cargo.lock',
 ];
 
+// The Playwright version that packages/fsm-gui pins (its devDependency, exact) and the browser stamp keyed on it (S-29-1).
+const PLAYWRIGHT = '1.64.0';
+const BROWSER = `var/deps/playwright-${PLAYWRIGHT}`;
+
 // The stamps that an installed dependency leaves, each newer than its lock. var/tools/bin/python3 is the link of
 // make install-python, which the Python environment depends on.
 const STAMPS = [
@@ -83,6 +87,8 @@ function sandbox(t, { installed = false } = {}) {
     if (existsSync(makefile)) put(dir, { [`packages/${kind}/Makefile`]: readFileSync(makefile, 'utf8') });
   }
   put(dir, Object.fromEntries(LOCKS.map(file => [file, '\n'])));
+  // The GUI lock names the pinned Playwright version, which keys the browser stamp (S-29-1).
+  put(dir, { 'packages/fsm-gui/package-lock.json': JSON.stringify({ packages: { 'node_modules/playwright': { version: PLAYWRIGHT } } }) });
   const now = Date.now() / 1000;
   const old = now - 3600;
   for (const file of LOCKS) utimesSync(path.join(dir, file), old, old);
@@ -143,6 +149,16 @@ test('the python environment is keyed on uv.lock: a newer lock installs it again
   assert.equal(lineIndex(dryRun(dir, 'test-python'), INSTALL.python), -1, 'pyproject.toml alone reinstalls the python environment');
   utimesSync(path.join(dir, 'packages/fsm-python/uv.lock'), now + 120, now + 120);
   assert.ok(lineIndex(dryRun(dir, 'test-python'), INSTALL.python) >= 0, 'a newer uv.lock does not reinstall the python environment');
+});
+
+test('gui-browser-test downloads the browser once, then needs no network', (t) => {
+  const dir = sandbox(t, { installed: true });
+  const download = /playwright install chromium/;
+  assert.ok(lineIndex(dryRun(dir, 'gui-browser-test'), download) >= 0, 'the browser is not downloaded when no stamp exists');
+  put(dir, { [BROWSER]: '\n' });
+  const out = dryRun(dir, 'gui-browser-test');
+  assert.equal(lineIndex(out, download), -1, `the browser is downloaded again with its stamp present:\n${out}`);
+  assert.ok(lineIndex(out, /browser\.test\.mjs/) >= 0, `gui-browser-test does not run its tests:\n${out}`);
 });
 
 test('the python environment is created with the Python 3.14 link of install-python', (t) => {

@@ -196,15 +196,26 @@ gui-build: $(GUI_DEP)
 gui-test: gui-build $(DB_DEP)
 	node scripts/kit/run-tests.mjs node --results .results/gui-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db --inputs schema/fsm.dbs -- $(wildcard packages/fsm-gui/tests/*.test.mjs)
 
-# gui-browsers downloads the Chromium that the GUI browser test drives, for the Playwright version pinned in packages/fsm-gui
-# (devDependency, exact). It downloads from the Playwright CDN, so it is ONLINE; it installs the browser into the user's Playwright
-# cache and changes no tracked file (docs/plans/fsm-v1.md, C-7).
-gui-browsers: $(GUI_DEP)
+# GUI_BROWSERS is the stamp of the Chromium that the GUI browser test drives, keyed on the Playwright version that
+# packages/fsm-gui/package-lock.json pins (devDependency, exact). A new version is a new stamp, so it downloads once; a later run
+# with the stamp present downloads nothing (docs/plans/execution-checklist.md, S-29-1). The download comes from the Playwright CDN,
+# so it is ONLINE; the browser goes into the user's Playwright cache and no tracked file changes (docs/plans/fsm-v1.md, C-7).
+# The stamp needs the Playwright binary of GUI_DEP, which is order-only: a changed lock that keeps the version reuses the stamp.
+GUI_PLAYWRIGHT := $(shell node -p "require('./packages/fsm-gui/package-lock.json').packages['node_modules/playwright'].version" 2>/dev/null)
+GUI_BROWSERS := var/deps/playwright-$(GUI_PLAYWRIGHT)
+
+$(GUI_BROWSERS): | $(GUI_DEP)
+	@test -n "$(GUI_PLAYWRIGHT)" || { echo "packages/fsm-gui/package-lock.json names no playwright version" >&2; exit 1; }
+	mkdir -p $(dir $@)
 	cd packages/fsm-gui && $(ONLINE) node_modules/.bin/playwright install chromium
+	touch $@
+
+# gui-browsers is the name of the stamp for people who type it; the stamp is the target that the browser test needs.
+gui-browsers: $(GUI_BROWSERS)
 
 # gui-browser-test runs the tests of tests/browser (browser.test.mjs, diagram.test.mjs; S-38 adds the drawn diagram) of packages/fsm-gui: the GUI forms in a headless Chromium on a temporary project
 # (docs/plans/execution-checklist.md, S-22-1 and S-22-2). It needs the browser of gui-browsers and the built assets of gui-build.
-gui-browser-test: gui-browsers gui-build $(DB_DEP)
+gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP)
 	node scripts/kit/run-tests.mjs node --timeout 120 --results .results/gui-browser-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db --inputs schema/fsm.dbs -- packages/fsm-gui/tests/browser/browser.test.mjs packages/fsm-gui/tests/browser/diagram.test.mjs
 
 parity-check:
