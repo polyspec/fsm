@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 180971e40b8dddb3a2a39e5f5e38f37c03979d024e6a8cec720cb1efeddaf9cb -->
+<!-- source-sha256: b39e0a83d38bba2eec8ff3644d44e21211c8ba6d50cb2c416d6b07f9810ba4c8 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -76,7 +76,7 @@
 | S-41 | Python이 kit 0.0.18의 규칙을 따른다(kit 소유자가 밝힘): Python을 실행하는 저장소는 config/toolchain.json에 `pythonBuild`(wheel을 내면 `pythonBackend`도)를 선언하고, uv가 설치한 interpreter 없이 `make install-tools`로 var/tools에 Python을 설치한다. fsm의 `install-python`(uv)과 그 테스트를 바꾸고, python package는 그 interpreter로 설치한다 | install-tools Python에서 toolchain-check와 python package 테스트. uv가 설치한 interpreter link RED → GREEN | [ ] |
 | S-36 | fsm-db CLI를 문서의 모든 명령에 대해 process로 테스트한다: `lock --rename`과 `copy --to mermaid` / `copy --from mermaid`(감사 20) | 문서의 출력이 단언되지 않음 RED → GREEN | [o] |
 | S-37 | 영속화와 DB store를 문서가 이름 붙인 모든 dialect에서 증명한다: 같은 (expected, event)의 동시 transaction 두 개가 Changed 하나와 Unchanged 하나를, 충돌하는 쌍이 E_CONFLICT를 내는지 단언하는 테스트. db-test와 영속화 테스트가 SQLite, PostgreSQL, MySQL에서 돈다(로컬 임시 서버와 CI service). 문서가 테스트한 dialect를 적는다(감사 23, 24) | 동시 테스트가 실패하거나 없음 RED → 세 dialect에서 GREEN | [o] |
-| S-37-1 | go, rust, php, php-ext, python의 영속화 예제도 PostgreSQL과 MySQL에서 persist case를 실행한다. npm의 DSN 변수를 쓴다(계획 C-4와 C-6). 동시성 증명은 npm에만 쓴다(결정 C-4) | `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`이 있고 통과하며, DSN이 없는 실행은 실패한다 | [ ] |
+| S-37-1 | go, rust, php, php-ext, python의 영속화 예제도 PostgreSQL과 MySQL에서 persist case를 실행한다. npm의 DSN 변수를 쓴다(계획 C-4와 C-6). 동시성 증명은 npm에만 쓴다(결정 C-4) | `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`이 있고 통과하며, DSN이 없는 실행은 실패한다 | [o] |
 | S-37-2 | fsm-db CLI와 command 테스트도 PostgreSQL과 MySQL에서 실행한다. 이 테스트는 fsm table이 없는 database가 필요한데, 공유 서버는 orm client 밖의 DDL 없이 이를 주지 않는다. 빈 database에서 시작하는 방법을 정해 계획 C-6에 적는다 | 서버 dialect의 `cli.test.mjs`와 `command.test.mjs` 실행이 통과하고, DSN이 없는 실행은 실패한다 | [ ] |
 | S-38 | Mermaid 다이어그램이 모든 state의 이름을 보인다: 고정한 mermaid 12.1.0은 description이 하나인 state(`draft : 1`, spec B-1의 정규형)를 description만으로 그리므로 GUI와 모든 Mermaid viewer가 key 없이 code 1..n만 보인다(S-22 확인). 측정 결과: `state "draft" as draft` 뒤에 `draft : 1`을 쓰면 `draft` 제목 아래 `1`이 있는 상자로 그려지고 description [draft, 1]로 파싱된다. 그려진 다이어그램이 key와 code를 보이도록 정규형을 바꾸며, 대안과 적대 검증해 결정하고 spec B-1에 기록한다(B-5의 예약어 위치를 다시 측정). mermaid store, golden, 예제 machine, GUI, README 예시가 따른다 | 그려진 svg의 label에 모든 state key가 있는지 보는 browser 테스트 실패 RED → GREEN | [o] |
 | S-39 | go 테스트 파일과 충돌하는 machine key를 예약한다: 생성된 go 테스트 package의 식별자를 이름으로 쓰는 machine key는 fsm-gen check를 통과하면서 go 빌드를 깬다(S-25가 봄). go 1.27.2로 측정한 결과 `examples`, `vectors`, `machines`, `expectation`, `lookup`이 `go test ./...`를 깨고("redeclared in this block", "already declared through import"), 처음 의심한 `tests`는 깨지 않는다. 측정한 key를 근거와 함께 spec B-5의 고정 목록에 더한다 | 측정한 각 key가 fsm-gen check를 통과하고 go를 깸 RED → E_KEY_RESERVED GREEN. `tests`는 허용으로 남음 | [o] |

@@ -83,7 +83,7 @@ Which properties a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), the s
 ## Persistence
 
 `examples/persist.php` is a copy of the php package's file, made by `make gen`. It is the persistence pattern of
-`docs/spec/fsm.md`, B-4 on SQLite with polyspec orm (see [the php README](../fsm-php/README.md), Persistence): a transaction reads
+`docs/spec/fsm.md`, B-4 on SQLite, PostgreSQL and MySQL with polyspec orm (see [the php README](../fsm-php/README.md), Persistence): a transaction reads
 the row under its lock, applies the event to the state that the caller observed, and writes only a changed state. The persist
 cases run it with the built module.
 
@@ -95,6 +95,8 @@ From the checkout:
 make -C packages/fsm-php-ext install   # composer install: the same packages as the php package (composer.lock)
 make -C packages/fsm-php-ext test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
 make test-php-ext                      # the same from the root
+make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 The run passes 89 of 89 cases: `tests/ConformanceTest.php` (a copy of the php package's file) runs one PHPUnit test per vector case,

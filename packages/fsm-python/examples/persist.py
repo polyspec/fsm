@@ -1,4 +1,5 @@
-"""The B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite (docs/plans/fsm-v1.md, C-2).
+"""The B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite, PostgreSQL and MySQL (docs/plans/fsm-v1.md,
+C-2 and C-6; the DSN selects the dialect).
 
 A row keeps the status code. A transition runs in one transaction: the row is read under its lock (for_update), the event is
 applied to the state that the caller observed, and the row is updated only when the state changed. The caller passes the same
@@ -10,10 +11,15 @@ from model.models import SCHEMA, Item, connect
 
 
 def open_database(dsn):
-    """Opens the SQLite database of `dsn` (sqlite:///<absolute path>) and creates the persist tables in it."""
+    """Opens the database of `dsn` (sqlite:///<absolute path>, postgres:// or mysql://) and creates the persist tables in it."""
     db = connect(dsn)
     db.utils().schema().install(SCHEMA)
     return db
+
+
+def clear(db):
+    """Deletes every row of the persist table."""
+    Item().connect(db).gets().delete()
 
 
 def seed(db, row_id, code):

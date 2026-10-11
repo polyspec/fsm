@@ -114,7 +114,7 @@ The message of every code names the machine, and the value of `E_UNKNOWN_CODE` o
 
 ## Persistence
 
-`examples/persist.go` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a
+`examples/persist.go` is the pattern of `docs/spec/fsm.md`, B-4 with polyspec orm on SQLite, PostgreSQL and MySQL (the DSN given to `Open` selects the dialect). The stored state is a code in a
 row. `Transition` runs one attempt in one transaction: it reads the row under its lock, passes the stored code to `decide`, and
 writes the row only when `decide` reports a change. `Decide` is `func(stored int64) (to int32, changed bool, err error)`, so
 the file serves every machine: a machine's `decide` is the `Apply` of the observed state and the event on the `FromCode` of the
@@ -194,6 +194,8 @@ From the checkout (the modules must be downloaded once, online):
 make -C packages/fsm-go install   # go mod download
 make -C packages/fsm-go test      # GOPROXY=off, the conformance tests and the persistence example on SQLite
 make test-go                      # the same from the root
+make go-persist-test-postgres     # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 The run passes 89 of 89 cases: `tests/conformance_test.go` runs one subtest per vector case of `tests/vectors_test.go`, named

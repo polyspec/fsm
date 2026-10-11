@@ -1,6 +1,6 @@
 <?php
-// The B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite (docs/plans/fsm-v1.md, C-2). A row
-// keeps the status code. A transition runs in one transaction: the row is read under its lock (forUpdate), the event is applied
+// The B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite, PostgreSQL and MySQL (docs/plans/fsm-v1.md,
+// C-2 and C-6; the DSN selects the dialect). A row keeps the status code. A transition runs in one transaction: the row is read under its lock (forUpdate), the event is applied
 // to the state that the caller observed, and the row is updated only when the state changed. The caller passes the same observed
 // state on a retry, so a retry is Unchanged and a stale request is E_CONFLICT.
 //
@@ -16,7 +16,7 @@ use Polyspec\Orm\Config;
 use Polyspec\Orm\Db;
 use Polyspec\FsmTest\Model\Item;
 
-/** Opens the SQLite database of $dsn (sqlite://<path>) and creates the persist tables in it. */
+/** Opens the database of $dsn (sqlite://<path>, postgres:// or mysql://) and creates the persist tables in it. */
 function open(string $dsn): Db
 {
     require_once __DIR__ . '/model/bootstrap.php';

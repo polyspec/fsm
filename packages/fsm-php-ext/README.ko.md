@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: 5732829003eecca93d81b201797eed2332547f787efd62c70e2d689f78a72b3f -->
+<!-- source-sha256: c6e278ea533ba571ac9f2b76548e35282e77116b81bb6ec1491e253bf28edc19 -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
@@ -80,7 +80,7 @@ module에서 이를 단언한다:
 
 ## 영속화
 
-`examples/persist.php`는 `make gen`이 만든, php 패키지 파일의 복사본이다. `docs/spec/fsm.md`, B-4의 SQLite와 polyspec orm 영속화 패턴이다
+`examples/persist.php`는 `make gen`이 만든, php 패키지 파일의 복사본이다. `docs/spec/fsm.md`, B-4의 SQLite, PostgreSQL, MySQL과 polyspec orm 영속화 패턴이다
 ([php README](../fsm-php/README.ko.md), 영속화 절). transaction은 row를 잠금 아래 읽고, event를 호출자가 관찰한 상태에 적용하며,
 바뀐 상태만 쓴다. 영속화 case는 빌드된 module로 이 파일을 실행한다.
 
@@ -92,6 +92,8 @@ checkout에서 실행한다:
 make -C packages/fsm-php-ext install   # composer install: the same packages as the php package (composer.lock)
 make -C packages/fsm-php-ext test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
 make test-php-ext                      # the same from the root
+make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/ConformanceTest.php`(php 패키지 파일의 복사본)는 빌드된 module을 대상으로 vector case마다

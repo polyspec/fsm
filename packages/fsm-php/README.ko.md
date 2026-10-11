@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: 58ab8259a70d18c0f2e98d5c3debb0161eb0881c1de8535ad3676672800ce848 -->
+<!-- source-sha256: d9cf2409e97dadb1332878e69a38af96ca5a1378ce260820483f1546cc6c7aa3 -->
 # polyspec/fsm-php
 
 [English](README.md)
@@ -121,7 +121,7 @@ E_CONFLICT 1 3 1
 
 ## 영속화
 
-`examples/persist.php`는 SQLite와 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다. 전이는 한
+`examples/persist.php`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다. 전이는 한
 transaction 안에서 실행한다. row를 잠금(`forUpdate()`) 아래 읽고, event를 호출자가 관찰한 상태에 적용하며, step이 changed일 때만
 row를 갱신한다:
 
@@ -156,9 +156,11 @@ checkout에서 실행한다:
 make -C packages/fsm-php install   # composer install: the pinned orm release and PHPUnit 12.5.38 (composer.lock)
 make -C packages/fsm-php test      # PHPUnit through scripts/kit/run-tests.mjs
 make test-php                      # the same from the root
+make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/ConformanceTest.php`는 `tests/Vectors.php`의 vector case마다 하나의 PHPUnit test를
-data set 이름 `test_<feature>__<id>`로 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행한다. 루트의 `make gen-check`는
+data set 이름 `test_<feature>__<id>`로 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 루트의 `make gen-check`는
 생성 파일이 `fsm-gen`이 지금 쓰는 것과 같은지 검사한다. checkout의 PHP 릴리스는 8.5(`config/toolchain.json`)이며, `composer.json`의
 `config.platform.php`는 orm client의 최소 버전인 8.4.0이다.

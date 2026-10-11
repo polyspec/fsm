@@ -104,7 +104,7 @@ Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the v
 
 ## Persistence
 
-`examples/persist.rs` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a row.
+`examples/persist.rs` is the pattern of `docs/spec/fsm.md`, B-4 with polyspec orm on SQLite, PostgreSQL and MySQL (the DSN given to `open` selects the dialect). The stored state is a code in a row.
 `transition` runs the transaction of one transition: it reads the row under its lock (`for_update`), passes the stored code to
 the `decide` closure of the caller, and writes the row only when the closure reports a change. A deadlock runs the transaction
 again (orm `transaction`, three retries by default; the closure is pure, so a rerun is safe). A machine error is returned
@@ -162,6 +162,8 @@ From the checkout root:
 make -C packages/fsm-rust install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.7 by its git tag)
 make -C packages/fsm-rust test      # cargo test through scripts/kit/run-tests.mjs
 make test-rust                      # the same from the root
+make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 The run passes 89 of 89 cases in about 100 seconds, which includes the compilation of the crate. `tests/vectors.rs` has one

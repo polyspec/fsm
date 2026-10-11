@@ -99,7 +99,7 @@ For `E_UNKNOWN_CODE` the message holds the value (`order: 99 is not a state of o
 
 ## Persistence
 
-`examples/persist.py` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a row.
+`examples/persist.py` is the pattern of `docs/spec/fsm.md`, B-4 with polyspec orm on SQLite, PostgreSQL and MySQL (the DSN given to `open_database` selects the dialect). The stored state is a code in a row.
 A transition runs in one transaction: the row is read under its lock (`for_update()`), the event is applied to the state that the
 caller observed, and the row is updated only when the step changed:
 
@@ -136,6 +136,8 @@ The python package needs Python 3.14 in a virtual environment. From the checkout
 make install-python                    # online: Python 3.14 with uv, linked into var/tools/bin/python3 (no system path changes)
 make -C packages/fsm-python install    # online: .venv with Python 3.14 and every package of uv.lock (orm v0.0.7 by commit, artifacts by sha256)
 make test-python                       # offline: the vector cases and the persist cases, with the venv's python3 first on PATH
+make python-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 The run passes 89 of 89 cases. `tests/test_conformance.py` generates one unittest method per vector case, named

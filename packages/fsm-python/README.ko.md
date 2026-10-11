@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: 5189a22d6c03a41e6d9150f9a6e4e97972d90b45ddc60792f3a5435390e183ff -->
+<!-- source-sha256: 16f0c5c9cce05eb2be6e521c7de4800278f6e23dd076f7a18ea504c7d492451a -->
 # polyspec-fsm-python
 
 [English](README.md)
@@ -96,7 +96,7 @@ E_CONFLICT 1 3 1
 
 ## 영속화
 
-`examples/persist.py`는 SQLite와 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다. 전이는 한
+`examples/persist.py`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다. 전이는 한
 transaction 안에서 실행한다. row를 잠금(`for_update()`) 아래 읽고, event를 호출자가 관찰한 상태에 적용하며, step이 changed일 때만
 row를 갱신한다:
 
@@ -132,6 +132,8 @@ python 패키지는 가상환경의 Python 3.14가 필요하다. checkout 루트
 make install-python                    # online: Python 3.14 with uv, linked into var/tools/bin/python3 (no system path changes)
 make -C packages/fsm-python install    # online: .venv with Python 3.14 and every package of uv.lock (orm v0.0.7 by commit, artifacts by sha256)
 make test-python                       # offline: the vector cases and the persist cases, with the venv's python3 first on PATH
+make python-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/test_conformance.py`는 vector case마다 unittest method 하나를 `test_<feature>__<id>`

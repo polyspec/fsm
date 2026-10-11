@@ -158,7 +158,9 @@
         "gen-check",
         "parity-go",
         "dependency-policy-check",
-        "toolchain-check"
+        "toolchain-check",
+        "go-persist-test-postgres",
+        "go-persist-test-mysql"
       ]
     },
     {
@@ -216,7 +218,9 @@
         "gen-check",
         "parity-php",
         "dependency-policy-check",
-        "toolchain-check"
+        "toolchain-check",
+        "php-persist-test-postgres",
+        "php-persist-test-mysql"
       ]
     },
     {
@@ -250,7 +254,9 @@
         "rust-persist-test",
         "parity-rust",
         "dependency-policy-check",
-        "toolchain-check"
+        "toolchain-check",
+        "rust-persist-test-postgres",
+        "rust-persist-test-mysql"
       ]
     },
     {
@@ -277,7 +283,9 @@
         "parity-python",
         "dependency-policy-check",
         "toolchain-check",
-        "python-lock-check"
+        "python-lock-check",
+        "python-persist-test-postgres",
+        "python-persist-test-mysql"
       ]
     },
     {
@@ -289,7 +297,9 @@
         "gen-check",
         "parity-php-ext",
         "dependency-policy-check",
-        "toolchain-check"
+        "toolchain-check",
+        "php-ext-persist-test-postgres",
+        "php-ext-persist-test-mysql"
       ]
     },
     {

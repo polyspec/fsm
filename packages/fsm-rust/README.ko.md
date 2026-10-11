@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 4d9f9d08a0be482130b6eb845ab4b3b45bb4a53a86b4b2b7b0eef54474705152 -->
+<!-- source-sha256: ae32a2e02cafe005c8a5f32e424c70f60c3364528d8927d02c36b43e75b3f1f6 -->
 # fsm-rust
 
 [English](README.md)
@@ -103,7 +103,7 @@ E_CONFLICT Some(1) Some(3) Some(1)
 
 ## 영속화
 
-`examples/persist.rs`는 SQLite와 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다. `transition`은
+`examples/persist.rs`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다. `transition`은
 한 전이의 transaction을 실행한다. row를 잠금(`for_update`) 아래 읽고, 저장된 code를 호출자의 `decide` closure에 넘기며,
 closure가 변화를 알릴 때만 row를 쓴다. deadlock이면 transaction을 다시 실행한다(orm `transaction`, 기본 세 번 재시도. closure는
 순수하므로 재실행해도 안전하다). machine 오류는 쓰기 없이 돌려주고, deadlock이 아닌 데이터베이스 오류는 한 번 시도한 뒤 돌려준다:
@@ -158,6 +158,8 @@ checkout 루트에서 실행한다:
 make -C packages/fsm-rust install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.7 by its git tag)
 make -C packages/fsm-rust test      # cargo test through scripts/kit/run-tests.mjs
 make test-rust                      # the same from the root
+make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
+make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 89개 case 중 89개 통과이며, crate 컴파일을 포함해 약 100초가 걸린다. `tests/vectors.rs`는 vector case마다 `#[test]` 하나를 가지며
