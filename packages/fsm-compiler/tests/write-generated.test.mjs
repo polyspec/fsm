@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { ORDER_PROJECT } from './order-project.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
@@ -40,7 +41,7 @@ function gen(args) {
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 }
 
-const genNpm = out => gen(['gen', '--project', ROOT, '--kind', 'npm', '--out', out]);
+const genNpm = out => gen(['gen', '--project', ORDER_PROJECT, '--kind', 'npm', '--out', out]);
 const golden = name => readFileSync(path.join(GOLDEN, 'src', name), 'utf8');
 
 after(() => {

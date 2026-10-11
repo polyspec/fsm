@@ -1,0 +1,49 @@
+{
+  "$schema": "../schema/fsm.schema.json",
+  "machine": "ticket",
+  "states": [
+    {
+      "key": "open",
+      "code": 1,
+      "initial": true
+    },
+    {
+      "key": "review",
+      "code": 3
+    },
+    {
+      "key": "closed",
+      "code": 5,
+      "final": true
+    }
+  ],
+  "events": [
+    {
+      "key": "submit",
+      "edges": [
+        {
+          "from": "open",
+          "to": "review"
+        }
+      ]
+    },
+    {
+      "key": "approve",
+      "edges": [
+        {
+          "from": "review",
+          "to": "closed"
+        }
+      ]
+    },
+    {
+      "key": "reject",
+      "edges": [
+        {
+          "from": "review",
+          "to": "open"
+        }
+      ]
+    }
+  ]
+}

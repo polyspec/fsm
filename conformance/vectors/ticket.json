@@ -1,0 +1,418 @@
+{
+  "machine": "ticket",
+  "cases": [
+    {
+      "feature": "initial",
+      "id": "ticket_initial",
+      "expect": {
+        "state": "open"
+      }
+    },
+    {
+      "feature": "code",
+      "id": "ticket_code_s0",
+      "state": "open",
+      "expect": 1
+    },
+    {
+      "feature": "key",
+      "id": "ticket_key_s0",
+      "code": 1,
+      "expect": "open"
+    },
+    {
+      "feature": "from_code",
+      "id": "ticket_from_code_s0",
+      "input": 1,
+      "expect": {
+        "state": "open"
+      }
+    },
+    {
+      "feature": "is_final",
+      "id": "ticket_is_final_s0",
+      "state": "open",
+      "expect": false
+    },
+    {
+      "feature": "events_from",
+      "id": "ticket_events_from_s0",
+      "state": "open",
+      "expect": [
+        "submit"
+      ]
+    },
+    {
+      "feature": "code",
+      "id": "ticket_code_s1",
+      "state": "review",
+      "expect": 3
+    },
+    {
+      "feature": "key",
+      "id": "ticket_key_s1",
+      "code": 3,
+      "expect": "review"
+    },
+    {
+      "feature": "from_code",
+      "id": "ticket_from_code_s1",
+      "input": 3,
+      "expect": {
+        "state": "review"
+      }
+    },
+    {
+      "feature": "is_final",
+      "id": "ticket_is_final_s1",
+      "state": "review",
+      "expect": false
+    },
+    {
+      "feature": "events_from",
+      "id": "ticket_events_from_s1",
+      "state": "review",
+      "expect": [
+        "approve",
+        "reject"
+      ]
+    },
+    {
+      "feature": "code",
+      "id": "ticket_code_s2",
+      "state": "closed",
+      "expect": 5
+    },
+    {
+      "feature": "key",
+      "id": "ticket_key_s2",
+      "code": 5,
+      "expect": "closed"
+    },
+    {
+      "feature": "from_code",
+      "id": "ticket_from_code_s2",
+      "input": 5,
+      "expect": {
+        "state": "closed"
+      }
+    },
+    {
+      "feature": "is_final",
+      "id": "ticket_is_final_s2",
+      "state": "closed",
+      "expect": true
+    },
+    {
+      "feature": "events_from",
+      "id": "ticket_events_from_s2",
+      "state": "closed",
+      "expect": []
+    },
+    {
+      "feature": "from_code",
+      "id": "ticket_from_code_zero",
+      "input": 0,
+      "expect": {
+        "error": "E_UNKNOWN_CODE"
+      }
+    },
+    {
+      "feature": "from_code",
+      "id": "ticket_from_code_unknown",
+      "input": 6,
+      "expect": {
+        "error": "E_UNKNOWN_CODE"
+      }
+    },
+    {
+      "feature": "from_code",
+      "id": "ticket_from_code_r2",
+      "input": 2,
+      "expect": {
+        "error": "E_RESERVED_CODE"
+      }
+    },
+    {
+      "feature": "from_code",
+      "id": "ticket_from_code_r4",
+      "input": 4,
+      "expect": {
+        "error": "E_RESERVED_CODE"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s0_e0",
+      "state": "open",
+      "event": "submit",
+      "expect": {
+        "state": "review"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s0_e1",
+      "state": "open",
+      "event": "approve",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s0_e2",
+      "state": "open",
+      "event": "reject",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s1_e0",
+      "state": "review",
+      "event": "submit",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s1_e1",
+      "state": "review",
+      "event": "approve",
+      "expect": {
+        "state": "closed"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s1_e2",
+      "state": "review",
+      "event": "reject",
+      "expect": {
+        "state": "open"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s2_e0",
+      "state": "closed",
+      "event": "submit",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s2_e1",
+      "state": "closed",
+      "event": "approve",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "ticket_target_s2_e2",
+      "state": "closed",
+      "event": "reject",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s0_e0_s0",
+      "expected": "open",
+      "event": "submit",
+      "actual": "open",
+      "expect": {
+        "to": "review",
+        "changed": true
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s0_e0_s1",
+      "expected": "open",
+      "event": "submit",
+      "actual": "review",
+      "expect": {
+        "to": "review",
+        "changed": false
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s0_e0_s2",
+      "expected": "open",
+      "event": "submit",
+      "actual": "closed",
+      "expect": {
+        "error": "E_CONFLICT"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s1_e1_s1",
+      "expected": "review",
+      "event": "approve",
+      "actual": "review",
+      "expect": {
+        "to": "closed",
+        "changed": true
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s1_e1_s2",
+      "expected": "review",
+      "event": "approve",
+      "actual": "closed",
+      "expect": {
+        "to": "closed",
+        "changed": false
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s1_e1_s0",
+      "expected": "review",
+      "event": "approve",
+      "actual": "open",
+      "expect": {
+        "error": "E_CONFLICT"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s1_e2_s1",
+      "expected": "review",
+      "event": "reject",
+      "actual": "review",
+      "expect": {
+        "to": "open",
+        "changed": true
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s1_e2_s0",
+      "expected": "review",
+      "event": "reject",
+      "actual": "open",
+      "expect": {
+        "to": "open",
+        "changed": false
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s1_e2_s2",
+      "expected": "review",
+      "event": "reject",
+      "actual": "closed",
+      "expect": {
+        "error": "E_CONFLICT"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s0_e1_s0",
+      "expected": "open",
+      "event": "approve",
+      "actual": "open",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s0_e2_s0",
+      "expected": "open",
+      "event": "reject",
+      "actual": "open",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s1_e0_s1",
+      "expected": "review",
+      "event": "submit",
+      "actual": "review",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s2_e0_s2",
+      "expected": "closed",
+      "event": "submit",
+      "actual": "closed",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s2_e1_s2",
+      "expected": "closed",
+      "event": "approve",
+      "actual": "closed",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "ticket_apply_s2_e2_s2",
+      "expected": "closed",
+      "event": "reject",
+      "actual": "closed",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "persist",
+      "id": "ticket_persist_first",
+      "scenario": "first",
+      "expected": "open",
+      "event": "submit",
+      "stored": "open",
+      "expect": {
+        "stored_after": "review",
+        "changed": true
+      }
+    },
+    {
+      "feature": "persist",
+      "id": "ticket_persist_retry",
+      "scenario": "retry",
+      "expected": "open",
+      "event": "submit",
+      "stored": "review",
+      "expect": {
+        "stored_after": "review",
+        "changed": false
+      }
+    },
+    {
+      "feature": "persist",
+      "id": "ticket_persist_conflict",
+      "scenario": "conflict",
+      "expected": "open",
+      "event": "submit",
+      "stored": "closed",
+      "expect": {
+        "error": "E_CONFLICT",
+        "stored_after": "closed"
+      }
+    }
+  ]
+}

@@ -2,9 +2,93 @@
 
 package tests
 
+import (
+	"github.com/polyspec/fsm-go/examples"
+	"github.com/polyspec/fsm-go/src/in_review"
+	"github.com/polyspec/fsm-go/src/limits"
+	"github.com/polyspec/fsm-go/src/order"
+	"github.com/polyspec/fsm-go/src/standby"
+	"github.com/polyspec/fsm-go/src/ticket"
+)
+
 // vectors are the conformance vectors of the state machines, in the order of their definitions (docs/plans/fsm-v1.md, C-4).
-// Each case keeps the keys of the oracle; the conformance test maps them to the constants of the machine.
+// Each case keeps the keys of the oracle; the adapter of its machine maps them to the constants of the machine.
 var vectors = []machineVectors{
+	{
+		machine: "in_review",
+		cases: []vectorCase{
+			{feature: "initial", id: "in_review_initial", want: expectation{state: "to_do"}},
+			{feature: "code", id: "in_review_code_s0", state: "to_do", want: expectation{code: 1}},
+			{feature: "key", id: "in_review_key_s0", code: 1, want: expectation{key: "to_do"}},
+			{feature: "from_code", id: "in_review_from_code_s0", input: 1, want: expectation{state: "to_do"}},
+			{feature: "is_final", id: "in_review_is_final_s0", state: "to_do", want: expectation{final: false}},
+			{feature: "events_from", id: "in_review_events_from_s0", state: "to_do", want: expectation{events: []string{"start_work"}}},
+			{feature: "code", id: "in_review_code_s1", state: "in_progress", want: expectation{code: 2}},
+			{feature: "key", id: "in_review_key_s1", code: 2, want: expectation{key: "in_progress"}},
+			{feature: "from_code", id: "in_review_from_code_s1", input: 2, want: expectation{state: "in_progress"}},
+			{feature: "is_final", id: "in_review_is_final_s1", state: "in_progress", want: expectation{final: false}},
+			{feature: "events_from", id: "in_review_events_from_s1", state: "in_progress", want: expectation{events: []string{"finish_work", "reopen_work"}}},
+			{feature: "code", id: "in_review_code_s2", state: "done_now", want: expectation{code: 3}},
+			{feature: "key", id: "in_review_key_s2", code: 3, want: expectation{key: "done_now"}},
+			{feature: "from_code", id: "in_review_from_code_s2", input: 3, want: expectation{state: "done_now"}},
+			{feature: "is_final", id: "in_review_is_final_s2", state: "done_now", want: expectation{final: true}},
+			{feature: "events_from", id: "in_review_events_from_s2", state: "done_now", want: expectation{events: []string{}}},
+			{feature: "from_code", id: "in_review_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "in_review_from_code_unknown", input: 4, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "target", id: "in_review_target_s0_e0", state: "to_do", event: "start_work", want: expectation{state: "in_progress"}},
+			{feature: "target", id: "in_review_target_s0_e1", state: "to_do", event: "finish_work", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "in_review_target_s0_e2", state: "to_do", event: "reopen_work", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "in_review_target_s1_e0", state: "in_progress", event: "start_work", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "in_review_target_s1_e1", state: "in_progress", event: "finish_work", want: expectation{state: "done_now"}},
+			{feature: "target", id: "in_review_target_s1_e2", state: "in_progress", event: "reopen_work", want: expectation{state: "to_do"}},
+			{feature: "target", id: "in_review_target_s2_e0", state: "done_now", event: "start_work", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "in_review_target_s2_e1", state: "done_now", event: "finish_work", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "in_review_target_s2_e2", state: "done_now", event: "reopen_work", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "in_review_apply_s0_e0_s0", expected: "to_do", event: "start_work", actual: "to_do", want: expectation{to: "in_progress", changed: true}},
+			{feature: "apply", id: "in_review_apply_s0_e0_s1", expected: "to_do", event: "start_work", actual: "in_progress", want: expectation{to: "in_progress", changed: false}},
+			{feature: "apply", id: "in_review_apply_s0_e0_s2", expected: "to_do", event: "start_work", actual: "done_now", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "in_review_apply_s1_e1_s1", expected: "in_progress", event: "finish_work", actual: "in_progress", want: expectation{to: "done_now", changed: true}},
+			{feature: "apply", id: "in_review_apply_s1_e1_s2", expected: "in_progress", event: "finish_work", actual: "done_now", want: expectation{to: "done_now", changed: false}},
+			{feature: "apply", id: "in_review_apply_s1_e1_s0", expected: "in_progress", event: "finish_work", actual: "to_do", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "in_review_apply_s1_e2_s1", expected: "in_progress", event: "reopen_work", actual: "in_progress", want: expectation{to: "to_do", changed: true}},
+			{feature: "apply", id: "in_review_apply_s1_e2_s0", expected: "in_progress", event: "reopen_work", actual: "to_do", want: expectation{to: "to_do", changed: false}},
+			{feature: "apply", id: "in_review_apply_s1_e2_s2", expected: "in_progress", event: "reopen_work", actual: "done_now", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "in_review_apply_s0_e1_s0", expected: "to_do", event: "finish_work", actual: "to_do", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "in_review_apply_s0_e2_s0", expected: "to_do", event: "reopen_work", actual: "to_do", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "in_review_apply_s1_e0_s1", expected: "in_progress", event: "start_work", actual: "in_progress", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "in_review_apply_s2_e0_s2", expected: "done_now", event: "start_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "in_review_apply_s2_e1_s2", expected: "done_now", event: "finish_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "in_review_apply_s2_e2_s2", expected: "done_now", event: "reopen_work", actual: "done_now", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "persist", id: "in_review_persist_first", scenario: "first", expected: "to_do", event: "start_work", stored: "to_do", want: expectation{storedAfter: "in_progress", changed: true}},
+			{feature: "persist", id: "in_review_persist_retry", scenario: "retry", expected: "to_do", event: "start_work", stored: "in_progress", want: expectation{storedAfter: "in_progress", changed: false}},
+			{feature: "persist", id: "in_review_persist_conflict", scenario: "conflict", expected: "to_do", event: "start_work", stored: "done_now", want: expectation{error: "E_CONFLICT", storedAfter: "done_now"}},
+		},
+	},
+	{
+		machine: "limits",
+		cases: []vectorCase{
+			{feature: "initial", id: "limits_initial", want: expectation{state: "floor"}},
+			{feature: "code", id: "limits_code_s0", state: "floor", want: expectation{code: 1}},
+			{feature: "key", id: "limits_key_s0", code: 1, want: expectation{key: "floor"}},
+			{feature: "from_code", id: "limits_from_code_s0", input: 1, want: expectation{state: "floor"}},
+			{feature: "is_final", id: "limits_is_final_s0", state: "floor", want: expectation{final: false}},
+			{feature: "events_from", id: "limits_events_from_s0", state: "floor", want: expectation{events: []string{"rise"}}},
+			{feature: "code", id: "limits_code_s1", state: "ceiling", want: expectation{code: 2147483647}},
+			{feature: "key", id: "limits_key_s1", code: 2147483647, want: expectation{key: "ceiling"}},
+			{feature: "from_code", id: "limits_from_code_s1", input: 2147483647, want: expectation{state: "ceiling"}},
+			{feature: "is_final", id: "limits_is_final_s1", state: "ceiling", want: expectation{final: true}},
+			{feature: "events_from", id: "limits_events_from_s1", state: "ceiling", want: expectation{events: []string{}}},
+			{feature: "from_code", id: "limits_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "limits_from_code_unknown", input: 2, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "target", id: "limits_target_s0_e0", state: "floor", event: "rise", want: expectation{state: "ceiling"}},
+			{feature: "target", id: "limits_target_s1_e0", state: "ceiling", event: "rise", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "limits_apply_s0_e0_s0", expected: "floor", event: "rise", actual: "floor", want: expectation{to: "ceiling", changed: true}},
+			{feature: "apply", id: "limits_apply_s0_e0_s1", expected: "floor", event: "rise", actual: "ceiling", want: expectation{to: "ceiling", changed: false}},
+			{feature: "apply", id: "limits_apply_s1_e0_s1", expected: "ceiling", event: "rise", actual: "ceiling", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "persist", id: "limits_persist_first", scenario: "first", expected: "floor", event: "rise", stored: "floor", want: expectation{storedAfter: "ceiling", changed: true}},
+			{feature: "persist", id: "limits_persist_retry", scenario: "retry", expected: "floor", event: "rise", stored: "ceiling", want: expectation{storedAfter: "ceiling", changed: false}},
+		},
+	},
 	{
 		machine: "order",
 		cases: []vectorCase{
@@ -99,4 +183,732 @@ var vectors = []machineVectors{
 			{feature: "persist", id: "order_persist_conflict", scenario: "conflict", expected: "draft", event: "next", stored: "shipped", want: expectation{error: "E_CONFLICT", storedAfter: "shipped"}},
 		},
 	},
+	{
+		machine: "standby",
+		cases: []vectorCase{
+			{feature: "initial", id: "standby_initial", want: expectation{state: "ready"}},
+			{feature: "code", id: "standby_code_s0", state: "ready", want: expectation{code: 1}},
+			{feature: "key", id: "standby_key_s0", code: 1, want: expectation{key: "ready"}},
+			{feature: "from_code", id: "standby_from_code_s0", input: 1, want: expectation{state: "ready"}},
+			{feature: "is_final", id: "standby_is_final_s0", state: "ready", want: expectation{final: true}},
+			{feature: "events_from", id: "standby_events_from_s0", state: "ready", want: expectation{events: []string{}}},
+			{feature: "from_code", id: "standby_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "standby_from_code_unknown", input: 2, want: expectation{error: "E_UNKNOWN_CODE"}},
+		},
+	},
+	{
+		machine: "ticket",
+		cases: []vectorCase{
+			{feature: "initial", id: "ticket_initial", want: expectation{state: "open"}},
+			{feature: "code", id: "ticket_code_s0", state: "open", want: expectation{code: 1}},
+			{feature: "key", id: "ticket_key_s0", code: 1, want: expectation{key: "open"}},
+			{feature: "from_code", id: "ticket_from_code_s0", input: 1, want: expectation{state: "open"}},
+			{feature: "is_final", id: "ticket_is_final_s0", state: "open", want: expectation{final: false}},
+			{feature: "events_from", id: "ticket_events_from_s0", state: "open", want: expectation{events: []string{"submit"}}},
+			{feature: "code", id: "ticket_code_s1", state: "review", want: expectation{code: 3}},
+			{feature: "key", id: "ticket_key_s1", code: 3, want: expectation{key: "review"}},
+			{feature: "from_code", id: "ticket_from_code_s1", input: 3, want: expectation{state: "review"}},
+			{feature: "is_final", id: "ticket_is_final_s1", state: "review", want: expectation{final: false}},
+			{feature: "events_from", id: "ticket_events_from_s1", state: "review", want: expectation{events: []string{"approve", "reject"}}},
+			{feature: "code", id: "ticket_code_s2", state: "closed", want: expectation{code: 5}},
+			{feature: "key", id: "ticket_key_s2", code: 5, want: expectation{key: "closed"}},
+			{feature: "from_code", id: "ticket_from_code_s2", input: 5, want: expectation{state: "closed"}},
+			{feature: "is_final", id: "ticket_is_final_s2", state: "closed", want: expectation{final: true}},
+			{feature: "events_from", id: "ticket_events_from_s2", state: "closed", want: expectation{events: []string{}}},
+			{feature: "from_code", id: "ticket_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_unknown", input: 6, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_r2", input: 2, want: expectation{error: "E_RESERVED_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_r4", input: 4, want: expectation{error: "E_RESERVED_CODE"}},
+			{feature: "target", id: "ticket_target_s0_e0", state: "open", event: "submit", want: expectation{state: "review"}},
+			{feature: "target", id: "ticket_target_s0_e1", state: "open", event: "approve", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "ticket_target_s0_e2", state: "open", event: "reject", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "ticket_target_s1_e0", state: "review", event: "submit", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "ticket_target_s1_e1", state: "review", event: "approve", want: expectation{state: "closed"}},
+			{feature: "target", id: "ticket_target_s1_e2", state: "review", event: "reject", want: expectation{state: "open"}},
+			{feature: "target", id: "ticket_target_s2_e0", state: "closed", event: "submit", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "ticket_target_s2_e1", state: "closed", event: "approve", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "ticket_target_s2_e2", state: "closed", event: "reject", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "ticket_apply_s0_e0_s0", expected: "open", event: "submit", actual: "open", want: expectation{to: "review", changed: true}},
+			{feature: "apply", id: "ticket_apply_s0_e0_s1", expected: "open", event: "submit", actual: "review", want: expectation{to: "review", changed: false}},
+			{feature: "apply", id: "ticket_apply_s0_e0_s2", expected: "open", event: "submit", actual: "closed", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "ticket_apply_s1_e1_s1", expected: "review", event: "approve", actual: "review", want: expectation{to: "closed", changed: true}},
+			{feature: "apply", id: "ticket_apply_s1_e1_s2", expected: "review", event: "approve", actual: "closed", want: expectation{to: "closed", changed: false}},
+			{feature: "apply", id: "ticket_apply_s1_e1_s0", expected: "review", event: "approve", actual: "open", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "ticket_apply_s1_e2_s1", expected: "review", event: "reject", actual: "review", want: expectation{to: "open", changed: true}},
+			{feature: "apply", id: "ticket_apply_s1_e2_s0", expected: "review", event: "reject", actual: "open", want: expectation{to: "open", changed: false}},
+			{feature: "apply", id: "ticket_apply_s1_e2_s2", expected: "review", event: "reject", actual: "closed", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "ticket_apply_s0_e1_s0", expected: "open", event: "approve", actual: "open", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "ticket_apply_s0_e2_s0", expected: "open", event: "reject", actual: "open", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "ticket_apply_s1_e0_s1", expected: "review", event: "submit", actual: "review", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "ticket_apply_s2_e0_s2", expected: "closed", event: "submit", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "ticket_apply_s2_e1_s2", expected: "closed", event: "approve", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "ticket_apply_s2_e2_s2", expected: "closed", event: "reject", actual: "closed", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "persist", id: "ticket_persist_first", scenario: "first", expected: "open", event: "submit", stored: "open", want: expectation{storedAfter: "review", changed: true}},
+			{feature: "persist", id: "ticket_persist_retry", scenario: "retry", expected: "open", event: "submit", stored: "review", want: expectation{storedAfter: "review", changed: false}},
+			{feature: "persist", id: "ticket_persist_conflict", scenario: "conflict", expected: "open", event: "submit", stored: "closed", want: expectation{error: "E_CONFLICT", storedAfter: "closed"}},
+		},
+	},
+}
+
+// machines maps the key of each machine to its adapter; the conformance test runs the cases of a machine through it.
+var machines = map[string]machineUnderTest{
+	"in_review": in_reviewMachine{},
+	"limits": limitsMachine{},
+	"order": orderMachine{},
+	"standby": standbyMachine{},
+	"ticket": ticketMachine{},
+}
+
+// in_reviewMachine is the adapter of the in_review machine: its constants by key and its functions by key (docs/spec/fsm.md, B-6).
+type in_reviewMachine struct{}
+
+// in_reviewStates and in_reviewEvents map the keys of the in_review machine to its constants.
+var in_reviewStates = map[string]in_review.State{
+	"to_do":       in_review.StateToDo,
+	"in_progress": in_review.StateInProgress,
+	"done_now":    in_review.StateDoneNow,
+}
+
+var in_reviewEvents = map[string]in_review.Event{
+	"start_work":  in_review.EventStartWork,
+	"finish_work": in_review.EventFinishWork,
+	"reopen_work": in_review.EventReopenWork,
+}
+
+func (in_reviewMachine) initial() (string, error) {
+	return in_review.Key(in_review.Initial())
+}
+
+func (in_reviewMachine) code(state string) (int32, error) {
+	value, err := lookup(in_reviewStates, "state", state)
+	if err != nil {
+		return 0, err
+	}
+	return in_review.Code(value)
+}
+
+func (in_reviewMachine) key(code int64) (string, error) {
+	value, err := int32Of(code)
+	if err != nil {
+		return "", err
+	}
+	return in_review.Key(in_review.State(value))
+}
+
+func (in_reviewMachine) fromCode(code int64) (string, error) {
+	value, err := in_review.FromCode(code)
+	if err != nil {
+		return "", err
+	}
+	return in_review.Key(value)
+}
+
+func (in_reviewMachine) isFinal(state string) (bool, error) {
+	value, err := lookup(in_reviewStates, "state", state)
+	if err != nil {
+		return false, err
+	}
+	return in_review.IsFinal(value)
+}
+
+func (in_reviewMachine) eventsFrom(state string) ([]string, error) {
+	value, err := lookup(in_reviewStates, "state", state)
+	if err != nil {
+		return nil, err
+	}
+	events, err := in_review.EventsFrom(value)
+	if err != nil {
+		return nil, err
+	}
+	keys := make([]string, 0, len(events))
+	for _, event := range events {
+		key, err := keyOf(in_reviewEvents, "event", event)
+		if err != nil {
+			return nil, err
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+func (in_reviewMachine) target(expected, event string) (string, error) {
+	from, err := lookup(in_reviewStates, "state", expected)
+	if err != nil {
+		return "", err
+	}
+	value, err := lookup(in_reviewEvents, "event", event)
+	if err != nil {
+		return "", err
+	}
+	to, err := in_review.Target(from, value)
+	if err != nil {
+		return "", err
+	}
+	return keyOf(in_reviewStates, "state", to)
+}
+
+func (in_reviewMachine) apply(expected, event, actual string) (string, bool, error) {
+	from, err := lookup(in_reviewStates, "state", expected)
+	if err != nil {
+		return "", false, err
+	}
+	value, err := lookup(in_reviewEvents, "event", event)
+	if err != nil {
+		return "", false, err
+	}
+	observed, err := lookup(in_reviewStates, "state", actual)
+	if err != nil {
+		return "", false, err
+	}
+	step, err := in_review.Apply(from, value, observed)
+	if err != nil {
+		return "", false, err
+	}
+	to, err := keyOf(in_reviewStates, "state", step.To)
+	return to, step.Changed, err
+}
+
+func (in_reviewMachine) decide(expected, event string) examples.Decide {
+	return func(stored int64) (int32, bool, error) {
+		from, err := lookup(in_reviewStates, "state", expected)
+		if err != nil {
+			return 0, false, err
+		}
+		value, err := lookup(in_reviewEvents, "event", event)
+		if err != nil {
+			return 0, false, err
+		}
+		observed, err := in_review.FromCode(stored)
+		if err != nil {
+			return 0, false, err
+		}
+		step, err := in_review.Apply(from, value, observed)
+		if err != nil {
+			return 0, false, err
+		}
+		code, err := in_review.Code(step.To)
+		return code, step.Changed, err
+	}
+}
+
+// limitsMachine is the adapter of the limits machine: its constants by key and its functions by key (docs/spec/fsm.md, B-6).
+type limitsMachine struct{}
+
+// limitsStates and limitsEvents map the keys of the limits machine to its constants.
+var limitsStates = map[string]limits.State{
+	"floor":   limits.StateFloor,
+	"ceiling": limits.StateCeiling,
+}
+
+var limitsEvents = map[string]limits.Event{
+	"rise": limits.EventRise,
+}
+
+func (limitsMachine) initial() (string, error) {
+	return limits.Key(limits.Initial())
+}
+
+func (limitsMachine) code(state string) (int32, error) {
+	value, err := lookup(limitsStates, "state", state)
+	if err != nil {
+		return 0, err
+	}
+	return limits.Code(value)
+}
+
+func (limitsMachine) key(code int64) (string, error) {
+	value, err := int32Of(code)
+	if err != nil {
+		return "", err
+	}
+	return limits.Key(limits.State(value))
+}
+
+func (limitsMachine) fromCode(code int64) (string, error) {
+	value, err := limits.FromCode(code)
+	if err != nil {
+		return "", err
+	}
+	return limits.Key(value)
+}
+
+func (limitsMachine) isFinal(state string) (bool, error) {
+	value, err := lookup(limitsStates, "state", state)
+	if err != nil {
+		return false, err
+	}
+	return limits.IsFinal(value)
+}
+
+func (limitsMachine) eventsFrom(state string) ([]string, error) {
+	value, err := lookup(limitsStates, "state", state)
+	if err != nil {
+		return nil, err
+	}
+	events, err := limits.EventsFrom(value)
+	if err != nil {
+		return nil, err
+	}
+	keys := make([]string, 0, len(events))
+	for _, event := range events {
+		key, err := keyOf(limitsEvents, "event", event)
+		if err != nil {
+			return nil, err
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+func (limitsMachine) target(expected, event string) (string, error) {
+	from, err := lookup(limitsStates, "state", expected)
+	if err != nil {
+		return "", err
+	}
+	value, err := lookup(limitsEvents, "event", event)
+	if err != nil {
+		return "", err
+	}
+	to, err := limits.Target(from, value)
+	if err != nil {
+		return "", err
+	}
+	return keyOf(limitsStates, "state", to)
+}
+
+func (limitsMachine) apply(expected, event, actual string) (string, bool, error) {
+	from, err := lookup(limitsStates, "state", expected)
+	if err != nil {
+		return "", false, err
+	}
+	value, err := lookup(limitsEvents, "event", event)
+	if err != nil {
+		return "", false, err
+	}
+	observed, err := lookup(limitsStates, "state", actual)
+	if err != nil {
+		return "", false, err
+	}
+	step, err := limits.Apply(from, value, observed)
+	if err != nil {
+		return "", false, err
+	}
+	to, err := keyOf(limitsStates, "state", step.To)
+	return to, step.Changed, err
+}
+
+func (limitsMachine) decide(expected, event string) examples.Decide {
+	return func(stored int64) (int32, bool, error) {
+		from, err := lookup(limitsStates, "state", expected)
+		if err != nil {
+			return 0, false, err
+		}
+		value, err := lookup(limitsEvents, "event", event)
+		if err != nil {
+			return 0, false, err
+		}
+		observed, err := limits.FromCode(stored)
+		if err != nil {
+			return 0, false, err
+		}
+		step, err := limits.Apply(from, value, observed)
+		if err != nil {
+			return 0, false, err
+		}
+		code, err := limits.Code(step.To)
+		return code, step.Changed, err
+	}
+}
+
+// orderMachine is the adapter of the order machine: its constants by key and its functions by key (docs/spec/fsm.md, B-6).
+type orderMachine struct{}
+
+// orderStates and orderEvents map the keys of the order machine to its constants.
+var orderStates = map[string]order.State{
+	"draft":    order.StateDraft,
+	"paid":     order.StatePaid,
+	"shipped":  order.StateShipped,
+	"done":     order.StateDone,
+	"canceled": order.StateCanceled,
+}
+
+var orderEvents = map[string]order.Event{
+	"next":   order.EventNext,
+	"prev":   order.EventPrev,
+	"cancel": order.EventCancel,
+}
+
+func (orderMachine) initial() (string, error) {
+	return order.Key(order.Initial())
+}
+
+func (orderMachine) code(state string) (int32, error) {
+	value, err := lookup(orderStates, "state", state)
+	if err != nil {
+		return 0, err
+	}
+	return order.Code(value)
+}
+
+func (orderMachine) key(code int64) (string, error) {
+	value, err := int32Of(code)
+	if err != nil {
+		return "", err
+	}
+	return order.Key(order.State(value))
+}
+
+func (orderMachine) fromCode(code int64) (string, error) {
+	value, err := order.FromCode(code)
+	if err != nil {
+		return "", err
+	}
+	return order.Key(value)
+}
+
+func (orderMachine) isFinal(state string) (bool, error) {
+	value, err := lookup(orderStates, "state", state)
+	if err != nil {
+		return false, err
+	}
+	return order.IsFinal(value)
+}
+
+func (orderMachine) eventsFrom(state string) ([]string, error) {
+	value, err := lookup(orderStates, "state", state)
+	if err != nil {
+		return nil, err
+	}
+	events, err := order.EventsFrom(value)
+	if err != nil {
+		return nil, err
+	}
+	keys := make([]string, 0, len(events))
+	for _, event := range events {
+		key, err := keyOf(orderEvents, "event", event)
+		if err != nil {
+			return nil, err
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+func (orderMachine) target(expected, event string) (string, error) {
+	from, err := lookup(orderStates, "state", expected)
+	if err != nil {
+		return "", err
+	}
+	value, err := lookup(orderEvents, "event", event)
+	if err != nil {
+		return "", err
+	}
+	to, err := order.Target(from, value)
+	if err != nil {
+		return "", err
+	}
+	return keyOf(orderStates, "state", to)
+}
+
+func (orderMachine) apply(expected, event, actual string) (string, bool, error) {
+	from, err := lookup(orderStates, "state", expected)
+	if err != nil {
+		return "", false, err
+	}
+	value, err := lookup(orderEvents, "event", event)
+	if err != nil {
+		return "", false, err
+	}
+	observed, err := lookup(orderStates, "state", actual)
+	if err != nil {
+		return "", false, err
+	}
+	step, err := order.Apply(from, value, observed)
+	if err != nil {
+		return "", false, err
+	}
+	to, err := keyOf(orderStates, "state", step.To)
+	return to, step.Changed, err
+}
+
+func (orderMachine) decide(expected, event string) examples.Decide {
+	return func(stored int64) (int32, bool, error) {
+		from, err := lookup(orderStates, "state", expected)
+		if err != nil {
+			return 0, false, err
+		}
+		value, err := lookup(orderEvents, "event", event)
+		if err != nil {
+			return 0, false, err
+		}
+		observed, err := order.FromCode(stored)
+		if err != nil {
+			return 0, false, err
+		}
+		step, err := order.Apply(from, value, observed)
+		if err != nil {
+			return 0, false, err
+		}
+		code, err := order.Code(step.To)
+		return code, step.Changed, err
+	}
+}
+
+// standbyMachine is the adapter of the standby machine: its constants by key and its functions by key (docs/spec/fsm.md, B-6).
+type standbyMachine struct{}
+
+// standbyStates and standbyEvents map the keys of the standby machine to its constants.
+var standbyStates = map[string]standby.State{
+	"ready": standby.StateReady,
+}
+
+var standbyEvents = map[string]standby.Event{
+}
+
+func (standbyMachine) initial() (string, error) {
+	return standby.Key(standby.Initial())
+}
+
+func (standbyMachine) code(state string) (int32, error) {
+	value, err := lookup(standbyStates, "state", state)
+	if err != nil {
+		return 0, err
+	}
+	return standby.Code(value)
+}
+
+func (standbyMachine) key(code int64) (string, error) {
+	value, err := int32Of(code)
+	if err != nil {
+		return "", err
+	}
+	return standby.Key(standby.State(value))
+}
+
+func (standbyMachine) fromCode(code int64) (string, error) {
+	value, err := standby.FromCode(code)
+	if err != nil {
+		return "", err
+	}
+	return standby.Key(value)
+}
+
+func (standbyMachine) isFinal(state string) (bool, error) {
+	value, err := lookup(standbyStates, "state", state)
+	if err != nil {
+		return false, err
+	}
+	return standby.IsFinal(value)
+}
+
+func (standbyMachine) eventsFrom(state string) ([]string, error) {
+	value, err := lookup(standbyStates, "state", state)
+	if err != nil {
+		return nil, err
+	}
+	events, err := standby.EventsFrom(value)
+	if err != nil {
+		return nil, err
+	}
+	keys := make([]string, 0, len(events))
+	for _, event := range events {
+		key, err := keyOf(standbyEvents, "event", event)
+		if err != nil {
+			return nil, err
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+func (standbyMachine) target(expected, event string) (string, error) {
+	from, err := lookup(standbyStates, "state", expected)
+	if err != nil {
+		return "", err
+	}
+	value, err := lookup(standbyEvents, "event", event)
+	if err != nil {
+		return "", err
+	}
+	to, err := standby.Target(from, value)
+	if err != nil {
+		return "", err
+	}
+	return keyOf(standbyStates, "state", to)
+}
+
+func (standbyMachine) apply(expected, event, actual string) (string, bool, error) {
+	from, err := lookup(standbyStates, "state", expected)
+	if err != nil {
+		return "", false, err
+	}
+	value, err := lookup(standbyEvents, "event", event)
+	if err != nil {
+		return "", false, err
+	}
+	observed, err := lookup(standbyStates, "state", actual)
+	if err != nil {
+		return "", false, err
+	}
+	step, err := standby.Apply(from, value, observed)
+	if err != nil {
+		return "", false, err
+	}
+	to, err := keyOf(standbyStates, "state", step.To)
+	return to, step.Changed, err
+}
+
+func (standbyMachine) decide(expected, event string) examples.Decide {
+	return func(stored int64) (int32, bool, error) {
+		from, err := lookup(standbyStates, "state", expected)
+		if err != nil {
+			return 0, false, err
+		}
+		value, err := lookup(standbyEvents, "event", event)
+		if err != nil {
+			return 0, false, err
+		}
+		observed, err := standby.FromCode(stored)
+		if err != nil {
+			return 0, false, err
+		}
+		step, err := standby.Apply(from, value, observed)
+		if err != nil {
+			return 0, false, err
+		}
+		code, err := standby.Code(step.To)
+		return code, step.Changed, err
+	}
+}
+
+// ticketMachine is the adapter of the ticket machine: its constants by key and its functions by key (docs/spec/fsm.md, B-6).
+type ticketMachine struct{}
+
+// ticketStates and ticketEvents map the keys of the ticket machine to its constants.
+var ticketStates = map[string]ticket.State{
+	"open":   ticket.StateOpen,
+	"review": ticket.StateReview,
+	"closed": ticket.StateClosed,
+}
+
+var ticketEvents = map[string]ticket.Event{
+	"submit":  ticket.EventSubmit,
+	"approve": ticket.EventApprove,
+	"reject":  ticket.EventReject,
+}
+
+func (ticketMachine) initial() (string, error) {
+	return ticket.Key(ticket.Initial())
+}
+
+func (ticketMachine) code(state string) (int32, error) {
+	value, err := lookup(ticketStates, "state", state)
+	if err != nil {
+		return 0, err
+	}
+	return ticket.Code(value)
+}
+
+func (ticketMachine) key(code int64) (string, error) {
+	value, err := int32Of(code)
+	if err != nil {
+		return "", err
+	}
+	return ticket.Key(ticket.State(value))
+}
+
+func (ticketMachine) fromCode(code int64) (string, error) {
+	value, err := ticket.FromCode(code)
+	if err != nil {
+		return "", err
+	}
+	return ticket.Key(value)
+}
+
+func (ticketMachine) isFinal(state string) (bool, error) {
+	value, err := lookup(ticketStates, "state", state)
+	if err != nil {
+		return false, err
+	}
+	return ticket.IsFinal(value)
+}
+
+func (ticketMachine) eventsFrom(state string) ([]string, error) {
+	value, err := lookup(ticketStates, "state", state)
+	if err != nil {
+		return nil, err
+	}
+	events, err := ticket.EventsFrom(value)
+	if err != nil {
+		return nil, err
+	}
+	keys := make([]string, 0, len(events))
+	for _, event := range events {
+		key, err := keyOf(ticketEvents, "event", event)
+		if err != nil {
+			return nil, err
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+func (ticketMachine) target(expected, event string) (string, error) {
+	from, err := lookup(ticketStates, "state", expected)
+	if err != nil {
+		return "", err
+	}
+	value, err := lookup(ticketEvents, "event", event)
+	if err != nil {
+		return "", err
+	}
+	to, err := ticket.Target(from, value)
+	if err != nil {
+		return "", err
+	}
+	return keyOf(ticketStates, "state", to)
+}
+
+func (ticketMachine) apply(expected, event, actual string) (string, bool, error) {
+	from, err := lookup(ticketStates, "state", expected)
+	if err != nil {
+		return "", false, err
+	}
+	value, err := lookup(ticketEvents, "event", event)
+	if err != nil {
+		return "", false, err
+	}
+	observed, err := lookup(ticketStates, "state", actual)
+	if err != nil {
+		return "", false, err
+	}
+	step, err := ticket.Apply(from, value, observed)
+	if err != nil {
+		return "", false, err
+	}
+	to, err := keyOf(ticketStates, "state", step.To)
+	return to, step.Changed, err
+}
+
+func (ticketMachine) decide(expected, event string) examples.Decide {
+	return func(stored int64) (int32, bool, error) {
+		from, err := lookup(ticketStates, "state", expected)
+		if err != nil {
+			return 0, false, err
+		}
+		value, err := lookup(ticketEvents, "event", event)
+		if err != nil {
+			return 0, false, err
+		}
+		observed, err := ticket.FromCode(stored)
+		if err != nil {
+			return 0, false, err
+		}
+		step, err := ticket.Apply(from, value, observed)
+		if err != nil {
+			return 0, false, err
+		}
+		code, err := ticket.Code(step.To)
+		return code, step.Changed, err
+	}
 }

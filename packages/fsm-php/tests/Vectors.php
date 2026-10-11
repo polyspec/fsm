@@ -11,6 +11,761 @@ final class Vectors
     public static function cases(): array
     {
         return [
+            'test_initial__in_review_initial' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'initial',
+                    'id' => 'in_review_initial',
+                    'expect' => [
+                        'state' => 'to_do',
+                    ],
+                ],
+            ],
+            'test_code__in_review_code_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'in_review_code_s0',
+                    'state' => 'to_do',
+                    'expect' => 1,
+                ],
+            ],
+            'test_key__in_review_key_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'in_review_key_s0',
+                    'code' => 1,
+                    'expect' => 'to_do',
+                ],
+            ],
+            'test_from_code__in_review_from_code_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_s0',
+                    'input' => 1,
+                    'expect' => [
+                        'state' => 'to_do',
+                    ],
+                ],
+            ],
+            'test_is_final__in_review_is_final_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'in_review_is_final_s0',
+                    'state' => 'to_do',
+                    'expect' => false,
+                ],
+            ],
+            'test_events_from__in_review_events_from_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'in_review_events_from_s0',
+                    'state' => 'to_do',
+                    'expect' => [
+                        'start_work',
+                    ],
+                ],
+            ],
+            'test_code__in_review_code_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'in_review_code_s1',
+                    'state' => 'in_progress',
+                    'expect' => 2,
+                ],
+            ],
+            'test_key__in_review_key_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'in_review_key_s1',
+                    'code' => 2,
+                    'expect' => 'in_progress',
+                ],
+            ],
+            'test_from_code__in_review_from_code_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_s1',
+                    'input' => 2,
+                    'expect' => [
+                        'state' => 'in_progress',
+                    ],
+                ],
+            ],
+            'test_is_final__in_review_is_final_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'in_review_is_final_s1',
+                    'state' => 'in_progress',
+                    'expect' => false,
+                ],
+            ],
+            'test_events_from__in_review_events_from_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'in_review_events_from_s1',
+                    'state' => 'in_progress',
+                    'expect' => [
+                        'finish_work',
+                        'reopen_work',
+                    ],
+                ],
+            ],
+            'test_code__in_review_code_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'in_review_code_s2',
+                    'state' => 'done_now',
+                    'expect' => 3,
+                ],
+            ],
+            'test_key__in_review_key_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'in_review_key_s2',
+                    'code' => 3,
+                    'expect' => 'done_now',
+                ],
+            ],
+            'test_from_code__in_review_from_code_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_s2',
+                    'input' => 3,
+                    'expect' => [
+                        'state' => 'done_now',
+                    ],
+                ],
+            ],
+            'test_is_final__in_review_is_final_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'in_review_is_final_s2',
+                    'state' => 'done_now',
+                    'expect' => true,
+                ],
+            ],
+            'test_events_from__in_review_events_from_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'in_review_events_from_s2',
+                    'state' => 'done_now',
+                    'expect' => [],
+                ],
+            ],
+            'test_from_code__in_review_from_code_zero' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_zero',
+                    'input' => 0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                    ],
+                ],
+            ],
+            'test_from_code__in_review_from_code_unknown' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_unknown',
+                    'input' => 4,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s0_e0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s0_e0',
+                    'state' => 'to_do',
+                    'event' => 'start_work',
+                    'expect' => [
+                        'state' => 'in_progress',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s0_e1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s0_e1',
+                    'state' => 'to_do',
+                    'event' => 'finish_work',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s0_e2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s0_e2',
+                    'state' => 'to_do',
+                    'event' => 'reopen_work',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s1_e0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s1_e0',
+                    'state' => 'in_progress',
+                    'event' => 'start_work',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s1_e1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s1_e1',
+                    'state' => 'in_progress',
+                    'event' => 'finish_work',
+                    'expect' => [
+                        'state' => 'done_now',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s1_e2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s1_e2',
+                    'state' => 'in_progress',
+                    'event' => 'reopen_work',
+                    'expect' => [
+                        'state' => 'to_do',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s2_e0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s2_e0',
+                    'state' => 'done_now',
+                    'event' => 'start_work',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s2_e1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s2_e1',
+                    'state' => 'done_now',
+                    'event' => 'finish_work',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__in_review_target_s2_e2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'in_review_target_s2_e2',
+                    'state' => 'done_now',
+                    'event' => 'reopen_work',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s0_e0_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s0_e0_s0',
+                    'expected' => 'to_do',
+                    'event' => 'start_work',
+                    'actual' => 'to_do',
+                    'expect' => [
+                        'to' => 'in_progress',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s0_e0_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s0_e0_s1',
+                    'expected' => 'to_do',
+                    'event' => 'start_work',
+                    'actual' => 'in_progress',
+                    'expect' => [
+                        'to' => 'in_progress',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s0_e0_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s0_e0_s2',
+                    'expected' => 'to_do',
+                    'event' => 'start_work',
+                    'actual' => 'done_now',
+                    'expect' => [
+                        'error' => 'E_CONFLICT',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s1_e1_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s1_e1_s1',
+                    'expected' => 'in_progress',
+                    'event' => 'finish_work',
+                    'actual' => 'in_progress',
+                    'expect' => [
+                        'to' => 'done_now',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s1_e1_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s1_e1_s2',
+                    'expected' => 'in_progress',
+                    'event' => 'finish_work',
+                    'actual' => 'done_now',
+                    'expect' => [
+                        'to' => 'done_now',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s1_e1_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s1_e1_s0',
+                    'expected' => 'in_progress',
+                    'event' => 'finish_work',
+                    'actual' => 'to_do',
+                    'expect' => [
+                        'error' => 'E_CONFLICT',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s1_e2_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s1_e2_s1',
+                    'expected' => 'in_progress',
+                    'event' => 'reopen_work',
+                    'actual' => 'in_progress',
+                    'expect' => [
+                        'to' => 'to_do',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s1_e2_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s1_e2_s0',
+                    'expected' => 'in_progress',
+                    'event' => 'reopen_work',
+                    'actual' => 'to_do',
+                    'expect' => [
+                        'to' => 'to_do',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s1_e2_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s1_e2_s2',
+                    'expected' => 'in_progress',
+                    'event' => 'reopen_work',
+                    'actual' => 'done_now',
+                    'expect' => [
+                        'error' => 'E_CONFLICT',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s0_e1_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s0_e1_s0',
+                    'expected' => 'to_do',
+                    'event' => 'finish_work',
+                    'actual' => 'to_do',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s0_e2_s0' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s0_e2_s0',
+                    'expected' => 'to_do',
+                    'event' => 'reopen_work',
+                    'actual' => 'to_do',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s1_e0_s1' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s1_e0_s1',
+                    'expected' => 'in_progress',
+                    'event' => 'start_work',
+                    'actual' => 'in_progress',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s2_e0_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s2_e0_s2',
+                    'expected' => 'done_now',
+                    'event' => 'start_work',
+                    'actual' => 'done_now',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s2_e1_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s2_e1_s2',
+                    'expected' => 'done_now',
+                    'event' => 'finish_work',
+                    'actual' => 'done_now',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__in_review_apply_s2_e2_s2' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'in_review_apply_s2_e2_s2',
+                    'expected' => 'done_now',
+                    'event' => 'reopen_work',
+                    'actual' => 'done_now',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_persist__in_review_persist_first' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'persist',
+                    'id' => 'in_review_persist_first',
+                    'scenario' => 'first',
+                    'expected' => 'to_do',
+                    'event' => 'start_work',
+                    'stored' => 'to_do',
+                    'expect' => [
+                        'stored_after' => 'in_progress',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_persist__in_review_persist_retry' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'persist',
+                    'id' => 'in_review_persist_retry',
+                    'scenario' => 'retry',
+                    'expected' => 'to_do',
+                    'event' => 'start_work',
+                    'stored' => 'in_progress',
+                    'expect' => [
+                        'stored_after' => 'in_progress',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_persist__in_review_persist_conflict' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'persist',
+                    'id' => 'in_review_persist_conflict',
+                    'scenario' => 'conflict',
+                    'expected' => 'to_do',
+                    'event' => 'start_work',
+                    'stored' => 'done_now',
+                    'expect' => [
+                        'error' => 'E_CONFLICT',
+                        'stored_after' => 'done_now',
+                    ],
+                ],
+            ],
+            'test_initial__limits_initial' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'initial',
+                    'id' => 'limits_initial',
+                    'expect' => [
+                        'state' => 'floor',
+                    ],
+                ],
+            ],
+            'test_code__limits_code_s0' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'limits_code_s0',
+                    'state' => 'floor',
+                    'expect' => 1,
+                ],
+            ],
+            'test_key__limits_key_s0' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'limits_key_s0',
+                    'code' => 1,
+                    'expect' => 'floor',
+                ],
+            ],
+            'test_from_code__limits_from_code_s0' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_s0',
+                    'input' => 1,
+                    'expect' => [
+                        'state' => 'floor',
+                    ],
+                ],
+            ],
+            'test_is_final__limits_is_final_s0' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'limits_is_final_s0',
+                    'state' => 'floor',
+                    'expect' => false,
+                ],
+            ],
+            'test_events_from__limits_events_from_s0' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'limits_events_from_s0',
+                    'state' => 'floor',
+                    'expect' => [
+                        'rise',
+                    ],
+                ],
+            ],
+            'test_code__limits_code_s1' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'limits_code_s1',
+                    'state' => 'ceiling',
+                    'expect' => 2147483647,
+                ],
+            ],
+            'test_key__limits_key_s1' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'limits_key_s1',
+                    'code' => 2147483647,
+                    'expect' => 'ceiling',
+                ],
+            ],
+            'test_from_code__limits_from_code_s1' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_s1',
+                    'input' => 2147483647,
+                    'expect' => [
+                        'state' => 'ceiling',
+                    ],
+                ],
+            ],
+            'test_is_final__limits_is_final_s1' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'limits_is_final_s1',
+                    'state' => 'ceiling',
+                    'expect' => true,
+                ],
+            ],
+            'test_events_from__limits_events_from_s1' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'limits_events_from_s1',
+                    'state' => 'ceiling',
+                    'expect' => [],
+                ],
+            ],
+            'test_from_code__limits_from_code_zero' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_zero',
+                    'input' => 0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                    ],
+                ],
+            ],
+            'test_from_code__limits_from_code_unknown' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_unknown',
+                    'input' => 2,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                    ],
+                ],
+            ],
+            'test_target__limits_target_s0_e0' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'limits_target_s0_e0',
+                    'state' => 'floor',
+                    'event' => 'rise',
+                    'expect' => [
+                        'state' => 'ceiling',
+                    ],
+                ],
+            ],
+            'test_target__limits_target_s1_e0' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'limits_target_s1_e0',
+                    'state' => 'ceiling',
+                    'event' => 'rise',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__limits_apply_s0_e0_s0' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'limits_apply_s0_e0_s0',
+                    'expected' => 'floor',
+                    'event' => 'rise',
+                    'actual' => 'floor',
+                    'expect' => [
+                        'to' => 'ceiling',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_apply__limits_apply_s0_e0_s1' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'limits_apply_s0_e0_s1',
+                    'expected' => 'floor',
+                    'event' => 'rise',
+                    'actual' => 'ceiling',
+                    'expect' => [
+                        'to' => 'ceiling',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_apply__limits_apply_s1_e0_s1' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'limits_apply_s1_e0_s1',
+                    'expected' => 'ceiling',
+                    'event' => 'rise',
+                    'actual' => 'ceiling',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_persist__limits_persist_first' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'persist',
+                    'id' => 'limits_persist_first',
+                    'scenario' => 'first',
+                    'expected' => 'floor',
+                    'event' => 'rise',
+                    'stored' => 'floor',
+                    'expect' => [
+                        'stored_after' => 'ceiling',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_persist__limits_persist_retry' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'persist',
+                    'id' => 'limits_persist_retry',
+                    'scenario' => 'retry',
+                    'expected' => 'floor',
+                    'event' => 'rise',
+                    'stored' => 'ceiling',
+                    'expect' => [
+                        'stored_after' => 'ceiling',
+                        'changed' => false,
+                    ],
+                ],
+            ],
             'test_initial__order_initial' => [
                 'machine' => 'order',
                 'case' => [
@@ -1083,6 +1838,639 @@ final class Vectors
                     'expect' => [
                         'error' => 'E_CONFLICT',
                         'stored_after' => 'shipped',
+                    ],
+                ],
+            ],
+            'test_initial__standby_initial' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'initial',
+                    'id' => 'standby_initial',
+                    'expect' => [
+                        'state' => 'ready',
+                    ],
+                ],
+            ],
+            'test_code__standby_code_s0' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'standby_code_s0',
+                    'state' => 'ready',
+                    'expect' => 1,
+                ],
+            ],
+            'test_key__standby_key_s0' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'standby_key_s0',
+                    'code' => 1,
+                    'expect' => 'ready',
+                ],
+            ],
+            'test_from_code__standby_from_code_s0' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_s0',
+                    'input' => 1,
+                    'expect' => [
+                        'state' => 'ready',
+                    ],
+                ],
+            ],
+            'test_is_final__standby_is_final_s0' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'standby_is_final_s0',
+                    'state' => 'ready',
+                    'expect' => true,
+                ],
+            ],
+            'test_events_from__standby_events_from_s0' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'standby_events_from_s0',
+                    'state' => 'ready',
+                    'expect' => [],
+                ],
+            ],
+            'test_from_code__standby_from_code_zero' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_zero',
+                    'input' => 0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                    ],
+                ],
+            ],
+            'test_from_code__standby_from_code_unknown' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_unknown',
+                    'input' => 2,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                    ],
+                ],
+            ],
+            'test_initial__ticket_initial' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'initial',
+                    'id' => 'ticket_initial',
+                    'expect' => [
+                        'state' => 'open',
+                    ],
+                ],
+            ],
+            'test_code__ticket_code_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'ticket_code_s0',
+                    'state' => 'open',
+                    'expect' => 1,
+                ],
+            ],
+            'test_key__ticket_key_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'ticket_key_s0',
+                    'code' => 1,
+                    'expect' => 'open',
+                ],
+            ],
+            'test_from_code__ticket_from_code_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_s0',
+                    'input' => 1,
+                    'expect' => [
+                        'state' => 'open',
+                    ],
+                ],
+            ],
+            'test_is_final__ticket_is_final_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'ticket_is_final_s0',
+                    'state' => 'open',
+                    'expect' => false,
+                ],
+            ],
+            'test_events_from__ticket_events_from_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'ticket_events_from_s0',
+                    'state' => 'open',
+                    'expect' => [
+                        'submit',
+                    ],
+                ],
+            ],
+            'test_code__ticket_code_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'ticket_code_s1',
+                    'state' => 'review',
+                    'expect' => 3,
+                ],
+            ],
+            'test_key__ticket_key_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'ticket_key_s1',
+                    'code' => 3,
+                    'expect' => 'review',
+                ],
+            ],
+            'test_from_code__ticket_from_code_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_s1',
+                    'input' => 3,
+                    'expect' => [
+                        'state' => 'review',
+                    ],
+                ],
+            ],
+            'test_is_final__ticket_is_final_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'ticket_is_final_s1',
+                    'state' => 'review',
+                    'expect' => false,
+                ],
+            ],
+            'test_events_from__ticket_events_from_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'ticket_events_from_s1',
+                    'state' => 'review',
+                    'expect' => [
+                        'approve',
+                        'reject',
+                    ],
+                ],
+            ],
+            'test_code__ticket_code_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'code',
+                    'id' => 'ticket_code_s2',
+                    'state' => 'closed',
+                    'expect' => 5,
+                ],
+            ],
+            'test_key__ticket_key_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'key',
+                    'id' => 'ticket_key_s2',
+                    'code' => 5,
+                    'expect' => 'closed',
+                ],
+            ],
+            'test_from_code__ticket_from_code_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_s2',
+                    'input' => 5,
+                    'expect' => [
+                        'state' => 'closed',
+                    ],
+                ],
+            ],
+            'test_is_final__ticket_is_final_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'is_final',
+                    'id' => 'ticket_is_final_s2',
+                    'state' => 'closed',
+                    'expect' => true,
+                ],
+            ],
+            'test_events_from__ticket_events_from_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'events_from',
+                    'id' => 'ticket_events_from_s2',
+                    'state' => 'closed',
+                    'expect' => [],
+                ],
+            ],
+            'test_from_code__ticket_from_code_zero' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_zero',
+                    'input' => 0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_unknown' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_unknown',
+                    'input' => 6,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_r2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_r2',
+                    'input' => 2,
+                    'expect' => [
+                        'error' => 'E_RESERVED_CODE',
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_r4' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_r4',
+                    'input' => 4,
+                    'expect' => [
+                        'error' => 'E_RESERVED_CODE',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s0_e0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s0_e0',
+                    'state' => 'open',
+                    'event' => 'submit',
+                    'expect' => [
+                        'state' => 'review',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s0_e1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s0_e1',
+                    'state' => 'open',
+                    'event' => 'approve',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s0_e2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s0_e2',
+                    'state' => 'open',
+                    'event' => 'reject',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s1_e0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s1_e0',
+                    'state' => 'review',
+                    'event' => 'submit',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s1_e1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s1_e1',
+                    'state' => 'review',
+                    'event' => 'approve',
+                    'expect' => [
+                        'state' => 'closed',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s1_e2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s1_e2',
+                    'state' => 'review',
+                    'event' => 'reject',
+                    'expect' => [
+                        'state' => 'open',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s2_e0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s2_e0',
+                    'state' => 'closed',
+                    'event' => 'submit',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s2_e1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s2_e1',
+                    'state' => 'closed',
+                    'event' => 'approve',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_target__ticket_target_s2_e2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'target',
+                    'id' => 'ticket_target_s2_e2',
+                    'state' => 'closed',
+                    'event' => 'reject',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s0_e0_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s0_e0_s0',
+                    'expected' => 'open',
+                    'event' => 'submit',
+                    'actual' => 'open',
+                    'expect' => [
+                        'to' => 'review',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s0_e0_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s0_e0_s1',
+                    'expected' => 'open',
+                    'event' => 'submit',
+                    'actual' => 'review',
+                    'expect' => [
+                        'to' => 'review',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s0_e0_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s0_e0_s2',
+                    'expected' => 'open',
+                    'event' => 'submit',
+                    'actual' => 'closed',
+                    'expect' => [
+                        'error' => 'E_CONFLICT',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s1_e1_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s1_e1_s1',
+                    'expected' => 'review',
+                    'event' => 'approve',
+                    'actual' => 'review',
+                    'expect' => [
+                        'to' => 'closed',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s1_e1_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s1_e1_s2',
+                    'expected' => 'review',
+                    'event' => 'approve',
+                    'actual' => 'closed',
+                    'expect' => [
+                        'to' => 'closed',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s1_e1_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s1_e1_s0',
+                    'expected' => 'review',
+                    'event' => 'approve',
+                    'actual' => 'open',
+                    'expect' => [
+                        'error' => 'E_CONFLICT',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s1_e2_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s1_e2_s1',
+                    'expected' => 'review',
+                    'event' => 'reject',
+                    'actual' => 'review',
+                    'expect' => [
+                        'to' => 'open',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s1_e2_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s1_e2_s0',
+                    'expected' => 'review',
+                    'event' => 'reject',
+                    'actual' => 'open',
+                    'expect' => [
+                        'to' => 'open',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s1_e2_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s1_e2_s2',
+                    'expected' => 'review',
+                    'event' => 'reject',
+                    'actual' => 'closed',
+                    'expect' => [
+                        'error' => 'E_CONFLICT',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s0_e1_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s0_e1_s0',
+                    'expected' => 'open',
+                    'event' => 'approve',
+                    'actual' => 'open',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s0_e2_s0' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s0_e2_s0',
+                    'expected' => 'open',
+                    'event' => 'reject',
+                    'actual' => 'open',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s1_e0_s1' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s1_e0_s1',
+                    'expected' => 'review',
+                    'event' => 'submit',
+                    'actual' => 'review',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s2_e0_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s2_e0_s2',
+                    'expected' => 'closed',
+                    'event' => 'submit',
+                    'actual' => 'closed',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s2_e1_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s2_e1_s2',
+                    'expected' => 'closed',
+                    'event' => 'approve',
+                    'actual' => 'closed',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_apply__ticket_apply_s2_e2_s2' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'apply',
+                    'id' => 'ticket_apply_s2_e2_s2',
+                    'expected' => 'closed',
+                    'event' => 'reject',
+                    'actual' => 'closed',
+                    'expect' => [
+                        'error' => 'E_INVALID_TRANSITION',
+                    ],
+                ],
+            ],
+            'test_persist__ticket_persist_first' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'persist',
+                    'id' => 'ticket_persist_first',
+                    'scenario' => 'first',
+                    'expected' => 'open',
+                    'event' => 'submit',
+                    'stored' => 'open',
+                    'expect' => [
+                        'stored_after' => 'review',
+                        'changed' => true,
+                    ],
+                ],
+            ],
+            'test_persist__ticket_persist_retry' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'persist',
+                    'id' => 'ticket_persist_retry',
+                    'scenario' => 'retry',
+                    'expected' => 'open',
+                    'event' => 'submit',
+                    'stored' => 'review',
+                    'expect' => [
+                        'stored_after' => 'review',
+                        'changed' => false,
+                    ],
+                ],
+            ],
+            'test_persist__ticket_persist_conflict' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'persist',
+                    'id' => 'ticket_persist_conflict',
+                    'scenario' => 'conflict',
+                    'expected' => 'open',
+                    'event' => 'submit',
+                    'stored' => 'closed',
+                    'expect' => [
+                        'error' => 'E_CONFLICT',
+                        'stored_after' => 'closed',
                     ],
                 ],
             ],

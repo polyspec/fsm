@@ -16,6 +16,10 @@ extern zend_class_entry *fsm_code_ce;
 zend_result fsm_minit(void);
 void fsm_throw(const char *code, zend_string *message, zval *expected, zval *actual, zval *event);
 void fsm_throw_text(const char *code, const char *message);
+zend_result in_review_minit(void);
+zend_result limits_minit(void);
 zend_result order_minit(void);
+zend_result standby_minit(void);
+zend_result ticket_minit(void);
 
 #endif /* PHP_POLYSPEC_FSM_TEST_H */

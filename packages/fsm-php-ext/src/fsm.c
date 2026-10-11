@@ -125,7 +125,19 @@ PHP_MINIT_FUNCTION(polyspec_fsm_test)
 	if (fsm_minit() == FAILURE) {
 		return FAILURE;
 	}
+	if (in_review_minit() == FAILURE) {
+		return FAILURE;
+	}
+	if (limits_minit() == FAILURE) {
+		return FAILURE;
+	}
 	if (order_minit() == FAILURE) {
+		return FAILURE;
+	}
+	if (standby_minit() == FAILURE) {
+		return FAILURE;
+	}
+	if (ticket_minit() == FAILURE) {
 		return FAILURE;
 	}
 	return SUCCESS;

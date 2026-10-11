@@ -1,0 +1,13 @@
+{
+  "$schema": "../schema/fsm.schema.json",
+  "machine": "standby",
+  "states": [
+    {
+      "key": "ready",
+      "code": 1,
+      "initial": true,
+      "final": true
+    }
+  ],
+  "events": []
+}

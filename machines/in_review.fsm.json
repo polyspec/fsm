@@ -1,0 +1,49 @@
+{
+  "$schema": "../schema/fsm.schema.json",
+  "machine": "in_review",
+  "states": [
+    {
+      "key": "to_do",
+      "code": 1,
+      "initial": true
+    },
+    {
+      "key": "in_progress",
+      "code": 2
+    },
+    {
+      "key": "done_now",
+      "code": 3,
+      "final": true
+    }
+  ],
+  "events": [
+    {
+      "key": "start_work",
+      "edges": [
+        {
+          "from": "to_do",
+          "to": "in_progress"
+        }
+      ]
+    },
+    {
+      "key": "finish_work",
+      "edges": [
+        {
+          "from": "in_progress",
+          "to": "done_now"
+        }
+      ]
+    },
+    {
+      "key": "reopen_work",
+      "edges": [
+        {
+          "from": "in_progress",
+          "to": "to_do"
+        }
+      ]
+    }
+  ]
+}

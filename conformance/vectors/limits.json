@@ -1,0 +1,168 @@
+{
+  "machine": "limits",
+  "cases": [
+    {
+      "feature": "initial",
+      "id": "limits_initial",
+      "expect": {
+        "state": "floor"
+      }
+    },
+    {
+      "feature": "code",
+      "id": "limits_code_s0",
+      "state": "floor",
+      "expect": 1
+    },
+    {
+      "feature": "key",
+      "id": "limits_key_s0",
+      "code": 1,
+      "expect": "floor"
+    },
+    {
+      "feature": "from_code",
+      "id": "limits_from_code_s0",
+      "input": 1,
+      "expect": {
+        "state": "floor"
+      }
+    },
+    {
+      "feature": "is_final",
+      "id": "limits_is_final_s0",
+      "state": "floor",
+      "expect": false
+    },
+    {
+      "feature": "events_from",
+      "id": "limits_events_from_s0",
+      "state": "floor",
+      "expect": [
+        "rise"
+      ]
+    },
+    {
+      "feature": "code",
+      "id": "limits_code_s1",
+      "state": "ceiling",
+      "expect": 2147483647
+    },
+    {
+      "feature": "key",
+      "id": "limits_key_s1",
+      "code": 2147483647,
+      "expect": "ceiling"
+    },
+    {
+      "feature": "from_code",
+      "id": "limits_from_code_s1",
+      "input": 2147483647,
+      "expect": {
+        "state": "ceiling"
+      }
+    },
+    {
+      "feature": "is_final",
+      "id": "limits_is_final_s1",
+      "state": "ceiling",
+      "expect": true
+    },
+    {
+      "feature": "events_from",
+      "id": "limits_events_from_s1",
+      "state": "ceiling",
+      "expect": []
+    },
+    {
+      "feature": "from_code",
+      "id": "limits_from_code_zero",
+      "input": 0,
+      "expect": {
+        "error": "E_UNKNOWN_CODE"
+      }
+    },
+    {
+      "feature": "from_code",
+      "id": "limits_from_code_unknown",
+      "input": 2,
+      "expect": {
+        "error": "E_UNKNOWN_CODE"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "limits_target_s0_e0",
+      "state": "floor",
+      "event": "rise",
+      "expect": {
+        "state": "ceiling"
+      }
+    },
+    {
+      "feature": "target",
+      "id": "limits_target_s1_e0",
+      "state": "ceiling",
+      "event": "rise",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "limits_apply_s0_e0_s0",
+      "expected": "floor",
+      "event": "rise",
+      "actual": "floor",
+      "expect": {
+        "to": "ceiling",
+        "changed": true
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "limits_apply_s0_e0_s1",
+      "expected": "floor",
+      "event": "rise",
+      "actual": "ceiling",
+      "expect": {
+        "to": "ceiling",
+        "changed": false
+      }
+    },
+    {
+      "feature": "apply",
+      "id": "limits_apply_s1_e0_s1",
+      "expected": "ceiling",
+      "event": "rise",
+      "actual": "ceiling",
+      "expect": {
+        "error": "E_INVALID_TRANSITION"
+      }
+    },
+    {
+      "feature": "persist",
+      "id": "limits_persist_first",
+      "scenario": "first",
+      "expected": "floor",
+      "event": "rise",
+      "stored": "floor",
+      "expect": {
+        "stored_after": "ceiling",
+        "changed": true
+      }
+    },
+    {
+      "feature": "persist",
+      "id": "limits_persist_retry",
+      "scenario": "retry",
+      "expected": "floor",
+      "event": "rise",
+      "stored": "ceiling",
+      "expect": {
+        "stored_after": "ceiling",
+        "changed": false
+      }
+    }
+  ]
+}

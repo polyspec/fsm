@@ -3,5 +3,5 @@ PHP_ARG_ENABLE([polyspec-fsm-test], [whether to enable polyspec_fsm_test],
   [AS_HELP_STRING([--enable-polyspec-fsm-test], [Enable polyspec_fsm_test, the fsm state machines of the fsm definitions])], [yes])
 
 if test "$PHP_POLYSPEC_FSM_TEST" != "no"; then
-  PHP_NEW_EXTENSION([polyspec_fsm_test], [fsm.c order.c], [$ext_shared],, [-std=gnu11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-const-variable])
+  PHP_NEW_EXTENSION([polyspec_fsm_test], [fsm.c in_review.c limits.c order.c standby.c ticket.c], [$ext_shared],, [-std=gnu11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-const-variable])
 fi
