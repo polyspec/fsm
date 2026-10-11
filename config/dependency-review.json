@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mjs) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-11T06:24:02.838Z",
+  "reviewed": "2026-10-11T14:42:41.740Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -35,7 +35,7 @@
     },
     {
       "lock": "packages/fsm-python/pylock.toml",
-      "sha256": "93b24b9bb2a010b5342c183c12aa25bcdc92d2291f76246a514a26b5ef2d6016",
+      "sha256": "2a19d3d7182a6902f7d1660e17a7ff2599d09fdffddfd78e2300456000dc2f26",
       "advisories": []
     },
     {
@@ -212,20 +212,5 @@
       "latest": "v0.0.7"
     }
   ],
-  "vcs": [
-    {
-      "lock": "packages/fsm-python/pylock.toml",
-      "package": "polyspec-ordered-json",
-      "url": "https://github.com/polyspec/ordered-json",
-      "requestedRevision": "v0.0.7",
-      "commitId": "f8647806b9ca0288c57994132147a4137ce017f9"
-    },
-    {
-      "lock": "packages/fsm-python/pylock.toml",
-      "package": "polyspec-orm",
-      "url": "https://github.com/polyspec/orm",
-      "requestedRevision": "v0.0.7",
-      "commitId": "af585c4d6146f4094712bbb6be247caf7ce48605"
-    }
-  ]
+  "vcs": []
 }

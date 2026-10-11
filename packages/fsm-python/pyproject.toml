@@ -2,8 +2,8 @@
 requires = ["setuptools==84.0.0"]
 build-backend = "setuptools.build_meta"
 
-# The python consumer test bed of fsm (docs/plans/fsm-v1.md, C-2). It is not published: the orm client is pinned to its git
-# tag (C-1), and the generated code under src/ and examples/model/ has no runtime dependency beyond the standard library.
+# The python consumer test bed of fsm (docs/plans/fsm-v1.md, C-2). It is not published: the orm client is pinned to the archive of its release
+# tag (C-1, S-34-3), and the generated code under src/ and examples/model/ has no runtime dependency beyond the standard library.
 [project]
 name = "polyspec-fsm-python"
 version = "0.0.0"
@@ -11,7 +11,13 @@ description = "python consumer test bed of fsm: the generated state machines, th
 license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
-    "polyspec-orm @ git+https://github.com/polyspec/orm@v0.0.7#subdirectory=packages/orm-python",
+    "polyspec-orm @ https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/orm-python",
+]
+
+[tool.uv]
+# orm v0.0.7 names ordered-json by its git tag; the lock takes the archive of the same tag instead, so it holds no git package.
+override-dependencies = [
+    "polyspec-ordered-json @ https://github.com/polyspec/ordered-json/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/ordered-json-python",
 ]
 
 [tool.setuptools]

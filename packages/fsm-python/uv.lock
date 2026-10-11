@@ -2,6 +2,9 @@ version = 1
 revision = 3
 requires-python = ">=3.11"
 
+[manifest]
+overrides = [{ name = "polyspec-ordered-json", url = "https://github.com/polyspec/ordered-json/archive/refs/tags/v0.0.7.tar.gz", subdirectory = "packages/ordered-json-python" }]
+
 [[package]]
 name = "cffi"
 version = "2.1.1"
@@ -178,23 +181,34 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "polyspec-orm", git = "https://github.com/polyspec/orm?subdirectory=packages%2Form-python&rev=v0.0.7" }]
+requires-dist = [{ name = "polyspec-orm", url = "https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz", subdirectory = "packages/orm-python" }]
 
 [[package]]
 name = "polyspec-ordered-json"
 version = "0.0.7"
-source = { git = "https://github.com/polyspec/ordered-json?subdirectory=packages%2Fordered-json-python&rev=v0.0.7#f8647806b9ca0288c57994132147a4137ce017f9" }
+source = { url = "https://github.com/polyspec/ordered-json/archive/refs/tags/v0.0.7.tar.gz", subdirectory = "packages/ordered-json-python" }
+sdist = { hash = "sha256:b2f645a0bf4b9427213288a7ccefc65a6dd1dc50ed82fd94855c98482a559a39" }
 
 [[package]]
 name = "polyspec-orm"
 version = "0.0.7"
-source = { git = "https://github.com/polyspec/orm?subdirectory=packages%2Form-python&rev=v0.0.7#af585c4d6146f4094712bbb6be247caf7ce48605" }
+source = { url = "https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz", subdirectory = "packages/orm-python" }
 dependencies = [
     { name = "cryptography" },
     { name = "polyspec-ordered-json" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pymysql" },
     { name = "pyyaml" },
+]
+sdist = { hash = "sha256:79d9c99b00a0813106511b26d14e1f8b14e92c2472049b3dbcd95e8f668eca16" }
+
+[package.metadata]
+requires-dist = [
+    { name = "cryptography", specifier = "==50.0.2" },
+    { name = "polyspec-ordered-json", git = "https://github.com/polyspec/ordered-json?subdirectory=packages%2Fordered-json-python&rev=v0.0.7" },
+    { name = "psycopg", extras = ["binary"], specifier = "==3.3.6" },
+    { name = "pymysql", specifier = "==1.2.3" },
+    { name = "pyyaml", specifier = "==6.0.3" },
 ]
 
 [[package]]
