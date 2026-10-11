@@ -36,6 +36,6 @@ build:
 test: build
 	node $(ROOT)/scripts/kit/run-tests.mjs phpunit --php-extension $(MODULE) --cwd packages/status-php-ext --results .results/php-ext.json --inputs packages/status-php-ext --inputs schema/persist.dbs -- tests
 
-# clean removes the phpize output of src/, which gen refuses to overwrite (the generated files and config.m4 stay).
+# clean removes the phpize output of src/ (the generated files and config.m4 stay). gen does not need it: it skips the git-ignored files.
 clean:
 	cd src && phpize --clean

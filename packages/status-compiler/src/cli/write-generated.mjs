@@ -3,10 +3,15 @@
 // lacks the header is never overwritten or removed: it is a finding (E_NOT_GENERATED), and then nothing is written or removed.
 // Otherwise the generated set is written through writeAtomic, and each file of the directory that has the header and is not in
 // the set is removed as stale. A php file starts with the tag `<?php`, so its header is the second line (backends/php.mjs).
+// A file that Git ignores in the output directory is a build output (docs/plans/execution-checklist.md, S-14-3), not a hand-written
+// file: it is neither a finding nor removed. Git decides which files are ignored; a tracked file or a file that Git does not
+// ignore is judged as before. Outside a git work tree nothing is ignored, so every file without the header is a finding.
 
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
+import { Stop } from '../../../../scripts/kit/process.mjs';
 import { writeAtomic } from '../../../../scripts/kit/files.mjs';
+import { git, gitResult } from '../../../../scripts/kit/git.mjs';
 
 // The header is in the comment syntax of the file: `//` (go, npm, php, rust, C), `#` (python) or `dnl` (the m4 of config.m4),
 // and the php tag, when present, comes first.
@@ -37,10 +42,28 @@ function filesUnder(dir, prefix = '') {
   });
 }
 
-/** The findings of the files below `dir` that lack the header: every one of them is refused, whether or not it is generated. */
-function refusals(dir) {
+/**
+ * The paths below `dir` (relative, `/` separators) that Git ignores and that are not tracked. Outside a git work tree the set is
+ * empty: nothing counts as ignored there. Any other failure of git is a Stop, never an empty set.
+ */
+function ignoredUnder(dir) {
+  const probe = gitResult(dir, 'rev-parse', '--is-inside-work-tree');
+  if (probe.status !== 0) {
+    if (/^fatal: not a git repository/m.test(probe.stderr)) return new Set();
+    throw new Stop(`git rev-parse --is-inside-work-tree in ${dir} failed: ${(probe.error?.message ?? probe.stderr).trim()}`);
+  }
+  if (probe.stdout.trim() !== 'true') return new Set();
+  return new Set(git(dir, 'ls-files', '-z', '--others', '--ignored', '--exclude-standard').split('\0').filter(Boolean));
+}
+
+/**
+ * The findings of the files below `dir` that lack the header and are not ignored by Git: every one of them is refused, whether or
+ * not it is generated.
+ */
+function refusals(dir, ignored) {
   if (!existsSync(dir)) return [];
   return filesUnder(dir).flatMap(rel => {
+    if (ignored.has(rel)) return [];
     const text = readFileSync(path.join(dir, rel), 'utf8');
     return isGenerated(text) ? [] : [notGenerated(rel, 'its first line lacks the generated header')];
   });
@@ -48,24 +71,30 @@ function refusals(dir) {
 
 /**
  * Writes `generated` under `dir` and removes the stale generated files there. The findings of the refusals come first: when
- * there is one, nothing is written or removed and the findings are returned; otherwise the findings are none.
+ * there is one, nothing is written or removed and the findings are returned; otherwise the findings are none. An ignored file is
+ * neither refused nor removed.
  */
 export function writeGenerated(dir, generated) {
-  const found = refusals(dir);
+  const ignored = existsSync(dir) ? ignoredUnder(dir) : new Set();
+  const found = refusals(dir, ignored);
   if (found.length > 0) return found;
   const wanted = new Set(generated.map(file => file.path));
   if (existsSync(dir)) {
     for (const rel of filesUnder(dir)) {
-      if (!wanted.has(rel)) rmSync(path.join(dir, rel));
+      if (!wanted.has(rel) && !ignored.has(rel)) rmSync(path.join(dir, rel));
     }
   }
   for (const file of generated) writeAtomic(path.join(dir, file.path), file.content);
   return [];
 }
 
-/** Writes the one generated file `file` (the vector module), when it is absent or generated; otherwise a finding. */
+/**
+ * Writes the one generated file `file` (the vector module), when it is absent, generated or ignored by Git; otherwise a finding.
+ * An ignored file is a build output and is replaced.
+ */
 export function writeGeneratedFile(file, content) {
-  if (existsSync(file) && !isGenerated(readFileSync(file, 'utf8'))) {
+  if (existsSync(file) && !isGenerated(readFileSync(file, 'utf8'))
+    && !ignoredUnder(path.dirname(file)).has(path.basename(file))) {
     return [notGenerated(path.basename(file), 'its first line lacks the generated header')];
   }
   writeAtomic(file, content);
