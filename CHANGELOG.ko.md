@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 8cb23c163d1a492c04cb06d452a9d0524f0211bee75d63a2b59b043733fc1400 -->
+<!-- source-sha256: db2271589730af1bee3df77aaa04f0904137707e54c24fab740baa038ac1dc57 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-35-2: vendored kit은 v0.0.23이다(`make kit-sync KIT_TAG=v0.0.23`, kit K36과 K37). `config/dependency-policy.json`에 필수 필드 `pythonLocks`를 더했다(S-34-2가 lock을 이름 붙이기 전까지 `[]`): kit gate와 review가 그것이 나열한 PEP 751 `pylock.toml` 파일을 읽는다. review record `config/dependency-review.json`은 `make dependency-review RECORD=1`로 필수 `vcs` 목록(`[]`)을 받는다. fsm 타깃 `parity-check`는 `vector-parity-check`로 이름을 바꿨다(kit v0.0.23이 `parity-check`를 정의하며, 저장소 타깃이 그것을 make warning과 함께 대체했었다). tests/make-install의 테스트는 `make -n check`의 make warning마다 실패한다. kit의 `parity-check`는 아직 채택하지 않는다: S-42가 평가한다(계획 C-4). `run-tests.mjs python --venv`는 `pyvenv.cfg`가 install-tools Python을 가리킬 때만 venv interpreter를 실행한다. 알려진 상태: python package 테스트(`make test-python`, python persist 타깃)는 S-41까지 깨진 채 남는다. kit 0.0.18부터 python 도구는 `var/tools/bin/python3`로만 실행되며 PATH를 무시하는데, fsm-python 테스트는 venv를 PATH에 올리기 때문이다("No module named 'polyspec'", CI 실행 38115497717). RED: lock을 v0.0.20으로 둔 채 v0.0.23 파일로 kit-check를 돌리자 29개 finding. GREEN: kit-check, owner-validate, documents-check, toolchain-check, dependency-policy-check, hooks-check, name-check, commits-check와 kit-test가 통과한다.
 - S-35-1: vendored kit은 v0.0.20이다(`make kit-sync KIT_TAG=v0.0.20`). `kit-test`가 vendored 테스트를 `scripts/kit/run-tests.mjs`로 실행하므로(kit K32, 0.0.19로 릴리스) 다른 모든 테스트처럼 케이스별 진행과 timeout을 보고한다. 0.0.18과 0.0.19의 vendored python-real 테스트가 소비자의 toolchain을 읽어 여기서 실패했고 kit K34-1이 이를 vendored 테스트 밖으로 옮겼으므로 0.0.20을 받는다.
 - S-29-2: `packages/fsm-php`와 `packages/fsm-php-ext`의 composer vendor는 `composer.lock`뿐 아니라 `composer.json`도 키로 하고, 설치 뒤 stamp를 갱신한다. `composer.json`의 autoload는 lock에 없어서, 기존 checkout이 S-25 이전의 autoload를 유지했고 persist case가 정의되지 않은 함수로 실패했다.
 - S-37-2: fsm-db CLI와 command 테스트를 PostgreSQL과 MySQL에서도 실행한다(감사 23, 24). case마다 빈 database를 쓴다. SQLite에서는 새 파일이고, 서버에서는 admin DSN `FSM_TEST_PG_ADMIN_DSN` 또는 `FSM_TEST_MYSQL_ADMIN_DSN`을 통해 `createEmptyDatabase`(`packages/fsm-db/tests/dialect.mjs`)가 만든 새 database이며, 파일이 다시 지운다. `db-test-postgres`와 `db-test-mysql` target은 `cli.test.mjs`와 `command.test.mjs`도 실행하고 admin DSN을 요구한다. CLI 테스트는 테이블 없음 메시지의 인용된 table 이름을 확인한다. PostgreSQL 서버가 메시지를 한국어로 쓰기 때문이다. RED: PostgreSQL target의 테스트는 SQLite에서 돌아(조용한 통과), 그다음 서버 메시지 `relation "machine" does not exist`(서버는 한국어로 썼다)에서 실패했다. GREEN: 각 서버에서 36개 case가 통과한다. 결정과 CI service 줄은 계획 C-6에 있으며, fsm-db의 devDependencies `pg`와 `mysql2`는 고정되고 검토되었다.
