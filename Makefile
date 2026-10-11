@@ -46,11 +46,13 @@ PACKAGE_DEPS := $(NPM_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(R
 $(NPM_DEP): packages/fsm-npm/package-lock.json
 	$(ONLINE) $(MAKE) -C packages/fsm-npm install
 
-$(PHP_DEP): packages/fsm-php/composer.lock
+$(PHP_DEP): packages/fsm-php/composer.lock packages/fsm-php/composer.json
 	$(ONLINE) $(MAKE) -C packages/fsm-php install
+	touch $@
 
-$(PHP_EXT_DEP): packages/fsm-php-ext/composer.lock
+$(PHP_EXT_DEP): packages/fsm-php-ext/composer.lock packages/fsm-php-ext/composer.json
 	$(ONLINE) $(MAKE) -C packages/fsm-php-ext install
+	touch $@
 
 $(PYTHON_BIN):
 	$(MAKE) install-python
