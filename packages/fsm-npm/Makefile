@@ -4,7 +4,7 @@
 # target runs node from the checkout root with root-relative paths: node names each file relative to its working directory, and
 # the kit reporter matches the file group by that name, so a working directory other than the root would be misread. The test
 # target names the conformance file only: the type check of tests/types.test.mjs has its own record (make npm-types), and the
-# record of this kind must hold vector cases alone for check-parity.
+# conformance test of this kind must hold vector cases alone for kit's parity check.
 ROOT := ../..
 DEST ?= .
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs

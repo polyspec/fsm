@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: 491c632b8000bd9c0b60e809fd5c9291ed22fa46aa29fc57b7d7230779659e41 -->
+<!-- source-sha256: b93635d9630f19478611f83e4a9fec852ac3bcdd525ba15d8e3db91fe2fd4635 -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -111,8 +111,8 @@ vector는 기계의 모든 연산의 기대 결과다. core가 정의와 lock으
 
 `fsm-gen vectors --out <file>`은 공통 형식, 모든 기계의 파일 하나를 쓴다(이 저장소에서는 `conformance/vectors.json`). 각 언어 패키지는
 자기 형식으로 읽는다: `vectors_test.go`(go, `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`(npm), `ConformanceTest.php`(php와 php-ext, case마다 method 하나),
-`vectors.py`(python), `vectors.rs`(rust). 패키지는 case마다 test 하나를 실행하며, `check-parity`는 모든 종류에서 모든 case가 한 번씩
-실행되어 통과할 것을 요구한다.
+`vectors.py`(python), `vectors.rs`(rust). 패키지는 case마다 test 하나를 실행하며, kit의 parity 검사(`make parity-check`)는 case를 허용하는 모든 종류에서
+모든 case가 한 번씩 실행되어 통과할 것을 요구한다.
 
 ## 검사
 

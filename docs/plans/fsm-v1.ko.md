@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 8fc0642cffb9966f1166c991fba8be904128d8947af4fe33a1db8b917727aed4 -->
+<!-- source-sha256: 007bf021c6cfd5134fcd159ed3f896d640b93942c97d266dd0f4d60e6601fc13 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -68,18 +68,18 @@
   - 벤더 파일은 수정하지 않는다. 같은 트리에서는 같은 결과가 나와야 한다.
   - 공용 도구 변경은 kit에서 하고, kit 체크리스트(K 항목)로 운영한다.
 - 개발 사이클: RED 재현 → 구현 → GREEN 검증. 관측 가능한 기준을 항목에 적는다.
-- 루트 도구 테스트(check-layout, check-parity, gen-check)의 fixture는 테스트가 임시 디렉터리에 만들고 커밋하지 않는다. 그래서 kit gate가 읽지 않는다.
+- 루트 도구 테스트(check-layout, gen-check)의 fixture는 테스트가 임시 디렉터리에 만들고 커밋하지 않는다. 그래서 kit gate가 읽지 않는다.
 - 테스트 위치
   - 기능의 기본 테스트는 소유 패키지에 둔다.
     - compiler → `packages/fsm-compiler/tests`
     - DB store → `packages/fsm-db/tests`
     - GUI → `packages/fsm-gui/tests`
   - 언어 패키지에는 소비자 입장 테스트만 둔다.
-  - 루트에는 루트 도구(check-layout, check-parity, gen-check)의 테스트와 벤더 `tests/kit/`만 둔다.
+  - 루트에는 루트 도구(check-layout, gen-check)의 테스트와 벤더 `tests/kit/`만 둔다.
 - 테스트 실행
   - 모든 테스트는 kit `run-tests.mjs`로 실행한다. 이 runner가 케이스별 진행·경과시간 출력과 케이스별 timeout을 강제한다. 전체 timeout은 없다.
   - 벡터 케이스 1개 = 언어 테스트 1개다.
-  - compiler-test, db-test, gui-test와 모든 언어 테스트는 `run-tests --results`로 `.results/<target>.json`을 쓴다. check-parity는 이 파일들이 있어야 통과하고(모든 테스트가 runner를 거쳤다는 증거) 각각 `elapsedMs ≤ 600000`을 검사한다. 목표는 초 단위다.
+  - compiler-test, db-test, gui-test와 모든 언어 테스트는 `run-tests --results`로 `.results/<target>.json`을 쓴다. run-tests는 case마다 timeout을 준다. 목표는 초 단위다.
   - 병렬 실행은 `packages-test`의 `make -j6`로만 한다.
   - 항목 개발 중에는 owner-checks 매핑(D 절)의 소유 검사만 돌린다.
   - 전체 스위트는 마지막 항목을 커밋한 뒤 `full-run.mjs`로 트리당 1회 돌린다. 체크리스트 항목이 아니다.
@@ -114,7 +114,7 @@
     - 테스트 위치(compiler·DB store·GUI 테스트는 소유 패키지, 언어 패키지는 소비자 입장 테스트만)
     - 병렬 실행은 `packages-test`의 `make -j6`로만, 항목 중에는 소유 검사만
     - 커밋 메시지 영문
-    - conformance 검사 함수는 벡터의 기대값을 단언한다(check-parity는 단언이 아니라 케이스 수를 센다)
+    - conformance 검사 함수는 벡터의 기대값을 단언한다(parity 검사는 단언이 아니라 케이스 수를 센다)
     - 의존 고정(manifest와 lock 파일의 릴리스 태그)
 - 브랜치/워크트리
   - main에서 직접 작업해도 된다.
@@ -134,7 +134,7 @@ fsm/
   .gitignore            # anchored only: /var/, /.results/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/fsm-python/**/__pycache__/, php-ext phpize output under /packages/fsm-php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/fsm-gui/build/, /packages/fsm-gui/public/assets/, /packages/fsm-php*/.phpunit.result.cache, /packages/fsm-php*/.phpunit.cache/
   config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review}.json
   scripts/kit/ tests/kit/                    # vendored from kit
-  scripts/check-layout.mjs scripts/check-parity.mjs scripts/check-name.mjs scripts/gen-check.mjs scripts/check-python-lock.mjs   tests/check-layout/ tests/check-name/ tests/check-parity/ tests/docs-build/ tests/gen-check/ tests/python-tools/ tests/check-python-lock/
+  scripts/check-layout.mjs scripts/check-name.mjs scripts/gen-check.mjs scripts/check-python-lock.mjs   tests/check-layout/ tests/check-name/ tests/docs-build/ tests/gen-check/ tests/python-tools/ tests/check-python-lock/
   contracts/layout.json (tools, kinds, canonical tree, allowed differences)   contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
@@ -197,22 +197,17 @@ packages/fsm-<kind>/
   - vectorId는 `<machine>_`로 시작한다.
   - 언어 테스트 이름에 이 이름을 그대로 쓴다.
 
-### C-4. `check-parity.mjs`
-실패 조건(면제 없음):
-- `kinds`의 `.results/<kind>.json`이 없거나, `inputs`가 현재 digest와 다름
-- `kinds`가 허용하는 어느 kind에서 벡터 케이스가 실행되지 않음(`kinds`가 없는 케이스는 모든 kind가 허용한다), 또는 kind가 `kinds`가 제외한 케이스를 실행함
-- 벡터에 없는 케이스가 결과에 있음
-- features.json의 기능 중 벡터 케이스가 0개인 기능이 있음
-- 상태가 `pass`가 아닌 케이스가 있음(`fail`, `timeout`, `skip` 모두 실패)
-- 결과 id 하나에서 서로 다른 케이스 이름이 2개 이상 나오거나, 하나도 나오지 않는데 일치한 id의 부모(일치한 id가 ` › `로 이어 붙이는 id. 예: 케이스를 subtest로 실행하는 Go 테스트 함수)가 아님
-- `--kind`가 없을 때: `--tools`가 가리키는 도구 테스트(Makefile의 `TOOL_TESTS`: layout-test, parity-test, gen-check-test, compiler-test, db-test, gui-test를 각 항목이 추가)의 기록 `.results/<target>.json`이 없거나, stale이거나, `pass`가 아닌 케이스를 가짐
-- 어느 `.results/*.json`이든 `elapsedMs > 600000`(`--kind`이면 그 kind의 결과만)
+### C-4. vector parity(kit K33)
+kit의 parity 검사(`make parity-check`, kit 0.0.26의 K33, `config/parity.json`, S-42-1)는 모든 kind의 conformance 테스트를 두 번 실행하며, 예외 없이 다음일 때 실패한다:
+- kind가 자기 `kinds`가 허용하는 `conformance/vectors.json`의 case를 실행하지 않았거나(`kinds`가 없는 case는 모든 kind가 허용한다), `kinds`가 제외하는 case를 실행했거나, vector에 없는 case를 실행했다;
+- 한 실행이 case 하나를 두 번 보고한다;
+- case가 실패하거나 skip이거나 todo이거나, binding이 다른 status로 끝난다.
 
-케이스 이름 추출: `/\btest_[a-z][a-z0-9]*(?:_[a-z0-9]+)*__[a-z][a-z0-9]*(?:_[a-z0-9]+)*\b/`를 결과 id마다 적용한다. 서로 다른 일치가 정확히 1개인 id가 그 케이스이고, 0개 또는 2개 이상인 id는 위 결과 id 항목으로 판정한다. 도구별 규칙은 없다.
+`make parity-declarations-check`는 아무것도 실행하지 않고 선언을 검사한다. feature 커버리지(contracts/features.json의 모든 feature가 case를 가진다)는 compiler 테스트 `vectors-file.test.mjs`가 단언한다. `.results/<kind>.json` 기록은 run-tests의 출력으로 남으며, fsm 도구는 읽지 않는다.
 
 `contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. vector 파일은 `conformance/vectors.json` = `{machines: [{machine, cases: [{feature, id, name, …}]}]}`이며 kit parity 검사의 suite 하나다. 케이스 이름은 `name` = `<feature>__<id>`다.
 
-Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 machine의 벡터를 돈다. 그래서 여섯 kind가 정의의 모양을 모두 덮는다: `order`(예시), `standby`(event 없음: 상태 하나이며 initial이자 final), `in_review`(machine, 상태, event key의 underscore), `ticket`(reserved code 2와 4: 첫 lock 뒤 제거한 상태이며 lock은 이를 reserved로 유지), `limits`(code 2147483647). 각 kind는 209 케이스를 통과한다(`vector-parity-check`).
+Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 machine의 벡터를 돈다. 그래서 여섯 kind가 정의의 모양을 모두 덮는다: `order`(예시), `standby`(event 없음: 상태 하나이며 initial이자 final), `in_review`(machine, 상태, event key의 underscore), `ticket`(reserved code 2와 4: 첫 lock 뒤 제거한 상태이며 lock은 이를 reserved로 유지), `limits`(code 2147483647). 각 kind는 209 케이스를 통과한다(kit의 `parity-check`).
 
 벡터(전수, 오라클은 core가 생성):
 - `initial`
@@ -229,7 +224,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - 모든 오류 case는 fsm.Error의 네 필드(`code`, `expected`, `actual`, `event`, 명세 B-6)를 명명한다. 해당하지 않는 필드는 null이다: E_CONFLICT는 expected와 actual의 state code와 event 위치, E_INVALID_TRANSITION은 expected의 code와 event 위치, E_UNKNOWN_CODE와 E_RESERVED_CODE는 아무것도 없다
 - `from_code`의 입력은 십진 문자열이므로 파일에서 64비트 범위가 정확하다. npm kind는 가장 가까운 number를 받는데, 이는 안전하지 않은 정수이므로 E_UNKNOWN_CODE다
 - case id: case id는 `<machine>_<suffix>`이고, suffix의 key마다 선언 index를 쓴다. 이름과 무관하게 두 id가 충돌하지 않게 하기 위해서다. state는 `s<i>`, event는 `e<j>`(둘 다 0부터 시작), 예약 code는 `r<code>`다. id는 `<m>_initial`; `<m>_code_s<i>`, `<m>_key_s<i>`, `<m>_from_code_s<i>`, `<m>_is_final_s<i>`, `<m>_events_from_s<i>`; `<m>_from_code_zero`, `<m>_from_code_unknown`, `<m>_from_code_r<code>`, `<m>_from_code_negative`, `<m>_from_code_int32_overflow`, `<m>_from_code_int64_max`; `<m>_code_v<value>`, `<m>_is_final_v<value>`, `<m>_key_v<value>`, `<m>_apply_expected_v<value>_e0_s0`, `<m>_apply_actual_v<value>_e0_s0`(value는 0과 미지 code); `<m>_target_s<i>_e<j>`; `<m>_apply_s<i>_e<j>_s<k>`(expected, event, actual); `<m>_persist_first`, `<m>_persist_retry`, `<m>_persist_conflict`다. 케이스 데이터 필드는 key(state, event, expected, actual 등)를 그대로 쓰며, 바뀌는 것은 id뿐이다.
-- 잘못된 state 값(S-26): state 인자가 state가 아닌 값을 가질 수 있는지는 kind의 state 타입에 달려 있다. 잘못된 값을 가진 case는 `kinds`에 그 값을 허용하는 kind를 적고, check-parity는 그 kind들에만 이를 요구한다. 명세 B-6의 규칙(함수는 E_UNKNOWN_CODE로 실패한다)에 대해 kind별 결정은 다음과 같고 여기에 기록한다.
+- 잘못된 state 값(S-26): state 인자가 state가 아닌 값을 가질 수 있는지는 kind의 state 타입에 달려 있다. 잘못된 값을 가진 case는 `kinds`에 그 값을 허용하는 kind를 적고, kit의 parity 검사는 그 kind들에만 이를 요구한다. 명세 B-6의 규칙(함수는 E_UNKNOWN_CODE로 실패한다)에 대해 kind별 결정은 다음과 같고 여기에 기록한다.
 
   | kind | state 타입 | 잘못된 state 값 |
   |---|---|---|
@@ -242,18 +237,9 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - rust, php, php-ext의 native vector 모듈은 자기 kind가 허용하는 case만 담는다(core `forKind`). 그래서 다섯 machine의 270개 case 중 224개를 돌리고, go, npm, python은 270개를 모두 돌린다.
 - persist 케이스는 machine에 transition이 있을 때만 존재한다. `conflict`는 third state가 있을 때만 존재하므로, state가 2개인 machine은 `first`와 `retry`만 갖고, transition이 없는 machine(예: state가 1개인 machine)은 persist 케이스가 없다.
 
-- 영속화 패턴의 동시성(S-37, 결정): 동시성 증명은 npm에 한 번만 쓴다(`packages/fsm-npm/tests/persist-dialects.test.mjs`, 기록 `npm-persist-test`, `npm-persist-test-postgres`, `npm-persist-test-mysql`, 모두 `TOOL_TESTS`에 있다). 이유: npm client는 한 database에 실제 연결 두 개를 열므로, 한 row의 transaction 두 개가 PostgreSQL과 MySQL에서 동시에 실행되며, B-4가 기대는 잠금은 database 자체의 잠금이다. 다른 kind가 이 테스트를 반드시 되풀이할 필요는 없다. 그 kind들은 동시성 테스트를 되풀이하지 않는다. persist case는 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`로 PostgreSQL과 MySQL에서 실행한다(S-37-1, 기록은 `TOOL_TESTS`에 있다). `FSM_TEST_DIALECT`가 dialect를 고르고, `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, case마다 persist table을 비우고, 서버 dialect의 case는 차례로 실행한다(rust는 static 잠금을 쓰고, 다른 kind는 순차 실행한다). DSN이 비어 있으면 각 target은 exit 2로 멈추며(Makefile의 `require_dsn`), 테스트도 실패한다. kind별 RED: 테스트가 `FSM_TEST_DIALECT`를 읽기 전에는 PostgreSQL target이 SQLite의 persist case 11개를 통과시켰다(rust, php, php-ext, python). go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이라, 같은 프로세스의 두 번째 `BEGIN IMMEDIATE`가 첫 번째를 커밋할 thread를 막고, 5000밀리초 busy timeout 뒤 `CANCELED: sqlite: database is locked`로 실패하기 때문이다. RED: `examples/persist.mjs`에서 `forUpdate()`를 빼면 PostgreSQL 17.11과 MySQL 8.4.11 모두에서 두 전이가 Changed를 보고하고 두 테스트가 실패한다. 복원한 패턴은 세 dialect에서 통과한다.
+- 영속화 패턴의 동시성(S-37, 결정): 동시성 증명은 npm에 한 번만 쓴다(`packages/fsm-npm/tests/persist-dialects.test.mjs`, 기록 `npm-persist-test`, `npm-persist-test-postgres`, `npm-persist-test-mysql`). 이유: npm client는 한 database에 실제 연결 두 개를 열므로, 한 row의 transaction 두 개가 PostgreSQL과 MySQL에서 동시에 실행되며, B-4가 기대는 잠금은 database 자체의 잠금이다. 다른 kind가 이 테스트를 반드시 되풀이할 필요는 없다. 그 kind들은 동시성 테스트를 되풀이하지 않는다. persist case는 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`로 PostgreSQL과 MySQL에서 실행한다(S-37-1). `FSM_TEST_DIALECT`가 dialect를 고르고, `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, case마다 persist table을 비우고, 서버 dialect의 case는 차례로 실행한다(rust는 static 잠금을 쓰고, 다른 kind는 순차 실행한다). DSN이 비어 있으면 각 target은 exit 2로 멈추며(Makefile의 `require_dsn`), 테스트도 실패한다. kind별 RED: 테스트가 `FSM_TEST_DIALECT`를 읽기 전에는 PostgreSQL target이 SQLite의 persist case 11개를 통과시켰다(rust, php, php-ext, python). go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이라, 같은 프로세스의 두 번째 `BEGIN IMMEDIATE`가 첫 번째를 커밋할 thread를 막고, 5000밀리초 busy timeout 뒤 `CANCELED: sqlite: database is locked`로 실패하기 때문이다. RED: `examples/persist.mjs`에서 `forUpdate()`를 빼면 PostgreSQL 17.11과 MySQL 8.4.11 모두에서 두 전이가 Changed를 보고하고 두 테스트가 실패한다. 복원한 패턴은 세 dialect에서 통과한다.
 
-- 이름(S-35-2, 결정): 벡터 기록을 검사하는 타깃은 `vector-parity-check`(scripts/check-parity.mjs)다. kit v0.0.23은 자기 `parity-check`(kit K33, config/parity.json의 language-parity 검사기)를 정의하므로 그 이름은 kit의 것이다. S-35-2는 fsm 타깃의 이름을 바꿨지만 `CHECK_TARGETS`에는 `parity-check`가 남아, `make check`가 이 검사가 아니라 kit의 타깃을 돌렸다. S-42가 목록을 고쳤다.
-- kit K33과 이 검사의 비교(S-42, 결정: 도구는 `vector-parity-check` 하나이며, kit의 `parity-check`는 이 저장소의 어떤 타깃에도 없고 아무도 실행하지 않는다). kit의 검사기는 각 binding을 스스로 실행하고 결과 기록을 읽지 않으므로, 기록과 벡터 데이터에 관한 규칙을 표현할 수 없다. kit K33이 덮지 않는 규칙은 다음과 같다:
-  - `.results/<kind>.json`이 없거나, 낡았거나(inputs digest), 다른 패키지를 덮는 경우, 그리고 600000 ms를 넘긴 기록: kit에는 기록도 시간 제한도 없다(kit의 `execute`는 timeout 없는 `spawnSync`이며, binding은 `run-tests.mjs`를 거치지 않는다).
-  - 한 실행에서 케이스가 두 번 실행된 경우: kit은 케이스 이름마다 결과 하나만 두므로 같은 케이스의 두 번째 줄을 보지 못한다.
-  - `kinds`: kind가 admit하고 실행하지 않은 케이스, kind가 `kinds`에서 제외하고도 실행한 케이스, 비었거나 알 수 없는 `kinds` 목록. kit의 suite unit에는 케이스별 admission이 없다. 이를 표현하는 유일한 방법은 admission마다 벡터 파일을 하나씩 두는 것이며, 그러면 생성되는 벡터가 바뀐다.
-  - feature: 케이스가 없는 feature, `contracts/features.json`에 없는 feature의 케이스, 케이스 id 형식과 machine 접두사. kit은 features 파일도 벡터 id 규칙도 읽지 않는다.
-  - owner 검사 `parity-<kind>`(계획 D)와 `TOOL_TESTS`의 도구 기록: kit의 검사는 저장소 전체 단위이며 도구 테스트 개념이 없다.
-  - 두 케이스를 가리키는 케이스 id, 또는 아무 케이스도 가리키지 않으면서 부모도 아닌 id: kit은 `PASS|FAIL <unit>/<case>` 줄만 읽으며 다른 형식의 줄에 대한 규칙이 없다.
-  - `timeout` 상태: kit에는 binding의 시간 제한이 없으므로 멈춘 binding은 finding이 아니다.
-  채택하면 모든 패키지가 바뀐다. 각 언어의 harness(node, php, python, cargo)가 `PASS <unit>/<case>`를 출력해야 하고, Go는 각 케이스를 `<symbol>/<case>` 하위 테스트로 실행해야 하며, 각 binding은 두 번 실행되므로(R3) kind마다 테스트 시간이 두 배가 된다. 채택을 가능하게 할 kit 항목은 S-42 보고서에 제안하며, 이 계획에는 적지 않는다.
+- vector parity(S-42-1, 결정): vector는 kit의 parity 검사(K33, K47을 담은 kit 0.0.26)로 실행되며, 이 검사가 모든 binding을 실행하고 kind마다 case를 허용한다. 저장된 기록을 읽던 fsm 자체의 scripts/check-parity.mjs는 있는 도구가 검사하므로 제거했다(kit에 case별 허용이 없는 동안 S-35-2와 S-42가 이를 유지했다).
 
 ### C-5. compiler `packages/fsm-compiler`
 - Import(S-32): `packages/fsm-compiler/src`는 다음만 import한다: (1) node 내장 모듈, `node:` specifier로; (2) 자기 파일, `src` 안에 머무르는 상대 경로; (3) 이 clone의 벤더 kit `scripts/kit/`(상대 경로, 복사하지 않는다). npm 패키지, bare 내장 이름, 동적 `import()`·`require()`는 없다. `src/core`는 `node:` 모듈을 전혀 import하지 않는다. `packages/fsm-compiler/tests/imports.test.mjs`가 `src`의 모든 import specifier를 검사하고 그 밖이면 실패한다.
@@ -423,16 +409,15 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 | `scripts/check-layout.mjs`, `tests/check-layout/**` | `layout-test layout-check` |
 | `contracts/layout.json` | `layout-test layout-check gen-check packages-test` |
 | `scripts/gen-check.mjs`, `tests/gen-check/**` | `gen-check-test gen-check` |
-| `scripts/check-parity.mjs`, `tests/check-parity/**` | `parity-test` |
 | `tests/python-tools/**` | `python-tools-test` |
 | `scripts/check-python-lock.mjs`, `tests/check-python-lock/**`, `packages/fsm-python/pyproject.toml`, `packages/fsm-python/uv.lock` | `python-lock-test python-lock-check` |
 | `packages/fsm-compiler/**`, `schema/fsm.schema.json`, `machines/**`, `fsm.lock.json`, `conformance/**`, `contracts/features.json`, `fsm.config.json` | `compiler-test gen-check` |
 | `schema/persist.dbs` | `gen-check packages-test` |
 | `schema/fsm.dbs`, `packages/fsm-db/**` | `db-test` |
 | `packages/fsm-gui/**` | `gui-test` |
-| `packages/fsm-<kind>/**` | `layout-check gen-check parity-<kind> dependency-policy-check` |
+| `packages/fsm-<kind>/**` | `layout-check gen-check test-<kind> dependency-policy-check` |
 
-- kind의 소유 검사는 `parity-<kind>`(kind마다 쓰는 리터럴 타깃, 선행 타깃 `test-<kind>`, recipe `node scripts/check-parity.mjs --kind <kind>`)다. `--kind`이면 check-parity는 그 kind의 결과만 읽고 C-4 조건을 그 결과에만 적용한다(모든 벡터 케이스가 1번 실행되어 통과, 미등록 케이스 없음, `inputs` 최신, `elapsedMs`). 다른 kind의 결과와 도구 결과는 읽지 않는다. 선행 타깃과 `--kind`가 없는 `vector-parity-check`는 모든 kind와 도구 결과를 읽고 `check`에서 `packages-test` 뒤에 돈다.
+- kind의 소유 검사는 `test-<kind>`(패키지 테스트)다. kit의 `parity-check`가 `check`에서 `packages-test` 뒤에 모든 kind의 vector를 실행한다(S-42-1).
 - 독립 항목은 체크리스트가 허용할 때 병렬로 진행할 수 있다(AGENTS.ko.md, 체크리스트).
 - 전체 스위트는 체크리스트의 마지막 항목 커밋 후 `make check`로 1회 돌린다.
 
@@ -443,18 +428,18 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 ## Verification
 - 루트 Makefile이 `include scripts/kit/kit.mk` 뒤에 다음 타깃을 정의한다.
   - `CHECK_TARGETS`, `check`
-  - `layout-test`, `layout-check`, `parity-test`, `vector-parity-check`
+  - `layout-test`, `layout-check`, kit의 `parity-declarations-check`와 `parity-check`
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `python-tools-test` (`tests/python-tools`: checkout의 Python. S-41: `var/tools/bin/python3`은 `install-tools`가 만들고, 인터프리터를 uv로 설치하는 recipe가 없으며, `install-python` 타깃이 없고, `config/toolchain.json`이 `pythonBuild`를 선언한다. 복사한 Makefile에서 `make -n`으로 실행하며 네트워크를 쓰지 않는다)
   - `python-lock-test` (`tests/check-python-lock`: the lock rules on fixtures and on the committed uv.lock, S-34) and `python-lock-check` (the same rules on `packages/fsm-python`)
   - `workflows-test`(`tests/workflows`: CI와 Pages 워크플로의 pin, 버전, 서비스, C-10, S-21)
   - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
-  - `test-<kind>`, `parity-<kind>`(`parity-<kind>: test-<kind>`), `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
+  - `test-<kind>`, `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check vector-parity-check`
+  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check workflows-test parity-declarations-check parity-check`
 - Python 인터프리터(S-41, kit 0.0.18 규칙): python 패키지는 `make install-tools`가 설치하는 Python에서 실행하며, uv는 인터프리터를 설치하지 않는다. `config/toolchain.json`은 `pythonBuild`를 선언한다: python-build-standalone release `3.14.8`(`20261009`)과 플랫폼별 `install_only` 아카이브의 sha256(`darwin-arm64`, `darwin-x64`, `linux-x64`, `linux-arm64`, kit 자체 선언의 값). `install-tools`는 플랫폼의 아카이브를 내려받아 다른 digest를 거부하고, `var/tools/python-build`에 풀고, `make install`과 모든 python 타깃이 쓰는 래퍼 `var/tools/bin/python3`를 쓴다. `install-python`(`uv python install --no-bin 3.14`, S-11-3)의 uv 관리 인터프리터는 테스트와 함께 제거했다. 그 인터프리터는 선언된 도구 밖의 uv 다운로드였고 저장소에 digest가 없었다. uv는 `packages/fsm-python`의 resolver이자 설치기로 남는다(`uv export`와 `uv pip install --python <venv>/bin/python --link-mode copy`, venv는 `make python-venv`가 `var/tools/bin/python3`로 만든다, S-41-1). 저장소가 wheel을 내지 않으므로 `pythonBackend`는 선언하지 않는다.
 
-- 패키지 의존성(S-29): `make install`(ONLINE, clone마다 한 번)은 `install-tools`의 toolchain을 `var/tools`에 설치하고 모든 패키지 의존성을 설치한다: `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui`, `docs`의 lock으로 `npm ci`; `packages/fsm-php`와 `packages/fsm-php-ext`의 `composer install`(`composer.lock`과 `composer.json` 기준. `composer.json`의 autoload는 lock에 없으며, 설치 뒤 stamp를 갱신한다, S-29-2); `install-tools`의 Python 3.14(`var/tools/bin/python3`, S-41)와 `packages/fsm-python`의 venv(그 interpreter의 복사본, `uv.lock`에서 export한 `pylock.toml`로 채운다; python stamp는 `uv.lock`으로 키를 정한다); go module과 cargo crate(`var/deps/go`, `var/deps/rust`). 각각은 자기 lock을 키로 하는 file target이므로, 나중의 실행은 최신 상태를 확인하고 네트워크가 필요 없다. package를 쓰는 타깃은 그 file을 선행 조건으로 둔다: `npm-types`, `gen-check`, `test-<kind>`(따라서 `parity-<kind>`와 `packages-test`), `db-test`, `gui-test`, `gui-browser-test`(browser stamp를 통해), `docs-build`, `docs-build-test`. 새 clone은 `make install`을 한 번 실행한 뒤 `make check`를 실행한다: toolchain은 `make install`에서만 온다. `make make-install-test`(`tests/make-install/`)는 Makefile 사본에서, 의존성이 하나도 없는 경우와 모두 있는 경우에 선행 조건을 검사한다.
+- 패키지 의존성(S-29): `make install`(ONLINE, clone마다 한 번)은 `install-tools`의 toolchain을 `var/tools`에 설치하고 모든 패키지 의존성을 설치한다: `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui`, `docs`의 lock으로 `npm ci`; `packages/fsm-php`와 `packages/fsm-php-ext`의 `composer install`(`composer.lock`과 `composer.json` 기준. `composer.json`의 autoload는 lock에 없으며, 설치 뒤 stamp를 갱신한다, S-29-2); `install-tools`의 Python 3.14(`var/tools/bin/python3`, S-41)와 `packages/fsm-python`의 venv(그 interpreter의 복사본, `uv.lock`에서 export한 `pylock.toml`로 채운다; python stamp는 `uv.lock`으로 키를 정한다); go module과 cargo crate(`var/deps/go`, `var/deps/rust`). 각각은 자기 lock을 키로 하는 file target이므로, 나중의 실행은 최신 상태를 확인하고 네트워크가 필요 없다. package를 쓰는 타깃은 그 file을 선행 조건으로 둔다: `npm-types`, `gen-check`, `test-<kind>`(그래서 `packages-test`와 kit의 `parity-check`), `db-test`, `gui-test`, `gui-browser-test`(browser stamp를 통해), `docs-build`, `docs-build-test`. 새 clone은 `make install`을 한 번 실행한 뒤 `make check`를 실행한다: toolchain은 `make install`에서만 온다. `make make-install-test`(`tests/make-install/`)는 Makefile 사본에서, 의존성이 하나도 없는 경우와 모두 있는 경우에 선행 조건을 검사한다.
 - 항목 개발 중에는 owner-checks 매핑만 실행한다.
 - GUI 수동 확인: json·mermaid·db store 각각으로 다음을 확인한다(단계, driver `packages/fsm-gui/scripts/manual-check.mjs`, 기록된 결과는 `docs/verification/gui.md`).
   1. 상태를 추가·삭제·rename한 뒤 저장한다(lock은 save가 함께 갱신).

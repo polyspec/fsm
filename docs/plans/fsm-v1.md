@@ -67,18 +67,18 @@
   - Vendored files are never edited. The same tree gives the same result.
   - Changes to shared tools are made in kit and run through the kit checklist (K items).
 - Development cycle: reproduce with RED → implement → verify with GREEN. Each item states an observable criterion.
-- Fixtures of the root tool tests (check-layout, check-parity, gen-check) are built by the tests in temporary directories, never committed, so no kit gate reads them.
+- Fixtures of the root tool tests (check-layout, gen-check) are built by the tests in temporary directories, never committed, so no kit gate reads them.
 - Test location
   - The base test of a feature lives in the package that owns it.
     - compiler → `packages/fsm-compiler/tests`
     - DB store → `packages/fsm-db/tests`
     - GUI → `packages/fsm-gui/tests`
   - Language packages hold only consumer-side tests.
-  - The root holds only the tests of the root tools (check-layout, check-parity, gen-check) and the vendored `tests/kit/`.
+  - The root holds only the tests of the root tools (check-layout, gen-check) and the vendored `tests/kit/`.
 - Test execution
   - Every test runs through kit `run-tests.mjs`. That runner enforces per-case progress and elapsed-time output and a per-case timeout. There is no overall timeout.
   - One vector case = one language test.
-  - compiler-test, db-test, gui-test and every language test write `.results/<target>.json` through `run-tests --results`. check-parity requires these files (so every test provably ran through the runner) and checks `elapsedMs ≤ 600000` for each. The target is seconds.
+  - compiler-test, db-test, gui-test and every language test write `.results/<target>.json` through `run-tests --results`. run-tests gives every case its own timeout. The target is seconds.
   - Parallel runs happen only through `make -j6` in `packages-test`.
   - While an item is in development, only the owner checks of the owner-checks mapping (section D) run.
   - The full suite runs once per tree with `full-run.mjs` after the last item is committed. It is not a checklist item.
@@ -113,7 +113,7 @@
     - Test location (compiler, DB store and GUI tests in their packages; only consumer-side tests in language packages)
     - Parallel runs only through `make -j6` in `packages-test`; only owner checks during an item
     - Commit messages in English
-    - A conformance check function asserts the expected value of its vector (check-parity counts cases, not assertions)
+    - A conformance check function asserts the expected value of its vector (the parity check counts cases, not assertions)
     - Dependency pins (release tags in manifests and lock files)
 - Branches and worktrees
   - Work directly on main is allowed.
@@ -133,7 +133,7 @@ fsm/
   .gitignore            # anchored only: /var/, /.results/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/fsm-python/**/__pycache__/, php-ext phpize output under /packages/fsm-php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/fsm-gui/build/, /packages/fsm-gui/public/assets/, /packages/fsm-php*/.phpunit.result.cache, /packages/fsm-php*/.phpunit.cache/
   config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review}.json
   scripts/kit/ tests/kit/                    # vendored from kit
-  scripts/check-layout.mjs scripts/check-parity.mjs scripts/check-name.mjs scripts/gen-check.mjs scripts/check-python-lock.mjs   tests/check-layout/ tests/check-name/ tests/check-parity/ tests/docs-build/ tests/gen-check/ tests/python-tools/ tests/check-python-lock/
+  scripts/check-layout.mjs scripts/check-name.mjs scripts/gen-check.mjs scripts/check-python-lock.mjs   tests/check-layout/ tests/check-name/ tests/docs-build/ tests/gen-check/ tests/python-tools/ tests/check-python-lock/
   contracts/layout.json (tools, kinds, canonical tree, allowed differences)   contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
@@ -196,22 +196,17 @@ packages/fsm-<kind>/
   - A vectorId starts with `<machine>_`.
   - Language tests use this name as is.
 
-### C-4. `check-parity.mjs`
-Fails when (no exemptions):
-- `.results/<kind>.json` of a kind in `kinds` is missing, or its `inputs` differs from the current digest
-- a vector case did not run in some kind that its `kinds` admits (a case without `kinds` is admitted by every kind), or a kind ran a case that its `kinds` excludes
-- a result holds a case that is not in the vectors
-- a feature in features.json has zero vector cases
-- a case has any status other than `pass` (`fail`, `timeout` and `skip` all fail)
-- a result id yields two or more distinct case names, or yields none and is not the parent of a matched id (an id that a matched id extends with ` › `, such as the Go test function that runs the cases as subtests)
-- without `--kind`: the record `.results/<target>.json` of a tool test named by `--tools` (`TOOL_TESTS` of the Makefile: layout-test, parity-test, gen-check-test, compiler-test, db-test, gui-test as their items add them) is missing, stale or holds a case that is not `pass`
-- `elapsedMs > 600000` in any `.results/*.json` (with `--kind`: only that kind's result)
+### C-4. Vector parity (kit K33)
+kit's parity check (`make parity-check`, K33 of kit 0.0.26, `config/parity.json`; S-42-1) runs the conformance test of every kind twice and fails, with no exemption, when
+- a kind did not run a case of `conformance/vectors.json` that its `kinds` admits (a case without `kinds` is admitted by every kind), ran a case that its `kinds` excludes, or ran a case that the vectors do not hold;
+- one run reports a case twice;
+- a case fails, is skipped or is a todo, or the binding exits with another status.
 
-Case name extraction: `/\btest_[a-z][a-z0-9]*(?:_[a-z0-9]+)*__[a-z][a-z0-9]*(?:_[a-z0-9]+)*\b/` is applied to each result id. An id with exactly one distinct match is that case; an id with zero or with two or more distinct matches is judged by the result-id bullet above. There are no per-tool rules.
+`make parity-declarations-check` checks the declaration without running anything. The feature coverage (every feature of contracts/features.json has a case) is asserted by the compiler test `vectors-file.test.mjs`. The records `.results/<kind>.json` stay the output of run-tests; no fsm tool reads them.
 
 `contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. The vector file is `conformance/vectors.json` = `{machines: [{machine, cases: [{feature, id, name, …}]}]}`, one suite for kit's parity check; the case name is `name` = `<feature>__<id>`.
 
-Conformance machines (`machines/`, S-25): every kind runs the vectors of every machine in `machines/`, so the definition's shapes are covered by all six kinds: `order` (the example); `standby` (no events: one state, which is initial and final); `in_review` (underscore keys in the machine, state and event keys); `ticket` (reserved codes 2 and 4, which are states removed after a first lock; the lock keeps them as reserved); `limits` (the code 2147483647). Each kind passes 209 cases (`vector-parity-check`).
+Conformance machines (`machines/`, S-25): every kind runs the vectors of every machine in `machines/`, so the definition's shapes are covered by all six kinds: `order` (the example); `standby` (no events: one state, which is initial and final); `in_review` (underscore keys in the machine, state and event keys); `ticket` (reserved codes 2 and 4, which are states removed after a first lock; the lock keeps them as reserved); `limits` (the code 2147483647). Each kind passes 209 cases (kit's `parity-check`).
 
 Vectors (exhaustive; the core generates the oracle):
 - `initial`
@@ -239,7 +234,7 @@ Vectors (exhaustive; the core generates the oracle):
   two-state machine has `first` and `retry`, and a machine without a transition (such as a one-state machine) has no
   persist case.
 - Invalid state values (S-26): whether a state argument can hold a value that is no state depends on the state type of the kind.
-  A case with an invalid value names the kinds that admit it in `kinds`, and check-parity requires it of those kinds only. The
+  A case with an invalid value names the kinds that admit it in `kinds`, and kit's parity check requires it of those kinds only. The
   decision per kind, recorded here for the spec B-6 rule that the functions fail with E_UNKNOWN_CODE:
 
   | kind | state type | invalid state value |
@@ -253,18 +248,9 @@ Vectors (exhaustive; the core generates the oracle):
 - The native vector modules of rust, php and php-ext hold the cases that their kinds admit (core `forKind`), so they run 224 of
   the 270 cases of the five machines; go, npm and python run all 270.
 
-- Concurrency of the persistence pattern (S-37, decision): the concurrency proof is written once, in npm (`packages/fsm-npm/tests/persist-dialects.test.mjs`, records `npm-persist-test`, `npm-persist-test-postgres`, `npm-persist-test-mysql`, all in `TOOL_TESTS`). Reason: the npm client opens two real connections to one database, so two transactions of one row run at the same time on PostgreSQL and MySQL, and the lock that B-4 relies on is the database's own. The other kinds do not repeat the concurrency test. Their persist cases run on PostgreSQL and MySQL through `make <kind>-persist-test-postgres` and `make <kind>-persist-test-mysql` (S-37-1, records in `TOOL_TESTS`): `FSM_TEST_DIALECT` selects the dialect, `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` name the database, each case clears the persist table, and the cases of a server dialect run one after another (rust takes a static lock; the other kinds run sequentially). Each target stops with exit 2 when its DSN is empty (`require_dsn` in the Makefile), and the test fails too. RED per kind: before the test read `FSM_TEST_DIALECT`, the target passed with 11 persist cases on SQLite under the PostgreSQL target (rust, php, php-ext, python); go failed with `driver "postgres" is not registered` until its example imported `orm/pg`. On SQLite the two transitions run one after the other, because the SQLite driver is synchronous: a second `BEGIN IMMEDIATE` in the same process blocks the thread that would commit the first, and fails with `CANCELED: sqlite: database is locked` after the 5000 ms busy timeout. RED: with `forUpdate()` removed from `examples/persist.mjs`, both transitions report Changed on PostgreSQL 17.11 and on MySQL 8.4.11, and both tests fail; the restored pattern passes on the three dialects.
+- Concurrency of the persistence pattern (S-37, decision): the concurrency proof is written once, in npm (`packages/fsm-npm/tests/persist-dialects.test.mjs`, records `npm-persist-test`, `npm-persist-test-postgres`, `npm-persist-test-mysql`). Reason: the npm client opens two real connections to one database, so two transactions of one row run at the same time on PostgreSQL and MySQL, and the lock that B-4 relies on is the database's own. The other kinds do not repeat the concurrency test. Their persist cases run on PostgreSQL and MySQL through `make <kind>-persist-test-postgres` and `make <kind>-persist-test-mysql` (S-37-1): `FSM_TEST_DIALECT` selects the dialect, `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` name the database, each case clears the persist table, and the cases of a server dialect run one after another (rust takes a static lock; the other kinds run sequentially). Each target stops with exit 2 when its DSN is empty (`require_dsn` in the Makefile), and the test fails too. RED per kind: before the test read `FSM_TEST_DIALECT`, the target passed with 11 persist cases on SQLite under the PostgreSQL target (rust, php, php-ext, python); go failed with `driver "postgres" is not registered` until its example imported `orm/pg`. On SQLite the two transitions run one after the other, because the SQLite driver is synchronous: a second `BEGIN IMMEDIATE` in the same process blocks the thread that would commit the first, and fails with `CANCELED: sqlite: database is locked` after the 5000 ms busy timeout. RED: with `forUpdate()` removed from `examples/persist.mjs`, both transitions report Changed on PostgreSQL 17.11 and on MySQL 8.4.11, and both tests fail; the restored pattern passes on the three dialects.
 
-- Name (S-35-2, decision): the target that checks the vector records is `vector-parity-check` (scripts/check-parity.mjs). Kit v0.0.23 defines its own `parity-check` (kit K33, the language-parity checker of config/parity.json), so that name belongs to kit. S-35-2 renamed the fsm target, but `CHECK_TARGETS` kept the name `parity-check`, so `make check` ran kit's target and not this check; S-42 fixed the list.
-- Kit K33 against this check (S-42, decision: one tool, `vector-parity-check`; kit's `parity-check` is in no target of this repository and nothing runs it). Kit's checker runs each binding itself and reads no result record, so it cannot state the rules that concern records and vector data. The rules that kit K33 does not cover:
-  - a `.results/<kind>.json` that is missing, stale (inputs digest) or covers another package, and a record over 600000 ms: kit has no record and no time limit (its `execute` is a `spawnSync` without timeout, and its bindings do not run through `run-tests.mjs`).
-  - a case that ran twice in one run: kit keeps one outcome per case name, so a second line for a case is not seen.
-  - `kinds`: a case that a kind admits and did not run, a case that a kind ran although its `kinds` excludes it, and an empty or unknown `kinds` list. A kit suite unit has no per-case admission; the only way to express it is one vector file per admission, which changes the generated vectors.
-  - features: a feature with no case, a case of a feature that `contracts/features.json` does not list, and the case id form with its machine prefix. Kit reads no features file and no vector id rule.
-  - the owner checks `parity-<kind>` (plan D) and the tool records of `TOOL_TESTS`: kit's check is whole-repository and has no tool test.
-  - a case id that names two cases, or names none and is no parent: kit reads only the harness lines `PASS|FAIL <unit>/<case>` and has no rule for another line.
-  - the `timeout` outcome of a case: a binding has no time limit in kit, so a hung binding is not a finding.
-  Adoption would also change every package: the harness of each language (node, php, python, cargo) would print `PASS <unit>/<case>`, Go would run each case as the subtest `<symbol>/<case>`, and each binding runs twice (R3), so the test time of each kind doubles. The kit items that would make adoption possible are proposed in the S-42 report, not in this plan.
+- Vector parity (S-42-1, decision): the vectors run on kit's parity check (K33, kit 0.0.26 with K47), which runs every binding and admits cases per kind; fsm's own scripts/check-parity.mjs, which read the saved records, is removed, since an existing tool does the check (S-35-2 and S-42 had kept it while kit lacked per-case admission).
 
 ### C-5. compiler `packages/fsm-compiler`
 - Imports (S-32): `packages/fsm-compiler/src` imports only (1) node built-ins, by their `node:` specifier; (2) its own files, by a relative path that stays in `src`; (3) the vendored kit of this clone, `scripts/kit/` (a relative path, never a copy). No npm package, no bare built-in name and no dynamic `import()` or `require()`. `src/core` imports no `node:` module at all. `packages/fsm-compiler/tests/imports.test.mjs` scans every import specifier of `src` and fails on anything else.
@@ -434,16 +420,15 @@ owner-checks mapping (each item adds its own part):
 | `scripts/check-layout.mjs`, `tests/check-layout/**` | `layout-test layout-check` |
 | `contracts/layout.json` | `layout-test layout-check gen-check packages-test` |
 | `scripts/gen-check.mjs`, `tests/gen-check/**` | `gen-check-test gen-check` |
-| `scripts/check-parity.mjs`, `tests/check-parity/**` | `parity-test` |
 | `tests/python-tools/**` | `python-tools-test` |
 | `scripts/check-python-lock.mjs`, `tests/check-python-lock/**`, `packages/fsm-python/pyproject.toml`, `packages/fsm-python/uv.lock` | `python-lock-test python-lock-check` |
 | `packages/fsm-compiler/**`, `schema/fsm.schema.json`, `machines/**`, `fsm.lock.json`, `conformance/**`, `contracts/features.json`, `fsm.config.json` | `compiler-test gen-check` |
 | `schema/persist.dbs` | `gen-check packages-test` |
 | `schema/fsm.dbs`, `packages/fsm-db/**` | `db-test` |
 | `packages/fsm-gui/**` | `gui-test` |
-| `packages/fsm-<kind>/**` | `layout-check gen-check parity-<kind> dependency-policy-check` |
+| `packages/fsm-<kind>/**` | `layout-check gen-check test-<kind> dependency-policy-check` |
 
-- `parity-<kind>` (a literal target per kind with prerequisite `test-<kind>` and recipe `node scripts/check-parity.mjs --kind <kind>`) is the owner check of a kind. With `--kind`, check-parity reads only that kind's result and applies the C-4 conditions to it alone (every vector case ran once and passed, no unknown case, current `inputs`, `elapsedMs`); it reads neither other kinds nor the tool results. `vector-parity-check` (no prerequisite, no `--kind`) reads every kind and the tool results and runs in `check` after `packages-test`.
+- The owner check of a kind is `test-<kind>` (its package tests); kit's `parity-check` runs the vectors of every kind in `check` after `packages-test` (S-42-1).
 - Independent items may run in parallel when the checklist allows it (AGENTS.md, Checklist).
 - The full suite runs once with `make check` after the last item of the checklist is committed.
 
@@ -454,18 +439,18 @@ owner-checks mapping (each item adds its own part):
 ## Verification
 - The root Makefile defines these targets after `include scripts/kit/kit.mk`:
   - `CHECK_TARGETS`, `check`
-  - `layout-test`, `layout-check`, `parity-test`, `vector-parity-check`
+  - `layout-test`, `layout-check`, and kit's `parity-declarations-check` and `parity-check`
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `python-tools-test` (`tests/python-tools`: the Python of the checkout, S-41: `var/tools/bin/python3` is made by `install-tools`, no recipe installs an interpreter with uv, there is no `install-python` target, and `config/toolchain.json` declares the `pythonBuild`; `make -n` on a copy of the Makefile, no network)
   - `python-lock-test` (`tests/check-python-lock`: the lock rules on fixtures and on the committed uv.lock, S-34) and `python-lock-check` (the same rules on `packages/fsm-python`)
   - `workflows-test` (`tests/workflows`: the CI and Pages workflows, their pins, versions and services, C-10, S-21)
   - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
-  - `test-<kind>`, `parity-<kind>` (`parity-<kind>: test-<kind>`), `packages-test` (the `test-<kind>` of `kinds` with `make -j6`)
+  - `test-<kind>`, `packages-test` (the `test-<kind>` of `kinds` with `make -j6`)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check vector-parity-check`
+  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-test python-lock-check workflows-test parity-declarations-check parity-check`
 - Python interpreter (S-41, the kit rule of 0.0.18): the python package runs on the Python that `make install-tools` installs, and no uv installs an interpreter. `config/toolchain.json` declares `pythonBuild` with the python-build-standalone release `3.14.8` of `20261009` and the sha256 of its `install_only` archive for each platform (`darwin-arm64`, `darwin-x64`, `linux-x64`, `linux-arm64`), the values of the kit's own declaration. `install-tools` downloads the archive of the platform, refuses another digest, unpacks it into `var/tools/python-build` and writes the wrapper `var/tools/bin/python3`, which `make install` and every python target use. The uv-managed interpreter of `install-python` (`uv python install --no-bin 3.14`, S-11-3) is removed with its test: its interpreter was a uv download outside the declared tools, with no digest in the repository. uv stays the resolver and installer of `packages/fsm-python` (`uv export` and `uv pip install --python <venv>/bin/python --link-mode copy`, with the venv that `make python-venv` makes from `var/tools/bin/python3`, S-41-1). `pythonBackend` is not declared, because the repository publishes no wheel.
 
-- Package dependencies (S-29): `make install` (ONLINE, once per clone) installs the toolchains of `install-tools` into `var/tools` and every package dependency: `npm ci` of the locks of `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui` and `docs`; `composer install` of `packages/fsm-php` and `packages/fsm-php-ext` (keyed on `composer.lock` and `composer.json`, because the autoload of `composer.json` is not in the lock, and the stamp is touched after the install, S-29-2); the Python 3.14 of `install-tools` (`var/tools/bin/python3`, S-41) and the venv of `packages/fsm-python` (a copy of that interpreter, filled from the `pylock.toml` exported from its `uv.lock`; the python stamp is keyed on `uv.lock`); the go modules and the cargo crates (`var/deps/go` and `var/deps/rust`). Each one is a file target keyed on its lock, so a later run finds it up to date and needs no network. The targets that use a package name its file as a prerequisite: `npm-types`, `gen-check`, `test-<kind>` (and so `parity-<kind>` and `packages-test`), `db-test`, `gui-test`, `gui-browser-test` (through the browser stamp), `docs-build` and `docs-build-test`. A fresh clone runs `make install` once, then `make check`: the toolchains come only from `make install`. `make make-install-test` (`tests/make-install/`) checks the prerequisites on a copy of the Makefile, with no dependency installed and with every dependency present.
+- Package dependencies (S-29): `make install` (ONLINE, once per clone) installs the toolchains of `install-tools` into `var/tools` and every package dependency: `npm ci` of the locks of `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui` and `docs`; `composer install` of `packages/fsm-php` and `packages/fsm-php-ext` (keyed on `composer.lock` and `composer.json`, because the autoload of `composer.json` is not in the lock, and the stamp is touched after the install, S-29-2); the Python 3.14 of `install-tools` (`var/tools/bin/python3`, S-41) and the venv of `packages/fsm-python` (a copy of that interpreter, filled from the `pylock.toml` exported from its `uv.lock`; the python stamp is keyed on `uv.lock`); the go modules and the cargo crates (`var/deps/go` and `var/deps/rust`). Each one is a file target keyed on its lock, so a later run finds it up to date and needs no network. The targets that use a package name its file as a prerequisite: `npm-types`, `gen-check`, `test-<kind>` (and so `packages-test` and kit's `parity-check`), `db-test`, `gui-test`, `gui-browser-test` (through the browser stamp), `docs-build` and `docs-build-test`. A fresh clone runs `make install` once, then `make check`: the toolchains come only from `make install`. `make make-install-test` (`tests/make-install/`) checks the prerequisites on a copy of the Makefile, with no dependency installed and with every dependency present.
 - During item work only the owner-checks mapping runs.
 - GUI manual check, for each of the json, mermaid and db stores (the steps, the driver `packages/fsm-gui/scripts/manual-check.mjs` and the recorded outcome are in `docs/verification/gui.md`):
   1. Add, delete and rename states, then save (save updates the lock too).
