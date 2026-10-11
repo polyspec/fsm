@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: fec091edd9230852809fcb8e0b05485097402031f26b84b7701f8090126dc66e -->
+<!-- source-sha256: 5ef521556b3ba5ca7d552f3aa9c1d2d8ed3ed8c7b9a890e23abc74f9742c9280 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -253,10 +253,11 @@ packages/fsm-<kind>/
     - `lock_reserved(machine, code i32)`: PK(machine,code)
     - machine FK는 두지 않는다. 정의에서 지운 머신의 lock도 남아야 하기 때문이다.
 - `DbStore`는 store 계약을 구현한다. `save`는 한 transaction 안에서 전체를 교체한다. 검증은 core `run`이 store를 부르기 전에 끝낸다.
-- `fsm-db` CLI는 core `run`과 `copy`를 DbStore와 json/mermaid store로 실행한다.
+- `fsm-db` CLI는 core `run`과 `copy`를 DbStore와 json/mermaid store로 실행한다. `install`은 orm `utils().schema().install`로 `schema/fsm.dbs`를 설치한다(S-15-1). 명령과 동작은 `docs/spec/fsm.ko.md`(B-2)와 `packages/fsm-db/README.ko.md`에 있다.
 - 테스트(SQLite)
   - store 계약(왕복·결과 바이트 동일)
   - `E_STORE_NOT_EMPTY`
+  - CLI를 프로세스로 실행: 새 database에서 `install`(설치 전 `check`는 table이 없어 실패하고 설치 뒤에는 통과), 두 번째 `install`, orm이 거부하는 부분 설치, `install`의 usage
   - transaction 원자성 RED
   - dialect 차이는 orm 자신의 conformance 책임이다.
 

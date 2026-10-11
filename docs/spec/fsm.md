@@ -102,9 +102,14 @@ stateDiagram-v2
   - Format: `{"store":"json"|"mermaid"}` or `{"store":"db","dsnEnv":"FSM_DSN"}`
   - fsm-gen, fsm-db and fsm-gui read this file. If a tool cannot handle the configured store (for example fsm-gen with `db`), it fails with `E_STORE_NOT_CONFIGURED`.
   - A file in `machines/` whose format differs from the configuration fails with `E_STORE_MIXED`.
-- `copy(from, to)` is an async core migration function outside `run` (`await to.save(await from.load())`). The CLI is `copy --to json|mermaid --root <dir>` or `copy --to db` (the DSN comes from the environment variable named by `--dsn-env`). If the target root already holds `machines/` or `fsm.lock.json` (for db: definition or lock rows), it fails with `E_STORE_NOT_EMPTY`.
+- `copy(from, to)` is an async core migration function outside `run` (`await to.save(await from.load())`). The fsm-db CLI is `copy --to json|mermaid --root <dir>` (the database is the source) or `copy --from json|mermaid --root <dir>` (the database is the target). If the target root already holds `machines/` or `fsm.lock.json` (for db: definition or lock rows), it fails with `E_STORE_NOT_EMPTY`.
   - fsm-gen provides json↔mermaid migration (keeping zero dependencies).
-  - fsm-db provides db↔json/mermaid migration.
+  - fsm-db provides db↔json/mermaid migration and the install of the schema. Its commands are `install`, `check`, `lock` and `copy`; their usage, exit codes and examples are in `packages/fsm-db/README.md`.
+    - `install [--project <dir>]` installs the six tables of `schema/fsm.dbs` through orm `utils().schema().install`. On a database without the tables it creates them and prints `[fsm-db] install: ok`. On a database that already has all six tables it changes nothing and prints the same line. This is the observed behaviour of orm v0.0.7, tested in `packages/fsm-db/tests/cli.test.mjs`. On a database that has only some of the tables, orm rejects the install with `CONFIG`; the command prints the error with its stack and exits 1. There is no fallback.
+    - `check`, `lock` and `copy` on a database without the tables fail with orm's `no such table` error, printed with its stack and exit 1. `install` is the only command that creates tables.
+    - `lock [--project <dir>] [--rename machine.old=new]...` runs core `run lock` on the database. A renamed state keeps its code.
+    - The DSN is the value of the environment variable that `dsnEnv` names in `fsm.config.json`. fsm-db reads no DSN from any other place.
+    - `--project` defaults to the current directory. A usage error exits 2.
   - Changing `fsm.config.json` after a migration is a human decision.
 - Store contract tests enforce that there is one rule set.
   - Every fixture round-trips json → db → mermaid → json byte-identically.

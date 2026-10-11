@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: dbcd3225b518359654d14646fe476ab0b0c0cabadae77c36d47aae8bc75b8ec2 -->
+<!-- source-sha256: 914bda3cebe5cc44df7a4547e3f5038c30978ab9edafd603af87fd9a97a769d8 -->
 # fsm 정의
 
 [English](fsm.md)
@@ -103,9 +103,14 @@ stateDiagram-v2
   - 형식: `{"store":"json"|"mermaid"}` 또는 `{"store":"db","dsnEnv":"FSM_DSN"}`
   - fsm-gen, fsm-db, fsm-gui는 이 파일을 읽는다. 설정된 store를 그 도구가 다루지 못하면(예: fsm-gen + `db`) `E_STORE_NOT_CONFIGURED`.
   - `machines/`에 설정과 다른 형식의 파일이 있으면 `E_STORE_MIXED`.
-- `copy(from, to)`는 `run` 밖의 비동기 core 이관 함수다(`await to.save(await from.load())`). CLI는 `copy --to json|mermaid --root <dir>` 또는 `copy --to db`(DSN은 `--dsn-env`가 가리키는 환경 변수)이며, 대상 루트에 `machines/`나 `fsm.lock.json`(db면 정의·lock 행)이 있으면 `E_STORE_NOT_EMPTY`.
+- `copy(from, to)`는 `run` 밖의 비동기 core 이관 함수다(`await to.save(await from.load())`). fsm-db CLI는 `copy --to json|mermaid --root <dir>`(database가 원본)와 `copy --from json|mermaid --root <dir>`(database가 대상)이며, 대상 루트에 `machines/`나 `fsm.lock.json`(db면 정의·lock 행)이 있으면 `E_STORE_NOT_EMPTY`.
   - fsm-gen은 json↔mermaid 이관을 제공한다(의존성 0 유지).
-  - fsm-db는 db↔json/mermaid 이관을 제공한다.
+  - fsm-db는 db↔json/mermaid 이관과 schema 설치를 제공한다. 명령은 `install`, `check`, `lock`, `copy`이며, usage·종료 코드·예시는 `packages/fsm-db/README.ko.md`에 있다.
+    - `install [--project <dir>]`은 orm `utils().schema().install`로 `schema/fsm.dbs`의 여섯 table을 설치한다. table이 없는 database에서는 table을 만들고 `[fsm-db] install: ok`를 출력한다. 여섯 table이 모두 있는 database에서는 아무것도 바꾸지 않고 같은 줄을 출력한다. 이는 orm v0.0.7의 관찰된 동작이며 `packages/fsm-db/tests/cli.test.mjs`가 검증한다. table이 일부만 있는 database에서는 orm이 install을 `CONFIG`로 거부하고, 명령은 오류를 stack과 함께 출력한 뒤 종료 코드 1로 끝난다. 대체 동작(fallback)은 없다.
+    - table이 없는 database에서 `check`, `lock`, `copy`는 orm의 `no such table` 오류를 stack과 함께 출력하고 종료 코드 1로 끝난다. `install`만 table을 만든다.
+    - `lock [--project <dir>] [--rename machine.old=new]...`은 database에 core `run lock`을 실행한다. 이름을 바꾼 state는 code를 유지한다.
+    - DSN은 `fsm.config.json`의 `dsnEnv`가 가리키는 환경 변수의 값이다. fsm-db는 다른 곳에서 DSN을 읽지 않는다.
+    - `--project`의 기본값은 현재 디렉터리다. usage 오류는 종료 코드 2로 끝난다.
   - 이관 뒤 `fsm.config.json`을 바꾸는 것은 사람이 결정한다.
 - 규칙이 하나라는 것은 store 계약 테스트로 강제한다.
   - 모든 fixture를 json → db → mermaid → json으로 왕복시켰을 때 바이트 동일해야 한다.
