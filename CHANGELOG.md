@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-21-1: CI and Pages run on ubuntu-26.04, because orm's PHP client requires SQLite 3.46 and the PHP of ubuntu-24.04 links SQLite 3.45.1; CI run 38121153369 passed the full suite there, 47 of 47 targets (tree 4963dbe).
 - S-41-1: the python package venv is made by the kit tool (`make python-venv DIR=packages/fsm-python/.venv`, kit K44 in kit v0.0.24), not by `python -m venv` in fsm's Makefile. On Linux CPython's venv makes a `lib64 -> lib` link that run-tests --venv refuses, which failed the ubuntu CI of S-41 (run 38118092530); the kit tool removes that link. A test of tests/python-tools asserts that `make -n install` calls the kit tool (RED with `-m venv`). `make install` removes the venv before it makes a new one, as before.
 - S-35-3: `make check` runs `vector-parity-check` again; a rebase had put the kit name `parity-check` back into CHECK_TARGETS, so the suite ran kit K33's checker instead of fsm's vector parity, and a make-install test now asserts the target.
 - S-42: one parity tool runs in `make check`. `CHECK_TARGETS` named kit's `parity-check` (S-35-2 renamed the fsm target but not the list), so the vector records were never checked. It names `vector-parity-check` now, and a test of tests/check-parity reads the Makefile to require that. Kit K33 is not adopted: it runs each binding itself and reads no record, so it cannot state the record, `kinds`, feature, tool-test and time rules (plan C-4 lists each one).
