@@ -118,7 +118,9 @@
       "targets": [
         "db-test",
         "dependency-policy-check",
-        "gui-test"
+        "gui-test",
+        "db-test-postgres",
+        "db-test-mysql"
       ]
     },
     {
@@ -141,7 +143,10 @@
         "gen-check",
         "parity-npm",
         "npm-types",
-        "dependency-policy-check"
+        "dependency-policy-check",
+        "npm-persist-test",
+        "npm-persist-test-postgres",
+        "npm-persist-test-mysql"
       ]
     },
     {
@@ -197,7 +202,9 @@
       ],
       "targets": [
         "db-test",
-        "dependency-policy-check"
+        "dependency-policy-check",
+        "db-test-postgres",
+        "db-test-mysql"
       ]
     },
     {
@@ -254,7 +261,10 @@
         "layout-check",
         "gen-check",
         "parity-npm",
-        "dependency-policy-check"
+        "dependency-policy-check",
+        "npm-persist-test",
+        "npm-persist-test-postgres",
+        "npm-persist-test-mysql"
       ]
     },
     {

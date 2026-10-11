@@ -442,6 +442,7 @@ checks that the documents depend on can be run one at a time:
 | `make documents-check` | every document has its Korean twin with a current `source-sha256` stamp, and its links are valid |
 | `make name-check` | no tracked file names the library by its old name |
 | `make gui-test`, `make compiler-test`, `make db-test` | the tests of each tool |
+| `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql` | the DB store tests and the persistence concurrency proof on PostgreSQL and MySQL; they read `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` and fail without them (plan C-6). The tests run on SQLite too (`make db-test`, `make npm-persist-test`) |
 | `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | the tests of each language package |
 
 The conformance tests of each language package run the same vector cases, one test per case, named `test_<feature>__<id>`.

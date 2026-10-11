@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 704d81e8b1e43fb2a58709a0b2f381707aea6a2793fbe613ca321b6f8af7a8e8 -->
+<!-- source-sha256: e1315e67f2504123b8daa3ccb498626f6e4bb6dd075adc621b2ed5fe4abffd31 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -241,6 +241,8 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - rust, php, php-ext의 native vector 모듈은 자기 kind가 허용하는 case만 담는다(core `forKind`). 그래서 다섯 machine의 270개 case 중 224개를 돌리고, go, npm, python은 270개를 모두 돌린다.
 - persist 케이스는 machine에 transition이 있을 때만 존재한다. `conflict`는 third state가 있을 때만 존재하므로, state가 2개인 machine은 `first`와 `retry`만 갖고, transition이 없는 machine(예: state가 1개인 machine)은 persist 케이스가 없다.
 
+- 영속화 패턴의 동시성(S-37, 결정): 동시성 증명은 npm에 한 번만 쓴다(`packages/fsm-npm/tests/persist-dialects.test.mjs`, 기록 `npm-persist-test`, `npm-persist-test-postgres`, `npm-persist-test-mysql`, 모두 `TOOL_TESTS`에 있다). 이유: npm client는 한 database에 실제 연결 두 개를 열므로, 한 row의 transaction 두 개가 PostgreSQL과 MySQL에서 동시에 실행되며, B-4가 기대는 잠금은 database 자체의 잠금이다. 다른 kind가 이 테스트를 반드시 되풀이할 필요는 없다. 그 kind들은 SQLite에서 persist vector를 유지하고, dialect 실행은 S-37-1이다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이라, 같은 프로세스의 두 번째 `BEGIN IMMEDIATE`가 첫 번째를 커밋할 thread를 막고, 5000밀리초 busy timeout 뒤 `CANCELED: sqlite: database is locked`로 실패하기 때문이다. RED: `examples/persist.mjs`에서 `forUpdate()`를 빼면 PostgreSQL 17.11과 MySQL 8.4.11 모두에서 두 전이가 Changed를 보고하고 두 테스트가 실패한다. 복원한 패턴은 세 dialect에서 통과한다.
+
 ### C-5. compiler `packages/fsm-compiler`
 - Import(S-32): `packages/fsm-compiler/src`는 다음만 import한다: (1) node 내장 모듈, `node:` specifier로; (2) 자기 파일, `src` 안에 머무르는 상대 경로; (3) 이 clone의 벤더 kit `scripts/kit/`(상대 경로, 복사하지 않는다). npm 패키지, bare 내장 이름, 동적 `import()`·`require()`는 없다. `src/core`는 `node:` 모듈을 전혀 import하지 않는다. `packages/fsm-compiler/tests/imports.test.mjs`가 `src`의 모든 import specifier를 검사하고 그 밖이면 실패한다.
 - 구성
@@ -281,6 +283,37 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
   - CLI를 프로세스로 실행: 새 database에서 `install`(설치 전 `check`는 table이 없어 실패하고 설치 뒤에는 통과), 두 번째 `install`, orm이 거부하는 부분 설치, `install`의 usage
   - transaction 원자성 RED
   - dialect 차이는 orm 자신의 conformance 책임이다.
+- 테스트(S-37): `make db-test`는 패키지의 모든 테스트를 SQLite에서 실행한다. `make db-test-postgres`와 `make db-test-mysql`은 `tests/db-store.test.mjs`와 `tests/store-contract-all.test.mjs`를 PostgreSQL과 MySQL에서 실행한다. 두 파일은 `tests/dialect.mjs`로 database를 연다. `FSM_TEST_DIALECT`가 dialect를 고른다(기본 `sqlite`, `postgres` 또는 `mysql`). `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, DSN이 없으면 throw하므로 target이 실패하고 case를 건너뛰지 않는다. 각 파일은 schema를 설치하고(database가 이미 schema를 가지면 install은 아무것도 바꾸지 않는다) case 전에 여섯 table을 비우므로, case는 자신이 쓴 것만 읽는다. 두 파일은 database를 공유하므로 `--test-concurrency=1`로 실행한다. CLI와 command 테스트는 SQLite에만 남는다. orm client 밖의 DDL 없이는 공유 서버에 fsm table이 없는 database를 만들 수 없기 때문이다(S-37-2).
+- 로컬 서버(S-37, 이 항목의 실행): PostgreSQL 17.11(`initdb`, `pg_ctl`, 실행마다 data 디렉터리와 socket 디렉터리)과 MySQL 8.4.11(`mysqld --initialize-insecure`, `--daemonize`)을 각각 포트 55432와 33306에 띄웠다. database는 `fsm_test`, 사용자는 `fsm`이다. DSN은 `postgres://fsm@127.0.0.1:55432/fsm_test?sslmode=disable`와 `mysql://fsm:fsm@127.0.0.1:33306/fsm_test`였다. 실행 뒤 서버를 멈추고 data 디렉터리를 지웠다.
+- S-21을 위한 CI service(`make install`과 `make check`를 실행하는 job에 복사할 줄; 이미지는 위 버전이다):
+```yaml
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: fsm
+          POSTGRES_PASSWORD: fsm
+          POSTGRES_DB: fsm_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fsm -d fsm_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: fsm
+          MYSQL_PASSWORD: fsm
+          MYSQL_DATABASE: fsm_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      FSM_TEST_PG_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
+      FSM_TEST_MYSQL_DSN: mysql://fsm:fsm@127.0.0.1:3306/fsm_test
+```
+- npm의 동시성과 persist 테스트(`make npm-persist-test`, `-postgres`, `-mysql`)는 같은 변수를 읽는다. 그 결정은 C-4에 적었다.
 
 ### C-7. GUI `packages/fsm-gui` (hyper Node 서버 + crudui + mermaid)
 - GUI는 단일 편집자 도구다. save는 전체 교체이고, 마지막 쓰기가 이긴다.

@@ -11,7 +11,8 @@ import { copy, run } from '../../fsm-compiler/src/core/run.mjs';
 import { jsonStore } from '../../fsm-compiler/src/store-json/store.mjs';
 import { storeContract } from '../../fsm-compiler/tests/store-contract.mjs';
 import { dbStore } from '../src/db-store.mjs';
-import { Edge, Event, LockCode, LockReserved, Machine, SCHEMA, State, connect } from '../src/models/models.ts';
+import { Edge, Event, LockCode, LockReserved, Machine, State } from '../src/models/models.ts';
+import { openDialectDb } from './dialect.mjs';
 
 const temp = [];
 const dbs = [];
@@ -28,12 +29,13 @@ function tempDir() {
   return dir;
 }
 
-/** A new SQLite database with the schema installed, empty. */
+/**
+ * A database with the schema installed and no fsm row: a new SQLite file, or the server database of FSM_TEST_DIALECT (its rows are
+ * cleared, so a second call returns the same database emptied; the cases read what they need before they call it again).
+ */
 async function freshDb() {
-  const file = path.join(tempDir(), 'fsm.sqlite');
-  const db = await connect(`sqlite://${file}`);
+  const db = await openDialectDb(path.join(tempDir(), 'fsm.sqlite'));
   dbs.push(db);
-  await db.utils().schema().install(SCHEMA);
   return db;
 }
 

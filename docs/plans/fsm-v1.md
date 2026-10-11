@@ -252,6 +252,8 @@ Vectors (exhaustive; the core generates the oracle):
 - The native vector modules of rust, php and php-ext hold the cases that their kinds admit (core `forKind`), so they run 224 of
   the 270 cases of the five machines; go, npm and python run all 270.
 
+- Concurrency of the persistence pattern (S-37, decision): the concurrency proof is written once, in npm (`packages/fsm-npm/tests/persist-dialects.test.mjs`, records `npm-persist-test`, `npm-persist-test-postgres`, `npm-persist-test-mysql`, all in `TOOL_TESTS`). Reason: the npm client opens two real connections to one database, so two transactions of one row run at the same time on PostgreSQL and MySQL, and the lock that B-4 relies on is the database's own. The other kinds are not required to repeat the test; they keep their persist vectors on SQLite, and their dialect runs are S-37-1. On SQLite the two transitions run one after the other, because the SQLite driver is synchronous: a second `BEGIN IMMEDIATE` in the same process blocks the thread that would commit the first, and fails with `CANCELED: sqlite: database is locked` after the 5000 ms busy timeout. RED: with `forUpdate()` removed from `examples/persist.mjs`, both transitions report Changed on PostgreSQL 17.11 and on MySQL 8.4.11, and both tests fail; the restored pattern passes on the three dialects.
+
 ### C-5. compiler `packages/fsm-compiler`
 - Imports (S-32): `packages/fsm-compiler/src` imports only (1) node built-ins, by their `node:` specifier; (2) its own files, by a relative path that stays in `src`; (3) the vendored kit of this clone, `scripts/kit/` (a relative path, never a copy). No npm package, no bare built-in name and no dynamic `import()` or `require()`. `src/core` imports no `node:` module at all. `packages/fsm-compiler/tests/imports.test.mjs` scans every import specifier of `src` and fails on anything else.
 - Parts
@@ -292,6 +294,37 @@ Vectors (exhaustive; the core generates the oracle):
   - CLI run as processes: `install` on a new database (`check` fails before it with no table and passes after it), a second `install`, a partial `install` rejected by orm, and the usage of `install`
   - transaction atomicity RED
   - dialect differences are orm's own conformance responsibility
+- Tests (S-37): `make db-test` runs every test of the package on SQLite. `make db-test-postgres` and `make db-test-mysql` run `tests/db-store.test.mjs` and `tests/store-contract-all.test.mjs` on PostgreSQL and MySQL. Both files open the database through `tests/dialect.mjs`: `FSM_TEST_DIALECT` names the dialect (`sqlite` by default, `postgres` or `mysql`), `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` name the database, and a missing DSN throws, so the target fails and no case is skipped. Each file installs the schema (install changes nothing on a database that holds it) and clears the six tables before a case, so a case reads only what it wrote; the two files run with `--test-concurrency=1`, because they share the database. The CLI and command tests stay on SQLite, because a database with no fsm table is not available on a shared server without DDL outside the orm client (S-37-2).
+- Local servers (S-37, the runs of this item): PostgreSQL 17.11 (`initdb`, `pg_ctl`, data directory and socket directory of the run) and MySQL 8.4.11 (`mysqld --initialize-insecure`, `--daemonize`), each on its own port (55432 and 33306), with the database `fsm_test` and the user `fsm`. The DSNs were `postgres://fsm@127.0.0.1:55432/fsm_test?sslmode=disable` and `mysql://fsm:fsm@127.0.0.1:33306/fsm_test`. The servers were stopped and their data directories removed after the runs.
+- CI services for S-21 (the lines to copy into the job that runs `make install` and `make check`; the images are the versions above):
+```yaml
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: fsm
+          POSTGRES_PASSWORD: fsm
+          POSTGRES_DB: fsm_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fsm -d fsm_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: fsm
+          MYSQL_PASSWORD: fsm
+          MYSQL_DATABASE: fsm_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      FSM_TEST_PG_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
+      FSM_TEST_MYSQL_DSN: mysql://fsm:fsm@127.0.0.1:3306/fsm_test
+```
+- The concurrency and persist tests of npm (`make npm-persist-test`, `-postgres`, `-mysql`) read the same variables; their decision is recorded in C-4.
 
 ### C-7. GUI `packages/fsm-gui` (hyper Node server + crudui + mermaid)
 - The GUI is a single-editor tool. save replaces everything; the last write wins.

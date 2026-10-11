@@ -17,7 +17,7 @@ import { jsonStore } from '../../fsm-compiler/src/store-json/store.mjs';
 import { mermaidStore } from '../../fsm-compiler/src/store-mermaid/store.mjs';
 import { bytesOf, removeRoots, tempRoot, write } from '../../fsm-compiler/tests/checkout.mjs';
 import { dbStore } from '../src/db-store.mjs';
-import { SCHEMA, connect } from '../src/models/models.ts';
+import { openDialectDb } from './dialect.mjs';
 
 const FIXTURES = fileURLToPath(new URL('../../fsm-compiler/tests/fixtures/valid/', import.meta.url));
 const dbs = [];
@@ -42,13 +42,15 @@ const KIND_OPTIONS = {
   rust: {},
 };
 
-/** A new empty SQLite database with the schema of schema/fsm.dbs installed, closed after the tests. */
+/**
+ * A database with the schema of schema/fsm.dbs installed and no fsm row, closed after the tests: a new SQLite file, or the server
+ * database of FSM_TEST_DIALECT, cleared by each call (the cases read what they need before they call it again).
+ */
 async function freshDb() {
   const dir = mkdtempSync(path.join(tmpdir(), 'fsm-db-contract-'));
   dirs.push(dir);
-  const db = await connect(`sqlite://${path.join(dir, 'fsm.sqlite')}`);
+  const db = await openDialectDb(path.join(dir, 'fsm.sqlite'));
   dbs.push(db);
-  await db.utils().schema().install(SCHEMA);
   return db;
 }
 
