@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e043277e8b34a6f29b6c8f5b810ae9991002590ffaba9787db7915c7789a5375 -->
+<!-- source-sha256: 4ea6c7a1315e78733e4fd4cd792793cd216c61ea5642a57607f6fae79f23f939 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-22-2: GUI 폼을 쓸 수 있다. `make gui-build`가 crudui stylesheet `@polyspec/crudui-generator-core/styles/crudui.css`를 `public/assets/crudui.css`로 복사해 `hyper-build-assets --static`에 넘기고, layout은 `/assets/crudui.css`를 링크하므로 행 버튼이 아이콘과 크기를 보인다. 상태 행의 새 field는 `New key`로 label을 붙인다(저장된 key는 `Key` 그대로다). 한 행의 두 field가 label을 공유하지 않는다. `public/favicon.ico`(`scripts/make-favicon.mjs`가 쓰는 ICO)가 `/favicon.ico`에 404 대신 200으로 응답하며, layout이 이를 링크한다. 브라우저 테스트가 세 가지를 모두 확인한다.
 - S-22-1: GUI 폼이 행 변경 뒤 다시 렌더링한다. 편집 폼(`packages/fsm-gui/client/main.ts`)은 crudui instance를 구독하고, `patchContent(host, renderForm(instance, render))`로 다시 렌더링한 뒤 `connection.sync()`를 호출한다. `connectForm`의 계약이다. 수정 전에는 행의 add·remove 버튼 클릭이 instance만 바꾸고 페이지는 바꾸지 않았다. `render`는 페이지의 crudui render 옵션(action, `_csrf` token, 오류)이며 페이지 state에 실리고, 폼은 `#fsm-form` host 요소 안에 있다. `packages/fsm-gui/tests/browser/browser.test.mjs`(`make gui-browser-test`)는 고정된 Playwright 1.64.0(정확한 버전 devDependency, `make gui-browsers`가 브라우저를 내려받음)의 headless Chromium으로 폼을 조작하며 add, save, remove, 제안 code를 확인한다. `make gui-test`는 최상위 테스트만 실행한다. 수정 전 첫 브라우저 단정은 `5 !== 6`으로 실패했다.
 
 - S-36: fsm-db CLI를 README가 문서화한 모든 명령에 대해 process로 테스트한다. `packages/fsm-db/tests/cli.test.mjs`는 출력, 종료 코드, 이후의 행을 단언한다. `lock --rename order.draft=created`는 `[fsm-db] lock: ok`를 출력하고, 이름이 바뀐 state의 code를 유지하며, 새 key를 행에 쓴다. 알 수 없는 rename은 README의 `E_UNKNOWN_STATE_REF` 줄을 출력하고 행을 쓰지 않는다. `copy --to mermaid --root <dir>`는 정규형 `.fsm.mmd` 파일과 lock을 쓴다. `copy --from mermaid --root <dir>`는 빈 database를 채우고, 두 번째 복사는 README의 `E_STORE_NOT_EMPTY` 줄을 출력하며 아무것도 쓰지 않는다. RED: process 케이스가 없었고, 기대 출력을 바꾸면 rename 케이스가 실패한다. README는 명령과 일치했으므로 틀린 README 문장은 없었다. 대신 `copy --to mermaid` 예시가 추가되었다(en, ko).

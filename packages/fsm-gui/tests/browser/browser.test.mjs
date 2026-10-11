@@ -149,3 +149,58 @@ test('a state row added after the removal suggests the next code, 7', async () =
   assert.equal(await states.last().locator('input[name$="[code]"]').inputValue(), '7');
   expectNoPageErrors();
 });
+
+test('every row button shows its action: a crudui size, a masked icon and an accessible name', async () => {
+  await openEdit();
+  const buttons = page.locator('button[data-crudui-action]');
+  const count = await buttons.count();
+  assert.ok(count > 0, 'the edit form has row buttons');
+  for (let index = 0; index < count; index += 1) {
+    const button = buttons.nth(index);
+    const action = await button.getAttribute('data-crudui-action');
+    const name = (await button.getAttribute('aria-label')) ?? (await button.innerText()).trim();
+    assert.notEqual(name, '', `the ${action} button has no accessible name`);
+    // crudui.css sets the size of .crudui-action (1.75rem) and draws its icon with a mask on ::before (1rem, currentColor).
+    const style = await button.evaluate(element => {
+      const before = getComputedStyle(element, '::before');
+      const box = element.getBoundingClientRect();
+      return {
+        width: getComputedStyle(element).width,
+        height: getComputedStyle(element).height,
+        box: [box.width, box.height],
+        iconWidth: before.width,
+        mask: before.maskImage !== 'none' ? before.maskImage : before.webkitMaskImage,
+      };
+    });
+    assert.equal(style.width, '28px', `the ${action} button has no crudui size: the stylesheet is not loaded`);
+    assert.equal(style.height, '28px', `the ${action} button has no crudui size: the stylesheet is not loaded`);
+    assert.ok(style.box[0] > 0 && style.box[1] > 0, `the ${action} button is not rendered`);
+    assert.equal(style.iconWidth, '16px', `the ${action} button has no icon`);
+    assert.notEqual(style.mask, 'none', `the ${action} button has no icon mask`);
+  }
+  expectNoPageErrors();
+});
+
+test('the fields of one row have distinct labels on the edit and the rename forms', async () => {
+  for (const address of ['/machines/order/edit', '/machines/order/rename']) {
+    await page.goto(`${url}${address}`);
+    await page.waitForLoadState('networkidle');
+    const duplicates = await page.evaluate(() => [...document.querySelectorAll('.crudui-node--row')].flatMap(row => {
+      const labels = [...row.querySelectorAll('.crudui-node--field')]
+        .filter(field => field.parentElement.closest('.crudui-node--row') === row)
+        .map(field => field.querySelector('label')?.textContent.trim())
+        .filter(label => label !== undefined && label !== '');
+      return labels.filter((label, index) => labels.indexOf(label) !== index).map(label => `row ${row.getAttribute('data-crudui-row-key')}: ${label}`);
+    }));
+    assert.deepEqual(duplicates, [], `${address}: two fields of one row share a label`);
+  }
+  expectNoPageErrors();
+});
+
+test('GET /favicon.ico answers an icon, not a 404', async () => {
+  const response = await fetch(`${url}/favicon.ico`);
+  assert.equal(response.status, 200);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  // An ICO file starts with the reserved word 0, the type 1 (icon) and the number of images.
+  assert.deepEqual([...bytes.subarray(0, 4)], [0, 0, 1, 0]);
+});
