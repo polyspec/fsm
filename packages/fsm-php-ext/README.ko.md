@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: 41330881f12978fda5efdd78da6e8a2a33de4dafe23dbe709e4b9364e721ede8 -->
+<!-- source-sha256: 5732829003eecca93d81b201797eed2332547f787efd62c70e2d689f78a72b3f -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
@@ -68,6 +68,15 @@ $step = Order\apply(State::Draft, Event::Next, State::Draft);   // Step with ->t
 `E_UNKNOWN_CODE` 또는 `E_RESERVED_CODE`)와 속성 `expected`, `actual`, `event`(`?int`, 설정되지 않으면 `null`)를 가진다. 오류 code는
 enum `Code`의 값이다. C 쪽은 php 쪽과 같은 class를 던진다(class의 생성자는 `fsm.c`에 등록된다). 그러므로 php 종류용으로 쓴 `catch`는
 그대로 동작한다.
+
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며 php 종류와 같다. `tests/Vectors.php`의 vector가 빌드된
+module에서 이를 단언한다:
+
+| Code | `expected` | `actual` | `event` |
+|---|---|---|---|
+| `E_CONFLICT` | 설정됨 | 설정됨 | 설정됨 |
+| `E_INVALID_TRANSITION` | 설정됨 | `null` | 설정됨 |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | `null` | `null` | `null` |
 
 ## 영속화
 

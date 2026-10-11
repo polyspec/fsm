@@ -92,6 +92,16 @@ The functions throw `fsm.Error` (`src/fsm.js`), a subclass of `Error`:
 
 Check it with `error instanceof fsm.Error` and read `error.code`.
 
+Which properties a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/vectors.mjs` assert it:
+
+| Code | `expected` | `actual` | `event` |
+|---|---|---|---|
+| `E_CONFLICT` | set | set | set |
+| `E_INVALID_TRANSITION` | set | `undefined` | set |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | `undefined` | `undefined` | `undefined` |
+
+The message names the machine and, for `E_UNKNOWN_CODE`, holds the value (`order: 99 is not a state of order`).
+
 ## Persistence
 
 `examples/persist.mjs` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a row.

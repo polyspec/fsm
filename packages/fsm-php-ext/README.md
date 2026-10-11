@@ -71,6 +71,15 @@ The functions throw `Polyspec\FsmTest\Fsm\Error`, an `\Exception` with `getCode(
 codes are the values of the enum `Code`. The C side throws the same class as the php side (the constructor of the class is
 registered in `fsm.c`), so a `catch` written for the php kind works unchanged.
 
+Which properties a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), the same as the php kind's. The vectors of
+`tests/Vectors.php` assert it on the built module:
+
+| Code | `expected` | `actual` | `event` |
+|---|---|---|---|
+| `E_CONFLICT` | set | set | set |
+| `E_INVALID_TRANSITION` | set | `null` | set |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | `null` | `null` | `null` |
+
 ## Persistence
 
 `examples/persist.php` is a copy of the php package's file, made by `make gen`. It is the persistence pattern of

@@ -87,6 +87,16 @@ The functions raise `fsm.Error` (`fsm.py`), an `Exception`:
 
 The message is the first argument of the exception and names the machine.
 
+Which attributes a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/vectors.py` assert it:
+
+| Code | `expected` | `actual` | `event` |
+|---|---|---|---|
+| `E_CONFLICT` | set | set | set |
+| `E_INVALID_TRANSITION` | set | `None` | set |
+| `E_UNKNOWN_CODE`, `E_RESERVED_CODE` | `None` | `None` | `None` |
+
+For `E_UNKNOWN_CODE` the message holds the value (`order: 99 is not a state of order`).
+
 ## Persistence
 
 `examples/persist.py` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a row.
