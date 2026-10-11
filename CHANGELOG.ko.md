@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 60d35b7328f42da15ec42bc1badf70b7aa6d8de69a101656b7eae06088ad3368 -->
+<!-- source-sha256: 361f4e4f7102ab742a38161befd491f595f1ea2213227ca0b8668f9b1b9bde3c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,7 +8,7 @@
 ## Unreleased
 
 - S-34-4: python lock은 uv 자체가 검사한다(`uv lock --check`와 pylock.toml에 대한 uv.lock의 export 비교). fsm 자체의 lock 스크립트를 제거했다.
-- S-42-2: fsm 자체의 vector parity 스크립트(scripts/check-parity.mjs, vector-parity-check, parity-<kind>)를 제거했다. kit의 parity 검사가 그 일을 하고, kind의 소유 검사는 패키지 테스트를 실행한다.
+- S-42-2: fsm 자체의 vector parity 스크립트(`scripts/check-parity.mjs`, `vector-parity-check`, `parity-<kind>`)를 제거했다. kit의 parity 검사가 그 일을 하고, kind의 소유 검사는 패키지 테스트를 실행한다.
 - S-34-3: python lock은 registry package와 release archive만 담는다: orm과 ordered-json은 v0.0.7 tag의 archive와 sha256으로 받으므로 uv와 pip 모두 lock을 hash와 함께 설치하고, lock 검사는 git source를 거부한다.
 - S-42-1: vector parity가 kit의 parity 검사(K33)로 실행된다: config/parity.json, case마다 이름을 가진 vector 파일 하나 conformance/vectors.json, case마다의 PHPUnit method. scripts/check-parity.mjs는 기록, 시간 제한, feature 커버리지 규칙만 남긴다.
 - S-21: fsm은 https://github.com/polyspec/fsm 에 공개되어 있다. CI workflow(`.github/workflows/ci.yml`)는 main의 모든 push에서 PostgreSQL과 MySQL service와 함께 `make install`과 `make check`를 실행하고 전체 검사를 통과했으며(run 38121153369), Pages workflow는 문서 사이트를 https://polyspec.github.io/fsm/ 에 게시한다. 로컬 저장소 디렉터리 이름은 `fsm`이다.
