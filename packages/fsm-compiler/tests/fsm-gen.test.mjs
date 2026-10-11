@@ -33,7 +33,7 @@ function project(files = {}) {
   return root;
 }
 
-/** Runs fsm-gen with `args` in `cwd` and returns its fsm, stdout and stderr. */
+/** Runs fsm-gen with `args` in `cwd` and returns its status, stdout and stderr. */
 function gen(args, cwd = HERE) {
   const result = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', cwd });
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };

@@ -35,7 +35,7 @@ layout-check:
 	node scripts/check-layout.mjs
 
 # name-test runs the tests of scripts/check-name.mjs; name-check fails while a tracked file or path names the library by its old
-# name `fsm` outside the allowlist of the checker (docs/plans/execution-checklist.md, S-18; the library is named fsm).
+# outside the allowlist of the checker (docs/plans/execution-checklist.md, S-18; the library is named fsm).
 name-test:
 	node scripts/kit/run-tests.mjs node --results .results/name-test.json --inputs scripts/check-name.mjs --inputs tests/check-name -- tests/check-name
 

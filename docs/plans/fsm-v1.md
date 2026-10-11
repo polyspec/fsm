@@ -95,7 +95,7 @@
     - `documents-check`: checklist format
     - `push-gate`: no push in the `[~]` state
     - `owner-validate`: path ownership
-  - `name-check` (`scripts/check-name.mjs`, RED tests in `tests/check-name/`): no tracked file or path names the library by its old name `status`; each allowed occurrence (a state value, an exit, HTTP or test-result status, the vendored kit, history in the CHANGELOG) is an entry of `ALLOWED` with its reason (R12).
+  - `name-check` (`scripts/check-name.mjs`, RED tests in `tests/check-name/`): no tracked file or path names the library by its old name `status`. Each occurrence is judged on its own: the spans that an allowed entry names are removed from its line, and the rest must hold no such word. The allowed entries are a state value of the consumer status column (its accessors and column words), an exit, HTTP or test result word of a process or request, the vendored kit, the CHANGELOG bullets up to the rename (S-01 to S-18) and the rename words of the plan and the rules; each entry is in `ALLOWED` with its reason and matches exact phrases only (R12).
   - K19: a commit that moves an item to `[o]` must also change the CHANGELOG. One commit changes the state of at most one item.
   - **Review rules (no tool)**
     - Branch/worktree naming and deletion right after merge

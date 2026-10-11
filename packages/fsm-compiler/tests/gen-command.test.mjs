@@ -26,7 +26,7 @@ function tempDir() {
   return root;
 }
 
-/** Runs the command line of fsm-gen with `args` and returns its fsm, stdout and stderr. */
+/** Runs the command line of fsm-gen with `args` and returns its status, stdout and stderr. */
 function gen(args) {
   const result = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };

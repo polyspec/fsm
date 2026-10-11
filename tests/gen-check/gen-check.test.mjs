@@ -58,7 +58,7 @@ const FAKE_FILES = {
   'packages/fsm-fake/readme.txt': 'not generated\n',
 };
 
-/** Runs scripts/gen-check.mjs in `root` and returns its fsm and stderr. */
+/** Runs scripts/gen-check.mjs in `root` and returns its status and stderr. */
 function genCheck(root) {
   const result = spawnSync(process.execPath, ['scripts/gen-check.mjs'], { cwd: root, encoding: 'utf8' });
   return { status: result.status, stderr: result.stderr };

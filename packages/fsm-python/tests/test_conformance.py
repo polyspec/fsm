@@ -17,7 +17,7 @@ PACKAGE = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(PACKAGE / "src"), str(PACKAGE / "examples")]
 
 import polyspec_fsm  # noqa: E402
-from persist import open_database, seed, fsm_of, transition  # noqa: E402
+from persist import open_database, seed, status_of, transition  # noqa: E402
 from polyspec_fsm.fsm import Error  # noqa: E402
 from vectors import vectors  # noqa: E402
 
@@ -98,7 +98,7 @@ def persist_case(test, machine, case):
             else:
                 step = transition(db, machine, 1, expected, event)
                 test.assertEqual(step, machine.Step(to=state_of(machine, expect["stored_after"]), changed=expect["changed"]))
-            test.assertEqual(fsm_of(db, 1), machine.code(state_of(machine, expect["stored_after"])), "the stored state after the run")
+            test.assertEqual(status_of(db, 1), machine.code(state_of(machine, expect["stored_after"])), "the stored state after the run")
         finally:
             db.close()
 
