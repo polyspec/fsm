@@ -83,10 +83,15 @@ export const ORDER_MERMAID_TEXT = `---
 title: order
 ---
 stateDiagram-v2
+    state "draft" as draft
     draft : 1
+    state "paid" as paid
     paid : 2
+    state "shipped" as shipped
     shipped : 3
+    state "done" as done
     done : 4
+    state "canceled" as canceled
     canceled : 5
     [*] --> draft
     draft --> paid : next

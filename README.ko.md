@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 06639faf2a06d238dd98ac1281c62d5ee887ada9463f18188a23dd6f15fb044a -->
+<!-- source-sha256: e739d6f5c92ad01c2ad1cd5ce7455ccae1f4ea4e6f9e94b82eb2195a8a654d83 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -80,10 +80,15 @@ Mermaid(`fsm-gen copy --to mermaid`가 쓰는 `machines/order.fsm.mmd` 파일. M
 title: order
 ---
 stateDiagram-v2
+    state "draft" as draft
     draft : 1
+    state "paid" as paid
     paid : 2
+    state "shipped" as shipped
     shipped : 3
+    state "done" as done
     done : 4
+    state "canceled" as canceled
     canceled : 5
     [*] --> draft
     draft --> paid : next
@@ -97,7 +102,7 @@ stateDiagram-v2
     canceled --> [*]
 ```
 
-Mermaid 형식은 정규형이다. 줄은 정해진 순서(상태 설명, 초기 줄, event별 edge, 최종 줄)로 오고, code는 10진수로 쓰며, reader는 그 밖의
+Mermaid 형식은 정규형이다. 줄은 정해진 순서(상태마다 label 줄과 설명 줄, 초기 줄, event별 edge, 최종 줄)로 오고, code는 10진수로 쓰며, 상태의 label은 key 자체다(다른 label은 거부한다), reader는 그 밖의
 줄을 `E_MERMAID_UNSUPPORTED`로 거부하고 줄을 이름으로 가리킨다. 복합 상태, note, fork와 join, choice, 스타일, 주석은 이 형식에
 없다.
 

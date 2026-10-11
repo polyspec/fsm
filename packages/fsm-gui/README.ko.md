@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: 7a12c8132da7f766b780245b6e6594bfabe89193148b11590456a26c59db3142 -->
+<!-- source-sha256: 0ddfaeaa8e91ebc56b76138c8b3d0dd1b9666b5b957642a3f812726288285fb8 -->
 # fsm GUI
 
 [English](README.md).
@@ -86,7 +86,8 @@ $ echo $?
 | 새 기계 | `/new` | 상태 하나(초기이면서 최종 상태)와 event가 없는 기계를 만든다 |
 | 삭제 | 상세 페이지의 버튼 | 기계를 뺀 store를 저장한다 |
 
-상세 페이지의 Mermaid 다이어그램은 mermaid store의 정규 출력이다. browser가 첫 로드 때 그리고 페이지가 바뀔 때마다 다시 그린다.
+상세 페이지의 Mermaid 다이어그램은 mermaid store의 정규 출력이다. browser가 첫 로드 때 그리고 페이지가 바뀔 때마다 다시 그린다. 브라우저 테스트 `tests/browser/diagram.test.mjs`는 그려진 다이어그램이
+모든 상태를 key로 보이고 code를 함께 보이는지 확인한다.
 
 ## 규칙
 

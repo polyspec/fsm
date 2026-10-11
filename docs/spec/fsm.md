@@ -30,7 +30,7 @@ A definition has only three parts:
 | Concept | JSON | Mermaid (official syntax) | DB (orm) |
 |---|---|---|---|
 | Machine | `"machine": "order"` | frontmatter `title: order` | `machine(name)` |
-| State·code | `{"key":"draft","code":1}` | `draft : 1` (state description) | `state(machine, key, code, initial, final, position)` |
+| State·code | `{"key":"draft","code":1}` | `state "draft" as draft` (label) and `draft : 1` (state description) | `state(machine, key, code, initial, final, position)` |
 | initial | `"initial": true` | `[*] --> draft` | `initial` |
 | final | `"final": true` | `done --> [*]` | `final` |
 | Edge | `{"key":"next","edges":[{"from":"draft","to":"paid"},…]}` | `draft --> paid : next` | `edge(machine, event, from, to, position)` + `event(machine, key, position)` |
@@ -57,10 +57,15 @@ Example (`order`, an order lifecycle, is only an example machine key):
 title: order
 ---
 stateDiagram-v2
+    state "draft" as draft
     draft : 1
+    state "paid" as paid
     paid : 2
+    state "shipped" as shipped
     shipped : 3
+    state "done" as done
     done : 4
+    state "canceled" as canceled
     canceled : 5
     [*] --> draft
     draft --> paid : next
@@ -74,8 +79,16 @@ stateDiagram-v2
     canceled --> [*]
 ```
 - Mermaid canonical form
-  - The line order is fixed: state declarations (state order) → initial → edges in event order (edge order within an event) → finals (state order). A code is decimal with no leading zero; each state has exactly one description.
-  - On read, any syntax outside the canonical form is rejected with `E_MERMAID_UNSUPPORTED{line}`: composite states, notes, fork/join, choice, styles, comments, order violations. Nothing is ignored silently.
+  - The line order is fixed: for each state in state order, its label line `state "<key>" as <key>` and then its description line `<key> : <code>`; then the initial line → edges in event order (edge order within an event) → finals (state order). Each state has exactly one label line and one description line, in that order. A code is decimal with no leading zero. The label is the key: a label line whose text differs from its key is refused.
+  - Decision (S-38): the drawn diagram must show each state's key and code. With the pinned mermaid 12.1.0 a state with one description is drawn as that description only: `draft : 1` draws `1` and no key. The alias line `state "draft" as draft` draws `draft` as the box title, so the form draws the key as the title and the code as the description (labels `draft` and `1`; the parsed descriptions are [draft, 1]). The measurement: Chromium with mermaid 12.1.0, the labels read from the svg and the descriptions from `getStates()`.
+  - Rejected alternatives, each checked against the rules of this section (official syntax only; lossless; one canonical text; simple to parse and to reject; the drawn diagram shows key and code):
+    - `draft : draft` followed by `draft : 1` (two description lines): draws the same, but it is not a documented title syntax. The title would be the first description by position, an implicit rule that the reader would have to repeat.
+    - `state "draft 1" as draft`: draws `draft 1`, but the code becomes free text inside a label, so the reader must split a string, and the code is no longer the description of the table above.
+    - `draft : draft 1`: draws `draft 1`, but one description holds two values that the reader must split, and the key is not a title.
+    - `draft : draft<br/>1`: draws two lines, but it is one description that holds two values, the same objection as `draft : draft 1`.
+    - `draft : 1` (the former form): draws `1` only. It fails the requirement.
+  - The chosen form keeps the key and the code in separate lines of documented syntax, so the reader checks each with a rule it already has. A label that differs from its key is refused with `E_MERMAID_UNSUPPORTED`: a second name would otherwise be dropped without a trace, because the other stores have no such name.
+  - On read, any syntax outside the canonical form is rejected with `E_MERMAID_UNSUPPORTED{line}`: composite states, notes, fork/join, choice, styles, comments, order violations, a label that differs from its key. Nothing is ignored silently.
 - Order rules
   - State order and event order are declaration order. They drive `events_from` and generation order.
   - Code and declaration order are independent.
@@ -184,7 +197,7 @@ The unit of idempotency is **(expected, event)**. The caller remembers the state
 - Names
   - `E_KEY_FORMAT`: a machine, state or event key that is not `^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$` or is longer than 64 characters (the DB store keeps keys in varchar(64), and core enforces the bound so that all three stores accept the same keys)
   - `E_DUPLICATE_KEY`: a repeated machine key, a state key or an event key repeated within a machine, or two machine keys equal after removing `_` (`ab` and `a_b` both give php `<ns>\Ab`)
-  - `E_KEY_RESERVED`: one fixed list in `docs/spec/fsm.md`, applied to every definition whatever the kind or store. (1) Machine keys, compared after removing `_`: `fsm` (shared module), `index` (npm `index.js`), `lib` and `main` (rust `src/lib.rs`/`src/main.rs`, go `package main`), `internal` (a go internal package cannot be imported from `tests/`), `init` (go rejects importing a package under the name `init`), `testdata` and `vendor` (skipped by go `./...`), the go predeclared identifiers (`error`, `string`, `int`, `len`, `nil` and the rest; an imported package of that name would shadow them), and the keywords of go, rust (pinned edition), python and js, because in those four the machine key is the module name as is. (2) State and event keys whose pascal form is rejected as an enum member: `self` (rust `Self`) and `class` (php `Class`). (3) Mermaid reserved words, always applied whatever the store: state keys `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`; machine keys `null, true, false` (based on the pinned mermaid version 12.1.0). The S-16 test (`packages/fsm-gui/tests/mermaid-parse.test.mjs`) checks each state key at five positions: a description line, the initial line, an edge as its source, an edge as its target and the final line. A word is unusable at a position when mermaid fails to parse the diagram, or parses it into a model other than the one written: an id that collides with the `[*]` ids (`root_start`, `root_end`), or a line or a code that mermaid drops (`state` on a description line; `acctitle` and `accdescr` on a description or initial line). The machine words are checked with the YAML rule of the frontmatter, because the stateDiagram of mermaid does not read the frontmatter title. Names are rejected, never altered.
+  - `E_KEY_RESERVED`: one fixed list in `docs/spec/fsm.md`, applied to every definition whatever the kind or store. (1) Machine keys, compared after removing `_`: `fsm` (shared module), `index` (npm `index.js`), `lib` and `main` (rust `src/lib.rs`/`src/main.rs`, go `package main`), `internal` (a go internal package cannot be imported from `tests/`), `init` (go rejects importing a package under the name `init`), `testdata` and `vendor` (skipped by go `./...`), the go predeclared identifiers (`error`, `string`, `int`, `len`, `nil` and the rest; an imported package of that name would shadow them), and the keywords of go, rust (pinned edition), python and js, because in those four the machine key is the module name as is. (2) State and event keys whose pascal form is rejected as an enum member: `self` (rust `Self`) and `class` (php `Class`). (3) Mermaid reserved words, always applied whatever the store: state keys `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`; machine keys `null, true, false` (based on the pinned mermaid version 12.1.0). The S-16 test (`packages/fsm-gui/tests/mermaid-parse.test.mjs`) checks each state key at six positions: a description line (its label line comes before it), the initial line, an edge as its source, an edge as its target, the final line, and the label line of a first state (S-38). A word is unusable at a position when mermaid fails to parse the diagram, or parses it into a model other than the one written: an id that collides with the `[*]` ids (`root_start`, `root_end`), or a line or a code that mermaid drops (`state` on a description line; `acctitle` and `accdescr` on a description or initial line). The S-38 measurement with the label line (mermaid 12.1.0, the canonical form of B-1) leaves the list unchanged: each of the 14 words above is unusable at the six positions, the ordinary words that the test samples are carried at them, and the label line alone carries each of the 14 words (`state "note" as note` with no other line naming `note` gives the id `note` with the description `note`), so the label line adds no reserved word. The machine words are checked with the YAML rule of the frontmatter, because the stateDiagram of mermaid does not read the frontmatter title. Names are rejected, never altered.
 - Code and lock
   - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`, `E_LOCK_REGRESSED`
 - Store

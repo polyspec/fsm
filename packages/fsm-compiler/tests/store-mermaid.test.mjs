@@ -145,9 +145,11 @@ test('mermaid store: a lock file that is not valid JSON fails E_SCHEMA at $', as
   assert.deepEqual(shape((await mermaidStore(root).load()).findings), [{ code: 'E_SCHEMA', machine: null, path: '$' }]);
 });
 
-/** The lines of the order example of the canonical form, one per constant (lines 1 to 9 of ORDER_MMD_TEXT). */
+/** The lines of the order example of the canonical form: the header, then a label line and a description line per state. */
 const HEAD = ['---', 'title: order', '---', 'stateDiagram-v2'];
+const DRAFT_LABEL = '    state "draft" as draft';
 const DRAFT = '    draft : 1';
+const DONE_LABEL = '    state "done" as done';
 const DONE = '    done : 2';
 const INIT = '    [*] --> draft';
 const EDGE = '    draft --> done : next';
@@ -158,27 +160,31 @@ const FINAL = '    done --> [*]';
  * The findings of a line-by-line parse are one per line, so each row lists every line that the parser refuses.
  */
 const unsupportedCases = [
-  ['a blank line', [...HEAD, DRAFT, '', DONE, INIT, EDGE, FINAL], [6]],
-  ['a comment', [...HEAD, '    %% a comment', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a note', [...HEAD, '    note right of draft : waiting', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a state block', [...HEAD, '    state draft {', '    draft : 1', '    }', DONE, INIT, EDGE, FINAL], [5, 7]],
-  ['a fork', [...HEAD, '    state split <<fork>>', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a join', [...HEAD, '    state merge <<join>>', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a choice', [...HEAD, '    state pick <<choice>>', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a classDef', [...HEAD, '    classDef big fill:#f00', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a class statement', [...HEAD, '    class draft big', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a style statement', [...HEAD, '    style draft fill:#f00', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a click statement', [...HEAD, '    click draft "https://example.com"', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a direction statement', [...HEAD, '    direction LR', DRAFT, DONE, INIT, EDGE, FINAL], [5]],
-  ['a wrong indentation', [...HEAD, '  draft : 1', DONE, INIT, EDGE, FINAL], [5]],
-  ['a second description of a state', [...HEAD, DRAFT, DRAFT, DONE, INIT, EDGE, FINAL], [6]],
-  ['a code with a leading zero', [...HEAD, '    draft : 01', DONE, INIT, EDGE, FINAL], [5]],
-  ['an edge before the description of its state', [...HEAD, DRAFT, EDGE, DONE, INIT, FINAL], [6]],
-  ['an initial line after an edge', [...HEAD, DRAFT, DONE, INIT, EDGE, INIT, FINAL], [9]],
-  ['a final line before an edge', [...HEAD, DRAFT, DONE, INIT, FINAL, EDGE], [9]],
-  ['an event that reappears after another event', [...HEAD, DRAFT, DONE, INIT, EDGE, '    done --> draft : prev', EDGE, FINAL], [10]],
-  ['a final line out of state order', [...HEAD, DRAFT, DONE, INIT, EDGE, '    done --> [*]', '    draft --> [*]'], [10]],
-  ['a missing initial line', [...HEAD, DRAFT, DONE, EDGE, FINAL], [7, 8, 9]],
+  ['a blank line', [...HEAD, DRAFT_LABEL, DRAFT, '', DONE_LABEL, DONE, INIT, EDGE, FINAL], [7]],
+  ['a comment', [...HEAD, '    %% a comment', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a note', [...HEAD, '    note right of draft : waiting', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a state block', [...HEAD, '    state draft {', DRAFT, '    }', DONE_LABEL, DONE, INIT, EDGE, FINAL], [5, 6, 7]],
+  ['a fork', [...HEAD, '    state split <<fork>>', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a join', [...HEAD, '    state merge <<join>>', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a choice', [...HEAD, '    state pick <<choice>>', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a classDef', [...HEAD, '    classDef big fill:#f00', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a class statement', [...HEAD, '    class draft big', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a style statement', [...HEAD, '    style draft fill:#f00', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a click statement', [...HEAD, '    click draft "https://example.com"', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a direction statement', [...HEAD, '    direction LR', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a wrong indentation of a label line', [...HEAD, '  state "draft" as draft', DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a wrong indentation of a description line', [...HEAD, DRAFT_LABEL, '  draft : 1', DONE_LABEL, DONE, INIT, EDGE, FINAL], [6]],
+  ['a label that differs from its key', [...HEAD, '    state "paid" as draft', DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a label with the code in its text', [...HEAD, '    state "draft 1" as draft', DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a description line without its label line', [...HEAD, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
+  ['a second description of a state', [...HEAD, DRAFT_LABEL, DRAFT, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [7]],
+  ['a code with a leading zero', [...HEAD, DRAFT_LABEL, '    draft : 01', DONE_LABEL, DONE, INIT, EDGE, FINAL], [6]],
+  ['an edge before the description of its state', [...HEAD, DRAFT_LABEL, DRAFT, EDGE, DONE_LABEL, DONE, INIT, FINAL], [7]],
+  ['an initial line after an edge', [...HEAD, DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, INIT, FINAL], [11]],
+  ['a final line before an edge', [...HEAD, DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, FINAL, EDGE], [11]],
+  ['an event that reappears after another event', [...HEAD, DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, '    done --> draft : prev', EDGE, FINAL], [12]],
+  ['a final line out of state order', [...HEAD, DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, '    done --> [*]', '    draft --> [*]'], [12]],
+  ['a missing initial line', [...HEAD, DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, EDGE, FINAL], [9, 10, 11]],
   ['an empty file', [], [1]],
 ];
 
@@ -194,7 +200,7 @@ for (const [name, lines, expected] of unsupportedCases) {
 test('mermaid store: a file without a final line break fails E_MERMAID_UNSUPPORTED at its last line', async () => {
   const findings = await loadOrder(ORDER_MMD_TEXT.slice(0, -1));
   assert.deepEqual(shape(findings), [{ code: 'E_MERMAID_UNSUPPORTED', machine: 'order', path: '$' }]);
-  assert.deepEqual(findings.map(finding => lineOf(finding.message)), [9]);
+  assert.deepEqual(findings.map(finding => lineOf(finding.message)), [11]);
 });
 
 test('mermaid store: the canonical texts load without findings', async () => {

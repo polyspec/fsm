@@ -82,10 +82,15 @@ form):
 title: order
 ---
 stateDiagram-v2
+    state "draft" as draft
     draft : 1
+    state "paid" as paid
     paid : 2
+    state "shipped" as shipped
     shipped : 3
+    state "done" as done
     done : 4
+    state "canceled" as canceled
     canceled : 5
     [*] --> draft
     draft --> paid : next
@@ -99,8 +104,9 @@ stateDiagram-v2
     canceled --> [*]
 ```
 
-The Mermaid form is canonical: the lines come in a fixed order (state descriptions, the initial line, the edges by event, the
-final lines), a code is written in decimal, and the reader rejects any other line with `E_MERMAID_UNSUPPORTED`, which names
+The Mermaid form is canonical: the lines come in a fixed order (for each state its label line and its description line, the initial
+line, the edges by event, the final lines), a code is written in decimal, the label of a state is its key (a label that differs is
+refused), and the reader rejects any other line with `E_MERMAID_UNSUPPORTED`, which names
 the line. Composite states, notes, fork and join, choices, styles and comments are not part of the form.
 
 Database (the six tables of `schema/fsm.dbs`, after `fsm-db copy --from json` into a new database; the rows of `order`):
