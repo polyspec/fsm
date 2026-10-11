@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 92ac4243a880b75c26dbb01abe60723379145b7d534dcc6fd4e0c4911725c275 -->
+<!-- source-sha256: c052e911cb49b61004d7dbf8515c781f1255ae09c84845f572c593f96691f449 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-41-1: python package venv는 fsm Makefile의 `python -m venv`가 아니라 kit 도구(`make python-venv DIR=packages/fsm-python/.venv`, kit v0.0.24의 K44)로 만든다. Linux에서 CPython venv는 `lib64 -> lib` link를 만들며 run-tests --venv가 이를 거부했고, 이것이 S-41의 ubuntu CI를 실패시켰다(실행 38118092530). kit 도구가 그 link를 지운다. tests/python-tools의 테스트는 `make -n install`이 kit 도구를 부르는지 단언한다(`-m venv`일 때 RED). `make install`은 이전과 같이 새 venv를 만들기 전에 기존 venv를 지운다.
 - S-35-3: `make check`가 다시 `vector-parity-check`를 실행한다. rebase가 CHECK_TARGETS에 kit 이름 `parity-check`를 되돌려 놓아 스위트가 fsm의 vector parity 대신 kit K33의 검사를 실행했으며, 이제 make-install 테스트가 그 타깃을 단언한다.
 - S-42: parity 검사기는 `make check`에서 하나만 돈다. `CHECK_TARGETS`가 kit의 `parity-check`를 가리키고 있었다(S-35-2가 fsm 타깃의 이름은 바꿨지만 목록은 바꾸지 않았다). 그래서 벡터 기록은 한 번도 검사되지 않았다. 이제 `vector-parity-check`를 가리키며, tests/check-parity의 테스트가 Makefile을 읽어 이를 요구한다. kit K33은 채택하지 않는다: 각 binding을 스스로 실행하고 기록을 읽지 않으므로 기록, `kinds`, feature, 도구 테스트, 시간 규칙을 표현할 수 없다(계획 C-4가 규칙마다 적었다).
 - S-34-1: kit dependency gate는 python lock의 모든 전이 python package를 덮는다: 최신 릴리스와 advisory 리뷰는 `pythonLocks`를 통해 `packages/fsm-python/pylock.toml`을 읽는다(kit K36). RED: kit의 python-lock fixture 테스트(K36)가 kit-test에서 통과한다. fsm에서 `pythonLocks`가 비면 `dependency-policy-check`가 실패하고, lock을 나열하고 review한 뒤 통과한다.

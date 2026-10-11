@@ -310,7 +310,7 @@ UV ?= uv
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
 python-tools-test:
-	node scripts/kit/run-tests.mjs node --results .results/python-tools-test.json --inputs Makefile --inputs contracts/layout.json --inputs scripts/kit --inputs config/toolchain.json --inputs tests/python-tools -- tests/python-tools
+	node scripts/kit/run-tests.mjs node --results .results/python-tools-test.json --inputs Makefile --inputs contracts/layout.json --inputs scripts/kit --inputs config/toolchain.json --inputs packages/fsm-python/Makefile --inputs tests/python-tools -- tests/python-tools
 
 # test-python runs the tests of packages/fsm-python: the conformance cases and the persist example, offline, with the Python 3.14
 # venv of `make -C packages/fsm-python install` (docs/plans/fsm-v1.md, C-2).
