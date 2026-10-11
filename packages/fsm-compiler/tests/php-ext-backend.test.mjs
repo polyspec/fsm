@@ -7,7 +7,7 @@
 // line passes are refused when they are not valid.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -101,4 +101,39 @@ test('the fsm stub passes the php linter (php -l)', async (t) => {
   writeFileSync(target, stub.content);
   const lint = spawnSync('php', ['-l', target], { encoding: 'utf8' });
   assert.equal(lint.status, 0, `${stub.path}: ${lint.stdout}${lint.stderr}`);
+});
+
+// A second namespace and extension name, which the package does not use: every name of the output must derive from them.
+const OTHER_NAMESPACE = 'Acme\\Tool';
+const OTHER_EXT = 'acme_tool';
+
+test('every name of the output derives from the namespace and the extension name, with a second pair', async () => {
+  const { irs, lock } = await orderIrs();
+  const out = files(irs, lock, { phpNamespace: OTHER_NAMESPACE, phpExtName: OTHER_EXT });
+  for (const file of out) assert.doesNotMatch(file.content, /Polyspec|polyspec|FsmTest|fsm_test/, file.path);
+  const order = out.find(file => file.path === 'order.c').content;
+  assert.match(order, /^#include "php_acme_tool\.h"$/m);
+  assert.match(order, /^#include "acme_tool_arginfo\.h"$/m);
+  const fsm = out.find(file => file.path === 'fsm.c').content;
+  assert.match(fsm, /^ZEND_METHOD\(Acme_Tool_Fsm_Error, __construct\)$/m);
+  assert.match(fsm, /^\tZEND_ME\(Acme_Tool_Fsm_Error, __construct, /m);
+});
+
+test('the extension builds with phpize, ./configure and make under a second name, and its namespace is registered', async (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'fsm-php-ext-build-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const { irs, lock } = await orderIrs();
+  for (const file of files(irs, lock, { phpNamespace: OTHER_NAMESPACE, phpExtName: OTHER_EXT })) {
+    const target = path.join(dir, file.path);
+    mkdirSync(path.dirname(target), { recursive: true });
+    writeFileSync(target, file.content);
+  }
+  for (const [command, args] of [['phpize', []], [path.join(dir, 'configure'), ['--enable-acme-tool']], ['make', []]]) {
+    const run = spawnSync(command, args, { cwd: dir, encoding: 'utf8' });
+    assert.equal(run.status, 0, `${command}: ${run.stdout}${run.stderr}`);
+  }
+  const module = path.join(dir, 'modules', `${OTHER_EXT}.so`);
+  assert.ok(existsSync(module), `${module} is built`);
+  const smoke = spawnSync('php', ['-n', '-d', `extension=${module}`, '-r', 'echo \\Acme\\Tool\\Order\\State::Draft->value, "\\n";'], { encoding: 'utf8' });
+  assert.deepEqual([smoke.status, smoke.stdout], [0, '1\n'], smoke.stderr);
 });
