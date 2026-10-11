@@ -14,6 +14,7 @@
     "packages/fsm-python/pyproject.toml"
   ],
   "npmLocks": [
+    "docs/package-lock.json",
     "packages/fsm-db/package-lock.json",
     "packages/fsm-gui/package-lock.json",
     "packages/fsm-npm/package-lock.json"

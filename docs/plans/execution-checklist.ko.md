@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 1293d9ed6054c8a8f634b9e97ca2d7dd972f2f131e86a8e11005f79b52b7103f -->
+<!-- source-sha256: a7da1c00c3fad863581a5ac62cf7b619656aebd7ccb51db56b4d8ad1cef9c7d6 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -44,7 +44,7 @@
 | S-18 | status를 fsm으로 전부 바꾼다: 문서의 저장소 이름, 패키지(`packages/fsm-*`), 명령(`fsm-gen`, `fsm-db`, `fsm-gui`), 파일(`fsm.config.json`, `fsm.lock.json`, `machines/*.fsm.json`, `*.fsm.mmd`), 생성 공용 모듈(`fsm.Error`)과 예약 machine key, 계획·spec 문서, 그리고 모든 golden과 vector를 다시 생성 | 상태 의미가 아닌 `status` 이름이 남으면 RED(scan) → GREEN, make check 통과 | [o] |
 | S-18-1 | S-18이 이름 붙인 명령이 존재한다: `fsm-gen`(packages/fsm-compiler), `fsm-db`(packages/fsm-db), `fsm-gui`(packages/fsm-gui)가 각 package manifest의 `bin` 항목이고, 각 파일은 node shebang으로 시작하며, clone에서 `npm install -g ./packages/<package>`가 명령을 PATH에 둔다. S-18은 문서에서만 이름을 바꿔 사용자가 문서의 이름으로 실행할 수 없었다 | package 테스트가 임시 npm prefix에 offline으로 설치하고 명령을 실행: bin 없음 RED → 명령이 응답 GREEN | [o] |
 | S-19 | 루트와 모든 패키지 README(영·한) 완성: 설치, 세 store의 정의, CLI, 언어별 생성 API와 apply·영속화 예제, GUI, DB store. 문서 검사가 모든 링크를 검증 | 사용법 절이 없는 README RED → GREEN | [ ] |
-| S-20 | 문서 사이트: 문서(spec, 언어별 가이드, CLI, GUI, DB)로 빌드하는 docs/.vitepress의 VitePress, kit documents site link를 쓰는 `docs-build` 타깃, owner 규칙 | 깨진 링크에서 docs-build 실패 RED → GREEN | [ ] |
+| S-20 | 문서 사이트: 문서(spec, 언어별 가이드, CLI, GUI, DB)로 빌드하는 docs/.vitepress의 VitePress, kit documents site link를 쓰는 `docs-build` 타깃, owner 규칙 | 깨진 링크에서 docs-build 실패 RED → GREEN | [o] |
 | S-21 | 공개: public 저장소 polyspec/fsm 생성, main push, make check를 돌리는 CI workflow, 사이트를 배포하는 Pages workflow. 사용자가 2026-10-11에 모든 단계를 허락했다. push 뒤 로컬 저장소 디렉터리 이름을 `fsm`으로 바꾼다 | GitHub에서 사이트와 CI가 응답 | [ ] |
 | S-22 | 계획(Verification)의 GUI 수동 확인을 json, mermaid, db store 각각으로 한다: 상태 추가·삭제·rename 후 저장, `fsm-gen check` 또는 `fsm-db check` 통과, 브라우저의 Mermaid 표시, 추가한 행의 제안 code. 트리와 store별 단계·결과를 `docs/verification/gui.md(.ko)`에 기록한다 | 실패한 단계는 새 하위 항목 RED → 모든 store의 모든 단계가 통과하고 기록됨 GREEN | [ ] |
 | S-22-1 | GUI 폼의 추가·삭제 버튼이 페이지의 행을 바꾼다: client가 form instance를 구독해 다시 렌더링한다(`patchContent(host, renderForm(form))` 뒤 `connection.sync()`). 이것이 crudui `connectForm`의 계약이다. S-22 확인에서 클릭이 instance만 바꾸고 페이지는 바꾸지 않음을 발견했고, handler 테스트로는 보이지 않는다. `packages/fsm-gui/tests`의 브라우저 테스트(고정한 Playwright, 임시 프로젝트로 띄운 GUI)가 이를 소유한다 | add 클릭 뒤 행 수가 그대로 RED → 제안 code를 가진 행이 나타나고, remove가 없애고, save가 저장 GREEN | [ ] |

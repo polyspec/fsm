@@ -2,6 +2,10 @@
 /var/
 /.results/
 /packages/*/node_modules/
+# The documentation site (docs/.vitepress/config.mts, make docs-build): the packages it installs and its build output.
+/docs/node_modules/
+/docs/.vitepress/dist/
+/docs/.vitepress/cache/
 /packages/*/vendor/
 /packages/*/target/
 /packages/fsm-python/**/__pycache__/

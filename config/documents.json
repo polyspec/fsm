@@ -3,5 +3,6 @@
   "comment": "Every Markdown document of the repository has a Korean twin; the vendored kit tests are not documents of this repository.",
   "include": ["**/*.md"],
   "exclude": ["tests/kit/**"],
+  "siteLinks": true,
   "changelogs": ["CHANGELOG.md"]
 }

@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 8b4a7dd97a01a0a2a38eb69866138f03b843f90ebb2c8f04f3d30364b69409f5 -->
+<!-- source-sha256: d64735a43e7442f1e52629ef9137082f5be35c9373211e535011e48207e6ae91 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -150,7 +150,7 @@ fsm/
   - go: `require github.com/polyspec/orm v0.0.7`
   - python: `polyspec-orm @ git+https://github.com/polyspec/orm@v0.0.7#subdirectory=packages/orm-python`
   - cargo: `{ git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }`
-  - `.node-version`에는 정확한 26.y.z 릴리스를 쓴다(hyper 요구. kit toolchain-declared.mjs는 <major>.<minor>.<patch>만 받는다).
+  - `.node-version`에는 정확한 26.y.z 릴리스를 쓴다(hyper 요구. kit toolchain-declared.mjs는 `<major>.<minor>.<patch>`만 받는다).
 - 고정은 manifest와 lock 파일에 하고 `config/dependency-policy.json`에 적는다. kit gate는 npm URL, Composer `package` dist URL, python `git+…@tag`, cargo tag를 검사하지 않는다. 고정 확인은 리뷰 규칙이다(이를 도구로 요구하는 R은 없다).
 
 ### C-2. 언어 패키지 정규 구조 (6개 동일)
@@ -296,6 +296,20 @@ packages/fsm-<kind>/
   - 저장 후 `check` 통과
   - 폼 렌더링 정확성은 crudui가, 라우팅 정확성은 hyper가 소유한다.
 
+### C-8. 문서 사이트 (`docs/.vitepress`, `make docs-build`)
+- 빌드: `make docs-build`는 `docs-deps`(`docs/package-lock.json`으로 `npm ci --no-audit --no-fund`)를 실행한 뒤, VitePress로 사이트를 `docs/.vitepress/dist`에 빌드한다. `docs/node_modules`, `docs/.vitepress/dist`, `docs/.vitepress/cache`는 git-ignore한다.
+- 버전: `docs/package.json`은 `vitepress` 1.6.4를 정확히 고정한다(template 저장소의 릴리스). 또한 `vite`를 6.4.4로 override한다. vitepress 1.6.4는 `vite ^5.4.14`를 요구하는데, 5.4.x 줄에는 수정 릴리스가 없는 moderate 및 high advisory가 있다(첫 lock의 `npm audit`). 6.4.4에는 advisory가 없고 esbuild 0.25.x를 끌어온다. `make dependency-review RECORD=1`은 advisory가 없는 lock을 기록한다. 사이트는 dev server를 실행하지 않으며, `make docs-build-test`가 이 override로 통과하므로 override를 받아들인다.
+- 원본: 문서는 복사나 생성된 Markdown 없이 제자리에서 읽는다. VitePress의 srcDir은 저장소 루트다. 포함 목록은 다음과 같다: `README.md`와 `README.ko.md`; `packages/*/README.md`와 `packages/*/README.ko.md`; `docs/spec/**`; `docs/plans/fsm-v1.md`와 `docs/plans/fsm-v1.ko.md`; `docs/verification/**`; `CHANGELOG.md`와 `CHANGELOG.ko.md`. 그 밖의 모든 Markdown 파일은 빌드 시점에 저장소를 훑어 계산한 srcExclude에 들어가며, `node_modules`, `.git`, `var`, `vendor`, `target`, `tests/kit`, `docs/.vitepress`도 제외한다. 포함 목록 밖의 페이지는 빌드되지 않는다.
+- 언어: VitePress locale은 쓰지 않는다. locale에는 디렉터리 접두사가 필요하기 때문이다. 한국어 문서는 각자 하나의 페이지이며, 각 페이지는 자기 쌍을 링크한다.
+- 재작성: `README.md`는 같은 디렉터리의 `index.md`로 렌더링된다. 따라서 루트는 `/`, 패키지는 `/packages/<name>/`이다. `README.ko.md`는 자기 경로 `/README.ko`를 유지한다. 쌍은 같은 디렉터리를 쓰므로 상대 링크는 둘 다에서 동작한다.
+- 저장소 링크: 사이트 페이지에서 사이트 페이지가 아닌 저장소 파일이나 디렉터리(예: `AGENTS.md`, `schema/fsm.dbs`, `Makefile`)로 가는 링크는 `docs/.vitepress/config.mts`의 markdown-it 규칙 `repositoryLinks`가 `https://github.com/polyspec/fsm/blob/main/<path>`로 재작성한다(디렉터리는 `tree`). 존재하지 않는 파일로 가는 링크는 그대로 두며 빌드가 실패한다. `ignoreDeadLinks`는 설정하지 않는다.
+- 탐색: nav와 sidebar에는 각각 English 그룹과 한국어 그룹이 있다(locale 전환 없음). 그룹은 Overview, Specification, Plan, Packages, Verification, Changelog를 담는다. Packages에는 README 쌍이 있는 패키지마다 항목이 하나 있으며, `fsm-compiler`와 `fsm-db`는 README가 쓰이면(S-19) 추가된다. Verification은 그 페이지가 있을 때 나타난다.
+- Base: `VITEPRESS_BASE`(기본값 `/`). polyspec/fsm의 GitHub Pages 사이트는 `/fsm/` 아래에서 제공되므로, S-21의 Pages workflow가 `VITEPRESS_BASE=/fsm/`을 설정한다. 사이트 경로에는 base가 붙고, GitHub 링크는 절대 경로다.
+- 본문의 마크업: VitePress는 Markdown을 Vue 템플릿으로 컴파일하므로, 본문의 꺾쇠 괄호 자리표시자(예: `<major>`)는 빌드를 실패시킨다. 그런 자리표시자는 코드 스팬에 쓴다. changelog의 `<a id="...">` 앵커는 HTML이며 그대로 렌더링된다.
+- 루트 페이지의 Vue: 페이지가 저장소 루트에 있으며, 그곳에는 `vue`를 담은 `node_modules`가 없다. `docs/.vitepress/config.mts`는 `vue`와 `vue/server-renderer`를 `docs/node_modules`의 ESM 진입점으로 alias하므로, 번들에는 vue가 한 벌만 들어간다.
+- 알려진 출력: VitePress 빌드는 `Circular chunk: framework -> theme -> framework`를 출력한다. 그대로 출력되며, 빌드는 성공한다.
+- 테스트: `tests/docs-build`(`make docs-build-test`, 기록 `.results/docs-build-test.json`을 남기는 루트 도구 테스트)는 저장소 문서의 임시 복사본에 존재하지 않는 파일로 가는 링크를 가진 문서를 넣고, 빌드가 dead link로 실패해야 한다고 요구한다. 그다음 저장소 자체를 빌드하여 `index.html`, `README.ko.html`, `packages/fsm-go/index.html`, `docs/spec/fsm.html`, `docs/plans/fsm-v1.html` 페이지, `AGENTS.md`의 GitHub 재작성, 그리고 `AGENTS.md` 페이지가 없음을 요구한다. `docs-build`와 `docs-build-test`는 `CHECK_TARGETS`에 있으며, 소유 규칙은 `config/owner-checks.json`에 있다. `config/documents.json`은 `siteLinks`를 설정하므로 `documents-check`가 사이트의 링크 형식을 받아들인다: `/`로 시작하는 링크, 그리고 확장자 없이 `.md`, `.ko.md` 또는 `index.md` 파일을 가리키는 링크.
+
 ---
 
 ## D. 체크리스트 초안
@@ -360,7 +374,7 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `test-<kind>`, `parity-<kind>`(`parity-<kind>: test-<kind>`), `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check packages-test parity-check`
+  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test parity-check`
 - 항목 개발 중에는 owner-checks 매핑만 실행한다.
 - GUI 수동 확인: json·mermaid·db store 각각으로 다음을 확인한다.
   1. 상태를 추가·삭제·rename한 뒤 저장한다(lock은 save가 함께 갱신).
