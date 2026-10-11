@@ -54,12 +54,19 @@ export function completeData(data) {
 }
 
 /**
- * The next code of `machine` that the edit page carries: core nextCode of the stored definitions and lock, or null when nextCode
- * gives no code (E_CODE_RANGE). A null is not a code: the browser suggests none, and a save shows the finding of the core.
+ * The next code of `machine` that the edit page carries: the core result of nextCode for the stored definitions and lock, `{ code,
+ * findings: [] }`, or `{ findings }` with no code when the next code is refused (E_CODE_RANGE; docs/spec/fsm.md, B-3).
  */
 export function nextCodeOf(machine, definitions, lock) {
-  const next = nextCode(machine, definitions, lock);
-  return next.findings.length === 0 ? next.code : null;
+  return nextCode(machine, definitions, lock);
+}
+
+/**
+ * The form errors that show a refused next code on the edit page: the texts of its findings, `CODE: message`, and none when the
+ * next code is a code. The page shows the refusal before any save, so the author sees it where the state is added.
+ */
+export function nextCodeErrors(next) {
+  return next.findings.map(finding => `${finding.code}: ${finding.message}`);
 }
 
 /**
@@ -85,11 +92,13 @@ export function renderEdit(machine, data, options) {
  * The edit form for the browser, as the JSON text of its template, of the data it renders, of the next code of its machine and of
  * the render options, with `<` escaped so that the text can sit in a script element. The browser creates the instance that connectForm
  * binds to the rendered form, re-renders it with the same options after every change of its rows, and gives each added state the
- * next code (client/main.ts), so the data is the data the server rendered.
+ * next code (client/main.ts), so the data is the data the server rendered. A refused next code (`next` with findings) embeds no
+ * nextCode, so the browser gives no code.
  */
 export function editState(machine, data, next, options) {
   const render = editRenderOptions(machine, options);
-  return JSON.stringify({ template: EDIT_TEMPLATE, data, nextCode: next, render }).replaceAll('<', '\\u003c');
+  const nextCodeField = next.findings.length === 0 ? { nextCode: next.code } : {};
+  return JSON.stringify({ template: EDIT_TEMPLATE, data, ...nextCodeField, render }).replaceAll('<', '\\u003c');
 }
 
 /**

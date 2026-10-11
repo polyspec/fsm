@@ -12,7 +12,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_order_key, 0, 1, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_order_from_code, 0, 1, Polyspec\\FsmTest\\Order\\State, 0)
-	ZEND_ARG_TYPE_INFO(0, value, IS_LONG, 0)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_order_is_final, 0, 1, _IS_BOOL, 0)

@@ -24,11 +24,14 @@ const EDGE_FIELDS = ['from', 'to'];
 const isObject = value => typeof value === 'object' && value !== null && !Array.isArray(value);
 const kindOf = value => (value === null ? 'null' : Array.isArray(value) ? 'an array' : `a ${typeof value}`);
 const finding = (code, machine, path, message) => ({ code, machine, path, message });
-/** The E_KEY_FORMAT message of a key that breaks the pattern or the length bound (B-5), or null when it is valid. */
-const keyFormatMessage = (kind, key) => {
-  if (!KEY_PATTERN.test(key)) return `${kind} key ${key} is not lower case letters and digits joined by single underscores`;
-  if (key.length > KEY_MAX) return `${kind} key ${key} is ${key.length} characters; the maximum is ${KEY_MAX}`;
-  return null;
+/**
+ * The E_KEY_FORMAT faults of a key that breaks the pattern or the length bound (B-5): one message, or none (an empty array) when the
+ * key is valid. A key that breaks the pattern is reported by the pattern message alone.
+ */
+const keyFormatFaults = (kind, key) => {
+  if (!KEY_PATTERN.test(key)) return [`${kind} key ${key} is not lower case letters and digits joined by single underscores`];
+  if (key.length > KEY_MAX) return [`${kind} key ${key} is ${key.length} characters; the maximum is ${KEY_MAX}`];
+  return [];
 };
 
 /** The findings of a definition that is not a valid structure (E_SCHEMA); its later rules are skipped. */
@@ -183,14 +186,12 @@ function names(definition) {
   const found = [];
   const { machine, states, events } = definition;
   const report = (code, path, message) => found.push(finding(code, machine, path, message));
-  const machineFault = keyFormatMessage('machine', machine);
-  if (machineFault !== null) report('E_KEY_FORMAT', '$.machine', machineFault);
+  for (const fault of keyFormatFaults('machine', machine)) report('E_KEY_FORMAT', '$.machine', fault);
   if (MACHINE_RESERVED.has(machine.replaceAll('_', ''))) report('E_KEY_RESERVED', '$.machine', `machine key ${machine} is reserved (docs/spec/fsm.md, B-5), after its underscores are removed`);
   const stateKeys = new Set();
   states.forEach((state, index) => {
     const path = `$.states[${index}].key`;
-    const stateFault = keyFormatMessage('state', state.key);
-    if (stateFault !== null) report('E_KEY_FORMAT', path, stateFault);
+    for (const fault of keyFormatFaults('state', state.key)) report('E_KEY_FORMAT', path, fault);
     if (STATE_RESERVED.has(state.key)) report('E_KEY_RESERVED', path, `state key ${state.key} is reserved (docs/spec/fsm.md, B-5)`);
     if (stateKeys.has(state.key)) report('E_DUPLICATE_KEY', path, `state key ${state.key} repeats a state of the machine`);
     stateKeys.add(state.key);
@@ -198,8 +199,7 @@ function names(definition) {
   const eventKeys = new Set();
   events.forEach((event, index) => {
     const path = `$.events[${index}].key`;
-    const eventFault = keyFormatMessage('event', event.key);
-    if (eventFault !== null) report('E_KEY_FORMAT', path, eventFault);
+    for (const fault of keyFormatFaults('event', event.key)) report('E_KEY_FORMAT', path, fault);
     if (EVENT_RESERVED.has(event.key)) report('E_KEY_RESERVED', path, `event key ${event.key} is reserved (docs/spec/fsm.md, B-5)`);
     if (eventKeys.has(event.key)) report('E_DUPLICATE_KEY', path, `event key ${event.key} repeats an event of the machine`);
     eventKeys.add(event.key);

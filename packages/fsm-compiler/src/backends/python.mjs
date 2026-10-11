@@ -205,6 +205,18 @@ function digits(value) {
   return value;
 }
 
+/**
+ * The Python literal of a typed input of the oracle (input_type: string, bool or float; docs/spec/fsm.md, B-6). An input without a
+ * type is a decimal string written as the int it names (digits).
+ */
+function inputOf(text, type) {
+  if (type === undefined) return digits(text);
+  if (type === 'string') return JSON.stringify(text);
+  if (type === 'bool' && (text === 'true' || text === 'false')) return text === 'true' ? 'True' : 'False';
+  if (type === 'float' && /^-?[0-9]+\.[0-9]+$/.test(text)) return text;
+  throw new Error(`python: the input ${JSON.stringify(text)} of type ${JSON.stringify(type)} is not a string, bool or float literal`);
+}
+
 /** The native test module tests/vectors.py of `list`: the cases of the python kind (forKind), as Python literals. */
 export function vectorsFile(list) {
   const vectorList = forKind(list, KIND);
@@ -221,9 +233,11 @@ export function vectorsFile(list) {
     }
     const entries = Object.entries(value);
     if (entries.length === 0) return '{}';
-    // An input is a decimal string of the oracle, which is written as the Python int it names (the 64-bit range stays exact).
-    const item = ([name, value]) => (name === 'input' ? digits(value) : literal(value, inner));
-    return `{\n${entries.map(entry => `${inner}${JSON.stringify(entry[0])}: ${item(entry)},\n`).join('')}${indent}}`;
+    // An input is a decimal string of the oracle, which is written as the Python int it names (the 64-bit range stays exact); a typed
+    // input is written as its literal. The input_type of a case is read by its input and is not written.
+    const shown = entries.filter(([name]) => name !== 'input_type');
+    const item = ([name, entryValue]) => (name === 'input' ? inputOf(entryValue, value.input_type) : literal(entryValue, inner));
+    return `{\n${shown.map(entry => `${inner}${JSON.stringify(entry[0])}: ${item(entry)},\n`).join('')}${indent}}`;
   };
   return text([
     header(SHARED),

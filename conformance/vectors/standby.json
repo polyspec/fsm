@@ -96,6 +96,75 @@
       }
     },
     {
+      "feature": "from_code",
+      "id": "standby_from_code_string",
+      "input": "1",
+      "input_type": "string",
+      "expect": {
+        "error": "E_UNKNOWN_CODE",
+        "expected": null,
+        "actual": null,
+        "event": null
+      },
+      "kinds": [
+        "php",
+        "php-ext",
+        "python"
+      ]
+    },
+    {
+      "feature": "from_code",
+      "id": "standby_from_code_bool",
+      "input": "true",
+      "input_type": "bool",
+      "expect": {
+        "error": "E_UNKNOWN_CODE",
+        "expected": null,
+        "actual": null,
+        "event": null
+      },
+      "kinds": [
+        "php",
+        "php-ext",
+        "python"
+      ]
+    },
+    {
+      "feature": "from_code",
+      "id": "standby_from_code_float",
+      "input": "1.0",
+      "input_type": "float",
+      "expect": {
+        "error": "E_UNKNOWN_CODE",
+        "expected": null,
+        "actual": null,
+        "event": null
+      },
+      "kinds": [
+        "php",
+        "php-ext",
+        "python"
+      ]
+    },
+    {
+      "feature": "from_code",
+      "id": "standby_from_code_fraction",
+      "input": "1.5",
+      "input_type": "float",
+      "expect": {
+        "error": "E_UNKNOWN_CODE",
+        "expected": null,
+        "actual": null,
+        "event": null
+      },
+      "kinds": [
+        "php",
+        "php-ext",
+        "python",
+        "npm"
+      ]
+    },
+    {
       "feature": "code",
       "id": "standby_code_v0",
       "value": 0,

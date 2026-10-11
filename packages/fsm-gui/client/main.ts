@@ -80,7 +80,7 @@ function connectEditForm(): void {
   const host = document.getElementById('fsm-form');
   if (state === null || host === null) return;
   const { template, data, nextCode, render } = JSON.parse(state.textContent ?? '') as {
-    template: FormTemplate; data: Record<string, unknown>; nextCode: number | null; render: RenderOptions;
+    template: FormTemplate; data: Record<string, unknown>; nextCode?: number; render: RenderOptions;
   };
   const session = createForm(template, data, { language: 'en' });
   const form = host.querySelector<HTMLElement>('.crudui-form');
@@ -94,7 +94,7 @@ function connectEditForm(): void {
   connectedHost = host;
   host.setAttribute('data-fsm-connected', 'true');
   // A null next code is no suggestion: the save shows the finding of the core, and the added rows keep their blank codes.
-  if (nextCode === null) return;
+  if (nextCode === undefined) return;
   codeObserver = new MutationObserver(() => fillAddedCodes(host, nextCode));
   codeObserver.observe(host, { childList: true, subtree: true });
   fillAddedCodes(host, nextCode);

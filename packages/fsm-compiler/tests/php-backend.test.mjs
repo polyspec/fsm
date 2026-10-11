@@ -98,3 +98,41 @@ test('the loader src/functions.php requires the functions of every machine, in d
   );
   assert.ok(irs.length > 1, 'the root holds several machines, so the loader is tested with more than one');
 });
+
+test('a caller without strict_types gets E_UNKNOWN_CODE for a value that is not an int, never a converted code (B-6)', async (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'fsm-php-coercion-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  for (const file of await orderFiles()) {
+    const target = path.join(dir, 'src', file.path);
+    mkdirSync(path.dirname(target), { recursive: true });
+    writeFileSync(target, file.content);
+  }
+  // The script has no declare(strict_types=1), so its calls are in coercive mode, as the calls of an application that does not
+  // declare it. The loader is required by hand, and the classes are autoloaded from the generated files.
+  const script = path.join(dir, 'caller.php');
+  writeFileSync(script, String.raw`<?php
+$root = $argv[1];
+spl_autoload_register(static function (string $class) use ($root): void {
+    $prefix = 'Polyspec\\FsmTest\\';
+    if (!str_starts_with($class, $prefix)) return;
+    $file = $root . '/src/' . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
+    if (is_file($file)) require $file;
+});
+require $root . '/src/functions.php';
+foreach (['string' => '2', 'float' => 2.0, 'fraction' => 2.5, 'bool' => true, 'null' => null, 'int' => 2] as $name => $value) {
+    try {
+        $state = \Polyspec\FsmTest\Order\fromCode($value);
+        echo "RESULT $name {$state->name}\n";
+    } catch (\Polyspec\FsmTest\Fsm\Error $error) {
+        echo "RESULT $name {$error->getCode()}\n";
+    }
+}
+`);
+  const run = spawnSync('php', ['-d', 'error_reporting=0', script, dir], { encoding: 'utf8' });
+  assert.equal(run.status, 0, run.stderr);
+  assert.deepEqual(
+    run.stdout.split('\n').filter(line => line.startsWith('RESULT ')),
+    ['RESULT string E_UNKNOWN_CODE', 'RESULT float E_UNKNOWN_CODE', 'RESULT fraction E_UNKNOWN_CODE',
+      'RESULT bool E_UNKNOWN_CODE', 'RESULT null E_UNKNOWN_CODE', 'RESULT int Paid'],
+  );
+});

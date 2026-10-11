@@ -255,7 +255,11 @@ export function files(irs, lock) {
 export function vectorsFile(list) {
   const vectorList = forKind(list, KIND).map(({ machine, cases }) => ({
     machine,
-    cases: cases.map(entry => (typeof entry.input === 'string' ? { ...entry, input: Number(entry.input) } : entry)),
+    cases: cases.map(({ input_type: inputType, ...entry }) => {
+      // A typed input is given to npm only as a float: npm's number holds no string and no bool (TYPED_KINDS, docs/spec/fsm.md, B-6).
+      if (inputType !== undefined && inputType !== 'float') throw new Error(`npm: the input type ${JSON.stringify(inputType)} of ${entry.id} is not a number`);
+      return typeof entry.input === 'string' ? { ...entry, input: Number(entry.input) } : entry;
+    }),
   }));
   return text([header(SHARED), '', `export const vectors = ${JSON.stringify(vectorList, null, 2)};`]);
 }

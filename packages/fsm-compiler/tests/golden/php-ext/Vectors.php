@@ -336,6 +336,62 @@ final class Vectors
                     ],
                 ],
             ],
+            'test_from_code__order_from_code_string' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_string',
+                    'input' => '1',
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_bool' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_bool',
+                    'input' => true,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_float' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_float',
+                    'input' => 1.0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_fraction' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_fraction',
+                    'input' => 1.5,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
             'test_target__order_target_s0_e0' => [
                 'machine' => 'order',
                 'case' => [

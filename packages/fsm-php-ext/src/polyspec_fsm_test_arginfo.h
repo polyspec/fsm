@@ -12,7 +12,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_in_review_key, 0, 1, IS_STRING, 
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_in_review_from_code, 0, 1, Polyspec\\FsmTest\\InReview\\State, 0)
-	ZEND_ARG_TYPE_INFO(0, value, IS_LONG, 0)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_in_review_is_final, 0, 1, _IS_BOOL, 0)
@@ -51,7 +51,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_limits_key, 0, 1, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_limits_from_code, 0, 1, Polyspec\\FsmTest\\Limits\\State, 0)
-	ZEND_ARG_TYPE_INFO(0, value, IS_LONG, 0)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_limits_is_final, 0, 1, _IS_BOOL, 0)
@@ -90,7 +90,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_order_key, 0, 1, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_order_from_code, 0, 1, Polyspec\\FsmTest\\Order\\State, 0)
-	ZEND_ARG_TYPE_INFO(0, value, IS_LONG, 0)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_order_is_final, 0, 1, _IS_BOOL, 0)
@@ -129,7 +129,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_standby_key, 0, 1, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_standby_from_code, 0, 1, Polyspec\\FsmTest\\Standby\\State, 0)
-	ZEND_ARG_TYPE_INFO(0, value, IS_LONG, 0)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_standby_is_final, 0, 1, _IS_BOOL, 0)
@@ -168,7 +168,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_ticket_key, 0, 1, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_ticket_from_code, 0, 1, Polyspec\\FsmTest\\Ticket\\State, 0)
-	ZEND_ARG_TYPE_INFO(0, value, IS_LONG, 0)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_ticket_is_final, 0, 1, _IS_BOOL, 0)

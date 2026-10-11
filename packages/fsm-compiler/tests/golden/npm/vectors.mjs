@@ -237,6 +237,17 @@ export const vectors = [
         }
       },
       {
+        "feature": "from_code",
+        "id": "order_from_code_fraction",
+        "input": 1.5,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
         "feature": "code",
         "id": "order_code_v0",
         "value": 0,

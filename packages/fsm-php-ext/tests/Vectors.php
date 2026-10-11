@@ -237,6 +237,62 @@ final class Vectors
                     ],
                 ],
             ],
+            'test_from_code__in_review_from_code_string' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_string',
+                    'input' => '1',
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__in_review_from_code_bool' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_bool',
+                    'input' => true,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__in_review_from_code_float' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_float',
+                    'input' => 1.0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__in_review_from_code_fraction' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_fraction',
+                    'input' => 1.5,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
             'test_target__in_review_target_s0_e0' => [
                 'machine' => 'in_review',
                 'case' => [
@@ -815,6 +871,62 @@ final class Vectors
                     ],
                 ],
             ],
+            'test_from_code__limits_from_code_string' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_string',
+                    'input' => '1',
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__limits_from_code_bool' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_bool',
+                    'input' => true,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__limits_from_code_float' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_float',
+                    'input' => 1.0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__limits_from_code_fraction' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_fraction',
+                    'input' => 1.5,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
             'test_target__limits_target_s0_e0' => [
                 'machine' => 'limits',
                 'case' => [
@@ -1233,6 +1345,62 @@ final class Vectors
                     'feature' => 'from_code',
                     'id' => 'order_from_code_int64_max',
                     'input' => 9223372036854775807,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_string' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_string',
+                    'input' => '1',
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_bool' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_bool',
+                    'input' => true,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_float' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_float',
+                    'input' => 1.0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_fraction' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_fraction',
+                    'input' => 1.5,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
                         'expected' => null,
@@ -2280,6 +2448,62 @@ final class Vectors
                     ],
                 ],
             ],
+            'test_from_code__standby_from_code_string' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_string',
+                    'input' => '1',
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__standby_from_code_bool' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_bool',
+                    'input' => true,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__standby_from_code_float' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_float',
+                    'input' => 1.0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__standby_from_code_fraction' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_fraction',
+                    'input' => 1.5,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
             'test_initial__ticket_initial' => [
                 'machine' => 'ticket',
                 'case' => [
@@ -2526,6 +2750,62 @@ final class Vectors
                     'feature' => 'from_code',
                     'id' => 'ticket_from_code_int64_max',
                     'input' => 9223372036854775807,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_string' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_string',
+                    'input' => '1',
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_bool' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_bool',
+                    'input' => true,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_float' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_float',
+                    'input' => 1.0,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_fraction' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_fraction',
+                    'input' => 1.5,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
                         'expected' => null,

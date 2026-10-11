@@ -168,11 +168,21 @@ ZEND_NAMED_FUNCTION(zif_limits_key)
 
 ZEND_NAMED_FUNCTION(zif_limits_from_code)
 {
-	zend_long value;
+	zval *input;
 
 	ZEND_PARSE_PARAMETERS_START(1, 1)
-		Z_PARAM_LONG(value)
+		Z_PARAM_ZVAL(input)
 	ZEND_PARSE_PARAMETERS_END();
+	/* A value that is not an int is refused here: the coercion of a caller without strict_types must not convert it (B-6). */
+	if (Z_TYPE_P(input) != IS_LONG) {
+		zend_string *message = zend_strpprintf(0, "limits: a value of type %s is not a state of limits", zend_zval_type_name(input));
+
+		fsm_throw("E_UNKNOWN_CODE", message, NULL, NULL, NULL);
+		zend_string_release(message);
+		RETURN_THROWS();
+	}
+	zend_long value = Z_LVAL_P(input);
+
 	switch (value) {
 		case 1:
 			limits_return_state(return_value, 1);

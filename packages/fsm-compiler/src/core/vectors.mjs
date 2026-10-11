@@ -14,6 +14,13 @@ export const FEATURES = Object.freeze([
 export const RAW_STATE_KINDS = Object.freeze(['go', 'npm', 'python']);
 
 /**
+ * The kinds whose language can hold an input that is not an int (docs/spec/fsm.md, B-6): php and php-ext (any zval) and python
+ * (any object). A typed input of from_code is given to these kinds only; go, rust and npm cannot hold it (npm's number holds 2.0 as
+ * the int 2, and no npm value is a string or a bool, so only the non-integer fraction is given to npm too).
+ */
+export const TYPED_KINDS = Object.freeze(['php', 'php-ext', 'python']);
+
+/**
  * The cases of `vectorList` (the list of { machine, cases } of vectors) that the kind `kind` runs: a case without a `kinds` list is
  * run by every kind, and a case with one only by the kinds it names. The `kinds` field is removed, so the native module of the
  * kind holds the data of its cases alone.
@@ -88,6 +95,16 @@ export function vectors(ir, lock) {
   add('from_code', 'from_code_negative', { input: '-1' }, failure('E_UNKNOWN_CODE'));
   add('from_code', 'from_code_int32_overflow', { input: '2147483648' }, failure('E_UNKNOWN_CODE'));
   add('from_code', 'from_code_int64_max', { input: '9223372036854775807' }, failure('E_UNKNOWN_CODE'));
+
+  // The inputs that are not an int, given to the kinds that can hold them (B-6): a string and a bool are no code in those kinds,
+  // whatever their text, and a float is no code even when it has the value of a state. Each one names its state code, so that a
+  // coercion of the value would give that state. input_type names the type: string, bool or float (the text is the literal).
+  const typedCode = String(states[0].code);
+  add('from_code', 'from_code_string', { input: typedCode, input_type: 'string' }, failure('E_UNKNOWN_CODE'), TYPED_KINDS);
+  add('from_code', 'from_code_bool', { input: 'true', input_type: 'bool' }, failure('E_UNKNOWN_CODE'), TYPED_KINDS);
+  add('from_code', 'from_code_float', { input: `${typedCode}.0`, input_type: 'float' }, failure('E_UNKNOWN_CODE'), TYPED_KINDS);
+  add('from_code', 'from_code_fraction', { input: `${typedCode}.5`, input_type: 'float' }, failure('E_UNKNOWN_CODE'),
+    [...TYPED_KINDS, 'npm']);
 
   // An invalid state value (0 and the unknown code) for the functions that take a state, in the kinds whose state type admits it.
   // A state argument is a key in every other case, and an integer here (`value`, or `expected_value` and `actual_value` for apply).
