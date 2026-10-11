@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 506b4abf9a9ed854909deecd6f8999c2852a64666f9be5d871f9ba8483f7652e -->
+<!-- source-sha256: bf6925d3966a08ca58809e71be4605212a486b600ec76e7d6c877e3f8cfadb3d -->
 # fsm 정의
 
 [English](fsm.md)
@@ -104,7 +104,7 @@ stateDiagram-v2
   - fsm-gen, fsm-db, fsm-gui는 이 파일을 읽는다. 설정된 store를 그 도구가 다루지 못하면(예: fsm-gen + `db`) `E_STORE_NOT_CONFIGURED`.
   - `machines/`에 설정과 다른 형식의 파일이 있으면 `E_STORE_MIXED`.
 - `copy(from, to)`는 `run` 밖의 비동기 core 이관 함수다(`await to.save(await from.load())`). fsm-db CLI는 `copy --to json|mermaid --root <dir>`(database가 원본)와 `copy --from json|mermaid --root <dir>`(database가 대상)이며, 대상 루트에 `machines/`나 `fsm.lock.json`(db면 정의·lock 행), 또는 커밋된 `fsm.lock.json`(git HEAD)이 있으면 `E_STORE_NOT_EMPTY`.
-  - fsm-gen은 json↔mermaid 이관을 제공한다(의존성 0 유지).
+  - fsm-gen은 json↔mermaid 이관을 제공한다(계획 C-5의 import 집합 유지).
   - fsm-db는 db↔json/mermaid 이관과 schema 설치를 제공한다. 명령은 `install`, `check`, `lock`, `copy`이며, usage·종료 코드·예시는 `packages/fsm-db/README.ko.md`에 있다.
     - `install [--project <dir>]`은 orm `utils().schema().install`로 `schema/fsm.dbs`의 여섯 table을 설치한다. table이 없는 database에서는 table을 만들고 `[fsm-db] install: ok`를 출력한다. 여섯 table이 모두 있는 database에서는 아무것도 바꾸지 않고 같은 줄을 출력한다. 이는 orm v0.0.7의 관찰된 동작이며 `packages/fsm-db/tests/cli.test.mjs`가 검증한다. table이 일부만 있는 database에서는 orm이 install을 `CONFIG`로 거부하고, 명령은 오류를 stack과 함께 출력한 뒤 종료 코드 1로 끝난다. 대체 동작(fallback)은 없다.
     - table이 없는 database에서 `check`, `lock`, `copy`는 orm의 `no such table` 오류를 stack과 함께 출력하고 종료 코드 1로 끝난다. `install`만 table을 만든다.
