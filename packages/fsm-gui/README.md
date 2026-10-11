@@ -87,7 +87,8 @@ with a finding of its own shows its findings and no diagram.
 | Delete | the button of the detail page | saves the store without the machine |
 
 The Mermaid diagram of the detail page is the canonical output of the mermaid store; the browser draws it on the first load
-and again after every change of the page.
+and again after every change of the page. The browser test `tests/browser/diagram.test.mjs` checks that the drawn diagram names
+every state by its key and shows its code.
 
 ## Rules
 

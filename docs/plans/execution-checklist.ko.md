@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: ed83d6d47043d4a1cfa8434699555f3cddadbbac7f900bf50ff0373f9ab27617 -->
+<!-- source-sha256: 639ada01d3d84ed6491b482f02712319e3663c5b344564c8ccabe1a454657456 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -67,4 +67,4 @@
 | S-35 | plan과 contract가 저장소와 맞는다: plan의 D 표가 낡은 상태를 보이지 않고(체크리스트를 가리킴), C-1 트리에 `src/store-lock`이 있고, `contracts/layout.json`이 npm의 `tests/types*`를 선언하고 이유를 적으며, S-11-3에 반복 가능한 테스트가 생기고, `kit-test`가 CHECK_TARGETS에 들어간다(감사 17, 18, 19, 21) | npm 선언 없는 layout-check, bin link를 쓰는 uv에 대한 S-11-3 테스트 RED → GREEN | [o] |
 | S-36 | fsm-db CLI를 문서의 모든 명령에 대해 process로 테스트한다: `lock --rename`과 `copy --to mermaid` / `copy --from mermaid`(감사 20) | 문서의 출력이 단언되지 않음 RED → GREEN | [o] |
 | S-37 | 영속화와 DB store를 문서가 이름 붙인 모든 dialect에서 증명한다: 같은 (expected, event)의 동시 transaction 두 개가 Changed 하나와 Unchanged 하나를, 충돌하는 쌍이 E_CONFLICT를 내는지 단언하는 테스트. db-test와 영속화 테스트가 SQLite, PostgreSQL, MySQL에서 돈다(로컬 임시 서버와 CI service). 문서가 테스트한 dialect를 적는다(감사 23, 24) | 동시 테스트가 실패하거나 없음 RED → 세 dialect에서 GREEN | [ ] |
-| S-38 | Mermaid 다이어그램이 모든 state의 이름을 보인다: 고정한 mermaid 12.1.0은 description이 하나인 state(`draft : 1`, spec B-1의 정규형)를 description만으로 그리므로 GUI와 모든 Mermaid viewer가 key 없이 code 1..n만 보인다(S-22 확인). 측정 결과: `state "draft" as draft` 뒤에 `draft : 1`을 쓰면 `draft` 제목 아래 `1`이 있는 상자로 그려지고 description [draft, 1]로 파싱된다. 그려진 다이어그램이 key와 code를 보이도록 정규형을 바꾸며, 대안과 적대 검증해 결정하고 spec B-1에 기록한다(B-5의 예약어 위치를 다시 측정). mermaid store, golden, 예제 machine, GUI, README 예시가 따른다 | 그려진 svg의 label에 모든 state key가 있는지 보는 browser 테스트 실패 RED → GREEN | [ ] |
+| S-38 | Mermaid 다이어그램이 모든 state의 이름을 보인다: 고정한 mermaid 12.1.0은 description이 하나인 state(`draft : 1`, spec B-1의 정규형)를 description만으로 그리므로 GUI와 모든 Mermaid viewer가 key 없이 code 1..n만 보인다(S-22 확인). 측정 결과: `state "draft" as draft` 뒤에 `draft : 1`을 쓰면 `draft` 제목 아래 `1`이 있는 상자로 그려지고 description [draft, 1]로 파싱된다. 그려진 다이어그램이 key와 code를 보이도록 정규형을 바꾸며, 대안과 적대 검증해 결정하고 spec B-1에 기록한다(B-5의 예약어 위치를 다시 측정). mermaid store, golden, 예제 machine, GUI, README 예시가 따른다 | 그려진 svg의 label에 모든 state key가 있는지 보는 browser 테스트 실패 RED → GREEN | [o] |

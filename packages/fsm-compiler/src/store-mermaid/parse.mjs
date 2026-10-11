@@ -8,6 +8,7 @@
 import { KEY_PATTERN } from '../core/validate.mjs';
 
 const TITLE = /^title: (\S+)$/;
+const LABEL = /^ *state "([^"]*)" as (\S+)$/;
 const STATE = /^ *(\S+) : (\S+)$/;
 const INITIAL = /^ *\[\*\] --> (\S+)$/;
 const EDGE = /^ *(\S+) --> (\S+) : (\S+)$/;
@@ -59,6 +60,7 @@ export function parseMermaid(text, fileMachine) {
   const seenEvents = new Set();
   let phase = 'states';
   let sawInitial = false;
+  let pending = null;
   let lastFinal = -1;
 
   /** Marks the state `key` as final for the final line at `at`; returns the index of the state, or the last final index when refused. */
@@ -80,21 +82,42 @@ export function parseMermaid(text, fileMachine) {
     const line = lines[index];
     const at = index + 1;
     if (phase === 'states') {
+      const label = LABEL.exec(line);
       const state = STATE.exec(line);
       const initial = INITIAL.exec(line);
-      if (state !== null) {
-        const [, key, code] = state;
+      if (pending !== null) {
+        const expectedKey = pending.key;
+        pending = null;
+        if (state !== null && state[1] === expectedKey) {
+          if (!INDENT.test(line)) refuse(at, 'a state line is indented by exactly 4 spaces');
+          const code = state[2];
+          if (!CODE.test(code) || !Number.isSafeInteger(Number(code))) {
+            refuse(at, `the code of ${expectedKey} is not a decimal integer without a leading zero`);
+          }
+          states[indexOf.get(expectedKey)].code = Number(code);
+        } else {
+          refuse(at, `expected the description line ${expectedKey} : <code> right after its label line`);
+        }
+      } else if (label !== null) {
+        const [, text, key] = label;
         if (!INDENT.test(line)) refuse(at, 'a state line is indented by exactly 4 spaces');
         if (!isKey(key)) {
-          refuse(at, 'expected a state line with a key of lower case letters and digits joined by single underscores');
+          refuse(at, 'expected the label line state "<key>" as <key>, with a key of lower case letters and digits joined by single underscores');
         } else if (indexOf.has(key)) {
           refuse(at, `state ${key} is described twice`);
         } else {
           indexOf.set(key, states.length);
+          states.push({ key, code: undefined });
+          if (text !== key) refuse(at, `the label "${text}" of ${key} is not its key; the label of a state is its key`);
+          pending = { key, at };
+        }
+      } else if (state !== null) {
+        // The description is recorded, so that the lines that name its state are not refused as well (one finding per line).
+        refuse(at, 'expected the label line state "<key>" as <key> before the description line of a state');
+        const [, key, code] = state;
+        if (isKey(key) && !indexOf.has(key)) {
+          indexOf.set(key, states.length);
           states.push({ key, code: Number(code) });
-          if (!CODE.test(code) || !Number.isSafeInteger(Number(code))) {
-            refuse(at, `the code of ${key} is not a decimal integer without a leading zero`);
-          }
         }
       } else if (initial !== null) {
         sawInitial = true;
@@ -106,7 +129,7 @@ export function parseMermaid(text, fileMachine) {
           states[indexOf.get(initial[1])].initial = true;
         }
       } else {
-        refuse(at, 'expected a state line, or the initial line [*] --> <state> after the states');
+        refuse(at, 'expected a label line state "<key>" as <key>, or the initial line [*] --> <state> after the states');
       }
     } else if (phase === 'edges') {
       const edge = EDGE.exec(line);
@@ -143,6 +166,7 @@ export function parseMermaid(text, fileMachine) {
       }
     }
   }
+  if (pending !== null) refuse(pending.at, `the description line ${pending.key} : <code> after its label line is missing`);
   if (!sawInitial) refuse(lines.length + 1, 'the initial line [*] --> <state> is missing');
   if (findings.length > 0) return { findings, definition: undefined };
   return {

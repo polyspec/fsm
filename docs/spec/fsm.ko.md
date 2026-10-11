@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: bf6925d3966a08ca58809e71be4605212a486b600ec76e7d6c877e3f8cfadb3d -->
+<!-- source-sha256: dc4f9353da9004c7a69a4c7f2ede6e88a20006c07ee5e0c5b64b7456314c555d -->
 # fsm 정의
 
 [English](fsm.md)
@@ -31,7 +31,7 @@
 | 개념 | JSON | Mermaid(공식 문법) | DB(orm) |
 |---|---|---|---|
 | 머신 | `"machine": "order"` | frontmatter `title: order` | `machine(name)` |
-| 상태·code | `{"key":"draft","code":1}` | `draft : 1` (state description) | `state(machine, key, code, initial, final, position)` |
+| 상태·code | `{"key":"draft","code":1}` | `state "draft" as draft`(label)와 `draft : 1`(state description) | `state(machine, key, code, initial, final, position)` |
 | initial | `"initial": true` | `[*] --> draft` | `initial` |
 | final | `"final": true` | `done --> [*]` | `final` |
 | 엣지 | `{"key":"next","edges":[{"from":"draft","to":"paid"},…]}` | `draft --> paid : next` | `edge(machine, event, from, to, position)` + `event(machine, key, position)` |
@@ -58,10 +58,15 @@
 title: order
 ---
 stateDiagram-v2
+    state "draft" as draft
     draft : 1
+    state "paid" as paid
     paid : 2
+    state "shipped" as shipped
     shipped : 3
+    state "done" as done
     done : 4
+    state "canceled" as canceled
     canceled : 5
     [*] --> draft
     draft --> paid : next
@@ -75,8 +80,16 @@ stateDiagram-v2
     canceled --> [*]
 ```
 - Mermaid 정규형
-  - 줄 순서를 고정한다: 상태 선언(상태 순서) → initial → 이벤트 순서대로 엣지(이벤트 안에서는 엣지 순서) → final(상태 순서). code는 앞자리 0 없는 10진수, 상태당 description 1개.
-  - 읽을 때 정규형 밖의 문법은 `E_MERMAID_UNSUPPORTED{line}`로 거부한다. 복합 상태, note, fork/join, choice, 스타일, 주석, 순서 위반이 해당된다. 조용히 무시하지 않는다.
+  - 줄 순서를 고정한다: 상태 순서대로 각 상태의 label 줄 `state "<key>" as <key>`와 description 줄 `<key> : <code>`를 이 순서로 쓰고, 이어서 initial → 이벤트 순서대로 엣지(이벤트 안에서는 엣지 순서) → final(상태 순서). 상태당 label 줄 1개와 description 줄 1개. code는 앞자리 0 없는 10진수다. label은 key 자체다. 텍스트가 key와 다른 label 줄은 거부한다.
+  - 결정(S-38): 그려진 다이어그램은 각 상태의 key와 code를 보여야 한다. 고정한 mermaid 12.1.0에서 description이 하나인 상태는 그 description만 그려진다. `draft : 1`은 `1`만 그리고 key가 없다. 별칭 줄 `state "draft" as draft`는 `draft`를 상자의 제목으로 그리므로, 이 형식은 key를 제목으로, code를 description으로 그린다(label `draft`와 `1`, 파싱된 descriptions [draft, 1]). 측정: Chromium에서 mermaid 12.1.0으로, label은 svg에서, descriptions는 `getStates()`에서 읽었다.
+  - 기각한 대안. 각각을 이 절의 규칙(공식 문법만, 손실 없음, 정규 텍스트 하나, 파싱과 거부가 단순, 그려진 다이어그램이 key와 code를 보임)에 대조했다:
+    - `draft : draft` 다음 `draft : 1`(description 두 줄): 같은 그림이지만 제목을 정하는 문서화된 문법이 아니다. 제목은 위치로 정해지는 첫 description이라는 암묵 규칙이 되어 reader가 그 규칙을 따로 되풀이해야 한다.
+    - `state "draft 1" as draft`: `draft 1`을 그리지만 code가 label의 자유 텍스트가 되어 reader가 문자열을 나눠야 하고, 위 표의 description이 아니게 된다.
+    - `draft : draft 1`: `draft 1`을 그리지만 description 하나에 값 둘이 들어가 reader가 나눠야 하고, key가 제목이 아니다.
+    - `draft : draft<br/>1`: 두 줄로 그리지만 description 하나에 값 둘이 들어가므로, `draft : draft 1`과 같은 이유로 기각한다.
+    - `draft : 1`(이전 형식): `1`만 그린다. 요구를 충족하지 않는다.
+  - 채택한 형식은 key와 code를 공식 문법의 서로 다른 줄에 둔다. 그래서 reader가 각각을 이미 있는 규칙으로 검사한다. label이 key와 다르면 `E_MERMAID_UNSUPPORTED`로 거부한다. 두 번째 이름이 다른 store에는 없는 채로 조용히 버려지기 때문이다.
+  - 읽을 때 정규형 밖의 문법은 `E_MERMAID_UNSUPPORTED{line}`로 거부한다. 복합 상태, note, fork/join, choice, 스타일, 주석, 순서 위반, key와 다른 label이 해당된다. 조용히 무시하지 않는다.
 - 순서 규칙
   - 상태 순서와 이벤트 순서는 선언 순서다. 순서는 `events_from`과 생성 순서에 쓰인다.
   - code와 선언 순서는 서로 독립이다.
@@ -185,7 +198,7 @@ stateDiagram-v2
 - 이름
   - `E_KEY_FORMAT`: 머신·상태·이벤트 key가 `^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$`가 아니거나 64자를 넘음(DB store는 key를 varchar(64)에 담으므로, core가 이 상한을 강제해 세 store가 같은 key를 받아들이게 한다)
   - `E_DUPLICATE_KEY`: 머신 key 중복, 한 머신 안의 상태 key 중복·이벤트 key 중복, 또는 `_`를 지웠을 때 같아지는 두 머신 key(`ab`와 `a_b`는 모두 php `<ns>\Ab`가 된다)
-  - `E_KEY_RESERVED`: `docs/spec/fsm.md`의 고정 목록 하나이며 kind·store와 무관하게 모든 정의에 적용한다. (1) 머신 key(`_`를 지우고 비교): `fsm`(공용 모듈), `index`(npm `index.js`), `lib`·`main`(rust `src/lib.rs`·`src/main.rs`, go `package main`), `internal`(go internal package는 `tests/`에서 import할 수 없음), `init`(go는 `init`라는 이름으로 package를 import하지 못함), `testdata`·`vendor`(go `./...`가 건너뜀), go 사전 선언 식별자(`error`, `string`, `int`, `len`, `nil` 등. 그 이름의 package를 import하면 이를 가린다), 그리고 go·rust(고정 edition)·python·js의 keyword(이 네 언어에서는 머신 key가 그대로 모듈 이름이다). (2) pascal 형태가 enum 멤버로 거부되는 상태·이벤트 key: `self`(rust `Self`), `class`(php `Class`). (3) Mermaid 예약어(store와 무관하게 항상 적용): 상태 key `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`; 머신 key `null, true, false`(고정한 mermaid 버전 12.1.0 기준). S-16 테스트(`packages/fsm-gui/tests/mermaid-parse.test.mjs`)는 상태 key를 다섯 위치(설명 줄, 초기 줄, edge의 출발, edge의 도착, 최종 줄)에서 검사한다. 단어는 그 위치에서 mermaid가 다이어그램을 파싱하지 못하거나, 쓴 모델과 다른 모델로 파싱할 때 쓸 수 없다. 다른 모델은 `[*]` id와 충돌하는 id(`root_start`, `root_end`)이거나, mermaid가 버리는 줄이나 code다(설명 줄의 `state`, 설명 줄과 초기 줄의 `acctitle`·`accdescr`). 머신 단어는 mermaid의 stateDiagram이 frontmatter title을 읽지 않으므로 frontmatter의 YAML 규칙으로 검사한다. 이름은 변형하지 않고 거부한다.
+  - `E_KEY_RESERVED`: `docs/spec/fsm.md`의 고정 목록 하나이며 kind·store와 무관하게 모든 정의에 적용한다. (1) 머신 key(`_`를 지우고 비교): `fsm`(공용 모듈), `index`(npm `index.js`), `lib`·`main`(rust `src/lib.rs`·`src/main.rs`, go `package main`), `internal`(go internal package는 `tests/`에서 import할 수 없음), `init`(go는 `init`라는 이름으로 package를 import하지 못함), `testdata`·`vendor`(go `./...`가 건너뜀), go 사전 선언 식별자(`error`, `string`, `int`, `len`, `nil` 등. 그 이름의 package를 import하면 이를 가린다), 그리고 go·rust(고정 edition)·python·js의 keyword(이 네 언어에서는 머신 key가 그대로 모듈 이름이다). (2) pascal 형태가 enum 멤버로 거부되는 상태·이벤트 key: `self`(rust `Self`), `class`(php `Class`). (3) Mermaid 예약어(store와 무관하게 항상 적용): 상태 key `note, class, classdef, style, click, href, default, state, statediagram, scale, acctitle, accdescr, root_start, root_end`; 머신 key `null, true, false`(고정한 mermaid 버전 12.1.0 기준). S-16 테스트(`packages/fsm-gui/tests/mermaid-parse.test.mjs`)는 상태 key를 여섯 위치(label 줄 앞의 설명 줄, 초기 줄, edge의 출발, edge의 도착, 최종 줄, 첫 상태의 label 줄)에서 검사한다. 단어는 그 위치에서 mermaid가 다이어그램을 파싱하지 못하거나, 쓴 모델과 다른 모델로 파싱할 때 쓸 수 없다. 다른 모델은 `[*]` id와 충돌하는 id(`root_start`, `root_end`)이거나, mermaid가 버리는 줄이나 code다(설명 줄의 `state`, 설명 줄과 초기 줄의 `acctitle`·`accdescr`). S-38에서 label 줄을 넣고 다시 잰 결과(mermaid 12.1.0, B-1의 정규형)도 목록을 바꾸지 않는다. 위 14개 단어는 여섯 위치 모두에서 쓸 수 없고, 테스트가 고른 일반 단어는 그 위치에서 그대로 파싱된다. label 줄만으로도 14개 단어 각각이 id와 description으로 남는다(다른 줄이 그 단어를 쓰지 않는 `state "note" as note`는 id `note`와 description `note`를 준다). 그러므로 label 줄은 예약어를 더하지 않는다. 머신 단어는 mermaid의 stateDiagram이 frontmatter title을 읽지 않으므로 frontmatter의 YAML 규칙으로 검사한다. 이름은 변형하지 않고 거부한다.
 - code·lock
   - `E_DUPLICATE_CODE`, `E_CODE_RANGE`, `E_UNKNOWN_STATE_REF`, `E_LOCK_MISMATCH`, `E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`, `E_LOCK_REGRESSED`
 - store

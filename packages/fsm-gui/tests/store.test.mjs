@@ -20,7 +20,7 @@ test('the json store named by fsm.config.json is selected for a project without 
 test('the mermaid store named by fsm.config.json is read from the project', async () => {
   const root = tempProject({
     'fsm.config.json': '{"store":"mermaid"}\n',
-    'machines/order.fsm.mmd': '---\ntitle: order\n---\nstateDiagram-v2\n    draft : 1\n    [*] --> draft\n    draft --> [*]\n',
+    'machines/order.fsm.mmd': '---\ntitle: order\n---\nstateDiagram-v2\n    state "draft" as draft\n    draft : 1\n    [*] --> draft\n    draft --> [*]\n',
     'fsm.lock.json': '{\n  "order": {\n    "codes": {\n      "1": "draft"\n    },\n    "reserved": []\n  }\n}\n',
   });
   const opened = await openStore(root, {});

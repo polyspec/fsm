@@ -86,7 +86,9 @@ export const ORDER_MMD_TEXT = `---
 title: order
 ---
 stateDiagram-v2
+    state "draft" as draft
     draft : 1
+    state "done" as done
     done : 2
     [*] --> draft
     draft --> done : next
@@ -98,6 +100,7 @@ export const TRACK_MMD_TEXT = `---
 title: track
 ---
 stateDiagram-v2
+    state "only" as only
     only : 1
     [*] --> only
     only --> [*]
@@ -108,10 +111,15 @@ export const SPEC_ORDER_MMD_TEXT = `---
 title: order
 ---
 stateDiagram-v2
+    state "draft" as draft
     draft : 1
+    state "paid" as paid
     paid : 2
+    state "shipped" as shipped
     shipped : 3
+    state "done" as done
     done : 4
+    state "canceled" as canceled
     canceled : 5
     [*] --> draft
     draft --> paid : next

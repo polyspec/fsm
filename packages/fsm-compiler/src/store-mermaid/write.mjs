@@ -1,4 +1,4 @@
-// The canonical Mermaid text of a machine (docs/spec/fsm.md, B-1): the frontmatter, one state line per state in state order,
+// The canonical Mermaid text of a machine (docs/spec/fsm.md, B-1): the frontmatter, a label line and a description line per state in state order (B-1, S-38),
 // the initial line, the edges event by event (edge order within an event), and one final line per final state in state order,
 // with 4 spaces of indentation and a final line break. mermaidText refuses a definition that this form cannot carry: it throws
 // before anything is written. It does not check the rules of B-5; the core does before every save.
@@ -37,7 +37,7 @@ export function mermaidText(definition) {
     }
   }
   const lines = ['---', `title: ${machine}`, '---', 'stateDiagram-v2'];
-  for (const state of states) lines.push(`    ${state.key} : ${state.code}`);
+  for (const state of states) lines.push(`    state "${state.key}" as ${state.key}`, `    ${state.key} : ${state.code}`);
   lines.push(`    [*] --> ${initials[0].key}`);
   for (const event of events) {
     for (const edge of event.edges) lines.push(`    ${edge.from} --> ${edge.to} : ${event.key}`);

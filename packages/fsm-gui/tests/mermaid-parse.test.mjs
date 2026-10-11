@@ -47,7 +47,7 @@ async function parsedModel(text) {
  * ends, and the transitions in the labels they were written with. A `[*]` end is the id root_start or root_end in Mermaid.
  */
 function writtenModel({ states, initial, edges }) {
-  const described = states.map(([key, code]) => [key, [String(code)]]);
+  const described = states.map(([key, code]) => [key, [key, String(code)]]);
   const relations = [['root_start', initial, '']];
   for (const [from, to, label] of edges) {
     relations.push([from === '[*]' ? 'root_start' : from, to === '[*]' ? 'root_end' : to, label]);
@@ -62,15 +62,15 @@ function writtenModel({ states, initial, edges }) {
 /** The canonical text (docs/spec/fsm.md, B-1) of a written diagram, with the line order of mermaidText. */
 function textOf({ states, initial, edges }) {
   const lines = ['---', 'title: order', '---', 'stateDiagram-v2'];
-  for (const [key, code] of states) lines.push(`    ${key} : ${code}`);
+  for (const [key, code] of states) lines.push(`    state "${key}" as ${key}`, `    ${key} : ${code}`);
   lines.push(`    [*] --> ${initial}`);
   for (const [from, to, label] of edges) lines.push(`    ${from} --> ${to}${label === '' ? '' : ` : ${label}`}`);
   return `${lines.join('\n')}\n`;
 }
 
 /**
- * The five positions of a state key (B-5): a description line, the initial line, an edge as the source, an edge as the target,
- * and the final line. Every other key of the diagram is an ordinary key, so the word is the only key that Mermaid may refuse.
+ * The six positions of a state key (B-5): a state declared first (its label line and description line), a description line,
+ * the initial line, an edge as the source, an edge as the target, and the final line. Every other key of the diagram is an ordinary key, so the word is the only key that Mermaid may refuse.
  */
 const POSITIONS = {
   description: word => ({
@@ -92,6 +92,11 @@ const POSITIONS = {
     states: [['draft', 1], [word, 2], ['done', 3]],
     initial: 'draft',
     edges: [['draft', word, 'next'], ['done', '[*]', '']],
+  }),
+  label: word => ({
+    states: [[word, 1], ['draft', 2], ['done', 3]],
+    initial: 'draft',
+    edges: [['draft', 'done', 'next'], ['done', '[*]', '']],
   }),
   final: word => ({
     states: [['draft', 1], [word, 2]],
@@ -124,13 +129,13 @@ test('the canonical order example parses with the pinned mermaid, and the diagra
   const model = await parsedModel(ORDER_MERMAID_TEXT);
   assert.equal(model.diagramType, 'stateDiagram');
   assert.deepEqual(model.states, [
-    ['canceled', ['5']],
-    ['done', ['4']],
-    ['draft', ['1']],
-    ['paid', ['2']],
+    ['canceled', ['canceled', '5']],
+    ['done', ['done', '4']],
+    ['draft', ['draft', '1']],
+    ['paid', ['paid', '2']],
     ['root_end', []],
     ['root_start', []],
-    ['shipped', ['3']],
+    ['shipped', ['shipped', '3']],
   ]);
   assert.deepEqual(model.relations, [
     ['canceled', 'root_end', ''],

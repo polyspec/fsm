@@ -99,7 +99,7 @@ test('a mermaid line outside the canonical form exits 1 with E_MERMAID_UNSUPPORT
   const root = project({ 'fsm.config.json': MERMAID_CONFIG, 'machines/order.fsm.mmd': ORDER_MMD_TEXT.replace('    done : 2', '    done : 02') });
   const result = gen(['check', '--project', root]);
   assert.equal(result.status, 1);
-  assert.equal(result.stderr.startsWith('[fsm-gen] E_MERMAID_UNSUPPORTED order $: line 6 '), true, result.stderr);
+  assert.equal(result.stderr.startsWith('[fsm-gen] E_MERMAID_UNSUPPORTED order $: line 8 '), true, result.stderr);
 });
 
 test('lock writes the lock of the definitions, and check then passes', () => {

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 89ace87d86fe25bc921d7b8fd4c8d238ddec6cf8aff31916eed3bb460146614f -->
+<!-- source-sha256: 8ef4e49f7a401a35cf36ac61d58b218e4d777d94bba4536647332bd10f76c9e5 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-38: Mermaid 다이어그램이 모든 상태를 이름으로 보인다(명세 B-1, B-5). 고정한 mermaid 12.1.0에서 `draft : 1`은 code만 그려서 GUI와 모든 Mermaid viewer가 1..n만 보이고 key가 없었다. 이제 각 상태는 label 줄 `state "draft" as draft`와 `draft : 1`이다. 다이어그램은 key를 상자의 제목으로, code를 description으로 보인다. reader는 key와 다른 label을 `E_MERMAID_UNSUPPORTED`로 거부한다. 다른 형식 네 가지(description 반복, label 안의 code, description 하나에 key와 code, 이전 형식)를 검토해 B-1에서 기각했다. B-5의 예약 단어는 label 줄을 넣고 다시 쟀고 목록은 바뀌지 않는다. `packages/fsm-gui/tests/browser/diagram.test.mjs`는 모든 상태 key와 code가 그려진 label인지 확인한다(이전에는 실패했다). mermaid store, 정규 텍스트, GUI 고정 데이터, README와 명세의 모든 Mermaid 예제를 따른다.
 - S-20-1: 문서 사이트 빌드가 경고 없이 끝난다. `vue` alias가 CommonJS 감싸기인 `vue/index.mjs`를 가리켜 빌드가 `Circular chunk: framework -> theme -> framework`를 출력했다. alias는 이제 vue의 `import` 진입점 `dist/vue.runtime.esm-bundler.js`를 가리킨다. vite override와 vitepress는 근거와 함께 배제했고, 계획 C-8에 기록했다. `docs-build-test`는 빌드 출력의 경고 줄이 하나라도 있으면 실패한다.
 - S-35: 계획과 계약이 저장소와 맞는다(감사 17, 18, 19, 21). 계획 D 표는 상태를 담지 않고 체크리스트를 가리킨다. C-1 트리에 `src/store-lock`, 이름 검사기, docs-build와 install-python 테스트, 문서 사이트 파일을 넣었다. `contracts/layout.json`은 npm의 `tests/types.test.mjs`와 `tests/types/**`를 이유와 함께 `differences`에 선언하고, check-layout은 어떤 선언도 없는 kind의 테스트 파일을 거부한다(`tests/check-layout/`의 RED 테스트). S-11-3에는 반복 가능한 테스트 `make install-python-test`가 생겼다. 임시 checkout에서 stub uv로 타깃을 돌리고, `--no-bin`이 없는 레시피는 링크를 쓴다는 것을 보인다. `kit-test`를 `CHECK_TARGETS`에 넣었다.
 - S-32: 컴파일러의 import를 명시하고 테스트한다(계획 C-5). `packages/fsm-compiler/src`는 `node:` 내장 모듈, 자기 파일, 이 clone의 벤더 kit(`scripts/kit/`)만 import하고 npm 패키지는 import하지 않는다. 계획은 의존성 0이라 했지만 kit import와 모순이었다. `tests/imports.test.mjs`가 `src`의 모든 import specifier(정적, 동적, 상대 경로)를 검사하고 그 집합 밖이면 실패한다. `src/core`는 `node:` 모듈을 import하지 않는다(감사 5).
