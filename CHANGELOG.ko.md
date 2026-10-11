@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6f95c9d40cba850fce21bfbf7609fa14fa8e142971878f780b39d3c26e068478 -->
+<!-- source-sha256: 9ced4f6901bc8d380be992a18b36de420a776ce56f5ecb756a5042e3630e17f0 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-23: rust 백엔드가 이벤트가 없는 머신을 컴파일한다. variant가 없는 enum은 표현을 가질 수 없으므로(rustc E0084), 그런 머신의 `Event`는 `#[repr(i32)]` 없는 `pub enum Event {}`다(명세 B-6). 백엔드 테스트가 그 머신의 생성 파일을 cargo로 빌드한다.
 - S-22-3: 브라우저 테스트는 `networkidle`이 아니라 연결된 폼을 기다린다. client는 `connectForm`과 구독이 자리 잡으면 form host `#fsm-form`에 `data-fsm-connected="true"`를 설정하고, 연결이 끊기면 제거한다. layout은 표시가 설정되기 전까지 행 버튼이 클릭을 받지 못하게 한다. 첫 실행 실패는 묶기 전 클릭이 아니라 새로 받은 Chromium의 첫 탐색으로, 5초 케이스 제한에 대해 2.5~12.4초였다(새 다운로드 네 번 측정, plan C-7). setup이 이제 자기 제한으로 편집 페이지를 한 번 연다.
 - S-30-1: README가 S-30의 lock 기준선을 밝힌다(명세 B-3). 루트 README는 규칙을 `fsm-gen lock`의 실제 출력(맞바꾸고 지운 lock의 `E_LOCK_REGRESSED`), json과 mermaid의 git HEAD 기준선, git 밖의 한계, 커밋이 없어 `E_LOCK_REGRESSED`가 생기지 않는 db store와 함께 준다. fsm-db README의 table과 lock 절, fsm-gui의 저장·이름 바꾸기·삭제 규칙이 같은 내용을 말한다.
 - S-38: Mermaid 다이어그램이 모든 상태를 이름으로 보인다(명세 B-1, B-5). 고정한 mermaid 12.1.0에서 `draft : 1`은 code만 그려서 GUI와 모든 Mermaid viewer가 1..n만 보이고 key가 없었다. 이제 각 상태는 label 줄 `state "draft" as draft`와 `draft : 1`이다. 다이어그램은 key를 상자의 제목으로, code를 description으로 보인다. reader는 key와 다른 label을 `E_MERMAID_UNSUPPORTED`로 거부한다. 다른 형식 네 가지(description 반복, label 안의 code, description 하나에 key와 code, 이전 형식)를 검토해 B-1에서 기각했다. B-5의 예약 단어는 label 줄을 넣고 다시 쟀고 목록은 바뀌지 않는다. `packages/fsm-gui/tests/browser/diagram.test.mjs`는 모든 상태 key와 code가 그려진 label인지 확인한다(이전에는 실패했다). mermaid store, 정규 텍스트, GUI 고정 데이터, README와 명세의 모든 Mermaid 예제를 따른다.

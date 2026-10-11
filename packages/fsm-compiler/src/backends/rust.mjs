@@ -103,7 +103,8 @@ function machineRs(ir, lock) {
     '}',
     '',
     `/// The events of ${machine}: the value of each member is its position in the declaration, from 1.`,
-    '#[repr(i32)]',
+    // A zero-variant enum takes no representation (rustc E0084), so a machine without events has none.
+    ...(events.length === 0 ? [] : ['#[repr(i32)]']),
     '#[derive(Debug, Clone, Copy, PartialEq, Eq)]',
     'pub enum Event {',
     ...events.map((event, index) => `    ${pascal(event.key)} = ${index + 1},`),

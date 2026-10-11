@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: dc4f9353da9004c7a69a4c7f2ede6e88a20006c07ee5e0c5b64b7456314c555d -->
+<!-- source-sha256: f4d1399a422875787527a206e7fe589700223b290176f9c090ca89cac9887254 -->
 # fsm 정의
 
 [English](fsm.md)
@@ -235,6 +235,7 @@ stateDiagram-v2
   - npm: `Object.freeze({Draft: 1})` + `.d.ts` 유니온
   - python: `IntEnum`
   - php: `enum State: int`
+  - 이벤트가 없는 머신의 `Event`는 표현을 갖지 않는다. rust는 빈 enum `pub enum Event {}`에서 `#[repr(i32)]`를 생략한다. rustc가 variant가 없는 enum의 표현을 거부하기 때문이다(E0084). 이벤트가 있는 머신은 `#[repr(i32)]`를 유지한다.
 - `Step`의 필드는 `to: State`, `changed: bool`이다(variant 이름 없음). `Event` 값은 선언 순서 1부터의 번호다(이벤트는 저장되지 않음). 오류 코드 상수는 B-4·B-5·B-6 코드에서 `E_`를 뗀 이름을 각 언어 상수 표기로 쓴다(go `CodeConflict`, rust `Code::Conflict`, npm/php `Code.Conflict`/`Code::Conflict`, python `Code.CONFLICT`).
 - 함수 시그니처는 모든 언어에서 같은 순서다: `apply(expected: State, event: Event, actual: State) → Step`, `target(expected: State, event: Event) → State`.
 - php는 enum을 PSR-4(`Order/State.php`…)로, 함수는 `Order/functions.php`를 composer `autoload.files`로 싣는다. php-ext는 같은 namespace의 enum과 함수를 C로 등록한다.
