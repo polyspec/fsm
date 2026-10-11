@@ -1,4 +1,5 @@
 // The command line of the DB store (docs/plans/fsm-v1.md, C-6; docs/spec/fsm.md, B-2):
+//   fsm-db install [--project <dir>]
 //   fsm-db check [--project <dir>]
 //   fsm-db lock  [--project <dir>] [--rename machine.old=new]...
 //   fsm-db copy  --to json|mermaid   --root <dir> [--project <dir>]   (the database is the source)
@@ -6,9 +7,13 @@
 // --project is the project root, whose fsm.config.json must name the db store:
 //   {"store":"db","dsnEnv":"FSM_DSN"}
 // The DSN is the value of the environment variable that dsnEnv names; it is never read from anywhere else. The database
-// schema is the one of schema/fsm.dbs, installed by the operator (the CLI does not install it). A finding prints as
+// schema is the one of schema/fsm.dbs. `install` creates it through orm (`utils().schema().install`): on a database
+// without the tables it creates them; on a database that already has all of them it changes nothing and exits 0; on a
+// database that has only some of them orm rejects it with CONFIG, which is printed with its stack and exits 1 (verified by
+// the install cases of tests/cli.test.mjs with orm v0.0.7). A finding prints as
 // `[fsm-db] <code> <machine> <path>: <message>` on stderr and exits 1. A usage error exits 2. Otherwise the command exits 0
-// with a one-line summary on stdout. An unexpected rejection (for example a missing table) is printed with its stack and exits 1.
+// with a one-line summary on stdout (`[fsm-db] install: ok` for install). An unexpected rejection (for example a missing
+// table, or the CONFIG of a partial install) is printed with its stack and exits 1.
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -16,9 +21,10 @@ import { copy, run } from '../../../fsm-compiler/src/core/run.mjs';
 import { jsonStore } from '../../../fsm-compiler/src/store-json/store.mjs';
 import { mermaidStore } from '../../../fsm-compiler/src/store-mermaid/store.mjs';
 import { dbStore } from '../db-store.mjs';
-import { connect } from '../models/models.ts';
+import { SCHEMA, connect } from '../models/models.ts';
 
 const USAGE = 'usage: fsm-db check [--project <dir>]\n'
+  + '       fsm-db install [--project <dir>]\n'
   + '       fsm-db lock [--project <dir>] [--rename machine.old=new]...\n'
   + '       fsm-db copy --to json|mermaid --root <dir> [--project <dir>]\n'
   + '       fsm-db copy --from json|mermaid --root <dir> [--project <dir>]';
@@ -30,8 +36,8 @@ const isObject = value => typeof value === 'object' && value !== null && !Array.
 /** The options of the arguments, or { usage } with the reason when they are not a valid command line. */
 function parse(argv) {
   const [command, ...rest] = argv;
-  if (!['check', 'lock', 'copy'].includes(command)) return { usage: `unknown command ${command ?? '(none)'}` };
-  const allowed = { check: ['--project'], lock: ['--project', '--rename'], copy: ['--project', '--root', '--to', '--from'] }[command];
+  if (!['install', 'check', 'lock', 'copy'].includes(command)) return { usage: `unknown command ${command ?? '(none)'}` };
+  const allowed = { install: ['--project'], check: ['--project'], lock: ['--project', '--rename'], copy: ['--project', '--root', '--to', '--from'] }[command];
   const options = {
     command, project: process.cwd(), renames: [], to: undefined, from: undefined, root: undefined,
   };
@@ -97,6 +103,10 @@ async function execute({
   if (!configured.ok) return configured.findings;
   const db = await connect(configured.dsn);
   try {
+    if (command === 'install') {
+      await db.utils().schema().install(SCHEMA);
+      return [];
+    }
     const store = dbStore(db);
     if (command === 'copy' && to !== undefined) return (await copy(store, fileStore(to, root))).findings;
     if (command === 'copy') return (await copy(fileStore(from, root), store)).findings;

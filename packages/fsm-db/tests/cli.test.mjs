@@ -3,6 +3,7 @@
 // its own temporary project and database, removed when the file's tests end.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { DatabaseSync } from 'node:sqlite';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -124,4 +125,47 @@ test('a database without the schema is an unexpected rejection: printed with its
   assert.equal(result.status, 1);
   assert.match(result.stderr, /^\[fsm-db\] OrmError: DRIVER: sqlite: no such table: machine\n/);
   assert.match(result.stderr, /\n\s+at /);
+});
+
+test('install creates the schema of a new database: check fails before it, install prints ok, check then passes', async () => {
+  const p = await project({ install: false });
+  const before = cli(['check'], p);
+  assert.equal(before.status, 1);
+  assert.match(before.stderr, /no such table: machine/);
+  const installed = cli(['install'], p);
+  assert.equal(installed.status, 0);
+  assert.equal(installed.stdout, '[fsm-db] install: ok\n');
+  assert.equal(installed.stderr, '');
+  assert.equal(cli(['check'], p).status, 0);
+});
+
+test('a second install on a database with the schema exits 0 (the observed orm behaviour: nothing is changed)', async () => {
+  const p = await project();
+  const again = cli(['install'], p);
+  assert.equal(again.status, 0);
+  assert.equal(again.stdout, '[fsm-db] install: ok\n');
+  assert.equal(cli(['check'], p).status, 0);
+});
+
+test('install on a database with only some of the tables is rejected by orm: CONFIG, printed with its stack and exit 1', async () => {
+  const p = await project({ install: false });
+  assert.equal(cli(['install'], p).status, 0);
+  const raw = new DatabaseSync(p.dsn.replace('sqlite://', ''));
+  raw.exec('drop table edge');
+  raw.close();
+  const result = cli(['install'], p);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /^\[fsm-db\] OrmError: CONFIG: install found only some tables of the document set/);
+  assert.match(result.stderr, /\n\s+at /);
+});
+
+test('install takes only --project: any other option or a missing value exits 2 with the usage lines', async () => {
+  const p = await project({ install: false });
+  const extra = cli(['install', '--rename', 'order.a=b'], p);
+  assert.equal(extra.status, 2);
+  assert.match(extra.stderr, /--rename is not an option of install/);
+  assert.match(extra.stderr, /fsm-db install \[--project <dir>\]/);
+  const missing = cli(['install', '--project'], p);
+  assert.equal(missing.status, 2);
+  assert.match(missing.stderr, /--project needs a value/);
 });

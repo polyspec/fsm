@@ -259,10 +259,11 @@ Vectors (exhaustive; the core generates the oracle):
     - `lock_reserved(machine, code i32)`: PK(machine,code)
     - No FK to machine, because the lock of a machine removed from the definitions must remain.
 - `DbStore` implements the store contract. `save` replaces everything inside one transaction. Validation is finished by core `run` before the store is called.
-- The `fsm-db` CLI runs core `run` and `copy` with DbStore and the json/mermaid stores.
+- The `fsm-db` CLI runs core `run` and `copy` with DbStore and the json/mermaid stores. `install` installs `schema/fsm.dbs` through orm `utils().schema().install` (S-15-1). The commands and their behaviour are in `docs/spec/fsm.md` (B-2) and `packages/fsm-db/README.md`.
 - Tests (SQLite)
   - store contract (round trip and byte-identical results)
   - `E_STORE_NOT_EMPTY`
+  - CLI run as processes: `install` on a new database (`check` fails before it with no table and passes after it), a second `install`, a partial `install` rejected by orm, and the usage of `install`
   - transaction atomicity RED
   - dialect differences are orm's own conformance responsibility
 
