@@ -27,9 +27,15 @@ function key(State $state): string
     };
 }
 
-/** The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value. */
-function fromCode(int $value): State
+/**
+ * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that is not an
+ * int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same result.
+ */
+function fromCode(mixed $value): State
 {
+    if (!is_int($value)) {
+        throw new Error(Code::UnknownCode, 'standby: a value of type ' . get_debug_type($value) . ' is not a state of standby');
+    }
     return match ($value) {
         1 => State::Ready,
         default => throw new Error(Code::UnknownCode, 'standby: ' . $value . ' is not a state of standby'),

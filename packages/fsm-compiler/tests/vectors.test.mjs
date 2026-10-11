@@ -59,10 +59,10 @@ test('a two-state machine has no conflict case, because a third state does not e
   ]);
 });
 
-test('the order example has 102 cases, the first is order_initial and the last order_persist_conflict', () => {
+test('the order example has 106 cases, the first is order_initial and the last order_persist_conflict', () => {
   const result = generate(order());
   assert.equal(result.machine, 'order');
-  assert.equal(result.cases.length, 102);
+  assert.equal(result.cases.length, 106);
   assert.equal(result.cases[0].id, 'order_initial');
   assert.equal(result.cases.at(-1).id, 'order_persist_conflict');
 });
@@ -71,7 +71,7 @@ test('the order example has these cases per feature', () => {
   const counts = {};
   for (const entry of generate(order()).cases) counts[entry.feature] = (counts[entry.feature] ?? 0) + 1;
   assert.deepEqual(counts, {
-    initial: 1, code: 7, key: 7, from_code: 10, is_final: 7, events_from: 5, target: 15, apply: 47, persist: 3,
+    initial: 1, code: 7, key: 7, from_code: 14, is_final: 7, events_from: 5, target: 15, apply: 47, persist: 3,
   });
 });
 
@@ -82,9 +82,10 @@ test('the cases of a state follow the declaration order: code, key, from_code, i
   ]);
   assert.deepEqual(list.slice(26, 29), ['order_from_code_zero', 'order_from_code_unknown', 'order_from_code_negative']);
   assert.equal(list.indexOf('order_from_code_int64_max'), 30);
-  assert.equal(list.indexOf('order_code_v0'), 31);
-  assert.equal(list.indexOf('order_target_s0_e0'), 41);
-  assert.equal(list.indexOf('order_apply_s0_e0_s0'), 56);
+  assert.equal(list.indexOf('order_from_code_string'), 31);
+  assert.equal(list.indexOf('order_code_v0'), 35);
+  assert.equal(list.indexOf('order_target_s0_e0'), 45);
+  assert.equal(list.indexOf('order_apply_s0_e0_s0'), 60);
 });
 
 test('an id is built from indexes: a state is s<i> and an event e<j>, both 0-based, a reserved code r<code>', () => {
@@ -140,10 +141,30 @@ test('from_code: a negative code, 2^31 and the 64-bit maximum are E_UNKNOWN_CODE
   });
 });
 
-test('every from_code input is a decimal string, so that no value of the 64-bit range is rounded', () => {
+test('every from_code input is a decimal string unless it names its type, so that no value of the 64-bit range is rounded', () => {
   for (const entry of generate(order()).cases.filter(item => item.feature === 'from_code')) {
-    assert.match(entry.input, /^-?[0-9]+$/, entry.id);
+    if (entry.input_type === undefined) assert.match(entry.input, /^-?[0-9]+$/, entry.id);
+    else assert.ok(['string', 'bool', 'float'].includes(entry.input_type), entry.id);
   }
+});
+
+test('from_code of a value that is not an int is E_UNKNOWN_CODE, given to the kinds whose language can hold that value (B-6)', () => {
+  const result = generate(order());
+  const expect = { error: 'E_UNKNOWN_CODE', ...NO_FIELDS };
+  const typed = ['php', 'php-ext', 'python'];
+  assert.deepEqual(find(result, 'order_from_code_string'), {
+    feature: 'from_code', id: 'order_from_code_string', input: '1', input_type: 'string', expect, kinds: typed,
+  });
+  assert.deepEqual(find(result, 'order_from_code_bool'), {
+    feature: 'from_code', id: 'order_from_code_bool', input: 'true', input_type: 'bool', expect, kinds: typed,
+  });
+  assert.deepEqual(find(result, 'order_from_code_float'), {
+    feature: 'from_code', id: 'order_from_code_float', input: '1.0', input_type: 'float', expect, kinds: typed,
+  });
+  assert.deepEqual(find(result, 'order_from_code_fraction'), {
+    feature: 'from_code', id: 'order_from_code_fraction', input: '1.5', input_type: 'float', expect,
+    kinds: [...typed, 'npm'],
+  });
 });
 
 test('an invalid state value (0 and the unknown code) is given to code, key, is_final and apply, for the kinds that admit it only', () => {
@@ -285,6 +306,10 @@ test('a one-state machine that is initial and final, with no event, gives the st
     'track_from_code_negative',
     'track_from_code_int32_overflow',
     'track_from_code_int64_max',
+    'track_from_code_string',
+    'track_from_code_bool',
+    'track_from_code_float',
+    'track_from_code_fraction',
     'track_code_v0',
     'track_is_final_v0',
     'track_key_v0',

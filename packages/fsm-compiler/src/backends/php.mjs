@@ -12,7 +12,9 @@
 // string code, so the code is read with getCode(); its fields `expected`, `actual` and `event` are ints (the state codes and the
 // event index), because one shared class cannot type the enums of every machine. `Code` and `Error` are separate files, since
 // composer's PSR-4 loads one class per file. A PHP enum is closed, so a state argument that is no state is a TypeError of the
-// call, and no E_UNKNOWN_CODE is raised for it; only from_code takes a raw integer.
+// call, and no E_UNKNOWN_CODE is raised for it. Only from_code takes a raw value: it is declared `mixed` and checked with is_int,
+// because the strict_types of the generated file does not reach the calls of a caller without it (a coercion would give the
+// state of "2" or 2.0, and true would give the state of 1). A value that is not an int is E_UNKNOWN_CODE in every caller.
 
 import { forKind } from '../core/vectors.mjs';
 
@@ -122,9 +124,15 @@ function functionsFile(ir, ns, phpNamespace, reservedCodes) {
     '    };',
     '}',
     '',
-    '/** The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value. */',
-    'function fromCode(int $value): State',
+    '/**',
+    ' * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that is not an',
+    ' * int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same result.',
+    ' */',
+    'function fromCode(mixed $value): State',
     '{',
+    '    if (!is_int($value)) {',
+    `        throw new Error(Code::UnknownCode, ${literal(`${machine}: a value of type `)} . get_debug_type($value) . ${literal(` is not a state of ${machine}`)});`,
+    '    }',
     '    return match ($value) {',
     ...states.map(state => `        ${state.code} => ${stateOf(state.key)},`),
     ...reserved.map(code => `        ${code} => throw new Error(Code::ReservedCode, ${literal(`${machine}: code ${code} is reserved and is no state of ${machine}`)}),`),
@@ -228,12 +236,25 @@ function errorFile(ns) {
   ]);
 }
 
-/** A PHP literal of a vector value (null, bool, int, string, list or map) at nesting `depth`, with four spaces per level. */
 /** The PHP int literal of a decimal string of the oracle; a value that is no decimal string is an Error. */
 function integerOf(item) {
   if (typeof item !== 'string' || !/^-?[0-9]+$/.test(item)) throw new Error(`php: the input ${JSON.stringify(item)} is not a decimal string`);
   return item;
 }
+
+/**
+ * The PHP literal of a typed input of the oracle (input_type: string, bool or float; docs/spec/fsm.md, B-6). An input without a
+ * type is a decimal string written as an int (integerOf).
+ */
+function inputOf(text, type) {
+  if (type === undefined) return integerOf(text);
+  if (type === 'string') return literal(text);
+  if (type === 'bool' && (text === 'true' || text === 'false')) return text;
+  if (type === 'float' && /^-?[0-9]+\.[0-9]+$/.test(text)) return text;
+  throw new Error(`php: the input ${JSON.stringify(text)} of type ${JSON.stringify(type)} is not a string, bool or float literal`);
+}
+
+/** A PHP literal of a vector value (null, bool, int, string, list or map) at nesting `depth`, with four spaces per level. */
 
 function value(item, depth) {
   const pad = '    '.repeat(depth);
@@ -244,10 +265,11 @@ function value(item, depth) {
     return String(item);
   }
   if (typeof item === 'string') return literal(item);
-  const entries = Array.isArray(item) ? item.map(entry => [undefined, entry]) : Object.entries(item);
+  // The input_type of a case is read by its input and is not written (docs/spec/fsm.md, B-6).
+  const entries = Array.isArray(item) ? item.map(entry => [undefined, entry]) : Object.entries(item).filter(([key]) => key !== 'input_type');
   if (entries.length === 0) return '[]';
   // An input is a decimal string of the oracle, written as the PHP int it names: the 64-bit range stays exact (docs/spec/fsm.md, B-6).
-  const rendered = (key, entry) => (key === 'input' ? integerOf(entry) : value(entry, depth + 1));
+  const rendered = (key, entry) => (key === 'input' ? inputOf(entry, item.input_type) : value(entry, depth + 1));
   const cell = ([key, entry]) => `${pad}    ${key === undefined ? '' : `${literal(key)} => `}${rendered(key, entry)},`;
   return ['[', ...entries.map(cell), `${pad}]`].join('\n');
 }

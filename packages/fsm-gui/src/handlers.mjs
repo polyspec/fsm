@@ -11,7 +11,7 @@ import { parse as parseYaml } from 'yaml';
 import { run } from '../../fsm-compiler/src/core/run.mjs';
 import { mermaidText } from '../../fsm-compiler/src/store-mermaid/write.mjs';
 import {
-  completeData, editData, editState, formErrorsOf, newErrorsOf, nextCodeOf, renameData, renameErrorsOf, renderEdit, renderNew,
+  completeData, editData, editState, formErrorsOf, newErrorsOf, nextCodeErrors, nextCodeOf, renameData, renameErrorsOf, renderEdit, renderNew,
   renderRename, suggestCodes,
 } from './forms.mjs';
 import {
@@ -76,10 +76,12 @@ export const handlers = {
         const definition = definitions.find(item => item.machine === machine);
         if (definition === undefined) throw new NotFound();
         const data = editData(definition);
+        const next = nextCodeOf(machine, definitions, lock);
+        const formErrors = nextCodeErrors(next);
         return {
           machine,
-          form: renderEdit(machine, data, { csrf: request.csrfToken() }),
-          state: editState(machine, data, nextCodeOf(machine, definitions, lock), { csrf: request.csrfToken() }),
+          form: renderEdit(machine, data, { csrf: request.csrfToken(), formErrors }),
+          state: editState(machine, data, next, { csrf: request.csrfToken(), formErrors }),
           hasFindings: findings.length > 0,
           findings: findings.map(view),
         };
@@ -103,11 +105,13 @@ export const handlers = {
         suggested.definition.states.forEach((state, index) => {
           if (state.code !== undefined) shown.states[rows.states[index].rk].code = String(state.code);
         });
-        const { errors, formErrors } = formErrorsOf(saved.findings, rows);
+        const { errors, formErrors: savedErrors } = formErrorsOf(saved.findings, rows);
+        const next = nextCodeOf(machine, loaded.definitions, loaded.lock);
+        const formErrors = [...savedErrors, ...nextCodeErrors(next)];
         return Result.invalid({
           machine,
           form: renderEdit(machine, shown, { csrf: request.csrfToken(), errors, formErrors }),
-          state: editState(machine, shown, nextCodeOf(machine, loaded.definitions, loaded.lock), { csrf: request.csrfToken(), errors, formErrors }),
+          state: editState(machine, shown, next, { csrf: request.csrfToken(), errors, formErrors }),
           hasFindings: true,
           findings: saved.findings.map(view),
         });

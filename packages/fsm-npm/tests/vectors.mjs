@@ -168,6 +168,17 @@ export const vectors = [
         }
       },
       {
+        "feature": "from_code",
+        "id": "in_review_from_code_fraction",
+        "input": 1.5,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
         "feature": "code",
         "id": "in_review_code_v0",
         "value": 0,
@@ -740,6 +751,17 @@ export const vectors = [
         }
       },
       {
+        "feature": "from_code",
+        "id": "limits_from_code_fraction",
+        "input": 1.5,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
         "feature": "code",
         "id": "limits_code_v0",
         "value": 0,
@@ -1167,6 +1189,17 @@ export const vectors = [
         "feature": "from_code",
         "id": "order_from_code_int64_max",
         "input": 9223372036854776000,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "order_from_code_fraction",
+        "input": 1.5,
         "expect": {
           "error": "E_UNKNOWN_CODE",
           "expected": null,
@@ -2121,6 +2154,17 @@ export const vectors = [
         }
       },
       {
+        "feature": "from_code",
+        "id": "standby_from_code_fraction",
+        "input": 1.5,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
         "feature": "code",
         "id": "standby_code_v0",
         "value": 0,
@@ -2369,6 +2413,17 @@ export const vectors = [
         "feature": "from_code",
         "id": "ticket_from_code_int64_max",
         "input": 9223372036854776000,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "ticket_from_code_fraction",
+        "input": 1.5,
         "expect": {
           "error": "E_UNKNOWN_CODE",
           "expected": null,

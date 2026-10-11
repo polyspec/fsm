@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 9b4e1b4b4a49c91e6731ff237df9554c75a65334a1193a22b984f145328d7834 -->
+<!-- source-sha256: f2fdf66578e4c80eb8e64b1d588e974cb60ad1a3edcfc3c9fcbb98ed1f6eb89e -->
 # fsm 정의
 
 [English](fsm.md)
@@ -236,13 +236,14 @@ stateDiagram-v2
   - python: `IntEnum`
   - php: `enum State: int`
   - 이벤트가 없는 머신의 `Event`는 표현을 갖지 않는다. rust는 빈 enum `pub enum Event {}`에서 `#[repr(i32)]`를 생략한다. rustc가 variant가 없는 enum의 표현을 거부하기 때문이다(E0084). 이벤트가 있는 머신은 `#[repr(i32)]`를 유지한다.
-- `Step`의 필드는 `to: State`, `changed: bool`이다(variant 이름 없음). `Event` 값은 선언 순서 1부터의 번호다(이벤트는 저장되지 않음). 오류 코드 상수는 B-4·B-5·B-6 코드에서 `E_`를 뗀 이름을 각 언어 상수 표기로 쓴다(go `CodeConflict`, rust `Code::Conflict`, npm/php `Code.Conflict`/`Code::Conflict`, python `Code.CONFLICT`).
+- `Step`의 필드는 `to: State`, `changed: bool`이다(variant 이름 없음). `Event` 값은 선언 순서 1부터의 번호다(이벤트는 저장되지 않음). 오류 코드 상수는 생성된 함수가 던지는 네 코드뿐이다: `E_CONFLICT`, `E_INVALID_TRANSITION`, `E_UNKNOWN_CODE`, `E_RESERVED_CODE`. 각각 `E_`를 뗀 이름을 언어의 상수 표기로 쓴다(go `CodeConflict`, rust `Code::Conflict`, npm/php `Code.Conflict`/`Code::Conflict`, python `Code.CONFLICT`). B-4에서 B-6까지의 나머지 코드(B-5의 finding, lock과 store의 코드)는 컴파일러와 store의 finding이며, 생성된 코드에는 상수가 없다.
 - 함수 시그니처는 모든 언어에서 같은 순서다: `apply(expected: State, event: Event, actual: State) → Step`, `target(expected: State, event: Event) → State`.
 - php는 enum을 PSR-4(`Order/State.php`…)로, 함수는 적재기 `functions.php`를 composer `autoload.files`로 싣고, 적재기가 모든 machine의 `Order/functions.php`를 require한다(PSR-4는 함수를 싣지 못하므로 composer는 적재기만 이름으로 든다). php-ext는 같은 namespace의 enum과 함수를 C로 등록하며, 모든 C 이름은 php namespace와 extension 이름에서 유도된다: include `php_<ext>.h`와 `<ext>_arginfo.h`, Error 클래스 심볼 `<namespace의 \를 _로 바꾼 것>_Fsm_Error`(`Acme\Tool`은 `Acme_Tool_Fsm_Error`).
 - 머신이 서로 다른 모듈에 들어가므로 머신 간 식별자 충돌은 생기지 않는다. 단 php namespace와 PSR-4 디렉터리는 대소문자를 구분하지 않으므로, `_`를 지웠을 때 같아지는 두 머신 key는 `E_DUPLICATE_KEY`로 거부한다. 남는 충돌은 생성 파일·package 이름, 언어 keyword, php의 대소문자 무시 이름이며, `E_KEY_RESERVED`와 `E_DUPLICATE_KEY`의 고정 목록으로 거부한다.
 - 오류는 `fsm.Error`로만 알리고 null을 반환하지 않는다.
-- 원시 정수를 받는 함수는 `from_code` 하나다.
-  - 인자는 언어의 64비트 부호 정수다(go `int64`, rust `i64`, php/python `int`. npm `number`는 double이므로 정수가 아니거나 안전 정수 범위 밖이면 `E_UNKNOWN_CODE`). 호출자는 DB 값을 좁히지 않고 그대로 넘긴다.
+- 원시 값을 받는 함수는 `from_code` 하나다.
+  - 인자는 언어의 64비트 부호 정수다(go `int64`, rust `i64`. npm `number`는 double이므로 정수가 아니거나 안전 정수 범위 밖이면 `E_UNKNOWN_CODE`. php는 `mixed`, python은 `int`로 선언한다. 아래 참고). 호출자는 DB 값을 좁히지 않고 그대로 넘긴다.
+  - php와 python은 호출자와 무관하게 정수가 아닌 값을 거부한다. 문자열, bool, float, null은 `E_UNKNOWN_CODE`이며 변환된 code가 되지 않는다. php는 `is_int`로 검사한다. 생성 파일의 `declare(strict_types=1)`은 그 선언을 하지 않은 호출자의 호출에 닿지 않고, 변환하면 `"2"`나 `2.0`은 2의 상태가, `true`는 1의 상태가 되기 때문이다. php 메시지는 값 대신 타입을 말한다(`a value of type string`). 배열은 출력할 수 없기 때문이다. python 메시지는 값을 말한다. vector는 정수가 아닌 입력(`input_type`: string, bool, float)을 그것을 담을 수 있는 kind(php, php-ext, python, 정수가 아닌 분수는 npm도)에만 준다. php-ext 확장은 정수를 읽기 전에 zval의 타입을 검사한다.
   - 0, 범위 밖, 미지 code는 `E_UNKNOWN_CODE`, 예약 code는 `E_RESERVED_CODE`.
 - 소비자 DB의 상태 컬럼은 dbspec `i32`로 둔다.
 - go/npm/python은 상태 타입에 임의 정수가 들어갈 수 있으므로, switch의 나머지 분기가 `E_UNKNOWN_CODE`를 던진다. rust와 php는 그런 값이 없으므로(상태가 enum이다), 잘못된 상태 값은 go, npm, python에만 준다(계획 C-4).

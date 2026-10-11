@@ -29,7 +29,7 @@ namespace Polyspec\FsmTest\Order {
     function initial(): State {}
     function code(State $state): int {}
     function key(State $state): string {}
-    function fromCode(int $value): State {}
+    function fromCode(mixed $value): State {}
     function isFinal(State $state): bool {}
     function eventsFrom(State $state): array {}
     function target(State $expected, Event $event): State {}

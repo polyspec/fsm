@@ -56,3 +56,24 @@ for (const kind of KINDS) {
     assert.equal(formStateOf(response.body).nextCode, 6);
   });
 }
+
+for (const kind of KINDS) {
+  test(`${kind}: a next code above 2147483647 is refused, and the edit page shows E_CODE_RANGE with no next code`, async t => {
+    const project = await openProject(kind);
+    t.after(() => project.close());
+    const app = await openApp(project.store);
+    const session = newSession();
+    const csrf = csrfOf((await page(app, '/machines/order/edit', session)).body);
+    // A state takes the largest code (2147483647, B-3), so the next code is 2147483648 and nextCode refuses it (E_CODE_RANGE).
+    const rows = orderRows();
+    rows.states.push({ key: 'archived', code: '2147483647', final: true, persisted: false, rk: '__0000000000006__' });
+    rows.events.push({ key: 'archive', edges: [{ from: 'shipped', to: 'archived' }] });
+    const saved = await post(app, '/machines/order/edit', [['_csrf', csrf], ...editPairs(rows)], session);
+    assert.equal(saved.status, 303);
+    const response = await page(app, '/machines/order/edit', session);
+    assert.equal(response.status, 200);
+    // The finding is shown on the page before any save, and the browser is given no code to suggest.
+    assert.match(response.body, /E_CODE_RANGE/);
+    assert.equal(formStateOf(response.body).nextCode, undefined);
+  });
+}

@@ -238,6 +238,50 @@ vectors = [
                 },
             },
             {
+                "feature": "from_code",
+                "id": "order_from_code_string",
+                "input": "1",
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "order_from_code_bool",
+                "input": True,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "order_from_code_float",
+                "input": 1.0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "order_from_code_fraction",
+                "input": 1.5,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
                 "feature": "code",
                 "id": "order_code_v0",
                 "value": 0,

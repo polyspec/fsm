@@ -66,7 +66,7 @@ The functions of the namespace `Polyspec\FsmTest\Order` (`src/Order/functions.ph
 | `initial(): State` | the initial state |
 | `code(State $state): int` | the code of a state |
 | `key(State $state): string` | the key of a state, such as `draft` |
-| `fromCode(int $value): State` | the state of a code; a value that is no state throws `E_UNKNOWN_CODE` |
+| `fromCode(mixed $value): State` | the state of a code; a value that is not an int, or that is no state, throws `E_UNKNOWN_CODE` |
 | `isFinal(State $state): bool` | whether a state is final |
 | `eventsFrom(State $state): array` | the events that have an edge from a state, in declaration order |
 | `target(State $expected, Event $event): State` | the state that the event leads to; throws `E_INVALID_TRANSITION` when it has no edge |

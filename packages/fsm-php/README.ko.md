@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: a919858a19d0309dab52cbb6be8b7d7b559f203e552d6b53d322cda70c2e8d0e -->
+<!-- source-sha256: 58ab8259a70d18c0f2e98d5c3debb0161eb0881c1de8535ad3676672800ce848 -->
 # polyspec/fsm-php
 
 [English](README.md)
@@ -65,7 +65,7 @@ namespace `Polyspec\FsmTest\Order`의 함수(`src/Order/functions.php`)는 enum 
 | `initial(): State` | 초기 상태 |
 | `code(State $state): int` | 상태의 code |
 | `key(State $state): string` | 상태의 key, 예: `draft` |
-| `fromCode(int $value): State` | code의 상태. 상태가 아닌 값은 `E_UNKNOWN_CODE`를 던진다 |
+| `fromCode(mixed $value): State` | code의 상태. 정수가 아니거나 상태가 아닌 값은 `E_UNKNOWN_CODE`를 던진다 |
 | `isFinal(State $state): bool` | 상태가 최종 상태인지 |
 | `eventsFrom(State $state): array` | 상태에서 edge가 있는 event, 선언 순서 |
 | `target(State $expected, Event $event): State` | event가 이르는 상태. edge가 없으면 `E_INVALID_TRANSITION`을 던진다 |

@@ -7,7 +7,10 @@
 // The file uses the public API of the generated code only: the namespace of each machine and its functions and cases, the Error
 // class of the shared namespace, and the functions of the persist example. It names no path, so the package and the php
 // extension run the same file.
-declare(strict_types=1);
+//
+// The file declares no strict_types, on purpose: its calls are in coercive mode, the mode of a caller that does not declare it. The
+// cases with an input of another type (input_type, docs/spec/fsm.md, B-6) are refused in this mode, where a coercion would give a
+// state, so the mode is the one that the fix is for.
 
 namespace Polyspec\FsmTest\Tests;
 
