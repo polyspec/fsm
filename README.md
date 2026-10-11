@@ -10,3 +10,4 @@ three stores (JSON, Mermaid `stateDiagram-v2`, a database through orm) under one
 - Plan and scope: [docs/plans/fsm-v1.md](docs/plans/fsm-v1.md)
 - Checklist: [docs/plans/execution-checklist.md](docs/plans/execution-checklist.md)
 - Development rules: [AGENTS.md](AGENTS.md)
+- Documentation site: built from these documents by `make docs-build` (VitePress, `docs/.vitepress`, C-8 of the plan); once S-21 deploys it, it is served at https://polyspec.github.io/fsm/

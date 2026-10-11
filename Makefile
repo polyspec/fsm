@@ -10,14 +10,14 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/fsm-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test docs-build-test
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check packages-test parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python test-php-ext parity-php-ext
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python test-php-ext parity-php-ext
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -39,6 +39,21 @@ name-test:
 
 name-check:
 	node scripts/check-name.mjs
+
+# docs-deps installs the packages of the documentation site: the exact vitepress release of docs/package.json, locked in
+# docs/package-lock.json (docs/plans/fsm-v1.md, C-8).
+docs-deps:
+	cd docs && npm ci --no-audit --no-fund
+
+# docs-build builds the documentation site from the repository documents in place, into docs/.vitepress/dist; a dead link fails
+# the build (docs/.vitepress/config.mts, docs/plans/fsm-v1.md, C-8).
+docs-build: docs-deps
+	node docs/node_modules/vitepress/bin/vitepress.js build docs
+
+# docs-build-test runs the tests of the site: a dead link fails the build, and the real build produces its pages and the GitHub
+# rewrite of a link to a repository file (tests/docs-build, docs/plans/fsm-v1.md, C-8). Its record names the inputs it reads.
+docs-build-test: docs-deps
+	node scripts/kit/run-tests.mjs node --timeout 600 --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- tests/docs-build
 
 # parity-test runs the tests of scripts/check-parity.mjs. parity-check, the last target of the full suite, requires that every
 # kind ran every vector case once and passed and that every tool test left a current record (docs/plans/fsm-v1.md, C-4).

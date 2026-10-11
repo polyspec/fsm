@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: d56449562b739c3277d27fa34aab496996e6c8dff118c672161d50e012d0e890 -->
+<!-- source-sha256: ec3409c235a213dd9ab4e2ff53c4cd170478785e47b555a3c02f7d3d84bd784a -->
 # polyspec/fsm
 
 [English](README.md)
@@ -11,3 +11,4 @@ php-ext, python, rust용 코드를 런타임 의존성 없이 생성한다. 정�
 - 계획과 범위: [docs/plans/fsm-v1.md](docs/plans/fsm-v1.ko.md)
 - 체크리스트: [docs/plans/execution-checklist.md](docs/plans/execution-checklist.ko.md)
 - 개발 규칙: [AGENTS.md](AGENTS.ko.md)
+- 문서 사이트: 이 문서들로 `make docs-build`가 만드는 사이트(VitePress, `docs/.vitepress`, 계획 C-8); S-21이 배포하면 https://polyspec.github.io/fsm/ 에서 제공된다

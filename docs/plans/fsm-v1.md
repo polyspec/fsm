@@ -149,7 +149,7 @@ fsm/
   - go: `require github.com/polyspec/orm v0.0.7`
   - python: `polyspec-orm @ git+https://github.com/polyspec/orm@v0.0.7#subdirectory=packages/orm-python`
   - cargo: `{ git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }`
-  - `.node-version` holds an exact 26.y.z release (required by hyper; kit toolchain-declared.mjs accepts only <major>.<minor>.<patch>).
+  - `.node-version` holds an exact 26.y.z release (required by hyper; kit toolchain-declared.mjs accepts only `<major>.<minor>.<patch>`).
 - The pins live in the manifests and lock files and are listed in `config/dependency-policy.json`. The kit gate does not check npm URLs, the Composer `package` dist URL, python `git+…@tag` or cargo tags; pin verification is a review rule (no R requires a tool for it).
 
 ### C-2. Canonical structure of a language package (identical for all six)
@@ -302,6 +302,20 @@ Vectors (exhaustive; the core generates the oracle):
   - `check` passes after a save
   - crudui owns form rendering correctness; hyper owns routing correctness.
 
+### C-8. Documentation site (`docs/.vitepress`, `make docs-build`)
+- Build: `make docs-build` runs `docs-deps` (`npm ci --no-audit --no-fund` from `docs/package-lock.json`), then VitePress builds the site into `docs/.vitepress/dist`. `docs/node_modules`, `docs/.vitepress/dist` and `docs/.vitepress/cache` are git-ignored.
+- Versions: `docs/package.json` pins `vitepress` 1.6.4 exactly (the release of the template repository). It also overrides `vite` to 6.4.4, because vitepress 1.6.4 requires `vite ^5.4.14`, and the 5.4.x line has moderate and high advisories with no fixed release (`npm audit` of the first lock). 6.4.4 has none, and pulls esbuild 0.25.x. `make dependency-review RECORD=1` records the lock with no advisory. The site runs no dev server; the override is accepted because `make docs-build-test` passes with it.
+- Source: the documents are read in place, with no copy and no generated Markdown. The VitePress srcDir is the repository root. The include list is: `README.md` and `README.ko.md`; `packages/*/README.md` and `packages/*/README.ko.md`; `docs/spec/**`; `docs/plans/fsm-v1.md` and `docs/plans/fsm-v1.ko.md`; `docs/verification/**`; `CHANGELOG.md` and `CHANGELOG.ko.md`. Every other Markdown file is in srcExclude, computed from a walk of the repository at build time, and so are `node_modules`, `.git`, `var`, `vendor`, `target`, `tests/kit` and `docs/.vitepress`. A page outside the include list is not built.
+- Languages: there are no VitePress locales, because a locale needs a directory prefix. Each Korean document is its own page, and each page links its twin.
+- Rewrites: a `README.md` renders as `index.md` of its directory, so the root is `/` and a package is `/packages/<name>/`. A `README.ko.md` keeps its own route, `/README.ko`. A relative link works in both, because twins share a directory.
+- Repository links: a link from a site page to a repository file or directory that is not a site page (for example `AGENTS.md`, `schema/fsm.dbs` or `Makefile`) is rewritten to `https://github.com/polyspec/fsm/blob/main/<path>` (`tree` for a directory) by the markdown-it rule `repositoryLinks` of `docs/.vitepress/config.mts`. A link to a file that does not exist is left as written and fails the build. `ignoreDeadLinks` is not set.
+- Navigation: the nav and the sidebar each have an English group and a Korean group (no locale switch). A group holds Overview, Specification, Plan, Packages, Verification and Changelog. Packages has one entry per package whose README pair exists; `fsm-compiler` and `fsm-db` join when their READMEs are written (S-19). Verification appears when its pages exist.
+- Base: `VITEPRESS_BASE` (default `/`). The GitHub Pages site of polyspec/fsm is served under `/fsm/`, so the Pages workflow of S-21 sets `VITEPRESS_BASE=/fsm/`. Site routes take the base; the links to GitHub are absolute.
+- Markup in prose: VitePress compiles Markdown as Vue templates, so an angle-bracket placeholder in prose (for example `<major>`) fails the build. Such a placeholder is written in a code span. The `<a id="...">` anchors of the changelogs are HTML and render.
+- Vue on the root pages: the pages sit at the repository root, where no `node_modules` holds `vue`. `docs/.vitepress/config.mts` aliases `vue` and `vue/server-renderer` to the ESM entries in `docs/node_modules`, so one copy of vue is bundled.
+- Known output: the VitePress build prints `Circular chunk: framework -> theme -> framework`. It is printed as it is, and the build succeeds.
+- Tests: `tests/docs-build` (`make docs-build-test`, a root tool test with the record `.results/docs-build-test.json`) builds, in a temporary copy of the repository documents, a document with a link to a missing file, and requires the build to fail with a dead link. Then it builds the repository itself, and requires the pages `index.html`, `README.ko.html`, `packages/fsm-go/index.html`, `docs/spec/fsm.html` and `docs/plans/fsm-v1.html`, the GitHub rewrite of `AGENTS.md`, and no page for `AGENTS.md`. `docs-build` and `docs-build-test` are in `CHECK_TARGETS`, with their owner rules in `config/owner-checks.json`. `config/documents.json` sets `siteLinks`, so `documents-check` accepts the link forms of the site: a link that starts with `/`, and a link without extension that names a `.md`, `.ko.md` or `index.md` file.
+
 ---
 
 ## D. Checklist draft
@@ -366,7 +380,7 @@ owner-checks mapping (each item adds its own part):
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `test-<kind>`, `parity-<kind>` (`parity-<kind>: test-<kind>`), `packages-test` (the `test-<kind>` of `kinds` with `make -j6`)
 - `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check packages-test parity-check`
+  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test parity-check`
 - During item work only the owner-checks mapping runs.
 - GUI manual check, for each of the json, mermaid and db stores:
   1. Add, delete and rename states, then save (save updates the lock too).

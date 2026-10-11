@@ -278,6 +278,33 @@
         "dependency-policy-check",
         "toolchain-check"
       ]
+    },
+    {
+      "paths": [
+        "**/*.md",
+        "docs/.vitepress/**"
+      ],
+      "targets": [
+        "docs-build"
+      ]
+    },
+    {
+      "paths": [
+        "docs/package.json",
+        "docs/package-lock.json"
+      ],
+      "targets": [
+        "docs-build",
+        "dependency-policy-check"
+      ]
+    },
+    {
+      "paths": [
+        "tests/docs-build/**"
+      ],
+      "targets": [
+        "docs-build-test"
+      ]
     }
   ]
 }
