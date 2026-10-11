@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 9ced4f6901bc8d380be992a18b36de420a776ce56f5ecb756a5042e3630e17f0 -->
+<!-- source-sha256: d00289d664b4e21639afff832c75b7c090452edf75568e726b3f6e4ff978bc96 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-24: php-ext 백엔드가 모든 C 이름을 `--php-namespace`와 `--php-ext-name`에서 유도한다. 머신 파일이 `php_polyspec_fsm_test.h`와 `polyspec_fsm_test_arginfo.h`를 include했고, Error 클래스 심볼은 옵션과 무관하게 `Polyspec_FsmTest_Fsm_Error`였다. 이제 `php_<ext>.h`, `<ext>_arginfo.h`, `<namespace의 _ 버전>_Fsm_Error`다(명세 B-6). 백엔드 테스트는 두 번째 쌍 `Acme\Tool`과 `acme_tool`로 출력을 phpize, ./configure, make로 빌드하고 php에 올린다.
 - S-23: rust 백엔드가 이벤트가 없는 머신을 컴파일한다. variant가 없는 enum은 표현을 가질 수 없으므로(rustc E0084), 그런 머신의 `Event`는 `#[repr(i32)]` 없는 `pub enum Event {}`다(명세 B-6). 백엔드 테스트가 그 머신의 생성 파일을 cargo로 빌드한다.
 - S-22-3: 브라우저 테스트는 `networkidle`이 아니라 연결된 폼을 기다린다. client는 `connectForm`과 구독이 자리 잡으면 form host `#fsm-form`에 `data-fsm-connected="true"`를 설정하고, 연결이 끊기면 제거한다. layout은 표시가 설정되기 전까지 행 버튼이 클릭을 받지 못하게 한다. 첫 실행 실패는 묶기 전 클릭이 아니라 새로 받은 Chromium의 첫 탐색으로, 5초 케이스 제한에 대해 2.5~12.4초였다(새 다운로드 네 번 측정, plan C-7). setup이 이제 자기 제한으로 편집 페이지를 한 번 연다.
 - S-30-1: README가 S-30의 lock 기준선을 밝힌다(명세 B-3). 루트 README는 규칙을 `fsm-gen lock`의 실제 출력(맞바꾸고 지운 lock의 `E_LOCK_REGRESSED`), json과 mermaid의 git HEAD 기준선, git 밖의 한계, 커밋이 없어 `E_LOCK_REGRESSED`가 생기지 않는 db store와 함께 준다. fsm-db README의 table과 lock 절, fsm-gui의 저장·이름 바꾸기·삭제 규칙이 같은 내용을 말한다.

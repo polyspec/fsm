@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: f4d1399a422875787527a206e7fe589700223b290176f9c090ca89cac9887254 -->
+<!-- source-sha256: 74b525d80076fbf17f0fb018fa909b1e97b1441f7a60fb65fc28b705f91c86cf -->
 # fsm 정의
 
 [English](fsm.md)
@@ -238,7 +238,7 @@ stateDiagram-v2
   - 이벤트가 없는 머신의 `Event`는 표현을 갖지 않는다. rust는 빈 enum `pub enum Event {}`에서 `#[repr(i32)]`를 생략한다. rustc가 variant가 없는 enum의 표현을 거부하기 때문이다(E0084). 이벤트가 있는 머신은 `#[repr(i32)]`를 유지한다.
 - `Step`의 필드는 `to: State`, `changed: bool`이다(variant 이름 없음). `Event` 값은 선언 순서 1부터의 번호다(이벤트는 저장되지 않음). 오류 코드 상수는 B-4·B-5·B-6 코드에서 `E_`를 뗀 이름을 각 언어 상수 표기로 쓴다(go `CodeConflict`, rust `Code::Conflict`, npm/php `Code.Conflict`/`Code::Conflict`, python `Code.CONFLICT`).
 - 함수 시그니처는 모든 언어에서 같은 순서다: `apply(expected: State, event: Event, actual: State) → Step`, `target(expected: State, event: Event) → State`.
-- php는 enum을 PSR-4(`Order/State.php`…)로, 함수는 `Order/functions.php`를 composer `autoload.files`로 싣는다. php-ext는 같은 namespace의 enum과 함수를 C로 등록한다.
+- php는 enum을 PSR-4(`Order/State.php`…)로, 함수는 `Order/functions.php`를 composer `autoload.files`로 싣는다. php-ext는 같은 namespace의 enum과 함수를 C로 등록하며, 모든 C 이름은 php namespace와 extension 이름에서 유도된다: include `php_<ext>.h`와 `<ext>_arginfo.h`, Error 클래스 심볼 `<namespace의 \를 _로 바꾼 것>_Fsm_Error`(`Acme\Tool`은 `Acme_Tool_Fsm_Error`).
 - 머신이 서로 다른 모듈에 들어가므로 머신 간 식별자 충돌은 생기지 않는다. 단 php namespace와 PSR-4 디렉터리는 대소문자를 구분하지 않으므로, `_`를 지웠을 때 같아지는 두 머신 key는 `E_DUPLICATE_KEY`로 거부한다. 남는 충돌은 생성 파일·package 이름, 언어 keyword, php의 대소문자 무시 이름이며, `E_KEY_RESERVED`와 `E_DUPLICATE_KEY`의 고정 목록으로 거부한다.
 - 오류는 `fsm.Error`로만 알리고 null을 반환하지 않는다.
 - 원시 정수를 받는 함수는 `from_code` 하나다.

@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: ffc4e0512e4b1b4003dc21b2860d3d861907c5189fbd353341dbf3a62d39d371 -->
+<!-- source-sha256: 8e729631507925444cf513c811a9482c3ccb4744abc40d148d855a0377a7713e -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -52,7 +52,7 @@
 | S-22-2 | GUI 폼을 쓸 수 있다: crudui stylesheet `@polyspec/crudui-generator-core/crudui.css`가 asset bundle에 들어가 행 버튼이 동작을 보여 주고, 모든 field가 구별되는 label을 가지며(저장된 key와 새 key가 둘 다 "Key"가 아님), `/favicon.ico`가 404 대신 icon을 준다 | 브라우저 테스트가 label 없는 행 버튼, 한 행의 같은 label 두 개, 404를 찾음 RED → GREEN | [o] |
 | S-22-3 | 브라우저 테스트가 network idle이 아니라 폼 자신의 준비 상태를 기다린다: client가 connectForm이 폼을 묶으면 form host에 표시(`data-fsm-connected`)를 하고, 케이스는 그 표시를 기다리며, 표시 전에는 행 버튼이 클릭을 받지 않고, 첫 실행 실패의 원인을 찾아 plan C-7에 기록한다(새로 받은 Chromium의 첫 탐색이 2.5~12.4초로 케이스 제한 5초를 넘고, client는 `load` 전에 묶인다). 그래서 setup이 자기 제한으로 편집 페이지를 한 번 연다. 행의 첫 기준은 묶기 전 클릭을 가정했고, 차가운 시도 30회가 이를 반박했다 | 표식 없는 client에서 표식 테스트 실패, 새 다운로드의 첫 케이스가 12.4초에서 실패 RED → 표식 테스트 통과, 새 다운로드 네 번 통과 GREEN | [o] |
 | S-23 | rust backend가 모든 유효한 machine을 compile한다: event가 없는 machine(GUI new 화면이 만드는 것)은 variant 없는 enum에 `#[repr(i32)]`를 받아 rustc가 거부한다(E0084)(감사 1) | compiler 테스트와 event 없는 package machine을 cargo로 빌드 RED → GREEN | [o] |
-| S-24 | php-ext backend가 모든 C 이름을 `--php-ext-name`에서 만든다: 옵션과 무관하게 machine `.c`가 `php_polyspec_fsm_test.h`와 `polyspec_fsm_test_arginfo.h`를 include하고 `Polyspec_FsmTest_Fsm_Error`를 쓴다(감사 2) | 두 번째 extension 이름의 backend 테스트와 그 phpize 빌드 RED → GREEN | [ ] |
+| S-24 | php-ext backend가 모든 C 이름을 `--php-ext-name`에서 만든다: 옵션과 무관하게 machine `.c`가 `php_polyspec_fsm_test.h`와 `polyspec_fsm_test_arginfo.h`를 include하고 `Polyspec_FsmTest_Fsm_Error`를 쓴다(감사 2) | 두 번째 extension 이름의 backend 테스트와 그 phpize 빌드 RED → GREEN | [o] |
 | S-25 | conformance machine이 정의를 덮는다: `machines/`에 event 없는 machine, underscore key machine, reserved code machine, code 2147483647 machine을 더해 여러 machine이 함께 돈다. go harness가 order 외 machine을 거부하지 않는다(key 표를 vectors_test.go에 생성). 모든 kind가 모든 vector를 통과한다(감사 3) | S-23·S-24 전에는 rust와 php-ext 결함으로 packages-test 실패 RED → 모든 kind 통과 GREEN | [ ] |
 | S-26 | 모든 vector가 결과 전체를 단언한다: 오류 vector가 `code`, `expected`, `actual`, `event`(B-4, B-6)를 갖고 모든 언어가 이를 단언한다. `from_code`에 음수, 2^31, 64비트 최댓값을 준다. 언어 타입이 허용하면 `code`, `key`, `is_final`, `apply`에 잘못된 state 값을 준다(감사 4, 15) | expected와 actual을 바꾸거나 잘못된 값에 다른 분기를 돌려주는 backend가 실패 RED → GREEN | [ ] |
 | S-27 | `name-check`가 줄이 아니라 출현마다 판정한다: 허용 구절을 줄에서 지우고 남은 부분을 다시 검사하며, model과 CHANGELOG 항목은 자기 구절만 허용한다. rename 잔재를 고친다(`Makefile`의 "old name `fsm`", 테스트 helper의 "returns its fsm", python과 rust의 status column용 `fsm_of`)(감사 6, 12) | 감사 probe 줄이 검사를 통과 RED → finding GREEN | [o] |
