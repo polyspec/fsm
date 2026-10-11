@@ -35,10 +35,10 @@ fsm-gen vectors --project /path/to/order-machines --kind go --go-module example.
 ```
 
 The file `tests/vectors_test.go` is in the package `tests`. It holds the key tables of every machine, one `vectorCase` literal
-per case, and one adapter per machine that maps the keys of a case to the constants of the machine. Its import of the
-persistence example is `github.com/polyspec/fsm-go/examples`, not the `examples` package of your module, so a copy of
-`examples/persist.go` in your module needs that import changed before the file builds (checklist item S-26-1-1 records the
-backend change that removes this).
+per case, and one adapter per machine that maps the keys of a case to the constants of the machine. Its only imports are the
+machine packages `<module>/src/<machine>`, named by your module path, so the file builds in your module as it is. The
+persistence example is the test bed's own: `decide` returns the function type that `Decide` names, so the file needs no
+`examples` import (plan C-2, S-26-1-1).
 
 ## Generated files
 
@@ -122,7 +122,7 @@ stored code. The `decide` of each machine is written in `tests/vectors_test.go`;
 
 ```go
 // packages/fsm-go/tests/vectors_test.go, orderMachine.decide
-func (m orderMachine) decide(expected, event string) examples.Decide {
+func (m orderMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(orderStates, "state", expected)
 		if err != nil {

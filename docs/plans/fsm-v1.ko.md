@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 474aa35f73e2591264935ff16ccb3874fcaa4a1c1f6b302445048174591fb836 -->
+<!-- source-sha256: 41db142d8da26a9e74a0ff5dc17260431e22d780d9b5afb237b0b007f8aa66f2 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -173,7 +173,7 @@ packages/fsm-<kind>/
 
 | kind | manifest | src | tests 비고 |
 |---|---|---|---|
-| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`(일반형: 각 case를 그 machine의 adapter로 실행), `vectors_test.go`(생성: vector case, 모든 machine의 key 표, machine마다 `conformance_test.go`의 interface를 구현하는 adapter 하나; import가 module을 이름으로 쓰므로 `vectors --kind go`는 `--go-module`을 받는다) |
+| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`(일반형: 각 case를 그 machine의 adapter로 실행), `vectors_test.go`(생성: vector case, 모든 machine의 key 표, machine마다 `conformance_test.go`의 interface를 구현하는 adapter 하나; import는 `<module>/src/<machine>` machine package뿐이므로 `vectors --kind go`는 `--go-module`을 받는다. persistence 예제는 test bed의 것이라 import하지 않으며, `decide`가 `examples.Decide`가 이름 붙이던 함수 타입을 반환한다(S-26-1-1)) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts`(`export * as order`) | `conformance.test.mjs`, `vectors.mjs` |
 | php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceTest.php`, `Vectors.php` |
 | php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c`(공용 `<ns>\Fsm\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | php와 **바이트 동일**한 테스트. `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
@@ -255,7 +255,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - 명령
   - `lock [--rename]`
   - `gen --kind <k> --out <dir>` (php는 `--php-namespace` 필수, php-ext는 `--php-namespace`와 `--php-ext-name` 필수, go는 `--go-module <module path>` 필수: 생성된 machine이 공용 패키지 `<module>/src/fsm`를 import하며 backend는 go.mod를 읽을 수 없다)
-  - `vectors [--kind <k>] --out <path>` (go: gen과 같이 `--go-module <module path>`)
+  - `vectors [--kind <k>] --out <path>` (go: gen과 같이 `--go-module <module path>`; 파일은 `<module>/src/<machine>`만 import한다, S-26-1-1)
   - `check`: 전 정의 검증 + lock 일치 + lock이 커밋된 code를 모두 유지(B-3)
   - `copy --to json|mermaid --root <dir>`
 - 루트 `gen-check`

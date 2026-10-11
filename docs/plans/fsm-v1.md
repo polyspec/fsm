@@ -172,7 +172,7 @@ packages/fsm-<kind>/
 
 | kind | manifest | src | tests |
 |---|---|---|---|
-| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (in Go a package is a directory) | `conformance_test.go` (generic: it runs each case through the adapter of its machine), `vectors_test.go` (generated: the vector cases, the key tables of every machine and one adapter per machine, which implements the interface of `conformance_test.go`; the imports name the module, so `vectors --kind go` takes `--go-module`) |
+| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (in Go a package is a directory) | `conformance_test.go` (generic: it runs each case through the adapter of its machine), `vectors_test.go` (generated: the vector cases, the key tables of every machine and one adapter per machine, which implements the interface of `conformance_test.go`; its only imports are the machine packages `<module>/src/<machine>`, so `vectors --kind go` takes `--go-module`; the persist example belongs to the test bed and is not imported, because `decide` returns the func type that `examples.Decide` names (S-26-1-1)) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts` (`export * as order`) | `conformance.test.mjs`, `vectors.mjs` |
 | php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, and the loader `functions.php` (requires every machine's `Order/functions.php`; composer `autoload.files` names only this file, because PSR-4 cannot load functions) | `ConformanceTest.php`, `Vectors.php` |
 | php-ext | composer.json (`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c` (shared `<ns>\Fsm\Error` and error code constants), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | tests **byte-identical** to php; `make test` builds with phpize, then runs with `--php-extension <.so>`; gen requires `--php-namespace` and `--php-ext-name` |
@@ -266,7 +266,7 @@ Vectors (exhaustive; the core generates the oracle):
 - Commands
   - `lock [--rename]`
   - `gen --kind <k> --out <dir>` (php requires `--php-namespace`; php-ext requires `--php-namespace` and `--php-ext-name`; go requires `--go-module <module path>`, because a generated machine imports the shared package `<module>/src/fsm` and the backend cannot read go.mod)
-  - `vectors [--kind <k>] --out <path>` (go: `--go-module <module path>`, as for gen)
+  - `vectors [--kind <k>] --out <path>` (go: `--go-module <module path>`, as for gen; the file imports only `<module>/src/<machine>`, S-26-1-1)
   - `check`: validates every definition and the lock match, and the lock keeps every committed code (B-3)
   - `copy --to json|mermaid --root <dir>`
 - Root `gen-check`

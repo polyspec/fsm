@@ -1,5 +1,5 @@
 <!-- doc-id: readme-go -->
-<!-- source-sha256: fe550e62d23777201f9f98ce817f3747bc066fe477c64144eac701b9b15a885c -->
+<!-- source-sha256: b2bde937afd2b013f97ab2211fba107cc9431f29931dea68f9b868cfdeda702c -->
 # github.com/polyspec/fsm-go
 
 [English](README.md)
@@ -35,9 +35,9 @@ fsm-gen vectors --project /path/to/order-machines --kind go --go-module example.
 ```
 
 파일 `tests/vectors_test.go`는 package `tests`에 속한다. 기계마다 key 표, case마다 `vectorCase` literal 하나, 그리고 case의 key를
-기계의 상수에 대응시키는 adapter 하나를 담는다. 이 파일이 가져오는 persistence 예제는 `github.com/polyspec/fsm-go/examples`이며
-사용자 module의 `examples` package가 아니다. 그러므로 사용자 module에 복사한 `examples/persist.go`를 쓰려면 파일이 빌드되기 전에
-이 import를 바꿔야 한다(checklist 항목 S-26-1-1이 이를 없애는 backend 변경을 기록한다).
+기계의 상수에 대응시키는 adapter 하나를 담는다. 이 파일의 import는 `<module>/src/<machine>` machine package뿐이며 사용자 module
+경로로 이름이 붙으므로, 파일은 사용자 module에서 그대로 빌드된다. persistence 예제는 test bed의 것이다: `decide`는 `Decide`가
+이름 붙이던 함수 타입을 반환하므로 파일에 `examples` import가 필요 없다(plan C-2, S-26-1-1).
 
 ## 생성 파일
 
@@ -120,7 +120,7 @@ Go에는 null이 없으므로 0 값이 설정되지 않은 필드다.
 
 ```go
 // packages/fsm-go/tests/vectors_test.go, orderMachine.decide
-func (m orderMachine) decide(expected, event string) examples.Decide {
+func (m orderMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(orderStates, "state", expected)
 		if err != nil {
