@@ -2,21 +2,21 @@
   "schema": 1,
   "composerPlatforms": [
     {
-      "manifest": "packages/status-php/composer.json",
+      "manifest": "packages/fsm-php/composer.json",
       "php": "8.4.0"
     },
     {
-      "manifest": "packages/status-php-ext/composer.json",
+      "manifest": "packages/fsm-php-ext/composer.json",
       "php": "8.4.0"
     }
   ],
   "pythonManifests": [
-    "packages/status-python/pyproject.toml"
+    "packages/fsm-python/pyproject.toml"
   ],
   "npmLocks": [
-    "packages/status-db/package-lock.json",
-    "packages/status-gui/package-lock.json",
-    "packages/status-npm/package-lock.json"
+    "packages/fsm-db/package-lock.json",
+    "packages/fsm-gui/package-lock.json",
+    "packages/fsm-npm/package-lock.json"
   ],
   "exceptions": []
 }

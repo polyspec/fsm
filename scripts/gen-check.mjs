@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Checks that the generated files equal the files of the working tree (docs/plans/status-v1.md, C-5; `make gen-check`):
+// Checks that the generated files equal the files of the working tree (docs/plans/fsm-v1.md, C-5; `make gen-check`):
 //
 //   node scripts/gen-check.mjs
 //
-// It regenerates into var/gen-check/: the vectors (status-gen vectors --out var/gen-check/conformance/vectors) and, for each
-// kind of contracts/layout.json, the generated files of its package (make -C packages/status-<kind> gen DEST=<var/gen-check/
+// It regenerates into var/gen-check/: the vectors (fsm-gen vectors --out var/gen-check/conformance/vectors) and, for each
+// kind of contracts/layout.json, the generated files of its package (make -C packages/fsm-<kind> gen DEST=<var/gen-check/
 // <kind>>). It then compares the tracked and non-ignored files of the working tree (scripts/kit/tracked-files.mjs) with the
 // generated files of conformance/vectors and, per kind, with the files that the kind's `generated` globs match: the same set
 // of files with the same bytes. A kind without `generated` globs is a finding (rule `layout-config`). Each difference is one
@@ -26,7 +26,7 @@ import { trackedFiles } from './kit/tracked-files.mjs';
 export const LAYOUT = 'contracts/layout.json';
 export const OUT = 'var/gen-check';
 const VECTORS = 'conformance/vectors';
-const CLI = 'packages/status-compiler/src/cli/status-gen.mjs';
+const CLI = 'packages/fsm-compiler/src/cli/fsm-gen.mjs';
 
 const finding = (rule, file, message) => ({ rule, path: file, message });
 const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
@@ -46,9 +46,9 @@ function generate(root, kinds) {
   rmSync(path.join(root, OUT), { recursive: true, force: true });
   const out = path.join(root, OUT, VECTORS);
   const vectors = spawnSync(process.execPath, [path.join(root, CLI), 'vectors', '--project', root, '--out', out], { encoding: 'utf8' });
-  if (vectors.status !== 0) return [finding('generate', VECTORS, `status-gen vectors failed: ${vectors.stderr.trim()}`)];
+  if (vectors.status !== 0) return [finding('generate', VECTORS, `fsm-gen vectors failed: ${vectors.stderr.trim()}`)];
   for (const kind of kinds) {
-    const dir = `packages/status-${kind}`;
+    const dir = `packages/fsm-${kind}`;
     const dest = `DEST=${path.join(root, OUT, kind)}`;
     const make = spawnSync('make', ['-C', path.join(root, dir), 'gen', dest], { encoding: 'utf8' });
     if (make.status !== 0) return [finding('generate', dir, `make gen failed: ${make.stderr.trim()}`)];
@@ -87,7 +87,7 @@ export function genCheckFindings(root) {
   const areas = [{ base: VECTORS, dir: path.join(root, OUT, VECTORS), select: () => true }];
   for (const kind of kinds) {
     const globs = layout.kinds[kind].generated;
-    areas.push({ base: `packages/status-${kind}`, dir: path.join(root, OUT, kind), select: rel => matchesAny(globs, rel) });
+    areas.push({ base: `packages/fsm-${kind}`, dir: path.join(root, OUT, kind), select: rel => matchesAny(globs, rel) });
   }
   return areas.flatMap(area => compareArea(root, area));
 }

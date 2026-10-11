@@ -1,4 +1,4 @@
-// Tests of scripts/gen-check.mjs (docs/plans/status-v1.md, C-5): the generated files of a checkout must equal the working tree.
+// Tests of scripts/gen-check.mjs (docs/plans/fsm-v1.md, C-5): the generated files of a checkout must equal the working tree.
 // Every case builds a temporary git checkout from the files of this repository (its scripts, the compiler sources, the
 // machines, the lock, the features and the vector files), changes one thing and runs the check in it.
 import assert from 'node:assert/strict';
@@ -27,8 +27,8 @@ function fixture(t, layout, files) {
   const root = mkdtempSync(path.join(tmpdir(), 'gen-check-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   cpSync(path.join(ROOT, 'scripts'), path.join(root, 'scripts'), { recursive: true });
-  cpSync(path.join(ROOT, 'packages/status-compiler/src'), path.join(root, 'packages/status-compiler/src'), { recursive: true });
-  for (const entry of ['machines', 'conformance', 'status.config.json', 'status.lock.json']) {
+  cpSync(path.join(ROOT, 'packages/fsm-compiler/src'), path.join(root, 'packages/fsm-compiler/src'), { recursive: true });
+  for (const entry of ['machines', 'conformance', 'fsm.config.json', 'fsm.lock.json']) {
     cpSync(path.join(ROOT, entry), path.join(root, entry), { recursive: true });
   }
   write(root, 'contracts/layout.json', `${JSON.stringify(layout, null, 2)}\n`);
@@ -53,12 +53,12 @@ const FAKE_LAYOUT = {
 };
 const FAKE_FILES = {
   // gen is phony: the directory gen/ would otherwise make the target up to date.
-  'packages/status-fake/Makefile': '.PHONY: gen\ngen:\n\tmkdir -p $(DEST)/gen\n\tprintf \'a\\n\' > $(DEST)/gen/a.txt\n',
-  'packages/status-fake/gen/a.txt': 'a\n',
-  'packages/status-fake/readme.txt': 'not generated\n',
+  'packages/fsm-fake/Makefile': '.PHONY: gen\ngen:\n\tmkdir -p $(DEST)/gen\n\tprintf \'a\\n\' > $(DEST)/gen/a.txt\n',
+  'packages/fsm-fake/gen/a.txt': 'a\n',
+  'packages/fsm-fake/readme.txt': 'not generated\n',
 };
 
-/** Runs scripts/gen-check.mjs in `root` and returns its status and stderr. */
+/** Runs scripts/gen-check.mjs in `root` and returns its fsm and stderr. */
 function genCheck(root) {
   const result = spawnSync(process.execPath, ['scripts/gen-check.mjs'], { cwd: root, encoding: 'utf8' });
   return { status: result.status, stderr: result.stderr };
@@ -105,23 +105,23 @@ test('an ignored file in the compared directory is not read, so it is no finding
 test('the files compared for a kind are exactly the files that its generated globs match', (t) => {
   const root = fixture(t, FAKE_LAYOUT, FAKE_FILES);
   assert.deepEqual(genCheck(root), { status: 0, stderr: '' });
-  writeFileSync(path.join(root, 'packages/status-fake/gen/a.txt'), 'changed\n');
+  writeFileSync(path.join(root, 'packages/fsm-fake/gen/a.txt'), 'changed\n');
   const changed = genCheck(root);
   assert.equal(changed.status, 1);
-  assert.match(changed.stderr, /^\[gen-check\] differs packages\/status-fake\/gen\/a\.txt: /m);
+  assert.match(changed.stderr, /^\[gen-check\] differs packages\/fsm-fake\/gen\/a\.txt: /m);
 });
 
 test('a file that no generated glob of its kind matches is not compared, so changing it is no finding', (t) => {
   const root = fixture(t, FAKE_LAYOUT, FAKE_FILES);
-  writeFileSync(path.join(root, 'packages/status-fake/readme.txt'), 'edited by hand\n');
+  writeFileSync(path.join(root, 'packages/fsm-fake/readme.txt'), 'edited by hand\n');
   assert.deepEqual(genCheck(root), { status: 0, stderr: '' });
 });
 
 test('a tracked file that a generated glob matches but the generator does not write is an extra finding', (t) => {
-  const root = fixture(t, FAKE_LAYOUT, { ...FAKE_FILES, 'packages/status-fake/gen/extra.txt': 'hand\n' });
+  const root = fixture(t, FAKE_LAYOUT, { ...FAKE_FILES, 'packages/fsm-fake/gen/extra.txt': 'hand\n' });
   const result = genCheck(root);
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /^\[gen-check\] extra packages\/status-fake\/gen\/extra\.txt: /m);
+  assert.match(result.stderr, /^\[gen-check\] extra packages\/fsm-fake\/gen\/extra\.txt: /m);
 });
 
 test('a kind without generated globs is a layout-config finding, because gen-check cannot tell what to compare', (t) => {

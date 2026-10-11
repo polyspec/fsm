@@ -1,0 +1,103 @@
+{
+    "name": "polyspec/fsm-php",
+    "description": "PHP consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1.md, C-2)",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "polyspec/orm": "0.0.7"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "12.5.38"
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "polyspec/ordered-json",
+                "version": "0.0.7",
+                "type": "library",
+                "require": {
+                    "php": ">=8.2",
+                    "ext-json": "*",
+                    "ext-pcre": "*"
+                },
+                "suggest": {
+                    "ext-ordered_json": "Native backend from the polyspec/ordered-json-extension PIE package"
+                },
+                "autoload": {
+                    "files": [
+                        "src/OrderedJson.php"
+                    ]
+                },
+                "dist": {
+                    "type": "zip",
+                    "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.7/polyspec-ordered-json-php-0.0.7.zip",
+                    "shasum": "ba76343b5d6a2ce7db53fc88bc71b0706fa5fd4a"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "polyspec/orm",
+                "version": "0.0.7",
+                "type": "library",
+                "description": "PHP client of the orm model syntax: generated models over PDO with SQL assembled in process",
+                "license": "MIT",
+                "require": {
+                    "php": ">=8.4",
+                    "polyspec/ordered-json": "0.0.7",
+                    "ext-pdo": "*",
+                    "ext-json": "*",
+                    "ext-zlib": "*",
+                    "symfony/yaml": "^7.4"
+                },
+                "suggest": {
+                    "ext-pdo_mysql": "mysql:// DSNs",
+                    "ext-pdo_pgsql": "postgres:// DSNs",
+                    "ext-pdo_sqlite": "sqlite:// DSNs",
+                    "ext-openssl": "host-side AES on PostgreSQL and SQLite (aes columns)",
+                    "ext-orm_dbspec": "Polyspec\\Orm\\Dbspec\\Native\\Dbspec, the dbspec surface of this client implemented in C (packages/orm-php-extension)"
+                },
+                "bin": [
+                    "bin/orm-gen"
+                ],
+                "autoload": {
+                    "psr-4": {
+                        "Polyspec\\Orm\\": "src/"
+                    },
+                    "classmap": [
+                        "src/"
+                    ]
+                },
+                "dist": {
+                    "type": "zip",
+                    "url": "https://github.com/polyspec/orm/releases/download/v0.0.7/polyspec-orm-php-0.0.7.zip",
+                    "shasum": "9c171dfa9b5f88f3ee87b326f013eb6f73614e4d"
+                }
+            }
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Polyspec\\FsmTest\\": "src/"
+        },
+        "files": [
+            "src/Order/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Polyspec\\FsmTest\\Tests\\": "tests/",
+            "Polyspec\\FsmTest\\Model\\": "examples/model/"
+        },
+        "files": [
+            "examples/persist.php"
+        ]
+    },
+    "config": {
+        "platform": {
+            "php": "8.4.0"
+        }
+    }
+}

@@ -21,23 +21,23 @@ function checkout(t, { vectors = VECTORS, features = FEATURES } = {}) {
     'contracts/layout.json': JSON.stringify(LAYOUT),
     'contracts/features.json': JSON.stringify(features),
     'conformance/vectors/order.json': JSON.stringify(vectors),
-    'packages/status-go/a_test.go': 'package a',
-    'packages/status-npm/a.test.mjs': 'a',
-    'packages/status-compiler/a.mjs': 'c',
+    'packages/fsm-go/a_test.go': 'package a',
+    'packages/fsm-npm/a.test.mjs': 'a',
+    'packages/fsm-compiler/a.mjs': 'c',
   });
 }
 
 /** Writes the record of `kind` as run-tests.mjs does: the cases, the tool, the inputs and the elapsed time. */
-function record(root, name, cases, { paths = [name === 'compiler-test' ? 'packages/status-compiler' : `packages/status-${name}`], elapsedMs = 1000, digest } = {}) {
+function record(root, name, cases, { paths = [name === 'compiler-test' ? 'packages/fsm-compiler' : `packages/fsm-${name}`], elapsedMs = 1000, digest } = {}) {
   put(root, { [`.results/${name}.json`]: JSON.stringify({ tool: 'node', inputs: { paths, digest: digest ?? inputsDigest(root, paths) }, elapsedMs, cases }) });
 }
 const go = names => names.map(name => ({ id: `example.com/s/tests › TestConformance › ${name}`, status: 'pass', elapsedMs: 1 }));
-const npm = names => names.map(name => ({ id: `packages/status-npm/a.test.mjs › ${name}`, status: 'pass', elapsedMs: 1 }));
+const npm = names => names.map(name => ({ id: `packages/fsm-npm/a.test.mjs › ${name}`, status: 'pass', elapsedMs: 1 }));
 const parent = { id: 'example.com/s/tests › TestConformance', status: 'pass', elapsedMs: 2 };
 const passing = (root) => {
   record(root, 'go', [...go(NAMES), parent]);
   record(root, 'npm', npm(NAMES));
-  record(root, 'compiler-test', [{ id: 'packages/status-compiler/a.test.mjs › validates', status: 'pass', elapsedMs: 3 }]);
+  record(root, 'compiler-test', [{ id: 'packages/fsm-compiler/a.test.mjs › validates', status: 'pass', elapsedMs: 3 }]);
 };
 const ignore = root => put(root, { '.gitignore': '/.results/\n' });
 const messages = (root, options) => parityFindings(root, options).map(found => found.message);
@@ -59,8 +59,8 @@ test('a missing result of a kind or of a tool test, and a stale one', (t) => {
     'the tool test compiler-test has no result .results/compiler-test.json; run make compiler-test',
   ]);
   record(root, 'npm', npm(NAMES));
-  put(root, { 'packages/status-npm/a.test.mjs': 'changed' });
-  assert.deepEqual(messages(root, { tools: [] }), ['.results/npm.json is stale: the files of packages/status-npm changed after the run; run make test-npm']);
+  put(root, { 'packages/fsm-npm/a.test.mjs': 'changed' });
+  assert.deepEqual(messages(root, { tools: [] }), ['.results/npm.json is stale: the files of packages/fsm-npm changed after the run; run make test-npm']);
 });
 
 test('a record whose inputs do not cover its package is not a record of that kind', (t) => {
@@ -68,7 +68,7 @@ test('a record whose inputs do not cover its package is not a record of that kin
   ignore(root);
   passing(root);
   record(root, 'npm', npm(NAMES), { paths: ['contracts'] });
-  assert.deepEqual(messages(root, { tools: [] }), ['.results/npm.json covers contracts, not packages/status-npm; run make test-npm']);
+  assert.deepEqual(messages(root, { tools: [] }), ['.results/npm.json covers contracts, not packages/fsm-npm; run make test-npm']);
 });
 
 test('a vector case that did not run, ran twice, or a case that no vector holds', (t) => {
@@ -99,12 +99,12 @@ test('a case with any status but pass fails: fail, timeout and skip', (t) => {
   const cases = npm(NAMES);
   cases[0].status = 'skip';
   cases[1].status = 'timeout';
-  record(root, 'npm', [...cases, { id: 'packages/status-npm/a.test.mjs › helper', status: 'fail', elapsedMs: 1 }]);
+  record(root, 'npm', [...cases, { id: 'packages/fsm-npm/a.test.mjs › helper', status: 'fail', elapsedMs: 1 }]);
   const found = messages(root, { tools: [] });
   assert.deepEqual(found.filter(entry => / is (?:skip|timeout|fail);/.test(entry)), [
-    'npm: packages/status-npm/a.test.mjs › test_initial__order_initial is skip; every case passes',
-    'npm: packages/status-npm/a.test.mjs › test_apply__order_draft_next_changed is timeout; every case passes',
-    'npm: packages/status-npm/a.test.mjs › helper is fail; every case passes',
+    'npm: packages/fsm-npm/a.test.mjs › test_initial__order_initial is skip; every case passes',
+    'npm: packages/fsm-npm/a.test.mjs › test_apply__order_draft_next_changed is timeout; every case passes',
+    'npm: packages/fsm-npm/a.test.mjs › helper is fail; every case passes',
   ]);
 });
 
@@ -112,10 +112,10 @@ test('an id that names two cases, and an id that names none and is not the paren
   const root = checkout(t);
   ignore(root);
   passing(root);
-  record(root, 'npm', [...npm(NAMES), { id: `x › ${NAMES[0]} › ${NAMES[1]}`, status: 'pass', elapsedMs: 1 }, { id: 'packages/status-npm/a.test.mjs › helper', status: 'pass', elapsedMs: 1 }]);
+  record(root, 'npm', [...npm(NAMES), { id: `x › ${NAMES[0]} › ${NAMES[1]}`, status: 'pass', elapsedMs: 1 }, { id: 'packages/fsm-npm/a.test.mjs › helper', status: 'pass', elapsedMs: 1 }]);
   assert.deepEqual(messages(root, { tools: [] }), [
     `npm: the id x › ${NAMES[0]} › ${NAMES[1]} names 2 cases; a test names one case`,
-    'npm: the id packages/status-npm/a.test.mjs › helper names no case and is not the parent of one; a test of a language package runs a vector case',
+    'npm: the id packages/fsm-npm/a.test.mjs › helper names no case and is not the parent of one; a test of a language package runs a vector case',
   ]);
 });
 

@@ -13,7 +13,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 const LAYOUT = {
   schema: 1,
-  tools: ['status-compiler'],
+  tools: ['fsm-compiler'],
   canonical: { files: ['README.md', 'README.ko.md', 'Makefile'], directories: ['src', 'tests', 'examples'] },
   kinds: {
     npm: {
@@ -31,18 +31,18 @@ const LAYOUT = {
 };
 
 const npm = {
-  'packages/status-npm/README.md': 'r', 'packages/status-npm/README.ko.md': 'r', 'packages/status-npm/Makefile': 'm',
-  'packages/status-npm/package.json': '{}', 'packages/status-npm/src/order.js': 'x', 'packages/status-npm/src/order.d.ts': 'x',
-  'packages/status-npm/tests/conformance.test.mjs': 't', 'packages/status-npm/tests/vectors.mjs': 'v', 'packages/status-npm/examples/persist.mjs': 'p',
+  'packages/fsm-npm/README.md': 'r', 'packages/fsm-npm/README.ko.md': 'r', 'packages/fsm-npm/Makefile': 'm',
+  'packages/fsm-npm/package.json': '{}', 'packages/fsm-npm/src/order.js': 'x', 'packages/fsm-npm/src/order.d.ts': 'x',
+  'packages/fsm-npm/tests/conformance.test.mjs': 't', 'packages/fsm-npm/tests/vectors.mjs': 'v', 'packages/fsm-npm/examples/persist.mjs': 'p',
 };
 const php = (kind, extra = {}) => ({
-  [`packages/status-${kind}/README.md`]: 'r', [`packages/status-${kind}/README.ko.md`]: 'r', [`packages/status-${kind}/Makefile`]: 'm',
-  [`packages/status-${kind}/composer.json`]: '{}', [`packages/status-${kind}/tests/ConformanceTest.php`]: 'same', [`packages/status-${kind}/tests/Vectors.php`]: 'same',
-  [`packages/status-${kind}/examples/persist.php`]: 'p',
-  ...(kind === 'php' ? { 'packages/status-php/src/Order/State.php': 's' } : {}), ...extra,
+  [`packages/fsm-${kind}/README.md`]: 'r', [`packages/fsm-${kind}/README.ko.md`]: 'r', [`packages/fsm-${kind}/Makefile`]: 'm',
+  [`packages/fsm-${kind}/composer.json`]: '{}', [`packages/fsm-${kind}/tests/ConformanceTest.php`]: 'same', [`packages/fsm-${kind}/tests/Vectors.php`]: 'same',
+  [`packages/fsm-${kind}/examples/persist.php`]: 'p',
+  ...(kind === 'php' ? { 'packages/fsm-php/src/Order/State.php': 's' } : {}), ...extra,
 });
-const ext = { 'packages/status-php-ext/src/config.m4': 'c', 'packages/status-php-ext/src/order.c': 'c' };
-const tool = { 'packages/status-compiler/src/core.mjs': 'c' };
+const ext = { 'packages/fsm-php-ext/src/config.m4': 'c', 'packages/fsm-php-ext/src/order.c': 'c' };
+const tool = { 'packages/fsm-compiler/src/core.mjs': 'c' };
 
 function checkout(t, files, layout = LAYOUT) {
   return tree(t, { 'contracts/layout.json': JSON.stringify(layout), ...files });
@@ -55,46 +55,46 @@ test('a checkout whose packages follow the canonical layout passes, and the tool
 });
 
 test('layout-kinds: a package directory that is neither a tool nor a kind, and a kind without its package', (t) => {
-  const extra = checkout(t, { ...npm, ...php('php'), ...php('php-ext', ext), ...tool, 'packages/status-ruby/README.md': 'r' });
+  const extra = checkout(t, { ...npm, ...php('php'), ...php('php-ext', ext), ...tool, 'packages/fsm-ruby/README.md': 'r' });
   const found = layoutFindings(extra);
   assert.deepEqual(found.map(entry => entry.rule), ['layout-kinds']);
-  assert.match(found[0].message, /packages\/status-ruby is neither a tool nor a kind of contracts\/layout\.json/);
+  assert.match(found[0].message, /packages\/fsm-ruby is neither a tool nor a kind of contracts\/layout\.json/);
   const missing = checkout(t, { ...npm, ...php('php'), ...tool });
-  assert.deepEqual(layoutFindings(missing).map(entry => entry.message), ['the kind php-ext has no package packages/status-php-ext']);
+  assert.deepEqual(layoutFindings(missing).map(entry => entry.message), ['the kind php-ext has no package packages/fsm-php-ext']);
 });
 
 test('layout-file: a file that no canonical or kind rule allows, which also catches a renamed file', (t) => {
-  const root = checkout(t, { ...npm, ...php('php'), ...php('php-ext', ext), ...tool, 'packages/status-npm/src/helper.py': 'x', 'packages/status-npm/notes.txt': 'n' });
+  const root = checkout(t, { ...npm, ...php('php'), ...php('php-ext', ext), ...tool, 'packages/fsm-npm/src/helper.py': 'x', 'packages/fsm-npm/notes.txt': 'n' });
   const found = layoutFindings(root);
   assert.deepEqual(found.map(entry => entry.rule), ['layout-file', 'layout-file']);
-  assert.match(found[0].message, /packages\/status-npm\/notes\.txt is not in the canonical layout of npm/);
+  assert.match(found[0].message, /packages\/fsm-npm\/notes\.txt is not in the canonical layout of npm/);
 });
 
 test('layout-missing: a canonical file, a required file of the kind and a canonical directory without a file', (t) => {
   const files = { ...npm, ...php('php'), ...php('php-ext', ext), ...tool };
-  delete files['packages/status-npm/README.ko.md'];
-  delete files['packages/status-npm/tests/vectors.mjs'];
-  delete files['packages/status-npm/src/order.js'];
-  delete files['packages/status-npm/src/order.d.ts'];
+  delete files['packages/fsm-npm/README.ko.md'];
+  delete files['packages/fsm-npm/tests/vectors.mjs'];
+  delete files['packages/fsm-npm/src/order.js'];
+  delete files['packages/fsm-npm/src/order.d.ts'];
   const messages = layoutFindings(checkout(t, files)).map(entry => `${entry.rule}: ${entry.message}`);
   assert.deepEqual(messages, [
-    'layout-missing: packages/status-npm/README.ko.md is missing; every npm package has it',
-    'layout-missing: packages/status-npm/tests/vectors.mjs is missing; every npm package has it',
-    'layout-missing: packages/status-npm/src/ holds no file; every package has src/, tests/ and examples/',
+    'layout-missing: packages/fsm-npm/README.ko.md is missing; every npm package has it',
+    'layout-missing: packages/fsm-npm/tests/vectors.mjs is missing; every npm package has it',
+    'layout-missing: packages/fsm-npm/src/ holds no file; every package has src/, tests/ and examples/',
   ]);
 });
 
 test('layout-php-twin: the tests of php and php-ext hold the same files with the same bytes', (t) => {
-  const differ = checkout(t, { ...npm, ...php('php'), ...php('php-ext', { ...ext, 'packages/status-php-ext/tests/Vectors.php': 'other' }), ...tool });
+  const differ = checkout(t, { ...npm, ...php('php'), ...php('php-ext', { ...ext, 'packages/fsm-php-ext/tests/Vectors.php': 'other' }), ...tool });
   const found = layoutFindings(differ);
   assert.deepEqual(found.map(entry => entry.rule), ['layout-php-twin']);
-  assert.match(found[0].message, /tests\/Vectors\.php differs between packages\/status-php and packages\/status-php-ext/);
+  assert.match(found[0].message, /tests\/Vectors\.php differs between packages\/fsm-php and packages\/fsm-php-ext/);
 });
 
 test('an ignored file does not count, and an untracked file that Git does not ignore does', (t) => {
-  const root = checkout(t, { ...npm, ...php('php'), ...php('php-ext', ext), ...tool, '.gitignore': '/packages/*/node_modules/\n', 'packages/status-npm/node_modules/x/index.js': 'i' });
+  const root = checkout(t, { ...npm, ...php('php'), ...php('php-ext', ext), ...tool, '.gitignore': '/packages/*/node_modules/\n', 'packages/fsm-npm/node_modules/x/index.js': 'i' });
   assert.deepEqual(rules(root), []);
-  put(root, { 'packages/status-npm/stray.js': 's' });
+  put(root, { 'packages/fsm-npm/stray.js': 's' });
   assert.deepEqual(rules(root), ['layout-file']);
 });
 
@@ -115,13 +115,13 @@ test('layout-config: a kind without generated globs is a finding, because gen-ch
 });
 
 test('the command prints each finding and exits 1, and passes on the layout of this repository', (t) => {
-  const root = checkout(t, { ...npm, ...tool, 'packages/status-npm/notes.txt': 'n' }, { ...LAYOUT, kinds: { npm: LAYOUT.kinds.npm } });
+  const root = checkout(t, { ...npm, ...tool, 'packages/fsm-npm/notes.txt': 'n' }, { ...LAYOUT, kinds: { npm: LAYOUT.kinds.npm } });
   mkdirSync(path.join(root, 'scripts'), { recursive: true });
   cpSync(path.join(ROOT, 'scripts/check-layout.mjs'), path.join(root, 'scripts/check-layout.mjs'));
   cpSync(path.join(ROOT, 'scripts/kit'), path.join(root, 'scripts/kit'), { recursive: true });
   const failed = spawnSync(process.execPath, ['scripts/check-layout.mjs'], { cwd: root, encoding: 'utf8' });
   assert.equal(failed.status, 1, failed.stdout + failed.stderr);
-  assert.match(failed.stderr, /\[check-layout\] layout-file: packages\/status-npm\/notes\.txt is not in the canonical layout of npm/);
+  assert.match(failed.stderr, /\[check-layout\] layout-file: packages\/fsm-npm\/notes\.txt is not in the canonical layout of npm/);
   const own = spawnSync(process.execPath, ['scripts/check-layout.mjs'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(own.status, 0, own.stdout + own.stderr);
 });
