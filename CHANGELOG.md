@@ -7,7 +7,7 @@
 ## Unreleased
 
 - S-34-4: the python lock is checked by uv itself (`uv lock --check` and the export of uv.lock against pylock.toml); fsm's own lock script is removed.
-- S-42-2: fsm's own vector parity script (scripts/check-parity.mjs, vector-parity-check, parity-<kind>) is removed; kit's parity check does the work, and each kind's owner check runs its package tests.
+- S-42-2: fsm's own vector parity script (`scripts/check-parity.mjs`, `vector-parity-check`, `parity-<kind>`) is removed; kit's parity check does the work, and each kind's owner check runs its package tests.
 - S-34-3: the python lock holds registry packages and release archives only: orm and ordered-json come from the archives of their v0.0.7 tags with their sha256, so both uv and pip install the lock with hashes, and the lock check refuses a git source.
 - S-42-1: the vector parity runs on kit's parity check (K33): config/parity.json, one vector file conformance/vectors.json with a case name per case, per-case PHPUnit methods, and scripts/check-parity.mjs keeps only the record, time-limit and feature-coverage rules.
 - S-21: fsm is public at https://github.com/polyspec/fsm. The CI workflow (`.github/workflows/ci.yml`) runs `make install` and `make check` with PostgreSQL and MySQL services on every push to main and passed the full suite (run 38121153369); the Pages workflow publishes the documentation site at https://polyspec.github.io/fsm/. The local repository directory is named `fsm`.

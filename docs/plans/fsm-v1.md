@@ -200,7 +200,7 @@ packages/fsm-<kind>/
 kit's parity check (`make parity-check`, K33 of kit 0.0.26, `config/parity.json`; S-42-1) runs the conformance test of every kind twice and fails, with no exemption, when
 - a kind did not run a case of `conformance/vectors.json` that its `kinds` admits (a case without `kinds` is admitted by every kind), ran a case that its `kinds` excludes, or ran a case that the vectors do not hold;
 - one run reports a case twice;
-- a case fails, is skipped or is a todo, or the binding exits with another status.
+- a case fails, is skipped or is a todo, or the binding exits with a nonzero exit code.
 
 `make parity-declarations-check` checks the declaration without running anything. The feature coverage (every feature of contracts/features.json has a case) is asserted by the compiler test `vectors-file.test.mjs`. The records `.results/<kind>.json` stay the output of run-tests; no fsm tool reads them.
 

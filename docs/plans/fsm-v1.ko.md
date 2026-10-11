@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: ec9e9a956eb597412278740fd93597c0c4b5b3661013d523380dd60d30ee56a8 -->
+<!-- source-sha256: 770b9a8e2835c1ccca1546c4942d3ef44fc1ef3048abf7379c93b12fbe95a942 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -201,7 +201,7 @@ packages/fsm-<kind>/
 kit의 parity 검사(`make parity-check`, kit 0.0.26의 K33, `config/parity.json`, S-42-1)는 모든 kind의 conformance 테스트를 두 번 실행하며, 예외 없이 다음일 때 실패한다:
 - kind가 자기 `kinds`가 허용하는 `conformance/vectors.json`의 case를 실행하지 않았거나(`kinds`가 없는 case는 모든 kind가 허용한다), `kinds`가 제외하는 case를 실행했거나, vector에 없는 case를 실행했다;
 - 한 실행이 case 하나를 두 번 보고한다;
-- case가 실패하거나 skip이거나 todo이거나, binding이 다른 status로 끝난다.
+- case가 실패하거나 skip이거나 todo이거나, binding이 0이 아닌 exit code로 끝난다.
 
 `make parity-declarations-check`는 아무것도 실행하지 않고 선언을 검사한다. feature 커버리지(contracts/features.json의 모든 feature가 case를 가진다)는 compiler 테스트 `vectors-file.test.mjs`가 단언한다. `.results/<kind>.json` 기록은 run-tests의 출력으로 남으며, fsm 도구는 읽지 않는다.
 
