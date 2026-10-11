@@ -3,7 +3,7 @@
 // run from the bin directory as a shell would run it, and answers the list of machines.
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -36,7 +36,11 @@ test('npm install -g of the package gives the command fsm-gui', async (t) => {
   mkdirSync(path.join(project, 'machines'), { recursive: true });
   writeFileSync(path.join(project, 'fsm.config.json'), JSON.stringify({ store: 'json' }));
   copyFileSync(path.join(ROOT, 'machines/order.fsm.json'), path.join(project, 'machines/order.fsm.json'));
-  copyFileSync(path.join(ROOT, 'fsm.lock.json'), path.join(project, 'fsm.lock.json'));
+  // The project holds the lock entry of its own machine only (S-40): the root lock names every machine of the repository.
+  const rootLock = JSON.parse(readFileSync(path.join(ROOT, 'fsm.lock.json'), 'utf8'));
+  assert.ok(Object.hasOwn(rootLock, 'order'), 'the root lock has the order entry');
+  writeFileSync(path.join(project, 'fsm.lock.json'), JSON.stringify({ order: rootLock.order }, null, 2) + '\n');
+  assert.deepEqual(Object.keys(JSON.parse(readFileSync(path.join(project, 'fsm.lock.json'), 'utf8'))), ['order']);
   const port = await freePort();
   const server = spawn(path.join(prefix, 'bin', 'fsm-gui'), ['--project', project, '--port', String(port)], { stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
