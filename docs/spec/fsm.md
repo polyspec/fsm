@@ -234,6 +234,7 @@ The unit of idempotency is **(expected, event)**. The caller remembers the state
   - npm: `Object.freeze({Draft: 1})` + a `.d.ts` union
   - python: `IntEnum`
   - php: `enum State: int`
+  - An `Event` of a machine without events has no representation: rust omits `#[repr(i32)]` on the empty enum `pub enum Event {}`, because rustc rejects a zero-variant enum with a representation (E0084). A machine with events keeps `#[repr(i32)]`.
 - `Step` has the fields `to: State` and `changed: bool` (no variant names). `Event` values are their declaration index starting at 1 (events are not stored). Error code constants are the B-4/B-5/B-6 codes without `E_` in each language's constant notation (go `CodeConflict`, rust `Code::Conflict`, npm/php `Code.Conflict`/`Code::Conflict`, python `Code.CONFLICT`).
 - Function signatures have the same parameter order in every language: `apply(expected: State, event: Event, actual: State) → Step`, `target(expected: State, event: Event) → State`.
 - php loads the enums through PSR-4 (`Order/State.php`…) and the functions through `Order/functions.php` in composer `autoload.files`. php-ext registers the same namespaced enums and functions in C.

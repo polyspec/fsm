@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { files, vectorsFile } from '../src/backends/rust.mjs';
 import { backendOf, KINDS } from '../src/backends/index.mjs';
 import { normalize } from '../src/core/normalize.mjs';
+import { validate } from '../src/core/validate.mjs';
 import { vectors } from '../src/core/vectors.mjs';
 import { jsonStore } from '../src/store-json/store.mjs';
 
@@ -107,4 +108,25 @@ test('gen --kind rust refuses a hand-written file and writes nothing', async () 
   assert.match(result.stderr, /E_NOT_GENERATED/);
   assert.equal(existsSync(path.join(out, 'order.rs')), false);
   assert.equal(readFileSync(path.join(out, 'mine.rs'), 'utf8'), 'pub fn mine() {}\n');
+});
+
+/** A machine without events: its one state is the initial and the final state, so no edge is needed (docs/spec/fsm.md, B-5). */
+const NO_EVENTS = { machine: 'one', states: [{ key: 'only', code: 3, initial: true, final: true }], events: [] };
+const NO_EVENTS_LOCK = { one: { codes: { 3: 'only' }, reserved: [1] } };
+
+test('a machine without events has an Event enum with no #[repr(i32)] (a zero-variant enum takes no representation)', () => {
+  assert.deepEqual(validate([NO_EVENTS]), []);
+  const one = files([normalize(NO_EVENTS)], NO_EVENTS_LOCK).find(file => file.path === 'one.rs').content;
+  assert.match(one, /\n#\[derive\(Debug, Clone, Copy, PartialEq, Eq\)\]\npub enum Event \{\n\}\n/);
+  assert.doesNotMatch(one, /#\[repr\(i32\)\]\n#\[derive\(Debug, Clone, Copy, PartialEq, Eq\)\]\npub enum Event/);
+});
+
+test('the src files of a machine without events build with cargo', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'fsm-rust-noevents-'));
+  roots.push(root);
+  mkdirSync(path.join(root, 'src'));
+  writeFileSync(path.join(root, 'Cargo.toml'), '[package]\nname = "noevents"\nversion = "0.0.0"\nedition = "2021"\n\n[lib]\npath = "src/lib.rs"\n');
+  for (const file of files([normalize(NO_EVENTS)], NO_EVENTS_LOCK)) writeFileSync(path.join(root, 'src', file.path), file.content);
+  const result = spawnSync('cargo', ['build', '--quiet', '--manifest-path', path.join(root, 'Cargo.toml')], { encoding: 'utf8' });
+  assert.deepEqual([result.status, result.stderr], [0, ''], 'cargo build of a machine without events');
 });
