@@ -51,21 +51,38 @@ pub async fn status_of(db: &Db, id: i64) -> polyspec_orm::Result<i32> {
     Item::new().connect(db).id(id).get().await?.get_status()
 }
 
-/// One attempt of a transition on the row `id` (docs/spec/fsm.md, B-4). `decide` receives the code that the row holds and
-/// returns the code of the state that the event leads to and whether the stored state changed. A changed row is written in
-/// the transaction; an error of `decide` rolls the transaction back and is returned as the callback's error.
+/// One transition on the row `id` (docs/spec/fsm.md, B-4). `decide` receives the code that the row holds and returns the code of
+/// the state that the event leads to and whether the stored state changes. A changed row is written in the transaction. A
+/// deadlock runs the transaction again (orm `transaction`, three retries by default); `decide` is pure, so a rerun is safe.
 pub async fn transition(
     db: &Db,
     id: i64,
-    decide: impl FnOnce(i64) -> Result<(i32, bool), Error>,
-) -> Result<(i32, bool), polyspec_orm::TransactionOnceError<Failure>> {
-    db.transaction_once(async || {
-        let row = Item::new().connect(db).id(id).for_update().get().await?;
-        let (to, changed) = decide(i64::from(row.get_status()?)).map_err(Failure::Machine)?;
-        if changed {
-            row.set_status(to).update(false).await?;
-        }
-        Ok((to, changed))
-    })
-    .await
+    decide: impl Fn(i64) -> Result<(i32, bool), Error>,
+) -> Result<(i32, bool), Failure> {
+    transition_with_fault(db, id, decide, || Ok(())).await
+}
+
+/// Runs `transition` with `fault` at the start of each attempt, inside the transaction and before the row is read. `fault` is the
+/// failure injection of the retry tests (tests/conformance.rs): an error that it returns is the database error of the attempt.
+/// A machine error is returned as a value: the callback of orm `transaction` fails only with a database error, and a machine
+/// error is raised before any write, so the transaction commits nothing and the row keeps its state.
+pub async fn transition_with_fault(
+    db: &Db,
+    id: i64,
+    decide: impl Fn(i64) -> Result<(i32, bool), Error>,
+    fault: impl Fn() -> polyspec_orm::Result<()>,
+) -> Result<(i32, bool), Failure> {
+    let outcome = db
+        .transaction(async || {
+            fault()?;
+            let row = Item::new().connect(db).id(id).for_update().get().await?;
+            let step = decide(i64::from(row.get_status()?));
+            if let Ok((to, true)) = step {
+                row.set_status(to).update(false).await?;
+            }
+            Ok(step)
+        })
+        .await
+        .map_err(Failure::Database)?;
+    outcome.map_err(Failure::Machine)
 }

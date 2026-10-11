@@ -141,6 +141,11 @@
       "kind": "npm",
       "path": "tests/types/**",
       "reason": "the consumer files that the type check compiles (tests/types/consumer.ts); they are compiled, not run, so they have no vector case"
+    },
+    {
+      "kind": "rust",
+      "path": "tests/persist_retry.rs",
+      "reason": "the retry test of the persist example (B-4: a deadlock runs the transaction again, another error does not): a tool test with its own record (make rust-persist-test, S-31); the vector record of the kind holds the vector cases alone for check-parity"
     }
   ]
 }

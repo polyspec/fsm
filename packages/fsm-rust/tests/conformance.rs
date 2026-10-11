@@ -6,7 +6,6 @@
 mod persist;
 mod vectors;
 
-use polyspec_orm::TransactionOnceError;
 use fsm_rust::fsm::{Code, Error};
 use std::fmt::Debug;
 use std::path::PathBuf;
@@ -78,7 +77,7 @@ fn scratch_directory() -> Scratch {
 /// code); and the row then holds the code `stored_after`.
 pub async fn check_persist(
     stored: i32,
-    decide: impl FnOnce(i64) -> Result<(i32, bool), Error>,
+    decide: impl Fn(i64) -> Result<(i32, bool), Error>,
     expect: Result<(i32, bool), Expected>,
     stored_after: i32,
 ) {
@@ -90,7 +89,7 @@ pub async fn check_persist(
     persist::seed(&db, 1, stored).await.expect("seed the row");
     let outcome = match persist::transition(&db, 1, decide).await {
         Ok(step) => Ok(step),
-        Err(TransactionOnceError::Callback(persist::Failure::Machine(error))) => Err(error),
+        Err(persist::Failure::Machine(error)) => Err(error),
         Err(other) => panic!("the transaction failed in the database: {other:?}"),
     };
     check_result(outcome, expect);

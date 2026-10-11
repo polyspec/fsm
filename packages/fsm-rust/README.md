@@ -105,26 +105,32 @@ Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the v
 ## Persistence
 
 `examples/persist.rs` is the pattern of `docs/spec/fsm.md`, B-4 on SQLite with polyspec orm. The stored state is a code in a row.
-`transition` runs one attempt in one transaction: it reads the row under its lock (`for_update`), passes the stored code to the
-`decide` closure of the caller, and writes the row only when the closure reports a change. An error of the closure rolls the
-transaction back:
+`transition` runs the transaction of one transition: it reads the row under its lock (`for_update`), passes the stored code to
+the `decide` closure of the caller, and writes the row only when the closure reports a change. A deadlock runs the transaction
+again (orm `transaction`, three retries by default; the closure is pure, so a rerun is safe). A machine error is returned
+without a write, and a database error other than a deadlock is returned after one attempt:
 
 ```rust
-// packages/fsm-rust/examples/persist.rs, transition
-pub async fn transition(
+// packages/fsm-rust/examples/persist.rs, transition_with_fault (transition calls it with no fault)
+pub async fn transition_with_fault(
     db: &Db,
     id: i64,
-    decide: impl FnOnce(i64) -> Result<(i32, bool), Error>,
-) -> Result<(i32, bool), polyspec_orm::TransactionOnceError<Failure>> {
-    db.transaction_once(async || {
-        let row = Item::new().connect(db).id(id).for_update().get().await?;
-        let (to, changed) = decide(i64::from(row.get_status()?)).map_err(Failure::Machine)?;
-        if changed {
-            row.set_status(to).update(false).await?;
-        }
-        Ok((to, changed))
-    })
-    .await
+    decide: impl Fn(i64) -> Result<(i32, bool), Error>,
+    fault: impl Fn() -> polyspec_orm::Result<()>,
+) -> Result<(i32, bool), Failure> {
+    let outcome = db
+        .transaction(async || {
+            fault()?;
+            let row = Item::new().connect(db).id(id).for_update().get().await?;
+            let step = decide(i64::from(row.get_status()?));
+            if let Ok((to, true)) = step {
+                row.set_status(to).update(false).await?;
+            }
+            Ok(step)
+        })
+        .await
+        .map_err(Failure::Database)?;
+    outcome.map_err(Failure::Machine)
 }
 ```
 

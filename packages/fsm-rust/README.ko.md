@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: fe4b796d636c156c63319ac18a4ed16b448b52dde0f9fe1f4008ce6f54af9e29 -->
+<!-- source-sha256: 4d9f9d08a0be482130b6eb845ab4b3b45bb4a53a86b4b2b7b0eef54474705152 -->
 # fsm-rust
 
 [English](README.md)
@@ -104,25 +104,31 @@ E_CONFLICT Some(1) Some(3) Some(1)
 ## 영속화
 
 `examples/persist.rs`는 SQLite와 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다. `transition`은
-한 transaction 안에서 한 번의 시도를 실행한다. row를 잠금(`for_update`) 아래 읽고, 저장된 code를 호출자의 `decide` closure에 넘기며,
-closure가 변화를 알릴 때만 row를 쓴다. closure의 오류는 transaction을 되돌린다:
+한 전이의 transaction을 실행한다. row를 잠금(`for_update`) 아래 읽고, 저장된 code를 호출자의 `decide` closure에 넘기며,
+closure가 변화를 알릴 때만 row를 쓴다. deadlock이면 transaction을 다시 실행한다(orm `transaction`, 기본 세 번 재시도. closure는
+순수하므로 재실행해도 안전하다). machine 오류는 쓰기 없이 돌려주고, deadlock이 아닌 데이터베이스 오류는 한 번 시도한 뒤 돌려준다:
 
 ```rust
-// packages/fsm-rust/examples/persist.rs, transition
-pub async fn transition(
+// packages/fsm-rust/examples/persist.rs, transition_with_fault (transition calls it with no fault)
+pub async fn transition_with_fault(
     db: &Db,
     id: i64,
-    decide: impl FnOnce(i64) -> Result<(i32, bool), Error>,
-) -> Result<(i32, bool), polyspec_orm::TransactionOnceError<Failure>> {
-    db.transaction_once(async || {
-        let row = Item::new().connect(db).id(id).for_update().get().await?;
-        let (to, changed) = decide(i64::from(row.get_status()?)).map_err(Failure::Machine)?;
-        if changed {
-            row.set_status(to).update(false).await?;
-        }
-        Ok((to, changed))
-    })
-    .await
+    decide: impl Fn(i64) -> Result<(i32, bool), Error>,
+    fault: impl Fn() -> polyspec_orm::Result<()>,
+) -> Result<(i32, bool), Failure> {
+    let outcome = db
+        .transaction(async || {
+            fault()?;
+            let row = Item::new().connect(db).id(id).for_update().get().await?;
+            let step = decide(i64::from(row.get_status()?));
+            if let Ok((to, true)) = step {
+                row.set_status(to).update(false).await?;
+            }
+            Ok(step)
+        })
+        .await
+        .map_err(Failure::Database)?;
+    outcome.map_err(Failure::Machine)
 }
 ```
 

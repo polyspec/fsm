@@ -18,4 +18,4 @@ gen:
 	$(FSM_GEN) vectors --project $(ROOT) --kind rust --out $(DEST)/tests/vectors.rs
 
 test:
-	node $(ROOT)/scripts/kit/run-tests.mjs cargo --results .results/rust.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml
+	node $(ROOT)/scripts/kit/run-tests.mjs cargo --results .results/rust.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance
