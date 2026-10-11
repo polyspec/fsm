@@ -25,6 +25,6 @@ the enums `State` and `Event`, the class `Step`, and the functions `initial`, `c
 From this directory: `make install` installs the pinned dependencies (`composer.lock`, the same packages as the php package),
 `make gen` regenerates the files above, `make build` compiles the extension with `phpize`, `./configure` and `make` in `src/`,
 and `make test` builds it and runs the tests through `scripts/kit/run-tests.mjs`, loading the built module with
-`--php-extension`. `make clean` removes the phpize output, which `make gen` refuses to overwrite (a file without the status-gen
-header is never removed). The root `make gen-check` checks that the generated files and the copies are current, and
+`--php-extension`. `make gen` runs after a build without `make clean`: the phpize output is git-ignored, so gen skips it (it is
+neither refused nor removed). `make clean` removes the phpize output of the build. The root `make gen-check` checks that the generated files and the copies are current, and
 `make parity-php-ext` checks that every vector case ran once and passed.

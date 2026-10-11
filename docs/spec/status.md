@@ -171,7 +171,7 @@ The unit of idempotency is **(expected, event)**. The caller remembers the state
 - Store
   - `E_MERMAID_UNSUPPORTED`, `E_STORE_MIXED`, `E_STORE_NOT_EMPTY`, `E_STORE_NOT_CONFIGURED`
 - Generation
-  - `E_NOT_GENERATED`: `gen` or `vectors --kind` finds a file in its output directory without the generated header. Nothing is written or removed: the generator replaces only the files it wrote, so a hand-written file is never overwritten or deleted.
+  - `E_NOT_GENERATED`: `gen` or `vectors --kind` finds a file in its output directory without the generated header. Nothing is written or removed: the generator replaces only the files it wrote, so a hand-written file is never overwritten or deleted. Git-ignored files of the output directory are skipped: they are build outputs, not hand-written files (outside a git work tree nothing is ignored).
 
 ## B-6. Naming rule (one rule for all languages + a notation table per language)
 `order` in this document is an example machine key (an order lifecycle). Every generated name comes mechanically from the rule below. There are no suffixes or compromise names (`OrderMachine`, `OrderStatus`).

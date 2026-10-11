@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: 2b8609619cc84cac9fa66674d9f8b5987d8477b57957799b3c598b083dcbe087 -->
+<!-- source-sha256: 5256f557f169b7df58f47e708f5f9a145086489b34715376e2e028b02cfa1cd9 -->
 # polyspec/status-php-ext
 
 [English](README.md)
@@ -24,6 +24,6 @@ enum `Code`와 exception `Error`를 담는다.
 
 이 디렉터리에서 `make install`은 고정된 의존(`composer.lock`, php 패키지와 같은 패키지)을 설치하고, `make gen`은 위 파일을
 다시 생성하며, `make build`는 `src/`에서 `phpize`, `./configure`, `make`로 extension을 빌드한다. `make test`는 빌드한 뒤
-`scripts/kit/run-tests.mjs`로 테스트를 실행하며, 빌드한 module을 `--php-extension`으로 올린다. `make clean`은 phpize 출력을
-지우고, `make gen`은 그것을 덮어쓰지 않는다(status-gen header가 없는 파일은 지우지도 않는다). 루트 `make gen-check`는 생성 파일과
+`scripts/kit/run-tests.mjs`로 테스트를 실행하며, 빌드한 module을 `--php-extension`으로 올린다. `make gen`은 build 뒤에
+`make clean` 없이 실행한다. phpize 출력은 git이 무시하므로 gen은 그것을 건너뛴다(막지도 지우지도 않는다). `make clean`은 build의 phpize 출력을 지운다. 루트 `make gen-check`는 생성 파일과
 복사본이 최신인지 확인하고, `make parity-php-ext`는 모든 vector case가 한 번씩 통과했는지 확인한다.
