@@ -10,7 +10,11 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = file => readFileSync(path.join(ROOT, file), 'utf8');
-const WORKFLOWS = readdirSync(path.join(ROOT, '.github/workflows')).filter(name => name.endsWith('.yml')).sort().map(name => `.github/workflows/${name}`);
+// The workflows that kit.json vendors belong to kit: make kit-check keeps them byte for byte, so the rules of fsm's own workflows
+// below do not read them.
+const VENDORED = Object.keys(JSON.parse(read('kit.json')).vendoredFiles);
+const WORKFLOWS = readdirSync(path.join(ROOT, '.github/workflows')).filter(name => name.endsWith('.yml')).sort().map(name => `.github/workflows/${name}`)
+  .filter(file => !VENDORED.includes(file));
 const CI = read('.github/workflows/ci.yml');
 const PAGES = read('.github/workflows/pages.yml');
 const PLAN = read('docs/plans/fsm-v1.md');
@@ -69,6 +73,11 @@ test('the CI workflow has one job, check, on ubuntu-26.04', () => {
   assert.deepEqual([...ci.keys()], ['check']);
   assert.match(CHECK_JOB, /^ {4}runs-on: ubuntu-26\.04$/m);
   assert.match(pages.get('pages'), /^ {4}runs-on: ubuntu-26\.04$/m);
+});
+
+test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the release workflow that kit vendors', () => {
+  assert.deepEqual(VENDORED, ['.github/workflows/release.yml']);
+  assert.deepEqual(WORKFLOWS, ['.github/workflows/ci.yml', '.github/workflows/pages.yml']);
 });
 
 test('both workflows run on push to main and on workflow_dispatch', () => {

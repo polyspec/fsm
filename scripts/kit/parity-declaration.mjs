@@ -3,6 +3,7 @@
 // implementation or profile, or a stale entry is a finding of the rule `declaration`, and the other rules do not run on it.
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { matchesAny } from './glob.mjs';
 import { readConfig } from './schema-validate.mjs';
 
 export const DECLARATION = 'config/parity.json';
@@ -50,24 +51,28 @@ function patternError(source) {
   }
 }
 
-/** The case names that the path `cases` ($ followed by .<key> and [*] steps) selects in `value`, with an error for each step that finds nothing. */
+/**
+ * The case names that the path `cases` ($ followed by .<key> and [*] steps) selects in `value`, with an error for each step that
+ * finds nothing. `entries` pairs each name with `parent`, the object or array that holds it, which carries the admit list of its case.
+ */
 export function casesOf(value, cases) {
-  let selected = [{ value, where: '$' }];
+  let selected = [{ value, where: '$', parent: undefined }];
   const errors = [];
   for (const [step, key] of cases.slice(1).matchAll(/\.([A-Za-z_][A-Za-z0-9_-]*)|\[\*\]/g)) {
     selected = selected.flatMap(({ value: item, where }) => {
       if (key !== undefined) {
-        if (item && typeof item === 'object' && !Array.isArray(item) && key in item) return [{ value: item[key], where: `${where}${step}` }];
+        if (item && typeof item === 'object' && !Array.isArray(item) && key in item) return [{ value: item[key], where: `${where}${step}`, parent: item }];
         errors.push(`${where} has no ${key}`);
         return [];
       }
-      if (Array.isArray(item)) return item.map((entry, index) => ({ value: entry, where: `${where}[${index}]` }));
+      if (Array.isArray(item)) return item.map((entry, index) => ({ value: entry, where: `${where}[${index}]`, parent: item }));
       errors.push(`${where} is no array`);
       return [];
     });
   }
   for (const { value: name, where } of selected) if (typeof name !== 'string' || !name) errors.push(`${where} is no case name`);
-  return { names: selected.map(entry => entry.value).filter(name => typeof name === 'string' && name), errors };
+  const entries = selected.filter(entry => typeof entry.value === 'string' && entry.value).map(entry => ({ name: entry.value, parent: entry.parent }));
+  return { names: entries.map(entry => entry.name), entries, errors };
 }
 
 /** Whether `file` lies in the directory `root`. */
@@ -75,6 +80,59 @@ export const within = (root, file) => file.startsWith(`${root.replace(/\/+$/, ''
 
 /** Whether the directory `root` is the whole repository. */
 const wholeRepository = root => /^(?:\.?\/*|\.\/+\.?)$/.test(root);
+
+// A reference to the invoking environment in a runner value is ${NAME}; any other ${ form, such as a default, is no reference.
+const REFERENCE = /\$\{([^}]*)(\}?)/g;
+const NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+/**
+ * `value` with each ${NAME} replaced by its value in `env`. A form that is no reference is an error of `where`; without `env`
+ * only the forms are checked, and with it an unset or empty name is an error too.
+ */
+function expand(value, env, where, fail) {
+  return value.replace(REFERENCE, (whole, name, close) => {
+    if (!close || !NAME.test(name)) fail(`${where} holds ${whole}, which is no reference; a reference is \${NAME} and has no default`);
+    else if (!env) return whole;
+    else if (env[name] === undefined) fail(`${where} references ${whole}, which the environment does not set`);
+    else if (env[name] === '') fail(`${where} references ${whole}, which the environment sets to an empty string`);
+    else return env[name];
+    return whole;
+  });
+}
+
+/** The implementation with the references of its command, args and env values expanded from `env`, or only checked without it. */
+function expanded(entry, env, fail) {
+  return {
+    ...entry,
+    ...(entry.command === undefined ? {} : { command: expand(entry.command, env, 'command', fail) }),
+    ...(entry.args === undefined ? {} : { args: entry.args.map(arg => expand(arg, env, 'args', fail)) }),
+    ...(entry.env === undefined ? {} : { env: entry.env.map(variable => ({ ...variable, value: expand(variable.value, env, `env ${variable.name}`, fail) })) }),
+  };
+}
+
+/**
+ * The implementation with its references resolved from the invoking environment `env`, for the runs of its bindings:
+ * `{ implementation, errors }`, each error naming the value and the name that is unset or empty.
+ */
+export function resolveReferences(entry, env) {
+  const errors = [];
+  return { implementation: expanded(entry, env, message => errors.push(message)), errors };
+}
+
+// The test functions that go test runs (testing: Test, Benchmark and Fuzz followed by no lower-case letter, and Example) and
+// the attributes that make a Rust function a test (#[test], #[bench], #[tokio::test], #[test_case(..)], #[rstest]).
+const GO_TEST = /^func\s+((?:Test|Benchmark|Fuzz)(?![a-z])\w*|Example\w*)\s*\(/gm;
+const CARGO_TEST = /#\[\s*((?:\w+::)*(?:test|bench|test_case|rstest))\b[^\]]*\]/g;
+
+/** The tests that the native runner of a go or cargo support file would run in `text`, as the names to print. */
+function supportTests(runner, text) {
+  if (runner === 'go') return [...text.matchAll(GO_TEST)].map(match => `declares func ${match[1]}, which go test runs`);
+  if (runner === 'cargo') return [...text.matchAll(CARGO_TEST)].map(match => `holds ${match[0]}, which cargo test runs`);
+  return [];
+}
+
+/** The support files of `entry` among `files`. */
+export const supportFiles = (entry, files) => [...files].filter(file => matchesAny(entry.support ?? [], file));
 
 /** The JSON value of a tracked file, or an error of the declaration. */
 function readTrackedJson(root, files, file, where, errors) {
@@ -107,7 +165,8 @@ function snapshotOf(value, file, errors) {
 /**
  * The declaration of `root` resolved against `files` (the checked files): `{ errors, model }`. The model holds the config, the
  * implementations and profiles by name, the case names of each suite unit, the symbols of each snapshot, and `members(unit)`,
- * the implementations of the unit's profile, and `exclusion(unit, implementation)`.
+ * the implementations of the unit's profile, and `exclusion(unit, implementation)`. The environment references of the runner
+ * values are checked as forms only; the runs resolve them (resolveReferences).
  */
 export function readDeclaration(root, files) {
   if (!existsSync(path.join(root, DECLARATION))) return { errors: [finding('declaration', `${DECLARATION} does not exist; declare the implementations and units there (scripts/kit/schema/parity.schema.json)`)] };
@@ -125,6 +184,7 @@ export function readDeclaration(root, files) {
   for (const entry of config.implementations) {
     if (implementations.has(entry.name)) fail(`the implementation ${entry.name} is declared twice`);
     implementations.set(entry.name, entry);
+    expanded(entry, undefined, message => fail(`implementation ${entry.name}: ${message}`));
   }
   const profiles = new Map();
   for (const profile of config.profiles) {
@@ -159,6 +219,18 @@ export function readDeclaration(root, files) {
     }
     if (entry.errors && !files.has(entry.errors.file)) fail(`implementation ${entry.name}: ${entry.errors.file} does not exist`);
   }
+  // A support glob names files in the roots of its implementation that a test glob selects and that hold no test; one that
+  // selects none is stale. A Go or Rust support file holds no function that its native runner would run.
+  for (const entry of config.implementations) {
+    const testGlobs = [...entry.tests, ...config.testPatterns.filter(pattern => pattern.runner === entry.runner).flatMap(pattern => pattern.globs)];
+    for (const file of supportFiles(entry, files)) {
+      for (const test of supportTests(entry.runner, readFileSync(path.join(root, file), 'utf8'))) fail(`implementation ${entry.name}: the support file ${file} ${test}; a support file holds no test`);
+      if (!entry.roots.some(directory => within(directory, file))) fail(`implementation ${entry.name}: the support file ${file} lies outside ${entry.roots.join(', ')}, the roots of ${entry.name}`);
+    }
+    for (const glob of entry.support ?? []) {
+      if (![...files].some(file => matchesAny([glob], file) && matchesAny(testGlobs, file))) fail(`implementation ${entry.name}: the support glob ${glob} selects no test file; remove it`);
+    }
+  }
   const patterns = [
     ...config.implementations.filter(entry => entry.errors).map(entry => [`implementation ${entry.name}`, entry.errors.pattern]),
     ...(config.errors ? [['errors catalog', config.errors.catalog.pattern]] : []),
@@ -170,13 +242,14 @@ export function readDeclaration(root, files) {
   }
   const units = new Map();
   const cases = new Map();
+  const admissions = new Map();
   for (const unit of config.units) {
     if (units.has(unit.id)) fail(`the unit ${unit.id} is declared twice`);
     units.set(unit.id, unit);
     const where = `unit ${unit.id}`;
     const members = knownProfile(unit.profile, where) ? profiles.get(unit.profile) : [];
     const owned = unit.kind === 'suite' ? unit.bindings ?? [] : unit.symbols ?? [];
-    const misplaced = unit.kind === 'suite' ? ['symbols'] : ['file', 'cases', 'bindings'];
+    const misplaced = unit.kind === 'suite' ? ['symbols'] : ['file', 'cases', 'bindings', 'admit'];
     for (const key of misplaced) if (key in unit) fail(`${where}: a unit of kind ${unit.kind} has no ${key}`);
     const seen = new Set();
     for (const entry of owned) {
@@ -191,6 +264,7 @@ export function readDeclaration(root, files) {
     for (const key of ['file', 'cases', 'bindings']) if (!(key in unit)) fail(`${where}: a unit of kind suite needs ${key}`);
     for (const entry of unit.bindings ?? []) {
       if (!files.has(entry.test)) fail(`${where}: the test ${entry.test} of ${entry.implementation} does not exist`);
+      if (matchesAny(implementations.get(entry.implementation)?.support ?? [], entry.test)) fail(`${where}: the test ${entry.test} of ${entry.implementation} matches its support globs`);
       const runner = implementations.get(entry.implementation)?.runner;
       if ((runner === 'go' || runner === 'cargo') && !entry.symbol) fail(`${where}: the binding of ${entry.implementation} needs symbol, the ${runner === 'go' ? 'test function' : 'exact test path'} that runs the cases`);
       else if (runner === 'go' && !/^Test\w*$/.test(entry.symbol)) fail(`${where}: the go binding names ${entry.symbol}, which is no test function (^Test\\w*$)`);
@@ -204,12 +278,36 @@ export function readDeclaration(root, files) {
     if (!found.errors.length && !found.names.length) fail(`${where}: ${unit.cases} selects no case in ${unit.file}`);
     const repeated = found.names.filter((name, index) => found.names.indexOf(name) !== index);
     for (const name of new Set(repeated)) fail(`${where}: ${unit.file} repeats the case ${name}`);
-    // A harness line ends its case name at whitespace, and Go nests a subtest at each /.
+    // A case name holds no whitespace, which go test rewrites to _ in a subtest name, and Go nests a subtest at each /.
     for (const name of found.names) {
-      if (/\s/.test(name)) fail(`${where}: ${unit.file}: the case ${JSON.stringify(name)} holds whitespace, which no harness line can report`);
+      if (/\s/.test(name)) fail(`${where}: ${unit.file}: the case ${JSON.stringify(name)} holds whitespace, which no test name of the check can match`);
       if (goBound && name.includes('/')) fail(`${where}: ${unit.file}: the case ${JSON.stringify(name)} holds /, which Go nests as a subtest; the unit has a go binding`);
     }
     cases.set(unit.id, found.names);
+    if (unit.admit !== undefined) {
+      const admitted = new Map();
+      let carriers = 0;
+      for (const { name, parent } of found.entries) {
+        if (!parent || typeof parent !== 'object' || Array.isArray(parent)) {
+          fail(`${where}: case ${name} is no object, so ${unit.admit} cannot list the implementations that admit it`);
+          continue;
+        }
+        if (!(unit.admit in parent)) continue;
+        carriers++;
+        const list = parent[unit.admit];
+        if (!Array.isArray(list) || list.some(entry => typeof entry !== 'string')) {
+          fail(`${where}: case ${name} has ${unit.admit} that is no array of implementation names`);
+          continue;
+        }
+        // An empty list admits nothing, which is no list; a name twice is a copy that the list does not need.
+        if (list.length === 0) fail(`${where}: case ${name} has ${unit.admit} that is empty; list the implementations that admit it, or remove the key`);
+        for (const repeat of new Set(list.filter((entry, index) => list.indexOf(entry) !== index))) fail(`${where}: case ${name} lists ${repeat} twice in ${unit.admit}`);
+        for (const implementation of list) if (!members.includes(implementation)) fail(`${where}: case ${name} admits ${implementation}, which is not an implementation of the profile ${unit.profile}`);
+        admitted.set(name, list);
+      }
+      if (!found.errors.length && carriers === 0) fail(`${where}: no case of ${unit.file} has ${unit.admit}; remove the admit key or add it to the cases that it admits`);
+      admissions.set(unit.id, admitted);
+    }
   }
   for (const entry of config.nativeOnly ?? []) {
     if (!implementations.has(entry.implementation)) fail(`nativeOnly names ${entry.implementation}, which is no implementation`);
@@ -233,12 +331,29 @@ export function readDeclaration(root, files) {
     knownProfile(list.profile, `languageLists ${list.file}`);
     if (!files.has(list.file)) fail(`languageLists: ${list.file} does not exist`);
   }
+  // The case names of a suite that `implementation` runs: every case, except those whose admit list omits it.
+  const admitted = (unit, implementation) => (cases.get(unit.id) ?? []).filter(name => !admissions.get(unit.id)?.has(name) || admissions.get(unit.id).get(name).includes(implementation));
+  // An implementation of the profile of an admit suite that admits no case runs nothing: it leaves the profile, or R8 excludes
+  // it. An excluded one is already an R8 finding, so it is not repeated here.
+  for (const unit of config.units.filter(entry => entry.kind === 'suite' && entry.admit !== undefined && cases.has(entry.id))) {
+    for (const name of (profiles.get(unit.profile) ?? []).filter(member => implementations.has(member))) {
+      if (exclusions.has(`${unit.id}\0${name}`) || admitted(unit, name).length) continue;
+      fail(`unit ${unit.id}: no case of ${unit.file} admits ${name}, so the suite runs nothing for it; take ${name} out of the profile ${unit.profile}, or exclude it under R8 with its reason and item`);
+    }
+  }
   const model = {
     config,
     implementations,
     profiles,
     narrow,
     cases,
+    admit: unit => unit.admit,
+    admitted,
+    // The cases that an admit list keeps from some implementation of the profile, as `case`, its list and the implementations it omits.
+    notAdmitted: unit => (cases.get(unit.id) ?? []).flatMap((name) => {
+      const list = admissions.get(unit.id)?.get(name);
+      return list === undefined ? [] : [{ name, list, omitted: (profiles.get(unit.profile) ?? []).filter(member => implementations.has(member) && !list.includes(member)) }];
+    }).filter(entry => entry.omitted.length),
     snapshots,
     members: unit => (profiles.get(unit.profile) ?? []).filter(name => implementations.has(name)),
     exclusion: (unit, implementation) => exclusions.get(`${unit.id}\0${implementation}`),

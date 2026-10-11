@@ -16,6 +16,7 @@ import { Stop } from '../../scripts/kit/process.mjs';
 import { readJson, releaseSandbox, writeJson } from './release-sandbox.mjs';
 import { consumerSandbox } from './release-consumer-sandbox.mjs';
 import { BACKEND_BYTES, BACKEND_FILE } from './wheel-stubs.mjs';
+import { GENERATOR_LOCK, GENERATOR_WHEEL, REPOSITORY, SIBLING, SIBLING_URL, SIBLING_WHEEL, addSibling, generatorRequires, siblingLine } from './sibling-sandbox.mjs';
 
 const stop = (fn, pattern) => assert.throws(fn, error => error instanceof Stop && pattern.test(error.message), String(pattern));
 const escaped = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -57,11 +58,10 @@ test('assets refuses a pyproject.toml whose project name differs from the config
   assert.deepEqual(box.pipCalls(), []);
 });
 
-test('assets refuses a Requires-Dist that is not a plain name==version and names it', (t) => {
+test('assets refuses a Requires-Dist that is neither a registry pin nor a polyspec release asset, and names it', (t) => {
   const box = releaseSandbox(t);
   const tag = box.release('0.0.1');
   const refused = [
-    ['kit-url @ https://example.com/kit-url-1.0.0-py3-none-any.whl', 'a URL'],
     ['kit-git @ git+https://example.com/kit-git.git', 'a git source'],
     ['kit-range>=1.0', 'a range'],
     ['kit-extra==1.0.0; extra == "dev"', 'a marker'],
@@ -69,15 +69,64 @@ test('assets refuses a Requires-Dist that is not a plain name==version and names
   ];
   for (const [line, form] of refused) {
     box.wheelRequires([line]);
-    stop(() => release.assets(context(box), tag), new RegExp(escaped(`Requires-Dist ${line} is ${form}, not a plain name==version`)));
+    stop(() => release.assets(context(box), tag), new RegExp(escaped(`Requires-Dist ${line} is ${form}, not name==version or a polyspec release asset with a sha256 fragment`)));
   }
 });
 
-test('assets accepts a Requires-Dist that is a plain name==version', (t) => {
+test('assets refuses a URL that names a package consumers.wheel.polyspec does not declare, and names it', (t) => {
+  const box = releaseSandbox(t);
+  const tag = box.release('0.0.1');
+  const line = 'kit-url @ https://example.com/kit-url-1.0.0-py3-none-any.whl#sha256=' + 'a'.repeat(64);
+  box.wheelRequires([line]);
+  stop(() => release.assets(context(box), tag), new RegExp(escaped(`Requires-Dist ${line} names kit-url, which consumers.wheel.polyspec does not declare`)));
+});
+
+test('assets accepts a Requires-Dist that is a plain name==version the lock holds', (t) => {
   const box = releaseSandbox(t);
   const tag = box.release('0.0.1');
   box.wheelRequires(['ruff==0.16.10']);
   assert.ok(release.assets(context(box), tag).includes(WHEEL));
+});
+
+test('assets refuses a Requires-Dist that the lock of the wheel does not hold, and names the lock', (t) => {
+  const box = releaseSandbox(t);
+  const tag = box.release('0.0.1');
+  box.wheelRequires(['six==1.16.0']);
+  stop(() => release.assets(context(box), tag), /six==1\.16\.0 has no entry in packages\/fixture-python\/pylock\.wheel\.toml/);
+});
+
+const KIT_LIB_URL = 'https://github.com/polyspec/kit-lib/releases/download/v0.0.1/kit_lib-0.0.1-py3-none-any.whl';
+const KIT_LIB_SHA = 'a'.repeat(64);
+// A sandbox whose config declares kit-lib as a polyspec package and whose lock holds its release asset.
+const polyspecSandbox = (t) => releaseSandbox(t, {
+  mutate: (root) => {
+    const config = readJson(root, 'config/release.json');
+    writeJson(root, 'config/release.json', { ...config, consumers: { ...config.consumers, wheel: { ...config.consumers.wheel, polyspec: { 'kit-lib': 'https://github.com/polyspec/kit-lib' } } } });
+    const lock = readFileSync(path.join(root, 'packages/fixture-python/pylock.wheel.toml'), 'utf8');
+    writeFileSync(path.join(root, 'packages/fixture-python/pylock.wheel.toml'), `${lock}\n[[packages]]\nname = "kit-lib"\nversion = "0.0.1"\narchive = { url = "${KIT_LIB_URL}", hashes = { sha256 = "${KIT_LIB_SHA}" } }\n`);
+  },
+});
+
+test('assets accepts a polyspec direct reference whose fragment is the sha256 of the lock', (t) => {
+  const box = polyspecSandbox(t);
+  const tag = box.release('0.0.1');
+  box.wheelRequires([`kit-lib @ ${KIT_LIB_URL}#sha256=${KIT_LIB_SHA}`]);
+  assert.ok(release.assets(context(box), tag).includes(WHEEL));
+});
+
+test('assets refuses a polyspec reference without its fragment, before it packs the wheel', (t) => {
+  const box = polyspecSandbox(t);
+  const tag = box.release('0.0.1');
+  box.wheelRequires([`kit-lib @ ${KIT_LIB_URL}`]);
+  stop(() => release.assets(context(box), tag), /kit-lib @ .* has no #sha256= fragment/);
+  assert.equal(box.pipCalls().filter(call => call.args[2] === 'wheel').length, 1, 'the build ran once, the metadata check refused the wheel after it');
+});
+
+test('assets refuses a polyspec fragment that differs from the sha256 of the lock', (t) => {
+  const box = polyspecSandbox(t);
+  const tag = box.release('0.0.1');
+  box.wheelRequires([`kit-lib @ ${KIT_LIB_URL}#sha256=${'b'.repeat(64)}`]);
+  stop(() => release.assets(context(box), tag), new RegExp(`the fragment has the sha256 ${'b'.repeat(64)}, packages/fixture-python/pylock\\.wheel\\.toml holds ${KIT_LIB_SHA} for kit-lib`));
 });
 
 test('assets refuses a pyproject whose build backend is not the pinned requirement, before it builds', (t) => {
@@ -134,9 +183,16 @@ test('release-consumer installs the wheel with --no-index and --require-hashes i
   const box = consumerSandbox(t);
   box.lock();
   assert.equal(consumer.installConsumers(box.ctx(), '0.0.1', path.join(box.root, release.ASSETS)), 4);
-  const install = box.calls('python').find(call => call.args.includes('--require-hashes'));
+  const [venvCall] = box.calls('checkout-python3').filter(call => call.args[1] === 'venv');
+  assert.deepEqual(venvCall.args.slice(0, 4), ['-m', 'venv', '--copies', '--without-pip'], 'the venv is made through makeVenv: a copy of the checkout Python with no pip');
+  const venv = venvCall.args[4];
+  const dependencies = box.calls('checkout-python3').find(call => call.args.includes('--only-binary'));
+  assert.equal(dependencies.requirements, `ruff==0.16.10 --hash=sha256:${'1'.repeat(64)}\n`, 'the lock of the wheel is installed with its hashes first');
+  assert.ok(box.calls('checkout-python3').some(call => call.args.at(-1) === 'check'), 'pip check runs in the venv');
+  const install = box.calls('checkout-python3').find(call => call.args.includes('--no-index'));
   assert.ok(install, 'pip install ran');
-  assert.deepEqual(install.args.slice(0, 8), ['-m', 'pip', 'install', '--no-input', '--disable-pip-version-check', '--no-index', '--require-hashes', '--no-deps']);
+  assert.deepEqual(install.args.slice(0, 9), ['-m', 'pip', '--python', path.join(venv, 'bin', 'python'), 'install', '--no-input', '--disable-pip-version-check', '--no-index', '--require-hashes']);
+  assert.ok(install.args.includes('--no-deps'));
   assert.equal(install.requirements, `${path.join(box.root, release.ASSETS, WHEEL)} --hash=sha256:${fileDigest(path.join(box.root, release.ASSETS, WHEEL))}\n`);
   assert.ok(box.calls('python').some(call => call.args.join(' ') === '-c import kit_fixture'), 'the smoke import ran');
 });
@@ -165,4 +221,56 @@ test('config: a wheel package needs its consumer smoke and a pinned build backen
   stop(() => release.loadConfig(edit(c => { delete c.consumers.wheel; return c; }).root), /consumers\.wheel is missing; the wheel packages \[kit-fixture\] need a consumer project that installs them/);
   stop(() => release.loadConfig(edit(c => { delete c.buildBackend; return c; }).root), /buildBackend is missing; the wheel packages \[kit-fixture\] need a pinned build backend/);
   stop(() => release.loadConfig(edit(c => { c.proof.gitTag['packages/fixture-rust/Cargo.toml'].kind = 'python'; return c; }).root), /proof\.gitTag\.packages\/fixture-rust\/Cargo\.toml\.kind is "python", the allowed values are rust/);
+});
+
+test('assets accepts a sibling of the same release named by its asset URL without a hash, and names both wheels', (t) => {
+  const box = releaseSandbox(t, { mutate: addSibling });
+  const tag = box.release('0.0.1');
+  box.wheelRequires(generatorRequires(siblingLine()));
+  assert.deepEqual(release.assets(context(box), tag).sort(), ['fixture-app-npm-0.0.1.tgz', 'fixture-lib-npm-0.0.1.tgz', GENERATOR_WHEEL, SIBLING_WHEEL, 'polyspec-kit-fixture-php-0.0.1.zip'].sort());
+});
+
+test('assets refuses a sibling named with a #sha256 fragment, a name==version and another version, and names each', (t) => {
+  const cases = [
+    [siblingLine(`${SIBLING_URL}#sha256=${'c'.repeat(64)}`), `Requires-Dist ${siblingLine(`${SIBLING_URL}#sha256=${'c'.repeat(64)}`)} names the sibling ${SIBLING} of this release with a #sha256 fragment; a sibling is named by its URL without a hash, since its sha256 is known only after the release builds it`],
+    [`${SIBLING}==0.0.1`, `Requires-Dist ${SIBLING}==0.0.1 names the sibling ${SIBLING} of this release by name==version; it must be a direct reference to its release asset`],
+    [siblingLine(`${REPOSITORY}/releases/download/v0.0.2/kit_fixture_validator-0.0.2-py3-none-any.whl`), `names ${SIBLING} at v0.0.2, the release is v0.0.1`],
+  ];
+  for (const [line, message] of cases) {
+    const box = releaseSandbox(t, { mutate: addSibling });
+    const tag = box.release('0.0.1');
+    box.wheelRequires(generatorRequires(line));
+    stop(() => release.assets(context(box), tag), new RegExp(escaped(message)));
+  }
+});
+
+test('assets refuses a sibling from another repository or with another file name, and names the expected form', (t) => {
+  const other = siblingLine('https://example.com/polyspec/other/releases/download/v0.0.1/kit_fixture_validator-0.0.1-py3-none-any.whl');
+  const wrong = siblingLine(`${REPOSITORY}/releases/download/v0.0.1/kit_other-0.0.1-py3-none-any.whl`);
+  for (const [line, message] of [[other, `is not a release asset of ${REPOSITORY}, the repository of this release`], [wrong, `the file kit_other-0.0.1-py3-none-any.whl of v0.0.1 is not ${SIBLING_WHEEL}`]]) {
+    const box = releaseSandbox(t, { mutate: addSibling });
+    const tag = box.release('0.0.1');
+    box.wheelRequires(generatorRequires(line));
+    stop(() => release.assets(context(box), tag), new RegExp(escaped(message)));
+  }
+});
+
+test('assets refuses a lock of the wheel that holds the sibling, and names the lock', (t) => {
+  const box = releaseSandbox(t, {
+    mutate: (root) => {
+      addSibling(root);
+      const lock = readFileSync(path.join(root, GENERATOR_LOCK), 'utf8');
+      writeFileSync(path.join(root, GENERATOR_LOCK), `${lock}\n[[packages]]\nname = "${SIBLING}"\nversion = "0.0.1"\narchive = { url = "${SIBLING_URL}", hashes = { sha256 = "${'d'.repeat(64)}" } }\n`);
+    },
+  });
+  const tag = box.release('0.0.1');
+  box.wheelRequires(generatorRequires(siblingLine()));
+  stop(() => release.assets(context(box), tag), new RegExp(escaped(`${GENERATOR_LOCK}: ${SIBLING} is a wheel of this release; the lock of kit-fixture holds no sibling`)));
+});
+
+test('config refuses a consumers.wheel.polyspec entry that names a wheel package of the configuration', (t) => {
+  const box = releaseSandbox(t, { mutate: addSibling });
+  const config = readJson(box.root, 'config/release.json');
+  writeJson(box.root, 'config/release.json', { ...config, consumers: { ...config.consumers, wheel: { ...config.consumers.wheel, polyspec: { [SIBLING]: REPOSITORY } } } });
+  stop(() => release.loadConfig(box.root), new RegExp(escaped(`config/release.json: consumers.wheel.polyspec.${SIBLING} names the wheel package ${SIBLING} of this repository`)));
 });
