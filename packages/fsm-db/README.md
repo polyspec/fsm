@@ -50,6 +50,11 @@ lock.
 The lock tables have no foreign key to `machine`, so the lock of a machine that was removed from the definitions stays.
 orm also creates its own table `orm__row_lock` in the database (observed with SQLite); fsm-db does not read or write it.
 
+The db store has no committed record, so its baseline is the stored lock rows that `load` reads before a command writes them
+(`docs/spec/fsm.md`, B-3). A change that a command could write is refused by the stored-lock rules (`E_CODE_REUSED`,
+`E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`), so `E_LOCK_REGRESSED` does not arise through a command here. Rows changed or deleted
+outside fsm (in SQL) leave no record that a command could compare, so they are not detected.
+
 ## DSN
 
 The DSN is the value of the environment variable that `dsnEnv` names. fsm-db reads no DSN from any other place. The
@@ -124,7 +129,8 @@ $ fsm-db check --project ./new-machines
 ### lock
 
 Runs the core `lock` command on the database (`docs/spec/fsm.md`, B-3). `--rename machine.old=new` renames a state key
-before the lock is written; the renamed state keeps its code. Names contain no `.` and no `=`.
+before the lock is written; the renamed state keeps its code. Names contain no `.` and no `=`. The lock is judged by the stored rows (see the
+tables section): a database has no commit, so `E_LOCK_REGRESSED` does not arise here.
 
 ```sh
 $ fsm-db lock --project ./order-machines --rename order.draft=created

@@ -153,6 +153,22 @@ The lock is committed together with the definitions; it is the record of the cod
 and `fsm-db lock` write it, the GUI save writes it, and `copy` writes the source lock unchanged. `check`, `vectors` and `gen`
 only read it. When the lock and the definitions disagree, those three commands fail with `E_LOCK_MISMATCH`.
 
+The committed lock is the baseline (`docs/spec/fsm.md`, B-3). The json and mermaid stores read it from git HEAD (`git show
+HEAD:./fsm.lock.json`); the db store has no commit and compares with its stored rows. A lock that loses a committed code, removes a
+committed reserved code from `reserved` or gives it to a state, or swaps the codes of committed keys is refused with
+`E_LOCK_REGRESSED`, and nothing is written. `lock`, `save`, `check`, `gen`, `vectors` and `copy` all apply this rule. A rename of
+a state that is not committed yet is accepted: it keeps the code and drops the old key. With `order` committed as above,
+deleting `fsm.lock.json` and swapping the codes of `paid` and `shipped` gives (the real output of `fsm-gen lock`):
+
+```
+[fsm-gen] E_LOCK_REGRESSED order $.codes: code 2 was paid in the committed lock of order and is shipped now, while paid keeps another code
+[fsm-gen] E_LOCK_REGRESSED order $.codes: code 3 was shipped in the committed lock of order and is paid now, while shipped keeps another code
+```
+
+A project outside git, or one whose `fsm.lock.json` is untracked or ignored, has an empty baseline and gets no such protection; the
+lock rules then judge the stored lock alone. A database has no committed record in this version, so there `E_LOCK_REGRESSED` does
+not arise; rows changed or deleted outside fsm (in SQL) are not detected.
+
 ## Transitions
 
 A transition is computed from two states: the **expected** state, which the caller read before it asked for the event, and
@@ -207,6 +223,7 @@ inside the machine (such as `$.states[1].code`) and a message. A finding prints 
 | `E_CODE_RANGE` | a code is outside 1 to 2147483647 |
 | `E_UNKNOWN_STATE_REF` | an edge names a state that the machine does not have |
 | `E_LOCK_MISMATCH` | the lock does not hold exactly the codes of the states, or a machine that is not defined has codes in the lock |
+| `E_LOCK_REGRESSED` | the lock loses a committed code, unreserves one or gives it to a state, or swaps the codes of committed keys (json and mermaid: against git HEAD) |
 | `E_CODE_REUSED` | a state takes a code that the lock holds as reserved |
 | `E_CODE_KEY_CHANGED` | a state keeps its code but its key changed, without `--rename` |
 | `E_CODE_CHANGED` | a key that the lock maps to a code is given another code |

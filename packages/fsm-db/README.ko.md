@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: cc0423112fdc0df5f23d982e27f4755b996c6e66745f31a62b230be57bb68a40 -->
+<!-- source-sha256: 4c19b3ab8951154c6bf0cbdda0d8e97f2923d8bbd3c814005aea8f9711f3e5d4 -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -48,6 +48,10 @@ table은 `schema/fsm.dbs`(dbspec `fsm`)의 문서 집합이다. 앞의 네 table
 
 lock table에는 `machine`으로 가는 외래 키가 없다. 그래서 정의에서 지운 머신의 lock도 남는다.
 orm은 자신의 table `orm__row_lock`도 database에 만든다(SQLite에서 관찰). fsm-db는 이 table을 읽지도 쓰지도 않는다.
+
+db store에는 커밋된 기록이 없으므로 기준선은 `load`가 명령의 쓰기 전에 읽는 저장된 lock 행이다(`docs/spec/fsm.md`, B-3). 명령이
+쓸 수 있는 변경은 저장된 lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`)이 거부하므로, 여기서는 명령으로
+`E_LOCK_REGRESSED`가 생기지 않는다. fsm 밖(SQL)에서 바뀌거나 지워진 행은 명령이 비교할 기록이 없어 감지하지 않는다.
 
 ## DSN
 
@@ -121,7 +125,8 @@ $ fsm-db check --project ./new-machines
 ### lock
 
 database에 core `lock` 명령을 실행한다(`docs/spec/fsm.md`, B-3). `--rename machine.old=new`는 lock을 쓰기 전에 state key의
-이름을 바꾸며, 이름이 바뀐 state는 code를 유지한다. 이름에는 `.`과 `=`을 쓸 수 없다.
+이름을 바꾸며, 이름이 바뀐 state는 code를 유지한다. 이름에는 `.`과 `=`을 쓸 수 없다. lock은 저장된 행으로 판정한다(표 절 참고): database에는 커밋이 없어 여기서 `E_LOCK_REGRESSED`는
+생기지 않는다.
 
 ```sh
 $ fsm-db lock --project ./order-machines --rename order.draft=created
