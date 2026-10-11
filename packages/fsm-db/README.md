@@ -76,7 +76,7 @@ sqlite:///var/lib/orm_example.sqlite?_pragma=busy_timeout(5000)
   `_pragma=busy_timeout(ms)` changes that wait.
 - The tests of this package run on SQLite (`make db-test`). Its store tests (`db-store.test.mjs` and `store-contract-all.test.mjs`)
   also run on PostgreSQL and MySQL: `make db-test-postgres` and `make db-test-mysql` read the DSN from `FSM_TEST_PG_DSN` and
-  `FSM_TEST_MYSQL_DSN`, and fail when it is not set. The CLI and command tests run on SQLite only (plan C-6).
+  `FSM_TEST_MYSQL_DSN`, and fail when it is not set. The CLI and command tests run on the same dialects: each case gets an empty database, which on PostgreSQL and MySQL the admin DSN of `FSM_TEST_PG_ADMIN_DSN` or `FSM_TEST_MYSQL_ADMIN_DSN` creates and the file drops (plan C-6).
 
 ```sh
 export FSM_DSN=sqlite:///var/lib/fsm/order.sqlite
@@ -202,8 +202,9 @@ $ fsm-gen check --project ./export
 ## Checks
 
 `make db-test` runs the tests of this package through `scripts/kit/run-tests.mjs`; it needs `make db-deps` first. Everything
-runs on SQLite; the store tests also run on PostgreSQL and MySQL (`make db-test-postgres`, `make db-test-mysql`) with the DSNs
-of `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN`.
+runs on SQLite; the store, CLI and command tests also run on PostgreSQL and MySQL (`make db-test-postgres`, `make db-test-mysql`)
+with the DSNs of `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` and the admin DSNs of `FSM_TEST_PG_ADMIN_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN`,
+which create the empty databases of the CLI tests.
 
 - `tests/db-store.test.mjs` checks the store: json → db → json and db → json → db give the same files and rows, a 64-character
   key round-trips unchanged, a failed write rolls back every row that it deleted and wrote, `copy` into a non-empty database is

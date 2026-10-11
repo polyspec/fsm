@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: b08923a2dc0bbf139ce1cc36be24cfdc211e13e66da6f8beaa5eda021cd6e464 -->
+<!-- source-sha256: 6c9a5568e410abc053063770130f4acf67944ac659c84db5b7e97ff3e9f1b69b -->
 # polyspec/fsm
 
 [English](README.md)
@@ -432,7 +432,7 @@ $ fsm-gen check --project ./broken
 | `make documents-check` | 모든 문서에 현재의 `source-sha256` stamp를 가진 한국어 짝이 있고 링크가 유효한지 |
 | `make name-check` | 추적 파일이 라이브러리를 옛 이름으로 부르지 않는지 |
 | `make gui-test`, `make compiler-test`, `make db-test` | 각 도구의 테스트 |
-| `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | PostgreSQL과 MySQL에서의 DB store 테스트, npm의 영속화 동시성 증명, 각 kind의 persist case. `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`을 읽으며, 없으면 exit 2로 멈추고 dialect를 건너뛰지 않는다(계획 C-6). SQLite에서도 돈다(`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
+| `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | PostgreSQL과 MySQL에서의 DB store, CLI, command 테스트, npm의 영속화 동시성 증명, 각 kind의 persist case. `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`을 읽고(CLI 테스트의 빈 database에는 `FSM_TEST_PG_ADMIN_DSN`과 `FSM_TEST_MYSQL_ADMIN_DSN`도 읽으며), 없으면 exit 2로 멈추고 dialect를 건너뛰지 않는다(계획 C-6). SQLite에서도 돈다(`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
 | `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | 각 언어 패키지의 테스트 |
 
 각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 `test_<feature>__<id>`다.

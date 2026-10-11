@@ -129,7 +129,7 @@ stateDiagram-v2
   - `run` gives byte-identical results on all three stores: `gen` of every kind with its required options (`goModule` for go, `phpNamespace` for php and php-ext, `phpExtName` for php-ext) and `vectors`, including the vectors file of every kind.
   - A store that drops a field (for example `final`) fails these cases: the core refuses the round trip, or the bytes differ.
 
-- Dialects (S-37): the db store is tested on SQLite (every test, `make db-test`), and its store tests also on PostgreSQL 17 and MySQL 8.4 (`make db-test-postgres`, `make db-test-mysql`; plan C-6). The DSN forms are the orm forms of `packages/fsm-db/README.md`.
+- Dialects (S-37): the db store is tested on SQLite (every test, `make db-test`), and its store, CLI and command tests also on PostgreSQL 17 and MySQL 8.4 (`make db-test-postgres`, `make db-test-mysql`; the CLI tests create their empty databases through the admin DSN, plan C-6). The DSN forms are the orm forms of `packages/fsm-db/README.md`.
 
 ## B-3. Code immutability (lock)
 - The code is the identity; the key is the name. A released code never changes meaning and is never reused.

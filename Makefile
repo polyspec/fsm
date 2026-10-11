@@ -160,15 +160,19 @@ gen-check: $(NPM_DEP) $(GO_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP)
 
 # db-test-postgres and db-test-mysql run the DB store tests on the server dialects that the documents name (docs/plans/fsm-v1.md, C-6):
 # db-store.test.mjs and store-contract-all.test.mjs, which open the database of FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN through the dialect
-# helper of tests/dialect.mjs. The DSN names an existing database; a missing DSN fails the target and never skips it. The two files
-# share the database, so they run one after the other. The CLI and command tests stay on SQLite (docs/plans/execution-checklist.md, S-37-2).
-DB_DIALECT_TESTS := packages/fsm-db/tests/db-store.test.mjs packages/fsm-db/tests/store-contract-all.test.mjs
+# helper of tests/dialect.mjs. The DSN names the server and its user; a missing DSN fails the target and never skips it. The CLI and
+# command tests (cli.test.mjs, command.test.mjs) run on the same dialect with an empty database of their own, which the admin DSN
+# (FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_ADMIN_DSN) creates and drops (docs/plans/fsm-v1.md, C-6; docs/plans/execution-checklist.md,
+# S-37-2). The files share the server, so they run one after the other.
+DB_DIALECT_TESTS := packages/fsm-db/tests/db-store.test.mjs packages/fsm-db/tests/store-contract-all.test.mjs packages/fsm-db/tests/cli.test.mjs packages/fsm-db/tests/command.test.mjs
 db-test-postgres: $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
+	@$(call require_dsn,FSM_TEST_PG_ADMIN_DSN)
 	FSM_TEST_DIALECT=postgres node scripts/kit/run-tests.mjs node --results .results/db-test-postgres.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 db-test-mysql: $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
+	@$(call require_dsn,FSM_TEST_MYSQL_ADMIN_DSN)
 	FSM_TEST_DIALECT=mysql node scripts/kit/run-tests.mjs node --results .results/db-test-mysql.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 # db-deps installs the packages of packages/fsm-db (orm and ordered-json from their release tarballs, pinned in its
