@@ -21,7 +21,7 @@ const LOCKS = [
   'docs/package-lock.json',
   'packages/fsm-php/composer.lock',
   'packages/fsm-php-ext/composer.lock',
-  'packages/fsm-python/pyproject.toml',
+  'packages/fsm-python/uv.lock',
   'packages/fsm-go/go.sum',
   'packages/fsm-rust/Cargo.lock',
 ];
@@ -133,6 +133,16 @@ test('packages-test installs the dependencies of every kind', (t) => {
   for (const kind of ['npm', 'go', 'php', 'php-ext', 'python', 'rust']) {
     assert.ok(lineIndex(out, INSTALL[kind]) >= 0, `no install of ${kind} in packages-test:\n${out}`);
   }
+});
+
+test('the python environment is keyed on uv.lock: a newer lock installs it again, a newer manifest alone does not', (t) => {
+  const dir = sandbox(t, { installed: true });
+  const now = Date.now() / 1000;
+  put(dir, { 'packages/fsm-python/pyproject.toml': '\n' });
+  utimesSync(path.join(dir, 'packages/fsm-python/pyproject.toml'), now + 60, now + 60);
+  assert.equal(lineIndex(dryRun(dir, 'test-python'), INSTALL.python), -1, 'pyproject.toml alone reinstalls the python environment');
+  utimesSync(path.join(dir, 'packages/fsm-python/uv.lock'), now + 120, now + 120);
+  assert.ok(lineIndex(dryRun(dir, 'test-python'), INSTALL.python) >= 0, 'a newer uv.lock does not reinstall the python environment');
 });
 
 test('the python environment is created with the Python 3.14 link of install-python', (t) => {

@@ -134,12 +134,12 @@ The python package needs Python 3.14 in a virtual environment. From the checkout
 
 ```sh
 make install-python                    # online: Python 3.14 with uv, linked into var/tools/bin/python3 (no system path changes)
-make -C packages/fsm-python install    # online: .venv with Python 3.14 and the orm release pinned in pyproject.toml (v0.0.7)
+make -C packages/fsm-python install    # online: .venv with Python 3.14 and every package of uv.lock (orm v0.0.7 by commit, artifacts by sha256)
 make test-python                       # offline: the vector cases and the persist cases, with the venv's python3 first on PATH
 ```
 
 The run passes 89 of 89 cases. `tests/test_conformance.py` generates one unittest method per vector case, named
 `test_<feature>__<id>`, and asserts the result of the generated function or its error code. The generated files are committed,
 so `test` needs no generator; `make -C packages/fsm-python gen` regenerates them, and the root `make gen-check` checks that they
-are current. `make parity-python` checks the result record of every case. No lock file is committed for this kind; the exact
-pins in `pyproject.toml` fix the dependency tree.
+are current. `make parity-python` checks the result record of every case. `uv.lock` locks every package of the tree (exact versions, sha256
+hashes, git commits), and `make python-lock-check` checks it against `pyproject.toml`.

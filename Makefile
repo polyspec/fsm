@@ -15,9 +15,10 @@ TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test db-te
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test install-python-test make-install-test rust-persist-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql python-lock-test python-lock-check parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust rust-persist-test npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test readme-test readme-check install-python-test install make-install-test python-lock-test python-lock-check
+
 
 
 
@@ -27,13 +28,14 @@ CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-ch
 # A dependency is a file target keyed on the lock or manifest it installs from. A fresh clone installs it once; a later run finds
 # the file newer than its lock, runs nothing and needs no network. A target that uses a package names its file as a prerequisite,
 # so make installs what that target needs before the target's recipe and nothing else. go and cargo leave no file of their own:
-# their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the Python 3.14 link of install-python.
+# their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the uv.lock of packages/fsm-python and on the Python 3.14 link of install-python.
 # install builds every dependency, with the toolchains of install-tools. ONLINE marks each download, as it does in kit.mk.
 NPM_DEP := packages/fsm-npm/node_modules/.package-lock.json
 PHP_DEP := packages/fsm-php/vendor/composer/installed.json
 PHP_EXT_DEP := packages/fsm-php-ext/vendor/composer/installed.json
 PYTHON_BIN := var/tools/bin/python3
 PYTHON_DEP := packages/fsm-python/.venv/.installed
+PYTHON_LOCK := packages/fsm-python/uv.lock
 GO_DEP := var/deps/go
 RUST_DEP := var/deps/rust
 DB_DEP := packages/fsm-db/node_modules/.package-lock.json
@@ -53,8 +55,8 @@ $(PHP_EXT_DEP): packages/fsm-php-ext/composer.lock
 $(PYTHON_BIN):
 	$(MAKE) install-python
 
-$(PYTHON_DEP): packages/fsm-python/pyproject.toml $(PYTHON_BIN)
-	$(ONLINE) $(MAKE) -C packages/fsm-python install
+$(PYTHON_DEP): $(PYTHON_LOCK) $(PYTHON_BIN)
+	$(ONLINE) $(MAKE) -C packages/fsm-python install UV=$(UV)
 	touch $@
 
 $(GO_DEP): packages/fsm-go/go.sum
@@ -90,6 +92,15 @@ check:
 # first, and a present dependency is not installed again (docs/plans/execution-checklist.md, S-29).
 make-install-test:
 	node scripts/kit/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs scripts/kit/kit.mk --inputs contracts/layout.json --inputs packages --inputs tests/make-install -- tests/make-install
+
+# python-lock-test runs the tests of scripts/check-python-lock.mjs; python-lock-check checks that uv.lock of packages/fsm-python locks
+# every package with an exact version, hashes (git packages: a commit) and agrees with pyproject.toml. The kit dependency gate
+# reads no uv.lock, so this check covers the python lock (docs/plans/fsm-v1.md, C-1; docs/plans/execution-checklist.md, S-34).
+python-lock-test:
+	node scripts/kit/run-tests.mjs node --results .results/python-lock-test.json --inputs scripts/check-python-lock.mjs --inputs tests/check-python-lock --inputs packages/fsm-python/pyproject.toml --inputs $(PYTHON_LOCK) -- tests/check-python-lock
+
+python-lock-check:
+	node scripts/check-python-lock.mjs
 
 # layout-test runs the tests of scripts/check-layout.mjs; layout-check checks the language packages against
 # contracts/layout.json (docs/plans/fsm-v1.md, C-2).

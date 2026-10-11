@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 2622832870b4f0e990fbe73049cc30470ae79fbfdfc0e0a316d252f3469070ce -->
+<!-- source-sha256: 76277fc9181e4a38d7ac2ad8ceab8fe3c602e48f8ea2c1730e549834ab15b148 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -68,7 +68,8 @@
 | S-31-1 | layout 계약이 rust retry test 파일을 허용한다: S-31 commit은 `tests/persist_retry.rs`를 차이로 선언했지만 check-layout은 rust의 허용 glob에도 있어야 한다. S-31 commit 뒤 layout-check가 찾았다 | `make layout-check`와 `make layout-test`가 통과한다 | [o] |
 | S-32 | compiler의 import를 명시하고 테스트한다: compiler는 clone의 벤더 kit helper(`scripts/kit/files.mjs`, `git.mjs`, `process.mjs`)를 import하는데 plan은 의존성 0이라 한다. plan이 compiler가 import할 수 있는 것(node 내장, 자기 파일, clone의 kit, npm package 없음)을 정확히 적고 테스트가 import를 검사한다(감사 5) | 명시 집합 밖의 import가 지금은 통과 RED → GREEN | [o] |
 | S-33 | 조용한 변환과 null 반환이 없다: php `fromCode`가 npm·python처럼 int가 아닌 값을 거부한다. `packages/fsm-gui/src/forms.mjs`와 `src/core/validate.mjs`가 null을 반환하지 않는다. spec B-6이 생성되는 오류 상수를 정확히 적는다(감사 13, 14, 22) | strict_types 없이 `fromCode("2")`, `fromCode(2.0)`, `fromCode(true)`가 성공 RED → 모든 언어에서 같게 E_UNKNOWN_CODE 또는 type error GREEN | [o] |
-| S-34 | python 의존성을 잠근다: fsm-python의 모든 전이 package가 dependency-policy가 덮는 커밋된 lock에 정확한 버전과 hash를 갖는다(감사 16) | 고정되지 않은 의존성이 통과 RED → GREEN | [ ] |
+| S-34 | python 의존성을 잠근다: fsm-python의 모든 전이 package가 dependency-policy가 덮는 커밋된 lock에 정확한 버전과 hash를 갖는다(감사 16) | 고정되지 않은 의존성이 통과 RED → GREEN | [o] |
+| S-34-1 | kit dependency gate가 python package의 uv.lock을 읽는다: 최신 릴리스와 advisory 리뷰가 build-system과 extra의 requirement만이 아니라 모든 전이 python package를 덮는다. S-34가 gate가 Python lock을 읽지 않음을 찾았다(계획 C-1, S-34 결정) | kit fixture에서 오래된 전이 python package에 `check-dependency-policy`가 실패 RED → GREEN | [ ] |
 | S-35 | plan과 contract가 저장소와 맞는다: plan의 D 표가 낡은 상태를 보이지 않고(체크리스트를 가리킴), C-1 트리에 `src/store-lock`이 있고, `contracts/layout.json`이 npm의 `tests/types*`를 선언하고 이유를 적으며, S-11-3에 반복 가능한 테스트가 생기고, `kit-test`가 CHECK_TARGETS에 들어간다(감사 17, 18, 19, 21) | npm 선언 없는 layout-check, bin link를 쓰는 uv에 대한 S-11-3 테스트 RED → GREEN | [o] |
 | S-35-1 | `kit-test`가 다른 모든 테스트처럼 `scripts/kit/run-tests.mjs`를 거친다(AGENTS.md): kit.mk는 `node --test tests/kit/`를 직접 실행한다. kit.mk는 벤더 파일이므로 변경은 kit 항목, kit 릴리스, 여기의 `make kit-sync`다 | kit-test가 케이스별 진행을 출력하지 않고 기록을 쓰지 않음 RED → run-tests로 함 GREEN | [ ] |
 | S-36 | fsm-db CLI를 문서의 모든 명령에 대해 process로 테스트한다: `lock --rename`과 `copy --to mermaid` / `copy --from mermaid`(감사 20) | 문서의 출력이 단언되지 않음 RED → GREEN | [o] |
