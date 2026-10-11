@@ -240,6 +240,7 @@
       "targets": [
         "layout-check",
         "gen-check",
+        "rust-persist-test",
         "parity-rust",
         "dependency-policy-check",
         "toolchain-check"

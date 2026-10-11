@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 97257f7ed1bb6032b7a78716562505a3e9e89dd4fe2f0aafc28ef6b76d601285 -->
+<!-- source-sha256: 01e120889f5dfc1a9cc0167721d7cff5b6366edd40399b199d413339fe7bc9c9 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -64,7 +64,7 @@
 | S-29-1 | `gui-browsers`가 phony가 아니라 고정한 Playwright 버전을 키로 하는 file target이어서, `gui-browser-test`가 browser를 한 번만 내려받고 이후 실행은 네트워크가 필요 없다(S-29가 봄) | browser가 있을 때 make -n gui-browser-test가 다운로드를 출력 RED → 아무것도 출력하지 않음 GREEN | [ ] |
 | S-30 | lock을 잃어도 code의 의미가 바뀌지 않는다: `lock`과 `check`가 lock을 커밋된 lock(json·mermaid는 git HEAD, db는 저장된 행)과 비교한다. 커밋된 codes나 reserved의 어떤 code도 빠지거나 key를 바꿀 수 없다. 규칙과 오류 코드를 spec B-3, B-5에 더한다(감사 9) | 두 code를 바꾸고 fsm.lock.json을 비운 뒤 lock: 지금은 ok RED → 거부 GREEN | [o] |
 | S-30-1 | README가 S-30의 lock baseline을 적는다: 커밋된 lock은 json·mermaid store에서 git HEAD, db store에서 저장된 행이다. 커밋된 code를 잃거나 바꾸는 저장·이름 바꾸기·삭제는 E_LOCK_REGRESSED로 거부된다. git 밖의 프로젝트는 baseline이 없어 이 보호가 없다. fsm 밖에서 바뀐 db 행은 감지되지 않는다. S-19는 S-30 전에 쓰여 이를 말하지 않는다 | spec B-3과 대조한 리뷰와 docs-build. baseline을 빠뜨린 README RED → GREEN | [o] |
-| S-31 | 모든 언어의 영속화가 spec B-4를 지킨다: rust 예제가 deadlock 때 orm이 다시 실행하는 transaction을 쓰거나(`transaction_once` 아님), 차이와 이유를 spec B-4와 layout.json에 적는다. spec B-4에 transaction + forUpdate를 쓰는 이유(orm v0.0.7에는 영향 행 수를 주는 조건부 update가 없음)와 다시 볼 조건을 기록한다(감사 10, 11) | rust 예제의 deadlock 재시도 테스트와 기록의 documents-check RED → GREEN | [ ] |
+| S-31 | 모든 언어의 영속화가 spec B-4를 지킨다: rust 예제가 deadlock 때 orm이 다시 실행하는 transaction을 쓰거나(`transaction_once` 아님), 차이와 이유를 spec B-4와 layout.json에 적는다. spec B-4에 transaction + forUpdate를 쓰는 이유(orm v0.0.7에는 영향 행 수를 주는 조건부 update가 없음)와 다시 볼 조건을 기록한다(감사 10, 11) | rust 예제의 deadlock 재시도 테스트와 기록의 documents-check RED → GREEN | [o] |
 | S-32 | compiler의 import를 명시하고 테스트한다: compiler는 clone의 벤더 kit helper(`scripts/kit/files.mjs`, `git.mjs`, `process.mjs`)를 import하는데 plan은 의존성 0이라 한다. plan이 compiler가 import할 수 있는 것(node 내장, 자기 파일, clone의 kit, npm package 없음)을 정확히 적고 테스트가 import를 검사한다(감사 5) | 명시 집합 밖의 import가 지금은 통과 RED → GREEN | [o] |
 | S-33 | 조용한 변환과 null 반환이 없다: php `fromCode`가 npm·python처럼 int가 아닌 값을 거부한다. `packages/fsm-gui/src/forms.mjs`와 `src/core/validate.mjs`가 null을 반환하지 않는다. spec B-6이 생성되는 오류 상수를 정확히 적는다(감사 13, 14, 22) | strict_types 없이 `fromCode("2")`, `fromCode(2.0)`, `fromCode(true)`가 성공 RED → 모든 언어에서 같게 E_UNKNOWN_CODE 또는 type error GREEN | [o] |
 | S-34 | python 의존성을 잠근다: fsm-python의 모든 전이 package가 dependency-policy가 덮는 커밋된 lock에 정확한 버전과 hash를 갖는다(감사 16) | 고정되지 않은 의존성이 통과 RED → GREEN | [ ] |
