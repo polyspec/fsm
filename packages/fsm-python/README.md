@@ -66,8 +66,8 @@ except fsm.Error as error:
     print(error.code, error.expected, error.actual, error.event)
 ```
 
-This program was run with the Python 3.14 of the checkout's `.venv` against the generated files of this checkout (the package
-directory named `src/app_fsm`). Its output:
+This program was run with the Python 3.14 of the checkout's `.venv` on the package that the command above writes into
+`./app/order_fsm`, with `app/` on the module path (`PYTHONPATH=app`). Its output:
 
 ```text
 Step(to=<State.PAID: 2>, changed=True)

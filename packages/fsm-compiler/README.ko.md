@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: d912bcd0f90694f5f1c656d711c0b5eaea3e32c301ba4781300a5f90d2cde359 -->
+<!-- source-sha256: 27ec79858b0b75826e65206a8d7a152fd9d0f2ea633b60dccd213fc6fd507697 -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -85,7 +85,7 @@ $ fsm-gen gen --project ./order-machines --kind rust --out ./app/src
 | 옵션 | 종류 | 규칙 | 이유 |
 |---|---|---|---|
 | `--kind <kind>` | `gen`, `vectors` | `go`, `npm`, `php`, `php-ext`, `python`, `rust` 중 하나(`backends/index.mjs`) | backend를 고른다 |
-| `--go-module <module path>` | `gen --kind go`(필수) | package의 module 경로 | 생성된 기계는 공유 `Error`와 code를 위해 `<module>/src/fsm`을 import한다. backend는 `go.mod`를 읽을 수 없으므로 module을 준다 |
+| `--go-module <module path>` | `gen --kind go`, `vectors --kind go`(필수) | package의 module 경로 | 생성된 기계는 공유 `Error`와 code를 위해 `<module>/src/fsm`을 import한다. backend는 `go.mod`를 읽을 수 없으므로 module을 준다 |
 | `--php-namespace <ns>` | `php`, `php-ext`의 `gen`과 `vectors`(필수) | `Acme\Fsm`처럼 글자와 숫자를 한 개의 역슬래시로 나눈 것 | 기계 module의 namespace는 `<ns>\<Pascal machine key>`이고, 공유 `<ns>\Fsm`이 `Error`와 `Code`를 가진다 |
 | `--php-ext-name <name>` | `gen --kind php-ext`(필수) | 소문자, 숫자, 밑줄이며 글자로 시작한다. 예: `acme_fsm` | extension의 이름이다. `config.m4`, header, arginfo 파일에 쓰인다 |
 
@@ -110,7 +110,7 @@ vector는 기계의 모든 연산의 기대 결과다. core가 정의와 lock으
   `key` 5, `from_code` 7, `is_final` 5, `events_from` 5, `target` 15, `apply` 43, `persist` 3이다.
 
 `fsm-gen vectors --out <dir>`은 공통 형식 `<machine>.json`을 쓴다(이 저장소에서는 `conformance/vectors/order.json`). 각 언어 패키지는
-자기 형식으로 읽는다: `vectors_test.go`(go, `fsm-gen vectors --kind go`), `vectors.mjs`(npm), `Vectors.php`(php와 php-ext),
+자기 형식으로 읽는다: `vectors_test.go`(go, `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`(npm), `Vectors.php`(php와 php-ext),
 `vectors.py`(python), `vectors.rs`(rust). 패키지는 case마다 test 하나를 실행하며, `check-parity`는 모든 종류에서 모든 case가 한 번씩
 실행되어 통과할 것을 요구한다.
 

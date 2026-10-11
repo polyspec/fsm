@@ -88,7 +88,7 @@ The options are the ones of `gen` and `vectors` (the command line refuses an opt
 | Option | Kinds | Rule | Why |
 |---|---|---|---|
 | `--kind <kind>` | `gen`, `vectors` | one of `go`, `npm`, `php`, `php-ext`, `python`, `rust` (`backends/index.mjs`) | selects the backend |
-| `--go-module <module path>` | `gen --kind go` (required) | the module path of the package | a generated machine imports `<module>/src/fsm` for the shared `Error` and codes; the backend cannot read `go.mod`, so the module is given |
+| `--go-module <module path>` | `gen --kind go`, `vectors --kind go` (required) | the module path of the package | a generated machine imports `<module>/src/fsm` for the shared `Error` and codes; the backend cannot read `go.mod`, so the module is given |
 | `--php-namespace <ns>` | `php`, `php-ext` for `gen` and `vectors` (required) | letters and digits separated by single backslashes, such as `Acme\Fsm` | the namespace of the machine modules is `<ns>\<Pascal machine key>`, and the shared `<ns>\Fsm` holds `Error` and `Code` |
 | `--php-ext-name <name>` | `gen --kind php-ext` (required) | lower-case letters, digits and underscores, starting with a letter, such as `acme_fsm` | the name of the extension, its `config.m4` and its header and arginfo files |
 
@@ -113,7 +113,7 @@ The vectors are the expected result of every operation of a machine, computed by
   `initial` 1, `code` 5, `key` 5, `from_code` 7, `is_final` 5, `events_from` 5, `target` 15, `apply` 43 and `persist` 3.
 
 `fsm-gen vectors --out <dir>` writes the common form, `<machine>.json` (`conformance/vectors/order.json` in this repository). Each
-language package consumes the vectors in its own form: `vectors_test.go` (go, from `fsm-gen vectors --kind go`), `vectors.mjs`
+language package consumes the vectors in its own form: `vectors_test.go` (go, from `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`
 (npm), `Vectors.php` (php and php-ext), `vectors.py` (python) and `vectors.rs` (rust). The package runs one test
 per case and `check-parity` requires every case to have run once and passed in every kind.
 
