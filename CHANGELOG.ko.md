@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 1fe10b42696c27b7f4a0d6830326db5e1c2f505903fcbe2c7db40020d69eecd1 -->
+<!-- source-sha256: ad4cd2423effd895474bb8c9905924fef1e2c869fe49a986d92cbafcfe97c19d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-31-1: layout 계약이 rust retry test를 허용한다(S-31 감사). `contracts/layout.json`은 `tests/persist_retry.rs`를 차이로 선언했지만 check-layout은 그 파일이 rust의 허용 glob에도 있을 것을 요구한다. S-31 commit은 layout-check를 실행하지 않아 이를 놓쳤다. `make layout-check`와 `make layout-test`가 통과한다.
 - S-31: rust 영속화 예제가 deadlock을 재시도한다(명세 B-4). `examples/persist.rs`는 콜백을 한 번만 실행하는 `transaction_once`를 썼지만, B-4는 deadlock이면 orm이 콜백을 다시 실행한다고 적는다. 이제 orm v0.0.7의 `transaction`을 쓴다(기본 세 번 재시도). 콜백은 `Fn`이다. machine 오류는 `transaction` 콜백이 orm 오류로만 실패하므로 값으로 돌려준다. `persist_runs_again_on_a_deadlock`(RED: 한 번 시도, 기대는 두 번)과 `persist_does_not_run_again_on_another_error`가 `packages/fsm-rust/tests/persist_retry.rs` (`make rust-persist-test`)에 있다. 명세 B-4는 조건부 update 하나 대신 transaction + `forUpdate()`로 잠그는 이유를 적는다. orm v0.0.7에는 영향 행 수를 돌려주는 공개 update가 없고, 이를 다시 볼 조건을 함께 적는다.
 - S-39: go test 파일과 겹치는 machine key를 예약한다(스펙 B-5). `examples`, `vectors`, `machines`, `expectation`, `lookup`은 `fsm-gen check`를 통과하면서도 `packages/fsm-go`의 `go test ./...`를 깨뜨리므로(import 이름 중복, 또는 import로 이미 선언된 package 이름) 이제 `E_KEY_RESERVED`로 거부한다. `tests`는 측정에서 빌드되므로 예약하지 않는다. S-39 행은 이 이름을 들었으나, 측정이 그것을 바로잡는다.
 - S-33: `fromCode`은 모든 호출자에게서 정수가 아닌 값을 거부한다(감사 13, 14, 22). strict_types를 선언하지 않은 호출자에서 php와 php-ext는 `"2"`와 `2.0`을 2의 상태로, `true`를 1의 상태로 변환했다. 이제 python과 npm처럼 `E_UNKNOWN_CODE`를 던진다(스펙 B-6). GUI 편집 페이지는 저장 전에 거부된 다음 code(`E_CODE_RANGE`)를 보여 주며, core와 폼은 null을 돌려주지 않는다. 스펙 B-6은 생성된 코드가 가진 네 오류 상수를 적는다.
