@@ -248,7 +248,7 @@ fsm.lock.json            the lock of the file stores (the db store keeps its loc
 schema/fsm.schema.json   the JSON schema of a machine file, for editors
 schema/fsm.dbs           the six database tables (dbspec `fsm`), installed by fsm-db install
 schema/persist.dbs       the example tables of the persistence pattern, used by the examples/ of the language packages
-conformance/vectors/     the expected results of the vector cases, written by fsm-gen vectors
+conformance/vectors.json the expected results of the vector cases, written by fsm-gen vectors
 ```
 
 `fsm.config.json` names the store, and fsm-gen, fsm-db and fsm-gui all read it. fsm-gen handles the json and mermaid stores; it
@@ -329,7 +329,7 @@ $ fsm-gen copy --to mermaid --root ./order-mermaid --project ./order-machines
 ### vectors
 
 Writes the conformance vectors, the expected result of every operation of every machine (`docs/plans/fsm-v1.md`, C-4).
-Without `--kind`, `--out <dir>` receives `<machine>.json` for each machine. With `--kind <kind>`, `--out` names the file of
+Without `--kind`, `--out <file>` receives `{ machines: [{ machine, cases }] }`, one suite for every machine. With `--kind <kind>`, `--out` names the file of
 the native test module of that kind. The php and php-ext kinds also need `--php-namespace`.
 
 ```sh
@@ -375,7 +375,7 @@ $ fsm-gen gen --project ./order-machines --kind go --out ./app/src
 usage: fsm-gen check [--project <dir>]
        fsm-gen lock [--project <dir>] [--rename machine.old=new]...
        fsm-gen copy --to json|mermaid --root <dir> [--project <dir>]
-       fsm-gen vectors [--kind <kind>] --out <dir|file> [--project <dir>] [--php-namespace <ns>]
+       fsm-gen vectors [--kind <kind>] --out <file> [--project <dir>] [--php-namespace <ns>]
        fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]   (kind: go, npm, php, php-ext, python, rust)
 ```
 
@@ -448,5 +448,5 @@ checks that the documents depend on can be run one at a time:
 
 CI (`.github/workflows/ci.yml`) runs `make install` and then `make check` on every push to main, with PostgreSQL and MySQL services. The documentation site is published to https://polyspec.github.io/fsm/ by `.github/workflows/pages.yml`.
 
-The conformance tests of each language package run the same vector cases, one test per case, named `test_<feature>__<id>`.
+The conformance tests of each language package run the same vector cases, one test per case, named by the case name `<feature>__<id>` (php and python: the method `test_<feature>__<id>`), the name that kit's parity check (K33, `config/parity.json`) reads.
 `make gen-check` checks that the generated files of the packages are the ones that `fsm-gen` writes today.

@@ -3,10 +3,10 @@
 //
 //   node scripts/gen-check.mjs
 //
-// It regenerates into var/gen-check/: the vectors (fsm-gen vectors --out var/gen-check/conformance/vectors) and, for each
+// It regenerates into var/gen-check/: the vectors (fsm-gen vectors --out var/gen-check/conformance/vectors.json) and, for each
 // kind of contracts/layout.json, the generated files of its package (make -C packages/fsm-<kind> gen DEST=<var/gen-check/
 // <kind>>). It then compares the tracked and non-ignored files of the working tree (scripts/kit/tracked-files.mjs) with the
-// generated files of conformance/vectors and, per kind, with the files that the kind's `generated` globs match: the same set
+// generated conformance/vectors.json and, per kind, with the files that the kind's `generated` globs match: the same set
 // of files with the same bytes. A kind without `generated` globs is a finding (rule `layout-config`). Each difference is one
 // line on standard error, `[gen-check] <rule> <path>: <message>`:
 //
@@ -25,7 +25,7 @@ import { trackedFiles } from './kit/tracked-files.mjs';
 
 export const LAYOUT = 'contracts/layout.json';
 export const OUT = 'var/gen-check';
-const VECTORS = 'conformance/vectors';
+const VECTORS = 'conformance/vectors.json';
 const CLI = 'packages/fsm-compiler/src/cli/fsm-gen.mjs';
 
 const finding = (rule, file, message) => ({ rule, path: file, message });
@@ -84,7 +84,7 @@ export function genCheckFindings(root) {
   }
   const failed = generate(root, kinds);
   if (failed.length > 0) return failed;
-  const areas = [{ base: VECTORS, dir: path.join(root, OUT, VECTORS), select: () => true }];
+  const areas = [{ base: path.posix.dirname(VECTORS), dir: path.join(root, OUT, path.posix.dirname(VECTORS)), select: rel => rel === path.posix.basename(VECTORS) }];
   for (const kind of kinds) {
     const globs = layout.kinds[kind].generated;
     areas.push({ base: `packages/fsm-${kind}`, dir: path.join(root, OUT, kind), select: rel => matchesAny(globs, rel) });

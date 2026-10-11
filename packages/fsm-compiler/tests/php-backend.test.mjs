@@ -1,6 +1,6 @@
 // Tests of the php backend (packages/fsm-compiler/src/backends/php.mjs, docs/spec/fsm.md, B-4 and B-6): the files of the
 // order example are the golden files under tests/golden/php, byte for byte, in the order the backend returns them, and the test
-// module is the golden tests/golden/php/Vectors.php. The golden files were written by the generator once, after a review of its
+// module is the golden tests/golden/php/ConformanceTest.php. The golden files were written by the generator once, after a review of its
 // output against B-6 (docs/plans/fsm-v1.md, C-5). Every generated file is also checked by the php linter, and the namespace
 // that the command line passes is refused when it is not a PHP namespace.
 import assert from 'node:assert/strict';
@@ -53,10 +53,10 @@ test('every generated file starts with <?php and the fsm-gen header of its machi
   }
 });
 
-test('the test module of the order example is the golden Vectors.php, byte for byte', async () => {
+test('the test module of the order example is the golden ConformanceTest.php, byte for byte', async () => {
   const { irs, lock } = await orderIrs();
   const generated = irs.map(ir => vectors(ir, lock));
-  assert.equal(vectorsFile(generated, { phpNamespace: NAMESPACE }), readFileSync(path.join(GOLDEN, 'Vectors.php'), 'utf8'));
+  assert.equal(vectorsFile(generated, { phpNamespace: NAMESPACE }), readFileSync(path.join(GOLDEN, 'ConformanceTest.php'), 'utf8'));
 });
 
 test('the backend is deterministic: the same input gives the same files', async () => {
@@ -76,7 +76,7 @@ test('every generated php file passes the php linter (php -l)', async (t) => {
   const dir = mkdtempSync(path.join(tmpdir(), 'fsm-php-backend-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const { irs, lock } = await orderIrs();
-  const testModule = { path: 'Tests/Vectors.php', content: vectorsFile(irs.map(ir => vectors(ir, lock)), { phpNamespace: NAMESPACE }) };
+  const testModule = { path: 'Tests/ConformanceTest.php', content: vectorsFile(irs.map(ir => vectors(ir, lock)), { phpNamespace: NAMESPACE }) };
   for (const file of [...await orderFiles(), testModule]) {
     const target = path.join(dir, file.path);
     mkdirSync(path.dirname(target), { recursive: true });

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: d0a3de0e760723146c63de56f94c25658dcf9dc422bc8c6a646eff6fe4526ab4 -->
+<!-- source-sha256: c0ad96240ecf54180f4d38a73208beb6347a14a3fcd87be28bbda1a6d91c0f7a -->
 # @polyspec/fsm-npm
 
 [English](README.md)
@@ -136,6 +136,6 @@ make test-npm                      # the same from the root
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/conformance.test.mjs`는 `tests/vectors.mjs`의 vector case마다 하나의 test를
-`test_<feature>__<id>` 이름으로 실행한다. 영속화 case는 SQLite에서 `examples/persist.mjs`를 실행한다. `tests/types.test.mjs`는
+case 이름 `<feature>__<id>`로 실행한다. 영속화 case는 SQLite에서 `examples/persist.mjs`를 실행한다. `tests/types.test.mjs`는
 TypeScript 컴파일러로 `.d.ts` 파일을 검사한다(`make npm-types`). 루트의 `make gen-check`는 생성 파일이 `fsm-gen`이 지금 쓰는 것과
 같은지 검사한다.

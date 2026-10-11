@@ -255,27 +255,29 @@ test('copy --to json from a mermaid project into an empty target writes the file
   });
 });
 
-test('vectors writes <out>/<machine>.json in the canonical form: two spaces, a final line break and the case order', () => {
+test('vectors writes the file <out> in the canonical form: two spaces, a final line break and the case order', () => {
   const root = project({ 'fsm.config.json': CONFIG_JSON, 'machines/order.fsm.json': ORDER_TEXT, 'fsm.lock.json': ORDER_LOCK_TEXT });
-  const out = path.join(root, 'conformance/vectors');
+  const out = path.join(root, 'conformance/vectors.json');
   assert.deepEqual(gen(['vectors', '--project', root, '--out', out]), { status: 0, stdout: '[fsm-gen] vectors: ok\n', stderr: '' });
-  assert.deepEqual(readdirSync(out), ['order.json']);
-  const text = readFileSync(path.join(out, 'order.json'), 'utf8');
+  const text = readFileSync(out, 'utf8');
   const parsed = JSON.parse(text);
-  assert.equal(parsed.machine, 'order');
   assert.equal(text, `${JSON.stringify(parsed, null, 2)}\n`);
-  assert.deepEqual(parsed.cases.slice(0, 2).map(entry => entry.id), ['order_initial', 'order_code_s0']);
-  assert.equal(parsed.cases.length, 37);
-  assert.equal(parsed.cases.at(-1).id, 'order_persist_retry');
+  assert.deepEqual(parsed.machines.map(entry => entry.machine), ['order']);
+  const { cases } = parsed.machines[0];
+  assert.deepEqual(cases.slice(0, 2).map(entry => entry.id), ['order_initial', 'order_code_s0']);
+  assert.equal(cases.length, 37);
+  assert.equal(cases.at(-1).id, 'order_persist_retry');
 });
 
-test('vectors gives each case the feature and id that scripts/check-parity.mjs reads', () => {
+test('vectors gives each case the feature, id and name that the parity checks read', () => {
   const root = project({ 'fsm.config.json': CONFIG_JSON, 'machines/order.fsm.json': ORDER_TEXT, 'fsm.lock.json': ORDER_LOCK_TEXT });
-  assert.equal(gen(['vectors', '--project', root, '--out', path.join(root, 'conformance/vectors')]).status, 0);
-  const { machine, cases } = JSON.parse(readFileSync(path.join(root, 'conformance/vectors/order.json'), 'utf8'));
-  for (const entry of cases) {
-    assert.equal(typeof entry.feature, 'string');
-    assert.ok(entry.id.startsWith(`${machine}_`), entry.id);
+  assert.equal(gen(['vectors', '--project', root, '--out', path.join(root, 'conformance/vectors.json')]).status, 0);
+  for (const { machine, cases } of JSON.parse(readFileSync(path.join(root, 'conformance/vectors.json'), 'utf8')).machines) {
+    for (const entry of cases) {
+      assert.equal(typeof entry.feature, 'string');
+      assert.ok(entry.id.startsWith(`${machine}_`), entry.id);
+      assert.equal(entry.name, `${entry.feature}__${entry.id}`);
+    }
   }
 });
 

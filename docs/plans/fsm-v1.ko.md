@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: abea312e7f77daa50eb9a23ab6b803065f19b26e7d72de7ebb641f681e446839 -->
+<!-- source-sha256: 25cf2153d2463987fa6fd614ea2042a840d6b865204aa20fa1eafa7cc9209a31 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -139,7 +139,7 @@ fsm/
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
   schema/fsm.schema.json  schema/fsm.dbs  schema/persist.dbs   # persist.dbs = shared by the six language package examples
-  fsm.config.json  machines/order.fsm.json  fsm.lock.json  conformance/vectors/<machine>.json
+  fsm.config.json  machines/order.fsm.json  fsm.lock.json  conformance/vectors.json
   packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-lock/, src/store-mermaid/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
   packages/fsm-db/        {src/, tests/}   # DbStore + fsm-db CLI, depends on orm
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
@@ -175,7 +175,7 @@ packages/fsm-<kind>/
 |---|---|---|---|
 | go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`(일반형: 각 case를 그 machine의 adapter로 실행), `vectors_test.go`(생성: vector case, 모든 machine의 key 표, machine마다 `conformance_test.go`의 interface를 구현하는 adapter 하나; import는 `<module>/src/<machine>` machine package뿐이므로 `vectors --kind go`는 `--go-module`을 받는다. persistence 예제는 test bed의 것이라 import하지 않으며, `decide`가 `examples.Decide`가 이름 붙이던 함수 타입을 반환한다(S-26-1-1)) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts`(`export * as order`) | `conformance.test.mjs`, `vectors.mjs` |
-| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceTest.php`, `Vectors.php` |
+| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceCase.php`(손으로 쓴 검사), `ConformanceTest.php`(생성, case마다 method 하나) |
 | php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c`(공용 `<ns>\Fsm\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | php와 **바이트 동일**한 테스트. `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
 | python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py`(케이스 이름 그대로의 메서드 생성), `vectors.py` |
 | rust | Cargo.toml(`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs`(`pub mod order; pub mod fsm;`), `order.rs`, `fsm.rs` | `conformance.rs`(`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`), persist 케이스는 `#[tokio::test]`, 생성 `tests/vectors.rs`는 `#![allow(non_snake_case)]`로 시작 |
@@ -192,7 +192,7 @@ packages/fsm-<kind>/
 - kit `test-progress.mjs`의 `close()`가 쓰는 counts에 `cases: [{id, status, elapsedMs}]`를 더한다.
 - `run-tests --results <file>`이면 `{tool, inputs, elapsedMs}`를 붙여 임시파일+rename으로 한 번 쓴다.
 - `inputs` = kit `inputsDigest(root, paths)`. `paths`(패키지 디렉터리와 `schema/persist.dbs`) 아래의 추적 파일과 무시되지 않은 신규 파일의 경로·sha256으로 만든다.
-- 케이스 이름은 `test_<featureId>__<vectorId>`다.
+- 케이스 이름은 `<featureId>__<vectorId>`이며 conformance/vectors.json에서 case의 `name`이다. go는 subtest `TestConformance/<name>`, npm은 node:test test `<name>`, rust는 `vectors::<name>`, php와 python은 method `test_<name>`으로 실행한다. kit의 parity 검사(K33, `config/parity.json`, S-42-1)가 이 이름을 읽는다.
   - 두 id는 `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`이며 `__`를 포함하지 않는다.
   - vectorId는 `<machine>_`로 시작한다.
   - 언어 테스트 이름에 이 이름을 그대로 쓴다.
@@ -210,7 +210,7 @@ packages/fsm-<kind>/
 
 케이스 이름 추출: `/\btest_[a-z][a-z0-9]*(?:_[a-z0-9]+)*__[a-z][a-z0-9]*(?:_[a-z0-9]+)*\b/`를 결과 id마다 적용한다. 서로 다른 일치가 정확히 1개인 id가 그 케이스이고, 0개 또는 2개 이상인 id는 위 결과 id 항목으로 판정한다. 도구별 규칙은 없다.
 
-`contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. vector 파일은 `conformance/vectors/<machine>.json` = `{machine, cases: [{feature, id, …}]}`이고, 케이스 이름은 `test_<feature>__<id>`다.
+`contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. vector 파일은 `conformance/vectors.json` = `{machines: [{machine, cases: [{feature, id, name, …}]}]}`이며 kit parity 검사의 suite 하나다. 케이스 이름은 `name` = `<feature>__<id>`다.
 
 Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 machine의 벡터를 돈다. 그래서 여섯 kind가 정의의 모양을 모두 덮는다: `order`(예시), `standby`(event 없음: 상태 하나이며 initial이자 final), `in_review`(machine, 상태, event key의 underscore), `ticket`(reserved code 2와 4: 첫 lock 뒤 제거한 상태이며 lock은 이를 reserved로 유지), `limits`(code 2147483647). 각 kind는 209 케이스를 통과한다(`vector-parity-check`).
 
@@ -270,9 +270,9 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
   - `check`: 전 정의 검증 + lock 일치 + lock이 커밋된 code를 모두 유지(B-3)
   - `copy --to json|mermaid --root <dir>`
 - 루트 `gen-check`
-  1. `fsm-gen vectors --out var/gen-check/conformance/vectors` 실행
+  1. `fsm-gen vectors --out var/gen-check/conformance/vectors.json` 실행
   2. `kinds`의 각 패키지에서 `make gen DEST=$(CURDIR)/var/gen-check/<kind>` 실행
-  3. `scripts/gen-check.mjs`가 kit `trackedFiles`(추적 파일과 무시되지 않은 파일만 읽으므로 `__pycache__/`, php-ext `src/`의 phpize 산출물 같은 무시된 출력은 읽지 않는다)로 작업 트리와 비교한다. `conformance/vectors`, 각 패키지 `src/`·`tests/vectors.<ext>`·`examples/model/`(rust 제외)의 파일 집합이 같고 내용이 바이트 동일해야 한다. 각 패키지에서 비교하는 파일은 `contracts/layout.json`의 kind `generated` glob이 맞는 파일이며, 이 glob이 없는 kind는 `layout-config` finding이다.
+  3. `scripts/gen-check.mjs`가 kit `trackedFiles`(추적 파일과 무시되지 않은 파일만 읽으므로 `__pycache__/`, php-ext `src/`의 phpize 산출물 같은 무시된 출력은 읽지 않는다)로 작업 트리와 비교한다. `conformance/vectors.json`, 각 패키지 `src/`·`tests/vectors.<ext>`·`examples/model/`(rust 제외)의 파일 집합이 같고 내용이 바이트 동일해야 한다. 각 패키지에서 비교하는 파일은 `contracts/layout.json`의 kind `generated` glob이 맞는 파일이며, 이 glob이 없는 kind는 `layout-config` finding이다.
   - `gen-check-test`(`tests/gen-check/`) RED: 1바이트 변경 fixture, 파일 추가 fixture, 읽지 말아야 할 무시된 파일
 
 ### C-6. fsm-db `packages/fsm-db`

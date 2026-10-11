@@ -1,26 +1,23 @@
 #!/usr/bin/env node
-// Checks that every language package ran every vector case once and passed (`make vector-parity-check`, `make parity-<kind>`):
+// Checks the rules of the vector parity that kit's parity check (K33, config/parity.json, `make parity-check`) does not take
+// (`make vector-parity-check`, `make parity-<kind>`):
 //
 //   node scripts/check-parity.mjs [--tools <target>,...]   every kind of contracts/layout.json and the records of the tool tests
 //   node scripts/check-parity.mjs --kind <kind>            the record of one kind only
 //
-// The cases are the vectors of conformance/vectors/*.json, `{ machine, cases: [{ feature, id, ... }] }`; a case is named
-// `test_<feature>__<id>`, and every feature of contracts/features.json has at least one case. A case with a `kinds` list is
-// run by the kinds it names only (an invalid state value that the state type of rust and php cannot hold, docs/plans/fsm-v1.md,
-// C-4); a case without one is run by every kind. A record is the file .results/<name>.json that
-// `scripts/kit/run-tests.mjs --results` writes. The check fails when
+// K33 runs the binding of every kind and checks that each kind runs every vector case of conformance/vectors.json that admits it,
+// once, and passes; it reads no saved record and has no time limit. This check reads the saved records instead. A record is the
+// file .results/<name>.json that `scripts/kit/run-tests.mjs --results` writes. The check fails when
 //
-//   - a record is missing, does not cover its package, or is stale (its inputs digest differs from the current files);
-//   - a kind did not run a vector case that admits it, ran one twice, ran a case that no vector holds, or ran a case that
-//     the kinds list of its vector excludes;
-//   - a case of a record has any status but pass (fail, timeout and skip all fail);
-//   - a test id names two or more cases, or names none and is not the parent of a test that names one (such as the Go test
-//     function that runs the cases as subtests);
-//   - a record ran longer than 600000 ms.
+//   - a feature of contracts/features.json has no case in conformance/vectors.json, or the vectors hold a case of a feature that
+//     contracts/features.json does not list;
+//   - a record of a kind or a tool test is missing, does not cover its package, or is stale (its inputs digest differs from the
+//     current files);
+//   - a record ran longer than 600000 ms;
+//   - a case of a tool test record has any status but pass (fail, timeout and skip all fail).
 //
-// There is no exemption besides the kinds lists: every kind runs the same cases at the same level. Each finding is one line on
-// standard error; the command exits with status 1 when there is one.
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+// Each finding is one line on standard error; the command exits with status 1 when there is one.
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
@@ -28,48 +25,23 @@ import { isMain } from './kit/paths.mjs';
 import { inputsDigest } from './kit/tracked-files.mjs';
 
 export const FEATURES = 'contracts/features.json';
-export const VECTORS = 'conformance/vectors';
+export const VECTORS = 'conformance/vectors.json';
 export const LIMIT_MS = 600_000;
-const ID = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
-const CASE_NAME = /\btest_[a-z][a-z0-9]*(?:_[a-z0-9]+)*__[a-z][a-z0-9]*(?:_[a-z0-9]+)*\b/g;
 
 const finding = message => ({ message });
 const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
 
-/** The vector case names of the checkout with the findings of the features and the vectors. */
-function cases(root) {
-  const found = [];
-  if (!existsSync(path.join(root, FEATURES))) return { names: null, found: [finding(`${FEATURES} does not exist; it lists the features that every kind implements`)] };
+/** The findings of the features against the vectors: every feature has a case, and every case is of a listed feature. */
+function featureFindings(root) {
+  if (!existsSync(path.join(root, FEATURES))) return [finding(`${FEATURES} does not exist; it lists the features that every kind implements`)];
+  if (!existsSync(path.join(root, VECTORS))) return [finding(`${VECTORS} does not exist; fsm-gen vectors writes it`)];
   const features = readJson(path.join(root, FEATURES)).features;
-  const directory = path.join(root, VECTORS);
-  const files = existsSync(directory) ? readdirSync(directory).filter(file => file.endsWith('.json')).sort() : [];
-  if (files.length === 0) return { names: null, found: [finding(`${VECTORS} holds no vector file; fsm-gen vectors writes them`)] };
-  const names = new Map();
-  const covered = new Set();
-  for (const file of files) {
-    const where = `${VECTORS}/${file}`;
-    const vectors = readJson(path.join(directory, file));
-    for (const entry of vectors.cases) {
-      if (!features.includes(entry.feature)) {
-        found.push(finding(`${where} holds the case ${entry.id} of the feature ${entry.feature}, which ${FEATURES} does not list`));
-        continue;
-      }
-      if (!ID.test(entry.id) || !entry.id.startsWith(`${vectors.machine}_`)) {
-        found.push(finding(`${where} holds the case id ${JSON.stringify(entry.id)}; an id is lower case words joined by single underscores and starts with ${vectors.machine}_`));
-        continue;
-      }
-      const name = `test_${entry.feature}__${entry.id}`;
-      if (names.has(name)) found.push(finding(`${where} holds the case ${name} twice`));
-      const admitted = entry.kinds ?? null;
-      if (admitted !== null && (!Array.isArray(admitted) || admitted.length === 0 || admitted.some(kind => typeof kind !== 'string'))) {
-        found.push(finding(`${where} holds the case ${name} with a kinds field that is not a non-empty list of kind names`));
-      }
-      names.set(name, admitted);
-      covered.add(entry.feature);
-    }
-  }
+  const cases = readJson(path.join(root, VECTORS)).machines.flatMap(entry => entry.cases);
+  const found = cases.filter(entry => !features.includes(entry.feature))
+    .map(entry => finding(`${VECTORS} holds the case ${entry.name} of the feature ${entry.feature}, which ${FEATURES} does not list`));
+  const covered = new Set(cases.map(entry => entry.feature));
   for (const feature of features.filter(entry => !covered.has(entry))) found.push(finding(`the feature ${feature} has no vector case in ${VECTORS}`));
-  return { names, found };
+  return found;
 }
 
 /**
@@ -96,55 +68,24 @@ function readRecord(root, name, covers, rerun) {
   return { record, found };
 }
 
-const statusFindings = (label, record) => record.cases.filter(entry => entry.status !== 'pass').map(entry => finding(`${label}: ${entry.id} is ${entry.status}; every case passes`));
-
-/** Whether the vector case admitted by `admitted` (a list of kinds, or null for every kind) is run by `kind`. */
-const admits = (admitted, kind) => admitted === null || admitted.includes(kind);
-
-/** The findings of the record of `kind` against the vector cases `names`, a map of case name to its admitted kinds (or null). */
-function kindFindings(root, kind, names) {
-  const fix = `run make test-${kind}`;
-  const { record, found } = readRecord(root, kind, `packages/fsm-${kind}`, { missing: file => `the kind ${kind} has no result ${file}; ${fix}`, fix });
-  if (!record) return found;
-  const named = record.cases.map(entry => ({ entry, names: [...new Set(entry.id.match(CASE_NAME) ?? [])] }));
-  const runs = new Map();
-  for (const { entry, names: matched } of named) {
-    found.push(...statusFindings(kind, { cases: [entry] }));
-    if (matched.length > 1) found.push(finding(`${kind}: the id ${entry.id} names ${matched.length} cases; a test names one case`));
-    else if (matched.length === 1) runs.set(matched[0], (runs.get(matched[0]) ?? 0) + 1);
-    else if (!named.some(other => other.names.length === 1 && other.entry.id.startsWith(`${entry.id} › `))) {
-      found.push(finding(`${kind}: the id ${entry.id} names no case and is not the parent of one; a test of a language package runs a vector case`));
-    }
-  }
-  if (names) {
-    for (const [name, count] of runs) if (count > 1) found.push(finding(`${kind} ran ${name} ${count} times; every case runs once`));
-    for (const [name, admitted] of names) if (admits(admitted, kind) && !runs.has(name)) found.push(finding(`${kind} did not run ${name}`));
-    for (const name of runs.keys()) {
-      if (!names.has(name)) found.push(finding(`${kind} ran ${name}, which no vector of ${VECTORS} holds`));
-      else if (!admits(names.get(name), kind)) found.push(finding(`${kind} ran ${name}, which its vector does not admit for ${kind}`));
-    }
-  }
-  return found;
-}
-
-/** The findings of the checkout `root`: every kind and the `tools` records, or the record of `kind` alone. */
+/** The findings of the checkout `root`: the features, every kind and the `tools` records, or the record of `kind` alone. */
 export function parityFindings(root, { kind, tools = [] } = {}) {
   const layout = readJson(path.join(root, 'contracts/layout.json'));
   const kinds = Object.keys(layout.kinds).sort();
   if (kind !== undefined && !kinds.includes(kind)) return [finding(`--kind ${kind} is not a kind of contracts/layout.json`)];
-  const { names, found } = cases(root);
-  if (names) {
-    for (const [name, admitted] of names) {
-      for (const entry of admitted ?? []) if (!kinds.includes(entry)) found.push(finding(`the case ${name} is admitted by ${entry}, which contracts/layout.json does not declare as a kind`));
-    }
+  const found = featureFindings(root);
+  for (const entry of kind === undefined ? kinds : [kind]) {
+    const fix = `run make test-${entry}`;
+    found.push(...readRecord(root, entry, `packages/fsm-${entry}`, { missing: file => `the kind ${entry} has no result ${file}; ${fix}`, fix }).found);
   }
-  for (const entry of kind === undefined ? kinds : [kind]) found.push(...kindFindings(root, entry, names));
   if (kind === undefined) {
     for (const tool of tools) {
       const fix = `run make ${tool}`;
       const read = readRecord(root, tool, null, { missing: file => `the tool test ${tool} has no result ${file}; ${fix}`, fix });
       found.push(...read.found);
-      if (read.record) found.push(...statusFindings(tool, read.record));
+      if (read.record) {
+        found.push(...read.record.cases.filter(entry => entry.status !== 'pass').map(entry => finding(`${tool}: ${entry.id} is ${entry.status}; every case passes`)));
+      }
     }
   }
   return found;
@@ -163,5 +104,5 @@ if (isMain(import.meta.url)) {
   }
   const layout = readJson(path.join(root, 'contracts/layout.json'));
   const count = values.kind ? 1 : Object.keys(layout.kinds).length;
-  console.log(`[check-parity] ${count} kinds passed; the vectors hold ${cases(root).names.size} cases, each run by every kind that admits it`);
+  console.log(`[check-parity] ${count} kinds passed: the records are present, current and within ${LIMIT_MS} ms; every feature has a vector case`);
 }

@@ -1,5 +1,6 @@
-// Tests of scripts/check-parity.mjs: each condition of the parity check has a failing and a passing case. Every case builds
-// its checkout in a temporary directory with result records written as run-tests.mjs writes them, so no fixture is committed.
+// Tests of scripts/check-parity.mjs: each rule that the check keeps beside kit's parity check (K33) has a failing and a passing
+// case. Every case builds its checkout in a temporary directory with result records written as run-tests.mjs writes them, so no
+// fixture is committed. The rules of the cases themselves (each kind runs every admitted case once and passes) are K33's.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, readFileSync } from 'node:fs';
@@ -13,36 +14,35 @@ import { put, tree } from '../kit/tree.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const LAYOUT = { schema: 1, tools: [], canonical: { files: [], directories: [] }, kinds: { go: { required: [], allowed: [] }, npm: { required: [], allowed: [] } } };
 const FEATURES = { schema: 1, features: ['initial', 'apply'] };
-const VECTORS = { machine: 'order', cases: [{ feature: 'initial', id: 'order_initial' }, { feature: 'apply', id: 'order_draft_next_changed' }] };
-const NAMES = ['test_initial__order_initial', 'test_apply__order_draft_next_changed'];
+const CASES = [{ feature: 'initial', id: 'order_initial', name: 'initial__order_initial' }, { feature: 'apply', id: 'order_draft_next_changed', name: 'apply__order_draft_next_changed' }];
+const vectorsOf = cases => ({ machines: [{ machine: 'order', cases }] });
 
-function checkout(t, { vectors = VECTORS, features = FEATURES } = {}) {
+function checkout(t, { cases = CASES, features = FEATURES } = {}) {
   return tree(t, {
     'contracts/layout.json': JSON.stringify(LAYOUT),
     'contracts/features.json': JSON.stringify(features),
-    'conformance/vectors/order.json': JSON.stringify(vectors),
+    'conformance/vectors.json': JSON.stringify(vectorsOf(cases)),
     'packages/fsm-go/a_test.go': 'package a',
     'packages/fsm-npm/a.test.mjs': 'a',
     'packages/fsm-compiler/a.mjs': 'c',
   });
 }
 
-/** Writes the record of `kind` as run-tests.mjs does: the cases, the tool, the inputs and the elapsed time. */
+/** Writes the record of `name` as run-tests.mjs does: the cases, the tool, the inputs and the elapsed time. */
 function record(root, name, cases, { paths = [name === 'compiler-test' ? 'packages/fsm-compiler' : `packages/fsm-${name}`], elapsedMs = 1000, digest } = {}) {
   put(root, { [`.results/${name}.json`]: JSON.stringify({ tool: 'node', inputs: { paths, digest: digest ?? inputsDigest(root, paths) }, elapsedMs, cases }) });
 }
-const go = names => names.map(name => ({ id: `example.com/s/tests › TestConformance › ${name}`, status: 'pass', elapsedMs: 1 }));
-const npm = names => names.map(name => ({ id: `packages/fsm-npm/a.test.mjs › ${name}`, status: 'pass', elapsedMs: 1 }));
-const parent = { id: 'example.com/s/tests › TestConformance', status: 'pass', elapsedMs: 2 };
+const run = names => names.map(name => ({ id: `x › ${name}`, status: 'pass', elapsedMs: 1 }));
+const tool = [{ id: 'packages/fsm-compiler/a.test.mjs › validates', status: 'pass', elapsedMs: 3 }];
 const passing = (root) => {
-  record(root, 'go', [...go(NAMES), parent]);
-  record(root, 'npm', npm(NAMES));
-  record(root, 'compiler-test', [{ id: 'packages/fsm-compiler/a.test.mjs › validates', status: 'pass', elapsedMs: 3 }]);
+  record(root, 'go', run(['initial__order_initial']));
+  record(root, 'npm', run(['initial__order_initial']));
+  record(root, 'compiler-test', tool);
 };
 const ignore = root => put(root, { '.gitignore': '/.results/\n' });
 const messages = (root, options) => parityFindings(root, options).map(found => found.message);
 
-test('every kind ran every vector case once and passed, the Go parent of the subtests counts, and the tool results exist', (t) => {
+test('every kind and every tool test has a current record within the limit, and every feature has a vector case', (t) => {
   const root = checkout(t);
   ignore(root);
   passing(root);
@@ -58,7 +58,7 @@ test('a missing result of a kind or of a tool test, and a stale one', (t) => {
     'the kind npm has no result .results/npm.json; run make test-npm',
     'the tool test compiler-test has no result .results/compiler-test.json; run make compiler-test',
   ]);
-  record(root, 'npm', npm(NAMES));
+  record(root, 'npm', run(['initial__order_initial']));
   put(root, { 'packages/fsm-npm/a.test.mjs': 'changed' });
   assert.deepEqual(messages(root, { tools: [] }), ['.results/npm.json is stale: the files of packages/fsm-npm changed after the run; run make test-npm']);
 });
@@ -67,80 +67,29 @@ test('a record whose inputs do not cover its package is not a record of that kin
   const root = checkout(t);
   ignore(root);
   passing(root);
-  record(root, 'npm', npm(NAMES), { paths: ['contracts'] });
+  record(root, 'npm', run(['initial__order_initial']), { paths: ['contracts'] });
   assert.deepEqual(messages(root, { tools: [] }), ['.results/npm.json covers contracts, not packages/fsm-npm; run make test-npm']);
 });
 
-test('a vector case that did not run, ran twice, or a case that no vector holds', (t) => {
-  const root = checkout(t);
-  ignore(root);
-  passing(root);
-  record(root, 'npm', [...npm([NAMES[0]]), ...npm([NAMES[0]]), ...npm(['test_apply__order_unknown'])]);
-  assert.deepEqual(messages(root, { tools: [] }), [
-    'npm ran test_initial__order_initial 2 times; every case runs once',
-    'npm did not run test_apply__order_draft_next_changed',
-    'npm ran test_apply__order_unknown, which no vector of conformance/vectors holds',
-  ]);
-});
-
-test('a case with a kinds list is run by those kinds only: the other kinds neither need it nor may run it', (t) => {
-  const raw = 'test_apply__order_raw_only_go';
-  const root = checkout(t, { vectors: { machine: 'order', cases: [...VECTORS.cases, { feature: 'apply', id: 'order_raw_only_go', kinds: ['go'] }] } });
-  ignore(root);
-  record(root, 'go', [...go([...NAMES, raw]), parent]);
-  record(root, 'npm', npm(NAMES));
-  record(root, 'compiler-test', [{ id: 'packages/fsm-compiler/a.test.mjs › validates', status: 'pass', elapsedMs: 3 }]);
-  assert.deepEqual(messages(root, { tools: ['compiler-test'] }), []);
-  record(root, 'npm', npm([...NAMES, raw]));
-  assert.deepEqual(messages(root, { tools: [] }), ['npm ran test_apply__order_raw_only_go, which its vector does not admit for npm']);
-  record(root, 'npm', npm(NAMES));
-  record(root, 'go', [...go(NAMES), parent]);
-  assert.deepEqual(messages(root, { tools: [] }), ['go did not run test_apply__order_raw_only_go']);
-});
-
-test('a kinds list is a non-empty list of declared kinds', (t) => {
-  const root = checkout(t, { vectors: { machine: 'order', cases: [...VECTORS.cases, { feature: 'apply', id: 'order_empty', kinds: [] }, { feature: 'apply', id: 'order_ruby', kinds: ['ruby'] }] } });
+test('a feature without a vector case, and a vector case of a feature that features.json does not list', (t) => {
+  const root = checkout(t, { features: { schema: 1, features: ['initial', 'apply', 'persist'] }, cases: [...CASES, { feature: 'other', id: 'order_x', name: 'other__order_x' }] });
   ignore(root);
   passing(root);
   assert.deepEqual(messages(root, { tools: [] }), [
-    'conformance/vectors/order.json holds the case test_apply__order_empty with a kinds field that is not a non-empty list of kind names',
-    'the case test_apply__order_ruby is admitted by ruby, which contracts/layout.json does not declare as a kind',
+    'conformance/vectors.json holds the case other__order_x of the feature other, which contracts/features.json does not list',
+    'the feature persist has no vector case in conformance/vectors.json',
   ]);
 });
 
-test('a feature without a vector case, and a vector of a feature that features.json does not list', (t) => {
-  const root = checkout(t, { features: { schema: 1, features: ['initial', 'apply', 'persist'] }, vectors: { machine: 'order', cases: [...VECTORS.cases, { feature: 'other', id: 'order_x' }] } });
-  ignore(root);
-  passing(root);
-  const found = messages(root, { tools: [] });
-  assert.ok(found.includes('the feature persist has no vector case in conformance/vectors'), found.join('\n'));
-  assert.ok(found.includes('conformance/vectors/order.json holds the case order_x of the feature other, which contracts/features.json does not list'), found.join('\n'));
-});
-
-test('a case with any status but pass fails: fail, timeout and skip', (t) => {
+test('a case of a tool test record with any status but pass fails: fail, timeout and skip', (t) => {
   const root = checkout(t);
   ignore(root);
   passing(root);
-  const cases = npm(NAMES);
-  cases[0].status = 'skip';
-  cases[1].status = 'timeout';
-  record(root, 'npm', [...cases, { id: 'packages/fsm-npm/a.test.mjs › helper', status: 'fail', elapsedMs: 1 }]);
-  const found = messages(root, { tools: [] });
-  assert.deepEqual(found.filter(entry => / is (?:skip|timeout|fail);/.test(entry)), [
-    'npm: packages/fsm-npm/a.test.mjs › test_initial__order_initial is skip; every case passes',
-    'npm: packages/fsm-npm/a.test.mjs › test_apply__order_draft_next_changed is timeout; every case passes',
-    'npm: packages/fsm-npm/a.test.mjs › helper is fail; every case passes',
-  ]);
-});
-
-test('an id that names two cases, and an id that names none and is not the parent of a case', (t) => {
-  const root = checkout(t);
-  ignore(root);
-  passing(root);
-  record(root, 'npm', [...npm(NAMES), { id: `x › ${NAMES[0]} › ${NAMES[1]}`, status: 'pass', elapsedMs: 1 }, { id: 'packages/fsm-npm/a.test.mjs › helper', status: 'pass', elapsedMs: 1 }]);
-  assert.deepEqual(messages(root, { tools: [] }), [
-    `npm: the id x › ${NAMES[0]} › ${NAMES[1]} names 2 cases; a test names one case`,
-    'npm: the id packages/fsm-npm/a.test.mjs › helper names no case and is not the parent of one; a test of a language package runs a vector case',
+  record(root, 'compiler-test', [{ ...tool[0], status: 'skip' }, { id: 'b', status: 'timeout', elapsedMs: 1 }, { id: 'c', status: 'fail', elapsedMs: 1 }]);
+  assert.deepEqual(messages(root, { tools: ['compiler-test'] }), [
+    'compiler-test: packages/fsm-compiler/a.test.mjs › validates is skip; every case passes',
+    'compiler-test: b is timeout; every case passes',
+    'compiler-test: c is fail; every case passes',
   ]);
 });
 
@@ -148,14 +97,14 @@ test('a record over 10 minutes fails', (t) => {
   const root = checkout(t);
   ignore(root);
   passing(root);
-  record(root, 'go', [...go(NAMES), parent], { elapsedMs: 600_001 });
+  record(root, 'go', run(['initial__order_initial']), { elapsedMs: 600_001 });
   assert.deepEqual(messages(root, { tools: [] }), ['.results/go.json ran 600001 ms; a test process runs at most 600000 ms']);
 });
 
 test('--kind reads only the result of its kind, never the other kinds or the tool tests', (t) => {
   const root = checkout(t);
   ignore(root);
-  record(root, 'go', [...go(NAMES), parent]);
+  record(root, 'go', run(['initial__order_initial']));
   assert.deepEqual(parityFindings(root, { kind: 'go' }), []);
   assert.deepEqual(messages(root, { kind: 'npm' }), ['the kind npm has no result .results/npm.json; run make test-npm']);
   assert.deepEqual(messages(root, { kind: 'ruby' }), ['--kind ruby is not a kind of contracts/layout.json']);
@@ -171,19 +120,18 @@ test('the command prints each finding and exits 1, and passes on a passing check
   const command = (...args) => spawnSync(process.execPath, ['scripts/check-parity.mjs', ...args], { cwd: root, encoding: 'utf8' });
   const passed = command('--tools', 'compiler-test');
   assert.equal(passed.status, 0, passed.stdout + passed.stderr);
-  assert.match(passed.stdout, /\[check-parity\] 2 kinds passed; the vectors hold 2 cases, each run by every kind that admits it/);
+  assert.match(passed.stdout, /\[check-parity\] 2 kinds passed: the records are present, current and within 600000 ms; every feature has a vector case/);
   put(root, { '.results/npm.json': null });
   const failed = command('--kind', 'npm');
   assert.equal(failed.status, 1);
   assert.match(failed.stderr, /\[check-parity\] the kind npm has no result \.results\/npm\.json; run make test-npm/);
 });
 
-// The Makefile runs one parity tool: vector-parity-check (scripts/check-parity.mjs). The kit target parity-check (K33, kit's
-// own checker of config/parity.json) must not be in CHECK_TARGETS nor be defined by this repository (docs/plans/fsm-v1.md, C-4).
-test('make check runs one parity tool: vector-parity-check is in CHECK_TARGETS, and parity-check of kit is not', () => {
+// make check runs kit's parity check (K33: parity-declarations-check and parity-check, config/parity.json) for the cases, and
+// vector-parity-check (scripts/check-parity.mjs) for the rules that K33 does not take; no rule runs twice (S-42-1).
+test('make check runs the parity check of kit and vector-parity-check', () => {
   const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
   const targets = makefile.match(/^CHECK_TARGETS\s*:=\s*(.*)$/m)?.[1].split(/\s+/).filter(Boolean) ?? [];
-  assert.ok(targets.includes('vector-parity-check'), 'CHECK_TARGETS lacks vector-parity-check');
-  assert.ok(!targets.includes('parity-check'), 'CHECK_TARGETS holds the kit target parity-check');
-  assert.ok(!/^parity-check\s*:/m.test(makefile), 'the Makefile defines the kit target parity-check');
+  for (const target of ['parity-declarations-check', 'parity-check', 'vector-parity-check']) assert.ok(targets.includes(target), `CHECK_TARGETS lacks ${target}`);
+  assert.ok(!/^parity-check\s*:/m.test(makefile), 'the Makefile redefines the kit target parity-check');
 });

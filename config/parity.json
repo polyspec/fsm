@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "implementations": [
+    { "name": "go", "runner": "go", "roots": ["packages/fsm-go"], "tests": ["packages/fsm-go/tests/conformance_test.go"] },
+    { "name": "npm", "runner": "node", "roots": ["packages/fsm-npm"], "tests": ["packages/fsm-npm/tests/conformance.test.mjs"] },
+    { "name": "php", "runner": "php", "roots": ["packages/fsm-php"], "tests": ["packages/fsm-php/tests/ConformanceTest.php"] },
+    { "name": "php-ext", "runner": "php", "roots": ["packages/fsm-php-ext"], "tests": ["packages/fsm-php-ext/tests/ConformanceTest.php"],
+      "args": ["-d", "extension=packages/fsm-php-ext/src/modules/polyspec_fsm_test.so"] },
+    { "name": "python", "runner": "python", "roots": ["packages/fsm-python"], "tests": ["packages/fsm-python/tests/test_conformance.py"],
+      "command": "packages/fsm-python/.venv/bin/python", "env": [{ "name": "PYTHONPATH", "value": "packages/fsm-python/tests" }] },
+    { "name": "rust", "runner": "cargo", "roots": ["packages/fsm-rust"], "tests": ["packages/fsm-rust/tests/conformance.rs"] }
+  ],
+  "profiles": [{ "name": "fsm", "implementations": ["go", "npm", "php", "php-ext", "python", "rust"] }],
+  "suites": ["conformance/vectors.json"],
+  "testPatterns": [
+    { "runner": "go", "globs": ["packages/*/tests/conformance_test.go"] },
+    { "runner": "node", "globs": ["packages/*/tests/conformance.test.mjs"] },
+    { "runner": "php", "globs": ["packages/*/tests/ConformanceTest.php"] },
+    { "runner": "python", "globs": ["packages/*/tests/test_conformance.py"] },
+    { "runner": "cargo", "globs": ["packages/*/tests/conformance.rs"] }
+  ],
+  "units": [
+    { "id": "vectors", "kind": "suite", "profile": "fsm", "file": "conformance/vectors.json", "cases": "$.machines[*].cases[*].name",
+      "admit": "kinds",
+      "bindings": [
+        { "implementation": "go", "test": "packages/fsm-go/tests/conformance_test.go", "symbol": "TestConformance" },
+        { "implementation": "npm", "test": "packages/fsm-npm/tests/conformance.test.mjs" },
+        { "implementation": "php", "test": "packages/fsm-php/tests/ConformanceTest.php" },
+        { "implementation": "php-ext", "test": "packages/fsm-php-ext/tests/ConformanceTest.php" },
+        { "implementation": "python", "test": "packages/fsm-python/tests/test_conformance.py" },
+        { "implementation": "rust", "test": "packages/fsm-rust/tests/conformance.rs", "symbol": "vectors" }
+      ] }
+  ],
+  "exclusions": []
+}

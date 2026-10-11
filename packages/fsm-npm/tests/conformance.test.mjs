@@ -130,7 +130,7 @@ for (const { machine: name, cases } of vectors) {
   const machine = api[name];
   assert.ok(machine !== undefined, `src/index.js does not export the machine ${name}`);
   for (const c of cases) {
-    test(`test_${c.feature}__${c.id}`, async () => {
+    test(c.name, async () => {
       if (c.feature === 'persist') await persistCase(machine, c);
       else await check(machine, c);
     });

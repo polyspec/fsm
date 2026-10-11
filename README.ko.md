@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 0a337ad1638d0b6d9724bb551dc0b82a70502b328fd903ca1e23bf1f820e4c4e -->
+<!-- source-sha256: 3051b7d2cb7f7f1232b360a9c51bc5a3cae98834701f820c3dd77460b971f338 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -242,7 +242,7 @@ fsm.lock.json            the lock of the file stores (the db store keeps its loc
 schema/fsm.schema.json   the JSON schema of a machine file, for editors
 schema/fsm.dbs           the six database tables (dbspec `fsm`), installed by fsm-db install
 schema/persist.dbs       the example tables of the persistence pattern, used by the examples/ of the language packages
-conformance/vectors/     the expected results of the vector cases, written by fsm-gen vectors
+conformance/vectors.json the expected results of the vector cases, written by fsm-gen vectors
 ```
 
 `fsm.config.json`이 store를 고르며, fsm-gen, fsm-db, fsm-gui가 모두 이를 읽는다. fsm-gen은 json과 mermaid store를 처리하며, `db`는
@@ -321,8 +321,8 @@ $ fsm-gen copy --to mermaid --root ./order-mermaid --project ./order-machines
 
 ### vectors
 
-conformance vector, 즉 모든 기계의 모든 연산의 기대 결과를 쓴다(`docs/plans/fsm-v1.md`, C-4). `--kind` 없이 `--out <dir>`은 기계마다
-`<machine>.json`을 받는다. `--kind <kind>`일 때 `--out`은 그 종류의 native test module 파일 이름이다. php와 php-ext 종류는
+conformance vector, 즉 모든 기계의 모든 연산의 기대 결과를 쓴다(`docs/plans/fsm-v1.md`, C-4). `--kind` 없이 `--out <file>`은 모든 기계의
+suite 하나 `{ machines: [{ machine, cases }] }`를 받는다. `--kind <kind>`일 때 `--out`은 그 종류의 native test module 파일 이름이다. php와 php-ext 종류는
 `--php-namespace`도 필요하다.
 
 ```sh
@@ -368,7 +368,7 @@ $ fsm-gen gen --project ./order-machines --kind go --out ./app/src
 usage: fsm-gen check [--project <dir>]
        fsm-gen lock [--project <dir>] [--rename machine.old=new]...
        fsm-gen copy --to json|mermaid --root <dir> [--project <dir>]
-       fsm-gen vectors [--kind <kind>] --out <dir|file> [--project <dir>] [--php-namespace <ns>]
+       fsm-gen vectors [--kind <kind>] --out <file> [--project <dir>] [--php-namespace <ns>]
        fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]   (kind: go, npm, php, php-ext, python, rust)
 ```
 
@@ -438,5 +438,5 @@ $ fsm-gen check --project ./broken
 
 CI(`.github/workflows/ci.yml`)는 main에 push될 때마다 `make install`과 `make check`를 실행하며, PostgreSQL과 MySQL 서비스를 띄운다. 문서 사이트는 `.github/workflows/pages.yml`이 https://polyspec.github.io/fsm/ 에 게시한다.
 
-각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 `test_<feature>__<id>`다.
+각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 case 이름 `<feature>__<id>`다(php와 python은 method `test_<feature>__<id>`). kit의 parity 검사(K33, `config/parity.json`)가 이 이름을 읽는다.
 `make gen-check`는 패키지의 생성 파일이 `fsm-gen`이 지금 쓰는 파일과 같은지 검사한다.

@@ -152,6 +152,7 @@ type machineVectors struct {
 type vectorCase struct {
 	feature         string
 	id              string
+	name            string
 	state           string
 	event           string
 	expected        string

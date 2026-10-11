@@ -3,15 +3,15 @@
 //   fsm-gen check [--project <dir>]
 //   fsm-gen lock  [--project <dir>] [--rename machine.old=new]...
 //   fsm-gen copy  --to json|mermaid --root <dir> [--project <dir>]
-//   fsm-gen vectors --out <dir> [--project <dir>]
+//   fsm-gen vectors --out <file> [--project <dir>]
 //   fsm-gen vectors --kind <kind> --out <file> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>]
 //   fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]
 //   (go only: --go-module, required for gen and for vectors --kind go; php and php-ext: --php-namespace <ns>, required, such as Polyspec\FsmTest, for gen and
 //   vectors --kind php or php-ext; php-ext only: --php-ext-name <name>, required for gen, such as polyspec_fsm_test)
 // --project is the project root, the directory whose fsm.config.json names the store (default: the current directory).
 // For copy, the project store is the source and --root is the target directory, which is required. For vectors, --out is the
-// directory that receives <machine>.json for every machine, and it is required; with --kind it is the file of the kind's native
-// vector module. For gen, --kind names a backend (backends/index.mjs) and --out is the directory of its generated files; the
+// file that receives { machines: [{ machine, cases }] } for every machine, one suite for the parity check, and it is required;
+// with --kind it is the file of the kind's native vector module. For gen, --kind names a backend (backends/index.mjs) and --out is the directory of its generated files; the
 // stale generated files there are removed, and a file without the generated header is a finding (write-generated.mjs). A finding
 // prints as `[fsm-gen] <code> <machine> <path>: <message>` on stderr and exits 1. A usage error exits 2. Otherwise the command
 // exits 0 with a one-line summary on stdout. The json and mermaid stores are the ones this version handles (fsm.config.json).
@@ -30,7 +30,7 @@ import { writeGenerated, writeGeneratedFile } from './write-generated.mjs';
 const USAGE = 'usage: fsm-gen check [--project <dir>]\n'
   + '       fsm-gen lock [--project <dir>] [--rename machine.old=new]...\n'
   + '       fsm-gen copy --to json|mermaid --root <dir> [--project <dir>]\n'
-  + '       fsm-gen vectors [--kind <kind>] --out <dir|file> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>]\n'
+  + '       fsm-gen vectors [--kind <kind>] --out <file> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>]\n'
   + `       fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]   (kind: ${KINDS.join(', ')})`;
 const RENAME = /^([^.=]+)\.([^.=]+)=([^.=]+)$/;
 const PHP_NAMESPACE = /^[A-Za-z][A-Za-z0-9]*(\\[A-Za-z][A-Za-z0-9]*)*$/;
@@ -89,7 +89,7 @@ function parse(argv) {
   if (command === 'copy' && (options.to === undefined || options.root === undefined)) {
     return { usage: 'copy needs --to json|mermaid and --root <dir>' };
   }
-  if (command === 'vectors' && options.out === undefined) return { usage: 'vectors needs --out <dir>' };
+  if (command === 'vectors' && options.out === undefined) return { usage: 'vectors needs --out <file>' };
   if (command === 'gen' && (options.kind === undefined || options.out === undefined)) {
     return { usage: 'gen needs --kind <kind> and --out <dir>' };
   }
@@ -133,7 +133,7 @@ function storeOf(kind, root) {
 }
 
 /**
- * The findings of the command. vectors writes <out>/<machine>.json for every machine, or with --kind the native vector module
+ * The findings of the command. vectors writes the vectors of every machine to the file <out>, or with --kind the native vector module
  * of the kind to <out>; gen writes the generated files of the kind under <out>. Nothing is written when there are findings.
  */
 async function execute({ command, project, renames, to, root, out, kind, goModule, phpNamespace, phpExtName }) {
@@ -144,7 +144,7 @@ async function execute({ command, project, renames, to, root, out, kind, goModul
     const result = await run('vectors', configured.store, {});
     if (result.findings.length > 0) return result.findings;
     if (kind !== undefined) return writeGeneratedFile(out, backendOf(kind).vectorsFile(result.vectors, { phpNamespace, module: goModule }));
-    for (const generated of result.vectors) writeJson(path.join(out, `${generated.machine}.json`), generated);
+    writeJson(out, { machines: result.vectors });
     return [];
   }
   if (command === 'gen') {

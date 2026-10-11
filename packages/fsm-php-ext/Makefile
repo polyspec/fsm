@@ -23,8 +23,8 @@ install:
 gen:
 	mkdir -p $(DEST)/src $(DEST)/tests $(DEST)/examples
 	$(FSM_GEN) gen --project $(ROOT) --kind php-ext --php-namespace '$(NAMESPACE)' --php-ext-name $(EXTENSION) --out $(DEST)/src
-	$(FSM_GEN) vectors --project $(ROOT) --kind php-ext --php-namespace '$(NAMESPACE)' --out $(DEST)/tests/Vectors.php
-	cp $(PHP)/tests/ConformanceTest.php $(DEST)/tests/ConformanceTest.php
+	$(FSM_GEN) vectors --project $(ROOT) --kind php-ext --php-namespace '$(NAMESPACE)' --out $(DEST)/tests/ConformanceTest.php
+	cp $(PHP)/tests/ConformanceCase.php $(DEST)/tests/ConformanceCase.php
 	cp $(PHP)/examples/persist.php $(DEST)/examples/persist.php
 	./vendor/bin/orm-gen gen --out $(DEST)/examples/model --namespace '$(NAMESPACE)\Model' $(ROOT)/schema/persist.dbs
 

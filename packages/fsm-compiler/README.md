@@ -56,7 +56,7 @@ and the lock of `from`, unchanged. Both functions return `{ findings }`; `vector
 | `lock [--rename machine.old=new]...` | the store | the definitions and the lock | derives the lock with the lock rules (`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`); a vanished code moves to `reserved`; `--rename` keeps the code of the renamed state |
 | `save` | `options.definitions` | the definitions and the lock | the core command of the GUI: the same rules as `lock`, one machine per save; there is no command-line form |
 | `copy --to json\|mermaid --root <dir>` | the project store | the target store under `<dir>` | the target must be empty; the lock is copied unchanged |
-| `vectors [--kind <kind>] --out <dir\|file>` | the store | `<machine>.json` for each machine, or the native module of one kind | stops on any finding of `check` |
+| `vectors [--kind <kind>] --out <file>` | the store | `{ machines: [{ machine, cases }] }`, or the native module of one kind | stops on any finding of `check` |
 | `gen --kind <kind> --out <dir>` | the store | the generated files of one kind | stops on any finding of `check`; the output directory is written as described in the root README |
 
 The command line is `packages/fsm-compiler/src/cli/fsm-gen.mjs`. Its `--project <dir>` defaults to the current directory, and
@@ -108,13 +108,13 @@ The vectors are the expected result of every operation of a machine, computed by
 - A case id is `<machine>_<suffix>`, where every key in the suffix is replaced by its declaration index: a state is `s<i>`, an
   event `e<j>` (both 0-based) and a reserved code `r<code>`. So `order_apply_s0_e0_s0` is `apply` from the first state (`draft`)
   with the first event (`next`) when the stored state is also the first state. Ids cannot collide, whatever the names are.
-- The case name in a test is `test_<feature>__<id>`.
-- The example `order` has 89 cases (`conformance/vectors/order.json`, written by `fsm-gen vectors --out`). The counts by feature are
+- The case name is `<feature>__<id>`, the `name` of the case (php and python: the method `test_<feature>__<id>`).
+- The example `order` has 89 cases (in `conformance/vectors.json`, written by `fsm-gen vectors --out`). The counts by feature are
   `initial` 1, `code` 5, `key` 5, `from_code` 7, `is_final` 5, `events_from` 5, `target` 15, `apply` 43 and `persist` 3.
 
-`fsm-gen vectors --out <dir>` writes the common form, `<machine>.json` (`conformance/vectors/order.json` in this repository). Each
+`fsm-gen vectors --out <file>` writes the common form, one file for every machine (`conformance/vectors.json` in this repository). Each
 language package consumes the vectors in its own form: `vectors_test.go` (go, from `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`
-(npm), `Vectors.php` (php and php-ext), `vectors.py` (python) and `vectors.rs` (rust). The package runs one test
+(npm), `ConformanceTest.php` (php and php-ext, one method per case), `vectors.py` (python) and `vectors.rs` (rust). The package runs one test
 per case and `check-parity` requires every case to have run once and passed in every kind.
 
 ## Checks

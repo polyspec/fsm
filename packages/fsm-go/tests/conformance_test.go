@@ -29,8 +29,10 @@ type machineVectors struct {
 type vectorCase struct {
 	feature string
 	id      string
-	state   string
-	event   string
+	// name is the case name, <feature>__<id>, the name of the subtest.
+	name  string
+	state string
+	event string
 	// expected and actual are keys; an invalid state value is given as its integer, with the flag that says so.
 	expected        string
 	actual          string
@@ -98,7 +100,7 @@ func TestConformance(t *testing.T) {
 			t.Fatalf("no adapter for the machine %s; vectors_test.go must hold one", machine.machine)
 		}
 		for _, c := range machine.cases {
-			t.Run("test_"+c.feature+"__"+c.id, func(t *testing.T) {
+			t.Run(c.name, func(t *testing.T) {
 				runCase(t, adapter, c)
 			})
 		}

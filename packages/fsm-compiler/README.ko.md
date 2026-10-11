@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: 27ec79858b0b75826e65206a8d7a152fd9d0f2ea633b60dccd213fc6fd507697 -->
+<!-- source-sha256: 491c632b8000bd9c0b60e809fd5c9291ed22fa46aa29fc57b7d7230779659e41 -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -53,7 +53,7 @@ save({ definitions, lock }) → Promise<void>
 | `lock [--rename machine.old=new]...` | store | 정의와 lock | lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`)으로 lock을 유도한다. 사라진 code는 `reserved`로 간다. `--rename`은 이름이 바뀐 상태의 code를 유지한다 |
 | `save` | `options.definitions` | 정의와 lock | GUI의 core 명령: `lock`과 같은 규칙, 저장마다 기계 하나. 명령 줄 형식은 없다 |
 | `copy --to json\|mermaid --root <dir>` | 프로젝트 store | `<dir>`의 대상 store | 대상은 비어 있어야 한다. lock은 그대로 복사한다 |
-| `vectors [--kind <kind>] --out <dir\|file>` | store | 기계마다 `<machine>.json`, 또는 한 종류의 native module | `check`의 검사 결과가 있으면 멈춘다 |
+| `vectors [--kind <kind>] --out <file>` | store | `{ machines: [{ machine, cases }] }`, 또는 한 종류의 native module | `check`의 검사 결과가 있으면 멈춘다 |
 | `gen --kind <kind> --out <dir>` | store | 한 종류의 생성 파일 | `check`의 검사 결과가 있으면 멈춘다. 출력 디렉터리는 루트 README의 설명대로 쓴다 |
 
 명령 줄은 `packages/fsm-compiler/src/cli/fsm-gen.mjs`다. `--project <dir>`의 기본값은 현재 디렉터리이며, store는
@@ -105,12 +105,12 @@ vector는 기계의 모든 연산의 기대 결과다. core가 정의와 lock으
 - case id는 `<machine>_<suffix>`이며, suffix의 모든 key는 선언 위치로 바뀐다. 상태는 `s<i>`, event는 `e<j>`(둘 다 0부터), reserved code는
   `r<code>`다. 그래서 `order_apply_s0_e0_s0`는 첫 상태(`draft`)에서 첫 event(`next`)를 적용하고 저장된 상태도 첫 상태일 때의 `apply`다.
   이름이 무엇이든 id는 겹치지 않는다.
-- 테스트에서 case 이름은 `test_<feature>__<id>`다.
-- `order` 예제는 89개 case다(`conformance/vectors/order.json`, `fsm-gen vectors --out`이 쓴다). feature별 개수는 `initial` 1, `code` 5,
+- case 이름은 case의 `name`인 `<feature>__<id>`다(php와 python은 method `test_<feature>__<id>`).
+- `order` 예제는 89개 case다(`conformance/vectors.json` 안에 있으며, `fsm-gen vectors --out`이 쓴다). feature별 개수는 `initial` 1, `code` 5,
   `key` 5, `from_code` 7, `is_final` 5, `events_from` 5, `target` 15, `apply` 43, `persist` 3이다.
 
-`fsm-gen vectors --out <dir>`은 공통 형식 `<machine>.json`을 쓴다(이 저장소에서는 `conformance/vectors/order.json`). 각 언어 패키지는
-자기 형식으로 읽는다: `vectors_test.go`(go, `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`(npm), `Vectors.php`(php와 php-ext),
+`fsm-gen vectors --out <file>`은 공통 형식, 모든 기계의 파일 하나를 쓴다(이 저장소에서는 `conformance/vectors.json`). 각 언어 패키지는
+자기 형식으로 읽는다: `vectors_test.go`(go, `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`(npm), `ConformanceTest.php`(php와 php-ext, case마다 method 하나),
 `vectors.py`(python), `vectors.rs`(rust). 패키지는 case마다 test 하나를 실행하며, `check-parity`는 모든 종류에서 모든 case가 한 번씩
 실행되어 통과할 것을 요구한다.
 

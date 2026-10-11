@@ -8,6 +8,7 @@ vectors = [
             {
                 "feature": "initial",
                 "id": "order_initial",
+                "name": "initial__order_initial",
                 "expect": {
                     "state": "draft",
                 },
@@ -15,18 +16,21 @@ vectors = [
             {
                 "feature": "code",
                 "id": "order_code_s0",
+                "name": "code__order_code_s0",
                 "state": "draft",
                 "expect": 1,
             },
             {
                 "feature": "key",
                 "id": "order_key_s0",
+                "name": "key__order_key_s0",
                 "code": 1,
                 "expect": "draft",
             },
             {
                 "feature": "from_code",
                 "id": "order_from_code_s0",
+                "name": "from_code__order_from_code_s0",
                 "input": 1,
                 "expect": {
                     "state": "draft",
@@ -35,12 +39,14 @@ vectors = [
             {
                 "feature": "is_final",
                 "id": "order_is_final_s0",
+                "name": "is_final__order_is_final_s0",
                 "state": "draft",
                 "expect": False,
             },
             {
                 "feature": "events_from",
                 "id": "order_events_from_s0",
+                "name": "events_from__order_events_from_s0",
                 "state": "draft",
                 "expect": [
                     "next",
@@ -50,18 +56,21 @@ vectors = [
             {
                 "feature": "code",
                 "id": "order_code_s1",
+                "name": "code__order_code_s1",
                 "state": "paid",
                 "expect": 2,
             },
             {
                 "feature": "key",
                 "id": "order_key_s1",
+                "name": "key__order_key_s1",
                 "code": 2,
                 "expect": "paid",
             },
             {
                 "feature": "from_code",
                 "id": "order_from_code_s1",
+                "name": "from_code__order_from_code_s1",
                 "input": 2,
                 "expect": {
                     "state": "paid",
@@ -70,12 +79,14 @@ vectors = [
             {
                 "feature": "is_final",
                 "id": "order_is_final_s1",
+                "name": "is_final__order_is_final_s1",
                 "state": "paid",
                 "expect": False,
             },
             {
                 "feature": "events_from",
                 "id": "order_events_from_s1",
+                "name": "events_from__order_events_from_s1",
                 "state": "paid",
                 "expect": [
                     "next",
@@ -86,18 +97,21 @@ vectors = [
             {
                 "feature": "code",
                 "id": "order_code_s2",
+                "name": "code__order_code_s2",
                 "state": "shipped",
                 "expect": 3,
             },
             {
                 "feature": "key",
                 "id": "order_key_s2",
+                "name": "key__order_key_s2",
                 "code": 3,
                 "expect": "shipped",
             },
             {
                 "feature": "from_code",
                 "id": "order_from_code_s2",
+                "name": "from_code__order_from_code_s2",
                 "input": 3,
                 "expect": {
                     "state": "shipped",
@@ -106,12 +120,14 @@ vectors = [
             {
                 "feature": "is_final",
                 "id": "order_is_final_s2",
+                "name": "is_final__order_is_final_s2",
                 "state": "shipped",
                 "expect": False,
             },
             {
                 "feature": "events_from",
                 "id": "order_events_from_s2",
+                "name": "events_from__order_events_from_s2",
                 "state": "shipped",
                 "expect": [
                     "next",
@@ -121,18 +137,21 @@ vectors = [
             {
                 "feature": "code",
                 "id": "order_code_s3",
+                "name": "code__order_code_s3",
                 "state": "done",
                 "expect": 4,
             },
             {
                 "feature": "key",
                 "id": "order_key_s3",
+                "name": "key__order_key_s3",
                 "code": 4,
                 "expect": "done",
             },
             {
                 "feature": "from_code",
                 "id": "order_from_code_s3",
+                "name": "from_code__order_from_code_s3",
                 "input": 4,
                 "expect": {
                     "state": "done",
@@ -141,30 +160,35 @@ vectors = [
             {
                 "feature": "is_final",
                 "id": "order_is_final_s3",
+                "name": "is_final__order_is_final_s3",
                 "state": "done",
                 "expect": True,
             },
             {
                 "feature": "events_from",
                 "id": "order_events_from_s3",
+                "name": "events_from__order_events_from_s3",
                 "state": "done",
                 "expect": [],
             },
             {
                 "feature": "code",
                 "id": "order_code_s4",
+                "name": "code__order_code_s4",
                 "state": "canceled",
                 "expect": 5,
             },
             {
                 "feature": "key",
                 "id": "order_key_s4",
+                "name": "key__order_key_s4",
                 "code": 5,
                 "expect": "canceled",
             },
             {
                 "feature": "from_code",
                 "id": "order_from_code_s4",
+                "name": "from_code__order_from_code_s4",
                 "input": 5,
                 "expect": {
                     "state": "canceled",
@@ -173,18 +197,21 @@ vectors = [
             {
                 "feature": "is_final",
                 "id": "order_is_final_s4",
+                "name": "is_final__order_is_final_s4",
                 "state": "canceled",
                 "expect": True,
             },
             {
                 "feature": "events_from",
                 "id": "order_events_from_s4",
+                "name": "events_from__order_events_from_s4",
                 "state": "canceled",
                 "expect": [],
             },
             {
                 "feature": "from_code",
                 "id": "order_from_code_zero",
+                "name": "from_code__order_from_code_zero",
                 "input": 0,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -196,6 +223,7 @@ vectors = [
             {
                 "feature": "from_code",
                 "id": "order_from_code_unknown",
+                "name": "from_code__order_from_code_unknown",
                 "input": 6,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -207,6 +235,7 @@ vectors = [
             {
                 "feature": "from_code",
                 "id": "order_from_code_negative",
+                "name": "from_code__order_from_code_negative",
                 "input": -1,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -218,6 +247,7 @@ vectors = [
             {
                 "feature": "from_code",
                 "id": "order_from_code_int32_overflow",
+                "name": "from_code__order_from_code_int32_overflow",
                 "input": 2147483648,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -229,6 +259,7 @@ vectors = [
             {
                 "feature": "from_code",
                 "id": "order_from_code_int64_max",
+                "name": "from_code__order_from_code_int64_max",
                 "input": 9223372036854775807,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -240,6 +271,7 @@ vectors = [
             {
                 "feature": "from_code",
                 "id": "order_from_code_string",
+                "name": "from_code__order_from_code_string",
                 "input": "1",
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -251,6 +283,7 @@ vectors = [
             {
                 "feature": "from_code",
                 "id": "order_from_code_bool",
+                "name": "from_code__order_from_code_bool",
                 "input": True,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -262,6 +295,7 @@ vectors = [
             {
                 "feature": "from_code",
                 "id": "order_from_code_float",
+                "name": "from_code__order_from_code_float",
                 "input": 1.0,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -273,6 +307,7 @@ vectors = [
             {
                 "feature": "from_code",
                 "id": "order_from_code_fraction",
+                "name": "from_code__order_from_code_fraction",
                 "input": 1.5,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -284,6 +319,7 @@ vectors = [
             {
                 "feature": "code",
                 "id": "order_code_v0",
+                "name": "code__order_code_v0",
                 "value": 0,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -295,6 +331,7 @@ vectors = [
             {
                 "feature": "is_final",
                 "id": "order_is_final_v0",
+                "name": "is_final__order_is_final_v0",
                 "value": 0,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -306,6 +343,7 @@ vectors = [
             {
                 "feature": "key",
                 "id": "order_key_v0",
+                "name": "key__order_key_v0",
                 "code": 0,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -317,6 +355,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_expected_v0_e0_s0",
+                "name": "apply__order_apply_expected_v0_e0_s0",
                 "expected_value": 0,
                 "event": "next",
                 "actual": "draft",
@@ -330,6 +369,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_actual_v0_e0_s0",
+                "name": "apply__order_apply_actual_v0_e0_s0",
                 "expected": "draft",
                 "event": "next",
                 "actual_value": 0,
@@ -343,6 +383,7 @@ vectors = [
             {
                 "feature": "code",
                 "id": "order_code_v6",
+                "name": "code__order_code_v6",
                 "value": 6,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -354,6 +395,7 @@ vectors = [
             {
                 "feature": "is_final",
                 "id": "order_is_final_v6",
+                "name": "is_final__order_is_final_v6",
                 "value": 6,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -365,6 +407,7 @@ vectors = [
             {
                 "feature": "key",
                 "id": "order_key_v6",
+                "name": "key__order_key_v6",
                 "code": 6,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
@@ -376,6 +419,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_expected_v6_e0_s0",
+                "name": "apply__order_apply_expected_v6_e0_s0",
                 "expected_value": 6,
                 "event": "next",
                 "actual": "draft",
@@ -389,6 +433,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_actual_v6_e0_s0",
+                "name": "apply__order_apply_actual_v6_e0_s0",
                 "expected": "draft",
                 "event": "next",
                 "actual_value": 6,
@@ -402,6 +447,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s0_e0",
+                "name": "target__order_target_s0_e0",
                 "state": "draft",
                 "event": "next",
                 "expect": {
@@ -411,6 +457,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s0_e1",
+                "name": "target__order_target_s0_e1",
                 "state": "draft",
                 "event": "prev",
                 "expect": {
@@ -423,6 +470,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s0_e2",
+                "name": "target__order_target_s0_e2",
                 "state": "draft",
                 "event": "cancel",
                 "expect": {
@@ -432,6 +480,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s1_e0",
+                "name": "target__order_target_s1_e0",
                 "state": "paid",
                 "event": "next",
                 "expect": {
@@ -441,6 +490,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s1_e1",
+                "name": "target__order_target_s1_e1",
                 "state": "paid",
                 "event": "prev",
                 "expect": {
@@ -450,6 +500,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s1_e2",
+                "name": "target__order_target_s1_e2",
                 "state": "paid",
                 "event": "cancel",
                 "expect": {
@@ -459,6 +510,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s2_e0",
+                "name": "target__order_target_s2_e0",
                 "state": "shipped",
                 "event": "next",
                 "expect": {
@@ -468,6 +520,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s2_e1",
+                "name": "target__order_target_s2_e1",
                 "state": "shipped",
                 "event": "prev",
                 "expect": {
@@ -477,6 +530,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s2_e2",
+                "name": "target__order_target_s2_e2",
                 "state": "shipped",
                 "event": "cancel",
                 "expect": {
@@ -489,6 +543,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s3_e0",
+                "name": "target__order_target_s3_e0",
                 "state": "done",
                 "event": "next",
                 "expect": {
@@ -501,6 +556,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s3_e1",
+                "name": "target__order_target_s3_e1",
                 "state": "done",
                 "event": "prev",
                 "expect": {
@@ -513,6 +569,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s3_e2",
+                "name": "target__order_target_s3_e2",
                 "state": "done",
                 "event": "cancel",
                 "expect": {
@@ -525,6 +582,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s4_e0",
+                "name": "target__order_target_s4_e0",
                 "state": "canceled",
                 "event": "next",
                 "expect": {
@@ -537,6 +595,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s4_e1",
+                "name": "target__order_target_s4_e1",
                 "state": "canceled",
                 "event": "prev",
                 "expect": {
@@ -549,6 +608,7 @@ vectors = [
             {
                 "feature": "target",
                 "id": "order_target_s4_e2",
+                "name": "target__order_target_s4_e2",
                 "state": "canceled",
                 "event": "cancel",
                 "expect": {
@@ -561,6 +621,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e0_s0",
+                "name": "apply__order_apply_s0_e0_s0",
                 "expected": "draft",
                 "event": "next",
                 "actual": "draft",
@@ -572,6 +633,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e0_s1",
+                "name": "apply__order_apply_s0_e0_s1",
                 "expected": "draft",
                 "event": "next",
                 "actual": "paid",
@@ -583,6 +645,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e0_s2",
+                "name": "apply__order_apply_s0_e0_s2",
                 "expected": "draft",
                 "event": "next",
                 "actual": "shipped",
@@ -596,6 +659,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e0_s3",
+                "name": "apply__order_apply_s0_e0_s3",
                 "expected": "draft",
                 "event": "next",
                 "actual": "done",
@@ -609,6 +673,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e0_s4",
+                "name": "apply__order_apply_s0_e0_s4",
                 "expected": "draft",
                 "event": "next",
                 "actual": "canceled",
@@ -622,6 +687,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e2_s0",
+                "name": "apply__order_apply_s0_e2_s0",
                 "expected": "draft",
                 "event": "cancel",
                 "actual": "draft",
@@ -633,6 +699,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e2_s4",
+                "name": "apply__order_apply_s0_e2_s4",
                 "expected": "draft",
                 "event": "cancel",
                 "actual": "canceled",
@@ -644,6 +711,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e2_s1",
+                "name": "apply__order_apply_s0_e2_s1",
                 "expected": "draft",
                 "event": "cancel",
                 "actual": "paid",
@@ -657,6 +725,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e2_s2",
+                "name": "apply__order_apply_s0_e2_s2",
                 "expected": "draft",
                 "event": "cancel",
                 "actual": "shipped",
@@ -670,6 +739,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e2_s3",
+                "name": "apply__order_apply_s0_e2_s3",
                 "expected": "draft",
                 "event": "cancel",
                 "actual": "done",
@@ -683,6 +753,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e0_s1",
+                "name": "apply__order_apply_s1_e0_s1",
                 "expected": "paid",
                 "event": "next",
                 "actual": "paid",
@@ -694,6 +765,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e0_s2",
+                "name": "apply__order_apply_s1_e0_s2",
                 "expected": "paid",
                 "event": "next",
                 "actual": "shipped",
@@ -705,6 +777,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e0_s0",
+                "name": "apply__order_apply_s1_e0_s0",
                 "expected": "paid",
                 "event": "next",
                 "actual": "draft",
@@ -718,6 +791,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e0_s3",
+                "name": "apply__order_apply_s1_e0_s3",
                 "expected": "paid",
                 "event": "next",
                 "actual": "done",
@@ -731,6 +805,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e0_s4",
+                "name": "apply__order_apply_s1_e0_s4",
                 "expected": "paid",
                 "event": "next",
                 "actual": "canceled",
@@ -744,6 +819,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e1_s1",
+                "name": "apply__order_apply_s1_e1_s1",
                 "expected": "paid",
                 "event": "prev",
                 "actual": "paid",
@@ -755,6 +831,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e1_s0",
+                "name": "apply__order_apply_s1_e1_s0",
                 "expected": "paid",
                 "event": "prev",
                 "actual": "draft",
@@ -766,6 +843,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e1_s2",
+                "name": "apply__order_apply_s1_e1_s2",
                 "expected": "paid",
                 "event": "prev",
                 "actual": "shipped",
@@ -779,6 +857,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e1_s3",
+                "name": "apply__order_apply_s1_e1_s3",
                 "expected": "paid",
                 "event": "prev",
                 "actual": "done",
@@ -792,6 +871,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e1_s4",
+                "name": "apply__order_apply_s1_e1_s4",
                 "expected": "paid",
                 "event": "prev",
                 "actual": "canceled",
@@ -805,6 +885,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e2_s1",
+                "name": "apply__order_apply_s1_e2_s1",
                 "expected": "paid",
                 "event": "cancel",
                 "actual": "paid",
@@ -816,6 +897,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e2_s4",
+                "name": "apply__order_apply_s1_e2_s4",
                 "expected": "paid",
                 "event": "cancel",
                 "actual": "canceled",
@@ -827,6 +909,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e2_s0",
+                "name": "apply__order_apply_s1_e2_s0",
                 "expected": "paid",
                 "event": "cancel",
                 "actual": "draft",
@@ -840,6 +923,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e2_s2",
+                "name": "apply__order_apply_s1_e2_s2",
                 "expected": "paid",
                 "event": "cancel",
                 "actual": "shipped",
@@ -853,6 +937,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s1_e2_s3",
+                "name": "apply__order_apply_s1_e2_s3",
                 "expected": "paid",
                 "event": "cancel",
                 "actual": "done",
@@ -866,6 +951,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e0_s2",
+                "name": "apply__order_apply_s2_e0_s2",
                 "expected": "shipped",
                 "event": "next",
                 "actual": "shipped",
@@ -877,6 +963,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e0_s3",
+                "name": "apply__order_apply_s2_e0_s3",
                 "expected": "shipped",
                 "event": "next",
                 "actual": "done",
@@ -888,6 +975,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e0_s0",
+                "name": "apply__order_apply_s2_e0_s0",
                 "expected": "shipped",
                 "event": "next",
                 "actual": "draft",
@@ -901,6 +989,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e0_s1",
+                "name": "apply__order_apply_s2_e0_s1",
                 "expected": "shipped",
                 "event": "next",
                 "actual": "paid",
@@ -914,6 +1003,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e0_s4",
+                "name": "apply__order_apply_s2_e0_s4",
                 "expected": "shipped",
                 "event": "next",
                 "actual": "canceled",
@@ -927,6 +1017,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e1_s2",
+                "name": "apply__order_apply_s2_e1_s2",
                 "expected": "shipped",
                 "event": "prev",
                 "actual": "shipped",
@@ -938,6 +1029,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e1_s1",
+                "name": "apply__order_apply_s2_e1_s1",
                 "expected": "shipped",
                 "event": "prev",
                 "actual": "paid",
@@ -949,6 +1041,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e1_s0",
+                "name": "apply__order_apply_s2_e1_s0",
                 "expected": "shipped",
                 "event": "prev",
                 "actual": "draft",
@@ -962,6 +1055,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e1_s3",
+                "name": "apply__order_apply_s2_e1_s3",
                 "expected": "shipped",
                 "event": "prev",
                 "actual": "done",
@@ -975,6 +1069,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e1_s4",
+                "name": "apply__order_apply_s2_e1_s4",
                 "expected": "shipped",
                 "event": "prev",
                 "actual": "canceled",
@@ -988,6 +1083,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s0_e1_s0",
+                "name": "apply__order_apply_s0_e1_s0",
                 "expected": "draft",
                 "event": "prev",
                 "actual": "draft",
@@ -1001,6 +1097,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s2_e2_s2",
+                "name": "apply__order_apply_s2_e2_s2",
                 "expected": "shipped",
                 "event": "cancel",
                 "actual": "shipped",
@@ -1014,6 +1111,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s3_e0_s3",
+                "name": "apply__order_apply_s3_e0_s3",
                 "expected": "done",
                 "event": "next",
                 "actual": "done",
@@ -1027,6 +1125,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s3_e1_s3",
+                "name": "apply__order_apply_s3_e1_s3",
                 "expected": "done",
                 "event": "prev",
                 "actual": "done",
@@ -1040,6 +1139,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s3_e2_s3",
+                "name": "apply__order_apply_s3_e2_s3",
                 "expected": "done",
                 "event": "cancel",
                 "actual": "done",
@@ -1053,6 +1153,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s4_e0_s4",
+                "name": "apply__order_apply_s4_e0_s4",
                 "expected": "canceled",
                 "event": "next",
                 "actual": "canceled",
@@ -1066,6 +1167,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s4_e1_s4",
+                "name": "apply__order_apply_s4_e1_s4",
                 "expected": "canceled",
                 "event": "prev",
                 "actual": "canceled",
@@ -1079,6 +1181,7 @@ vectors = [
             {
                 "feature": "apply",
                 "id": "order_apply_s4_e2_s4",
+                "name": "apply__order_apply_s4_e2_s4",
                 "expected": "canceled",
                 "event": "cancel",
                 "actual": "canceled",
@@ -1092,6 +1195,7 @@ vectors = [
             {
                 "feature": "persist",
                 "id": "order_persist_first",
+                "name": "persist__order_persist_first",
                 "scenario": "first",
                 "expected": "draft",
                 "event": "next",
@@ -1104,6 +1208,7 @@ vectors = [
             {
                 "feature": "persist",
                 "id": "order_persist_retry",
+                "name": "persist__order_persist_retry",
                 "scenario": "retry",
                 "expected": "draft",
                 "event": "next",
@@ -1116,6 +1221,7 @@ vectors = [
             {
                 "feature": "persist",
                 "id": "order_persist_conflict",
+                "name": "persist__order_persist_conflict",
                 "scenario": "conflict",
                 "expected": "draft",
                 "event": "next",
