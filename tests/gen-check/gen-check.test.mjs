@@ -10,7 +10,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const VECTOR = 'conformance/vectors/order.json';
+const VECTOR = 'conformance/vectors.json';
 
 /** Writes `text` to `file` below `root`, creating its directories. */
 function write(root, file, text) {
@@ -38,10 +38,10 @@ function fixture(t, layout, files) {
   return root;
 }
 
-/** The layout of a checkout without kinds: only the vector files are compared. */
+/** The layout of a checkout without kinds: only the vector file is compared. */
 const NO_KINDS = { schema: 1, tools: [], canonical: { files: [], directories: [] }, kinds: {} };
 
-/** A checkout of this repository with no kinds, so that its vector files are the only generated files. */
+/** A checkout of this repository with no kinds, so that its vector file is the only generated file. */
 const checkout = t => fixture(t, NO_KINDS, {});
 
 /** A kind `fake` whose package generates gen/a.txt, with the generated glob `gen/**`, which the fixed patterns never covered. */
@@ -78,16 +78,16 @@ test('a one-byte change to a vector file is a differs finding and exits 1', (t) 
   assert.match(result.stderr, new RegExp(`^\\[gen-check\\] differs ${VECTOR}: `));
 });
 
-test('an added tracked file in the compared directory is an extra finding', (t) => {
-  const root = checkout(t);
-  write(root, 'conformance/vectors/extra.json', '{}\n');
-  spawnSync('git', ['add', 'conformance/vectors/extra.json'], { cwd: root });
+test('an added tracked file that a generated glob matches is an extra finding', (t) => {
+  const root = fixture(t, FAKE_LAYOUT, FAKE_FILES);
+  write(root, 'packages/fsm-fake/gen/extra.txt', 'extra\n');
+  spawnSync('git', ['add', 'packages/fsm-fake/gen/extra.txt'], { cwd: root });
   const result = genCheck(root);
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /^\[gen-check\] extra conformance\/vectors\/extra\.json: /);
+  assert.match(result.stderr, /^\[gen-check\] extra packages\/fsm-fake\/gen\/extra\.txt: /);
 });
 
-test('a missing tracked file in the compared directory is a missing finding', (t) => {
+test('a missing vector file is a missing finding', (t) => {
   const root = checkout(t);
   rmSync(path.join(root, VECTOR));
   const result = genCheck(root);
@@ -98,7 +98,7 @@ test('a missing tracked file in the compared directory is a missing finding', (t
 test('an ignored file in the compared directory is not read, so it is no finding', (t) => {
   const root = checkout(t);
   write(root, '.gitignore', '*.tmp\n');
-  write(root, 'conformance/vectors/scratch.tmp', 'not a vector\n');
+  write(root, 'conformance/scratch.tmp', 'not a vector\n');
   assert.deepEqual(genCheck(root), { status: 0, stderr: '' });
 });
 
