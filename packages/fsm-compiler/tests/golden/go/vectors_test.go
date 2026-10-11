@@ -41,67 +41,80 @@ var vectors = []machineVectors{
 			{feature: "events_from", id: "order_events_from_s4", state: "canceled", want: expectation{events: []string{}}},
 			{feature: "from_code", id: "order_from_code_zero", input: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "order_from_code_unknown", input: 6, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "order_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "order_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "order_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "order_apply_expected_v0_e0_s0", expectedValue: 0, expectedIsValue: true, event: "next", actual: "draft", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "order_apply_actual_v0_e0_s0", expected: "draft", event: "next", actualValue: 0, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "code", id: "order_code_v6", value: 6, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "is_final", id: "order_is_final_v6", value: 6, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "key", id: "order_key_v6", code: 6, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "order_apply_expected_v6_e0_s0", expectedValue: 6, expectedIsValue: true, event: "next", actual: "draft", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "apply", id: "order_apply_actual_v6_e0_s0", expected: "draft", event: "next", actualValue: 6, actualIsValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "target", id: "order_target_s0_e0", state: "draft", event: "next", want: expectation{state: "paid"}},
-			{feature: "target", id: "order_target_s0_e1", state: "draft", event: "prev", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "order_target_s0_e1", state: "draft", event: "prev", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 2}},
 			{feature: "target", id: "order_target_s0_e2", state: "draft", event: "cancel", want: expectation{state: "canceled"}},
 			{feature: "target", id: "order_target_s1_e0", state: "paid", event: "next", want: expectation{state: "shipped"}},
 			{feature: "target", id: "order_target_s1_e1", state: "paid", event: "prev", want: expectation{state: "draft"}},
 			{feature: "target", id: "order_target_s1_e2", state: "paid", event: "cancel", want: expectation{state: "canceled"}},
 			{feature: "target", id: "order_target_s2_e0", state: "shipped", event: "next", want: expectation{state: "done"}},
 			{feature: "target", id: "order_target_s2_e1", state: "shipped", event: "prev", want: expectation{state: "paid"}},
-			{feature: "target", id: "order_target_s2_e2", state: "shipped", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s3_e0", state: "done", event: "next", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s3_e1", state: "done", event: "prev", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s3_e2", state: "done", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s4_e0", state: "canceled", event: "next", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s4_e1", state: "canceled", event: "prev", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "target", id: "order_target_s4_e2", state: "canceled", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "target", id: "order_target_s2_e2", state: "shipped", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 3}},
+			{feature: "target", id: "order_target_s3_e0", state: "done", event: "next", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 1}},
+			{feature: "target", id: "order_target_s3_e1", state: "done", event: "prev", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 2}},
+			{feature: "target", id: "order_target_s3_e2", state: "done", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 3}},
+			{feature: "target", id: "order_target_s4_e0", state: "canceled", event: "next", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 1}},
+			{feature: "target", id: "order_target_s4_e1", state: "canceled", event: "prev", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 2}},
+			{feature: "target", id: "order_target_s4_e2", state: "canceled", event: "cancel", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 3}},
 			{feature: "apply", id: "order_apply_s0_e0_s0", expected: "draft", event: "next", actual: "draft", want: expectation{to: "paid", changed: true}},
 			{feature: "apply", id: "order_apply_s0_e0_s1", expected: "draft", event: "next", actual: "paid", want: expectation{to: "paid", changed: false}},
-			{feature: "apply", id: "order_apply_s0_e0_s2", expected: "draft", event: "next", actual: "shipped", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e0_s3", expected: "draft", event: "next", actual: "done", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e0_s4", expected: "draft", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s0_e0_s2", expected: "draft", event: "next", actual: "shipped", want: expectation{error: "E_CONFLICT", expected: 1, actual: 3, event: 1}},
+			{feature: "apply", id: "order_apply_s0_e0_s3", expected: "draft", event: "next", actual: "done", want: expectation{error: "E_CONFLICT", expected: 1, actual: 4, event: 1}},
+			{feature: "apply", id: "order_apply_s0_e0_s4", expected: "draft", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 1, actual: 5, event: 1}},
 			{feature: "apply", id: "order_apply_s0_e2_s0", expected: "draft", event: "cancel", actual: "draft", want: expectation{to: "canceled", changed: true}},
 			{feature: "apply", id: "order_apply_s0_e2_s4", expected: "draft", event: "cancel", actual: "canceled", want: expectation{to: "canceled", changed: false}},
-			{feature: "apply", id: "order_apply_s0_e2_s1", expected: "draft", event: "cancel", actual: "paid", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e2_s2", expected: "draft", event: "cancel", actual: "shipped", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e2_s3", expected: "draft", event: "cancel", actual: "done", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s0_e2_s1", expected: "draft", event: "cancel", actual: "paid", want: expectation{error: "E_CONFLICT", expected: 1, actual: 2, event: 3}},
+			{feature: "apply", id: "order_apply_s0_e2_s2", expected: "draft", event: "cancel", actual: "shipped", want: expectation{error: "E_CONFLICT", expected: 1, actual: 3, event: 3}},
+			{feature: "apply", id: "order_apply_s0_e2_s3", expected: "draft", event: "cancel", actual: "done", want: expectation{error: "E_CONFLICT", expected: 1, actual: 4, event: 3}},
 			{feature: "apply", id: "order_apply_s1_e0_s1", expected: "paid", event: "next", actual: "paid", want: expectation{to: "shipped", changed: true}},
 			{feature: "apply", id: "order_apply_s1_e0_s2", expected: "paid", event: "next", actual: "shipped", want: expectation{to: "shipped", changed: false}},
-			{feature: "apply", id: "order_apply_s1_e0_s0", expected: "paid", event: "next", actual: "draft", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e0_s3", expected: "paid", event: "next", actual: "done", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e0_s4", expected: "paid", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s1_e0_s0", expected: "paid", event: "next", actual: "draft", want: expectation{error: "E_CONFLICT", expected: 2, actual: 1, event: 1}},
+			{feature: "apply", id: "order_apply_s1_e0_s3", expected: "paid", event: "next", actual: "done", want: expectation{error: "E_CONFLICT", expected: 2, actual: 4, event: 1}},
+			{feature: "apply", id: "order_apply_s1_e0_s4", expected: "paid", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 2, actual: 5, event: 1}},
 			{feature: "apply", id: "order_apply_s1_e1_s1", expected: "paid", event: "prev", actual: "paid", want: expectation{to: "draft", changed: true}},
 			{feature: "apply", id: "order_apply_s1_e1_s0", expected: "paid", event: "prev", actual: "draft", want: expectation{to: "draft", changed: false}},
-			{feature: "apply", id: "order_apply_s1_e1_s2", expected: "paid", event: "prev", actual: "shipped", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e1_s3", expected: "paid", event: "prev", actual: "done", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e1_s4", expected: "paid", event: "prev", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s1_e1_s2", expected: "paid", event: "prev", actual: "shipped", want: expectation{error: "E_CONFLICT", expected: 2, actual: 3, event: 2}},
+			{feature: "apply", id: "order_apply_s1_e1_s3", expected: "paid", event: "prev", actual: "done", want: expectation{error: "E_CONFLICT", expected: 2, actual: 4, event: 2}},
+			{feature: "apply", id: "order_apply_s1_e1_s4", expected: "paid", event: "prev", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 2, actual: 5, event: 2}},
 			{feature: "apply", id: "order_apply_s1_e2_s1", expected: "paid", event: "cancel", actual: "paid", want: expectation{to: "canceled", changed: true}},
 			{feature: "apply", id: "order_apply_s1_e2_s4", expected: "paid", event: "cancel", actual: "canceled", want: expectation{to: "canceled", changed: false}},
-			{feature: "apply", id: "order_apply_s1_e2_s0", expected: "paid", event: "cancel", actual: "draft", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e2_s2", expected: "paid", event: "cancel", actual: "shipped", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s1_e2_s3", expected: "paid", event: "cancel", actual: "done", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s1_e2_s0", expected: "paid", event: "cancel", actual: "draft", want: expectation{error: "E_CONFLICT", expected: 2, actual: 1, event: 3}},
+			{feature: "apply", id: "order_apply_s1_e2_s2", expected: "paid", event: "cancel", actual: "shipped", want: expectation{error: "E_CONFLICT", expected: 2, actual: 3, event: 3}},
+			{feature: "apply", id: "order_apply_s1_e2_s3", expected: "paid", event: "cancel", actual: "done", want: expectation{error: "E_CONFLICT", expected: 2, actual: 4, event: 3}},
 			{feature: "apply", id: "order_apply_s2_e0_s2", expected: "shipped", event: "next", actual: "shipped", want: expectation{to: "done", changed: true}},
 			{feature: "apply", id: "order_apply_s2_e0_s3", expected: "shipped", event: "next", actual: "done", want: expectation{to: "done", changed: false}},
-			{feature: "apply", id: "order_apply_s2_e0_s0", expected: "shipped", event: "next", actual: "draft", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s2_e0_s1", expected: "shipped", event: "next", actual: "paid", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s2_e0_s4", expected: "shipped", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
+			{feature: "apply", id: "order_apply_s2_e0_s0", expected: "shipped", event: "next", actual: "draft", want: expectation{error: "E_CONFLICT", expected: 3, actual: 1, event: 1}},
+			{feature: "apply", id: "order_apply_s2_e0_s1", expected: "shipped", event: "next", actual: "paid", want: expectation{error: "E_CONFLICT", expected: 3, actual: 2, event: 1}},
+			{feature: "apply", id: "order_apply_s2_e0_s4", expected: "shipped", event: "next", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 3, actual: 5, event: 1}},
 			{feature: "apply", id: "order_apply_s2_e1_s2", expected: "shipped", event: "prev", actual: "shipped", want: expectation{to: "paid", changed: true}},
 			{feature: "apply", id: "order_apply_s2_e1_s1", expected: "shipped", event: "prev", actual: "paid", want: expectation{to: "paid", changed: false}},
-			{feature: "apply", id: "order_apply_s2_e1_s0", expected: "shipped", event: "prev", actual: "draft", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s2_e1_s3", expected: "shipped", event: "prev", actual: "done", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s2_e1_s4", expected: "shipped", event: "prev", actual: "canceled", want: expectation{error: "E_CONFLICT"}},
-			{feature: "apply", id: "order_apply_s0_e1_s0", expected: "draft", event: "prev", actual: "draft", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s2_e2_s2", expected: "shipped", event: "cancel", actual: "shipped", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s3_e0_s3", expected: "done", event: "next", actual: "done", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s3_e1_s3", expected: "done", event: "prev", actual: "done", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s3_e2_s3", expected: "done", event: "cancel", actual: "done", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s4_e0_s4", expected: "canceled", event: "next", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s4_e1_s4", expected: "canceled", event: "prev", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION"}},
-			{feature: "apply", id: "order_apply_s4_e2_s4", expected: "canceled", event: "cancel", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION"}},
+			{feature: "apply", id: "order_apply_s2_e1_s0", expected: "shipped", event: "prev", actual: "draft", want: expectation{error: "E_CONFLICT", expected: 3, actual: 1, event: 2}},
+			{feature: "apply", id: "order_apply_s2_e1_s3", expected: "shipped", event: "prev", actual: "done", want: expectation{error: "E_CONFLICT", expected: 3, actual: 4, event: 2}},
+			{feature: "apply", id: "order_apply_s2_e1_s4", expected: "shipped", event: "prev", actual: "canceled", want: expectation{error: "E_CONFLICT", expected: 3, actual: 5, event: 2}},
+			{feature: "apply", id: "order_apply_s0_e1_s0", expected: "draft", event: "prev", actual: "draft", want: expectation{error: "E_INVALID_TRANSITION", expected: 1, event: 2}},
+			{feature: "apply", id: "order_apply_s2_e2_s2", expected: "shipped", event: "cancel", actual: "shipped", want: expectation{error: "E_INVALID_TRANSITION", expected: 3, event: 3}},
+			{feature: "apply", id: "order_apply_s3_e0_s3", expected: "done", event: "next", actual: "done", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 1}},
+			{feature: "apply", id: "order_apply_s3_e1_s3", expected: "done", event: "prev", actual: "done", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 2}},
+			{feature: "apply", id: "order_apply_s3_e2_s3", expected: "done", event: "cancel", actual: "done", want: expectation{error: "E_INVALID_TRANSITION", expected: 4, event: 3}},
+			{feature: "apply", id: "order_apply_s4_e0_s4", expected: "canceled", event: "next", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 1}},
+			{feature: "apply", id: "order_apply_s4_e1_s4", expected: "canceled", event: "prev", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 2}},
+			{feature: "apply", id: "order_apply_s4_e2_s4", expected: "canceled", event: "cancel", actual: "canceled", want: expectation{error: "E_INVALID_TRANSITION", expected: 5, event: 3}},
 			{feature: "persist", id: "order_persist_first", scenario: "first", expected: "draft", event: "next", stored: "draft", want: expectation{storedAfter: "paid", changed: true}},
 			{feature: "persist", id: "order_persist_retry", scenario: "retry", expected: "draft", event: "next", stored: "paid", want: expectation{storedAfter: "paid", changed: false}},
-			{feature: "persist", id: "order_persist_conflict", scenario: "conflict", expected: "draft", event: "next", stored: "shipped", want: expectation{error: "E_CONFLICT", storedAfter: "shipped"}},
+			{feature: "persist", id: "order_persist_conflict", scenario: "conflict", expected: "draft", event: "next", stored: "shipped", want: expectation{error: "E_CONFLICT", expected: 1, actual: 3, event: 1, storedAfter: "shipped"}},
 		},
 	},
 }
@@ -129,19 +142,31 @@ var orderEvents = map[string]order.Event{
 	"cancel": order.EventCancel,
 }
 
-func (orderMachine) initial() (string, error) {
+func (m orderMachine) initial() (string, error) {
 	return order.Key(order.Initial())
 }
 
-func (orderMachine) code(state string) (int32, error) {
-	value, err := lookup(orderStates, "state", state)
+// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+func (m orderMachine) state(arg stateArg) (order.State, error) {
+	if arg.isValue {
+		value, err := int32Of(arg.value)
+		if err != nil {
+			return 0, err
+		}
+		return order.State(value), nil
+	}
+	return lookup(orderStates, "state", arg.key)
+}
+
+func (m orderMachine) code(state stateArg) (int32, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return 0, err
 	}
 	return order.Code(value)
 }
 
-func (orderMachine) key(code int64) (string, error) {
+func (m orderMachine) key(code int64) (string, error) {
 	value, err := int32Of(code)
 	if err != nil {
 		return "", err
@@ -149,7 +174,7 @@ func (orderMachine) key(code int64) (string, error) {
 	return order.Key(order.State(value))
 }
 
-func (orderMachine) fromCode(code int64) (string, error) {
+func (m orderMachine) fromCode(code int64) (string, error) {
 	value, err := order.FromCode(code)
 	if err != nil {
 		return "", err
@@ -157,15 +182,15 @@ func (orderMachine) fromCode(code int64) (string, error) {
 	return order.Key(value)
 }
 
-func (orderMachine) isFinal(state string) (bool, error) {
-	value, err := lookup(orderStates, "state", state)
+func (m orderMachine) isFinal(state stateArg) (bool, error) {
+	value, err := m.state(state)
 	if err != nil {
 		return false, err
 	}
 	return order.IsFinal(value)
 }
 
-func (orderMachine) eventsFrom(state string) ([]string, error) {
+func (m orderMachine) eventsFrom(state string) ([]string, error) {
 	value, err := lookup(orderStates, "state", state)
 	if err != nil {
 		return nil, err
@@ -185,7 +210,7 @@ func (orderMachine) eventsFrom(state string) ([]string, error) {
 	return keys, nil
 }
 
-func (orderMachine) target(expected, event string) (string, error) {
+func (m orderMachine) target(expected, event string) (string, error) {
 	from, err := lookup(orderStates, "state", expected)
 	if err != nil {
 		return "", err
@@ -201,8 +226,8 @@ func (orderMachine) target(expected, event string) (string, error) {
 	return keyOf(orderStates, "state", to)
 }
 
-func (orderMachine) apply(expected, event, actual string) (string, bool, error) {
-	from, err := lookup(orderStates, "state", expected)
+func (m orderMachine) apply(expected stateArg, event string, actual stateArg) (string, bool, error) {
+	from, err := m.state(expected)
 	if err != nil {
 		return "", false, err
 	}
@@ -210,7 +235,7 @@ func (orderMachine) apply(expected, event, actual string) (string, bool, error) 
 	if err != nil {
 		return "", false, err
 	}
-	observed, err := lookup(orderStates, "state", actual)
+	observed, err := m.state(actual)
 	if err != nil {
 		return "", false, err
 	}
@@ -222,7 +247,7 @@ func (orderMachine) apply(expected, event, actual string) (string, bool, error) 
 	return to, step.Changed, err
 }
 
-func (orderMachine) decide(expected, event string) examples.Decide {
+func (m orderMachine) decide(expected, event string) examples.Decide {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(orderStates, "state", expected)
 		if err != nil {

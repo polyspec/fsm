@@ -175,6 +175,9 @@ final class Vectors
                     'input' => 0,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -186,6 +189,51 @@ final class Vectors
                     'input' => 4,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__in_review_from_code_negative' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_negative',
+                    'input' => -1,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__in_review_from_code_int32_overflow' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_int32_overflow',
+                    'input' => 2147483648,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__in_review_from_code_int64_max' => [
+                'machine' => 'in_review',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'in_review_from_code_int64_max',
+                    'input' => 9223372036854775807,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -210,6 +258,9 @@ final class Vectors
                     'event' => 'finish_work',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -222,6 +273,9 @@ final class Vectors
                     'event' => 'reopen_work',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -234,6 +288,9 @@ final class Vectors
                     'event' => 'start_work',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 2,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -270,6 +327,9 @@ final class Vectors
                     'event' => 'start_work',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -282,6 +342,9 @@ final class Vectors
                     'event' => 'finish_work',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -294,6 +357,9 @@ final class Vectors
                     'event' => 'reopen_work',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -335,6 +401,9 @@ final class Vectors
                     'actual' => 'done_now',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 3,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -376,6 +445,9 @@ final class Vectors
                     'actual' => 'to_do',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 1,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -417,6 +489,9 @@ final class Vectors
                     'actual' => 'done_now',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 3,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -430,6 +505,9 @@ final class Vectors
                     'actual' => 'to_do',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -443,6 +521,9 @@ final class Vectors
                     'actual' => 'to_do',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -456,6 +537,9 @@ final class Vectors
                     'actual' => 'in_progress',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 2,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -469,6 +553,9 @@ final class Vectors
                     'actual' => 'done_now',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -482,6 +569,9 @@ final class Vectors
                     'actual' => 'done_now',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -495,6 +585,9 @@ final class Vectors
                     'actual' => 'done_now',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -539,6 +632,9 @@ final class Vectors
                     'stored' => 'done_now',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 3,
+                        'event' => 1,
                         'stored_after' => 'done_now',
                     ],
                 ],
@@ -657,6 +753,9 @@ final class Vectors
                     'input' => 0,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -668,6 +767,51 @@ final class Vectors
                     'input' => 2,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__limits_from_code_negative' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_negative',
+                    'input' => -1,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__limits_from_code_int32_overflow' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_int32_overflow',
+                    'input' => 2147483648,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__limits_from_code_int64_max' => [
+                'machine' => 'limits',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'limits_from_code_int64_max',
+                    'input' => 9223372036854775807,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -692,6 +836,9 @@ final class Vectors
                     'event' => 'rise',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 2147483647,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -733,6 +880,9 @@ final class Vectors
                     'actual' => 'ceiling',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 2147483647,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1029,6 +1179,9 @@ final class Vectors
                     'input' => 0,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -1040,6 +1193,51 @@ final class Vectors
                     'input' => 6,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_negative' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_negative',
+                    'input' => -1,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_int32_overflow' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_int32_overflow',
+                    'input' => 2147483648,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__order_from_code_int64_max' => [
+                'machine' => 'order',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'order_from_code_int64_max',
+                    'input' => 9223372036854775807,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -1064,6 +1262,9 @@ final class Vectors
                     'event' => 'prev',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1148,6 +1349,9 @@ final class Vectors
                     'event' => 'cancel',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1160,6 +1364,9 @@ final class Vectors
                     'event' => 'next',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 4,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1172,6 +1379,9 @@ final class Vectors
                     'event' => 'prev',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 4,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1184,6 +1394,9 @@ final class Vectors
                     'event' => 'cancel',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 4,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1196,6 +1409,9 @@ final class Vectors
                     'event' => 'next',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1208,6 +1424,9 @@ final class Vectors
                     'event' => 'prev',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1220,6 +1439,9 @@ final class Vectors
                     'event' => 'cancel',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1261,6 +1483,9 @@ final class Vectors
                     'actual' => 'shipped',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 3,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1274,6 +1499,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 4,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1287,6 +1515,9 @@ final class Vectors
                     'actual' => 'canceled',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 5,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1328,6 +1559,9 @@ final class Vectors
                     'actual' => 'paid',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 2,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1341,6 +1575,9 @@ final class Vectors
                     'actual' => 'shipped',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 3,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1354,6 +1591,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 4,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1395,6 +1635,9 @@ final class Vectors
                     'actual' => 'draft',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 1,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1408,6 +1651,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 4,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1421,6 +1667,9 @@ final class Vectors
                     'actual' => 'canceled',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 5,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1462,6 +1711,9 @@ final class Vectors
                     'actual' => 'shipped',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 3,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1475,6 +1727,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 4,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1488,6 +1743,9 @@ final class Vectors
                     'actual' => 'canceled',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 5,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1529,6 +1787,9 @@ final class Vectors
                     'actual' => 'draft',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 1,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1542,6 +1803,9 @@ final class Vectors
                     'actual' => 'shipped',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 3,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1555,6 +1819,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 2,
+                        'actual' => 4,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1596,6 +1863,9 @@ final class Vectors
                     'actual' => 'draft',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 3,
+                        'actual' => 1,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1609,6 +1879,9 @@ final class Vectors
                     'actual' => 'paid',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 3,
+                        'actual' => 2,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1622,6 +1895,9 @@ final class Vectors
                     'actual' => 'canceled',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 3,
+                        'actual' => 5,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1663,6 +1939,9 @@ final class Vectors
                     'actual' => 'draft',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 3,
+                        'actual' => 1,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1676,6 +1955,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 3,
+                        'actual' => 4,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1689,6 +1971,9 @@ final class Vectors
                     'actual' => 'canceled',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 3,
+                        'actual' => 5,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1702,6 +1987,9 @@ final class Vectors
                     'actual' => 'draft',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1715,6 +2003,9 @@ final class Vectors
                     'actual' => 'shipped',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1728,6 +2019,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 4,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1741,6 +2035,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 4,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1754,6 +2051,9 @@ final class Vectors
                     'actual' => 'done',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 4,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1767,6 +2067,9 @@ final class Vectors
                     'actual' => 'canceled',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -1780,6 +2083,9 @@ final class Vectors
                     'actual' => 'canceled',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -1793,6 +2099,9 @@ final class Vectors
                     'actual' => 'canceled',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -1837,6 +2146,9 @@ final class Vectors
                     'stored' => 'shipped',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 3,
+                        'event' => 1,
                         'stored_after' => 'shipped',
                     ],
                 ],
@@ -1906,6 +2218,9 @@ final class Vectors
                     'input' => 0,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -1917,6 +2232,51 @@ final class Vectors
                     'input' => 2,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__standby_from_code_negative' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_negative',
+                    'input' => -1,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__standby_from_code_int32_overflow' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_int32_overflow',
+                    'input' => 2147483648,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__standby_from_code_int64_max' => [
+                'machine' => 'standby',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'standby_from_code_int64_max',
+                    'input' => 9223372036854775807,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -2084,6 +2444,9 @@ final class Vectors
                     'input' => 0,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -2095,6 +2458,9 @@ final class Vectors
                     'input' => 6,
                     'expect' => [
                         'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -2106,6 +2472,9 @@ final class Vectors
                     'input' => 2,
                     'expect' => [
                         'error' => 'E_RESERVED_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -2117,6 +2486,51 @@ final class Vectors
                     'input' => 4,
                     'expect' => [
                         'error' => 'E_RESERVED_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_negative' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_negative',
+                    'input' => -1,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_int32_overflow' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_int32_overflow',
+                    'input' => 2147483648,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
+                    ],
+                ],
+            ],
+            'test_from_code__ticket_from_code_int64_max' => [
+                'machine' => 'ticket',
+                'case' => [
+                    'feature' => 'from_code',
+                    'id' => 'ticket_from_code_int64_max',
+                    'input' => 9223372036854775807,
+                    'expect' => [
+                        'error' => 'E_UNKNOWN_CODE',
+                        'expected' => null,
+                        'actual' => null,
+                        'event' => null,
                     ],
                 ],
             ],
@@ -2141,6 +2555,9 @@ final class Vectors
                     'event' => 'approve',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -2153,6 +2570,9 @@ final class Vectors
                     'event' => 'reject',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -2165,6 +2585,9 @@ final class Vectors
                     'event' => 'submit',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -2201,6 +2624,9 @@ final class Vectors
                     'event' => 'submit',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -2213,6 +2639,9 @@ final class Vectors
                     'event' => 'approve',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -2225,6 +2654,9 @@ final class Vectors
                     'event' => 'reject',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -2266,6 +2698,9 @@ final class Vectors
                     'actual' => 'closed',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 5,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -2307,6 +2742,9 @@ final class Vectors
                     'actual' => 'open',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 3,
+                        'actual' => 1,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -2348,6 +2786,9 @@ final class Vectors
                     'actual' => 'closed',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 3,
+                        'actual' => 5,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -2361,6 +2802,9 @@ final class Vectors
                     'actual' => 'open',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -2374,6 +2818,9 @@ final class Vectors
                     'actual' => 'open',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 1,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -2387,6 +2834,9 @@ final class Vectors
                     'actual' => 'review',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 3,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -2400,6 +2850,9 @@ final class Vectors
                     'actual' => 'closed',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 1,
                     ],
                 ],
             ],
@@ -2413,6 +2866,9 @@ final class Vectors
                     'actual' => 'closed',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 2,
                     ],
                 ],
             ],
@@ -2426,6 +2882,9 @@ final class Vectors
                     'actual' => 'closed',
                     'expect' => [
                         'error' => 'E_INVALID_TRANSITION',
+                        'expected' => 5,
+                        'actual' => null,
+                        'event' => 3,
                     ],
                 ],
             ],
@@ -2470,6 +2929,9 @@ final class Vectors
                     'stored' => 'closed',
                     'expect' => [
                         'error' => 'E_CONFLICT',
+                        'expected' => 1,
+                        'actual' => 5,
+                        'event' => 1,
                         'stored_after' => 'closed',
                     ],
                 ],

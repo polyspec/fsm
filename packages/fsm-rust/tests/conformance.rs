@@ -22,11 +22,28 @@ pub fn check_slice<T: PartialEq + Debug>(actual: &[T], expect: &[T]) {
     assert_eq!(actual, expect);
 }
 
-/// Asserts a result: Ok with the expected value, or Err with the expected error code (key, from_code, target and apply).
-pub fn check_result<T: PartialEq + Debug>(actual: Result<T, Error>, expect: Result<T, Code>) {
+/// The error that a case expects: its code and the three fields of fsm.Error (docs/spec/fsm.md, B-4 and B-6). A field that does
+/// not apply is None, which is null in the vectors.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Expected {
+    pub code: Code,
+    pub expected: Option<i32>,
+    pub actual: Option<i32>,
+    pub event: Option<i32>,
+}
+
+impl Expected {
+    /// The expectation that an error satisfies: its code and its three fields.
+    fn of(error: &Error) -> Expected {
+        Expected { code: error.code, expected: error.expected, actual: error.actual, event: error.event }
+    }
+}
+
+/// Asserts a result: Ok with the expected value, or Err with the expected error code and fields (key, from_code, target and apply).
+pub fn check_result<T: PartialEq + Debug>(actual: Result<T, Error>, expect: Result<T, Expected>) {
     match (actual, expect) {
         (Ok(actual), Ok(expect)) => assert_eq!(actual, expect),
-        (Err(error), Err(code)) => assert_eq!(error.code, code, "the error is {error}"),
+        (Err(error), Err(expect)) => assert_eq!(Expected::of(&error), expect, "the error is {error}"),
         (actual, expect) => panic!("expected {expect:?}, got {actual:?}"),
     }
 }
@@ -62,7 +79,7 @@ fn scratch_directory() -> Scratch {
 pub async fn check_persist(
     stored: i32,
     decide: impl FnOnce(i64) -> Result<(i32, bool), Error>,
-    expect: Result<(i32, bool), Code>,
+    expect: Result<(i32, bool), Expected>,
     stored_after: i32,
 ) {
     let scratch = scratch_directory();

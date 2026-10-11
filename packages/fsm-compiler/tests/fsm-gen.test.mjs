@@ -265,7 +265,7 @@ test('vectors writes <out>/<machine>.json in the canonical form: two spaces, a f
   assert.equal(parsed.machine, 'order');
   assert.equal(text, `${JSON.stringify(parsed, null, 2)}\n`);
   assert.deepEqual(parsed.cases.slice(0, 2).map(entry => entry.id), ['order_initial', 'order_code_s0']);
-  assert.equal(parsed.cases.length, 20);
+  assert.equal(parsed.cases.length, 33);
   assert.equal(parsed.cases.at(-1).id, 'order_persist_retry');
 });
 

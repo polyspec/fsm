@@ -9,8 +9,11 @@
 // check_result and check_persist). The machine functions return Result with fsm::Error, so a case compares the value or the
 // error code of the function it names.
 
+import { forKind } from '../core/vectors.mjs';
+
 const SHARED = 'fsm';
 const CRATE = 'fsm_rust';
+const KIND = 'rust';
 
 /** The variant name of a key: the pascal notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
 const pascal = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
@@ -240,6 +243,12 @@ function errorVariant(error) {
   return variant;
 }
 
+/** The Rust literal of the expected error of an error case: its code and the fields of fsm.Error (null is None, docs/spec/fsm.md, B-6). */
+function expectedOf(expect) {
+  const option = value => (value === null ? 'None' : `Some(${value})`);
+  return `crate::Expected { code: Code::${errorVariant(expect.error)}, expected: ${option(expect.expected)}, actual: ${option(expect.actual)}, event: ${option(expect.event)} }`;
+}
+
 /** The body lines of the test of one vector case `c` of `machine`: the check of its feature with the expected value or error code. */
 function bodyOf(machine, c) {
   const state = key => stateExpr(machine, key);
@@ -255,7 +264,7 @@ function bodyOf(machine, c) {
       return [`crate::check_result(${machine}::from_code(${c.code}).map(${machine}::key), Ok("${c.expect}"));`];
     case 'from_code':
       return c.expect.error !== undefined
-        ? [`crate::check_result(${machine}::from_code(${c.input}), Err(Code::${errorVariant(c.expect.error)}));`]
+        ? [`crate::check_result(${machine}::from_code(${c.input}), Err(${expectedOf(c.expect)}));`]
         : [`crate::check_result(${machine}::from_code(${c.input}), Ok(${state(c.expect.state)}));`];
     case 'is_final':
       return [`crate::check_value(${machine}::is_final(${state(c.state)}), ${c.expect});`];
@@ -263,17 +272,17 @@ function bodyOf(machine, c) {
       return [`crate::check_slice(${machine}::events_from(${state(c.state)}), &[${c.expect.map(event).join(', ')}]);`];
     case 'target':
       return c.expect.error !== undefined
-        ? [`crate::check_result(${machine}::target(${state(c.state)}, ${event(c.event)}), Err(Code::${errorVariant(c.expect.error)}));`]
+        ? [`crate::check_result(${machine}::target(${state(c.state)}, ${event(c.event)}), Err(${expectedOf(c.expect)}));`]
         : [`crate::check_result(${machine}::target(${state(c.state)}, ${event(c.event)}), Ok(${state(c.expect.state)}));`];
     case 'apply': {
       const call = `${machine}::apply(${state(c.expected)}, ${event(c.event)}, ${state(c.actual)})`;
       return c.expect.error !== undefined
-        ? [`crate::check_result(${call}, Err(Code::${errorVariant(c.expect.error)}));`]
+        ? [`crate::check_result(${call}, Err(${expectedOf(c.expect)}));`]
         : [`crate::check_result(${call}, Ok(${machine}::Step { to: ${state(c.expect.to)}, changed: ${c.expect.changed} }));`];
     }
     case 'persist': {
       const outcome = c.expect.error !== undefined
-        ? `Err(Code::${errorVariant(c.expect.error)})`
+        ? `Err(${expectedOf(c.expect)})`
         : `Ok((${code(c.expect.stored_after)}, ${c.expect.changed}))`;
       return [
         'crate::check_persist(',
@@ -308,7 +317,8 @@ function testOf(machine, c) {
  * The native vector module tests/vectors.rs of `vectorList`, the vectors of every machine in order: one #[test] per case that
  * calls the check functions of tests/conformance.rs (the crate root `crate::`). The persist cases are #[tokio::test].
  */
-export function vectorsFile(vectorList) {
+export function vectorsFile(list) {
+  const vectorList = forKind(list, KIND);
   const tests = vectorList.flatMap(({ machine, cases }) => cases.map(c => testOf(machine, c)));
   return text([
     header(SHARED),

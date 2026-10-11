@@ -59,16 +59,19 @@ final class ConformanceTest extends TestCase
         return $callable(...$arguments);
     }
 
-    /** Asserts that $call throws the fsm Error whose code is $code. */
-    private static function assertCode(string $code, \Closure $call): void
+    /** Asserts that $call throws the fsm Error with the code and the fields of $expect (null where the field does not apply). */
+    private static function assertError(array $expect, \Closure $call): void
     {
         try {
             $call();
         } catch (Error $error) {
-            self::assertSame($code, $error->getCode());
+            self::assertSame($expect['error'], $error->getCode());
+            self::assertSame($expect['expected'], $error->expected);
+            self::assertSame($expect['actual'], $error->actual);
+            self::assertSame($expect['event'], $error->event);
             return;
         }
-        self::fail("expected $code, but nothing was thrown");
+        self::fail("expected {$expect['error']}, but nothing was thrown");
     }
 
     /** Runs a case of a feature other than persist against the functions of $module. */
@@ -86,7 +89,7 @@ final class ConformanceTest extends TestCase
                 return;
             case 'from_code':
                 if (array_key_exists('error', $c['expect'])) {
-                    self::assertCode($c['expect']['error'], fn() => self::call($module, 'fromCode', $c['input']));
+                    self::assertError($c['expect'], fn() => self::call($module, 'fromCode', $c['input']));
                 } else {
                     self::assertSame(self::caseOf($module, 'State', $c['expect']['state']), self::call($module, 'fromCode', $c['input']));
                 }
@@ -104,7 +107,7 @@ final class ConformanceTest extends TestCase
                 $expected = self::caseOf($module, 'State', $c['state']);
                 $event = self::caseOf($module, 'Event', $c['event']);
                 if (array_key_exists('error', $c['expect'])) {
-                    self::assertCode($c['expect']['error'], fn() => self::call($module, 'target', $expected, $event));
+                    self::assertError($c['expect'], fn() => self::call($module, 'target', $expected, $event));
                 } else {
                     self::assertSame(self::caseOf($module, 'State', $c['expect']['state']), self::call($module, 'target', $expected, $event));
                 }
@@ -114,7 +117,7 @@ final class ConformanceTest extends TestCase
                 $event = self::caseOf($module, 'Event', $c['event']);
                 $actual = self::caseOf($module, 'State', $c['actual']);
                 if (array_key_exists('error', $c['expect'])) {
-                    self::assertCode($c['expect']['error'], fn() => self::call($module, 'apply', $expected, $event, $actual));
+                    self::assertError($c['expect'], fn() => self::call($module, 'apply', $expected, $event, $actual));
                 } else {
                     $step = self::call($module, 'apply', $expected, $event, $actual);
                     self::assertSame(self::caseOf($module, 'State', $c['expect']['to']), $step->to);
@@ -137,7 +140,7 @@ final class ConformanceTest extends TestCase
             $expected = self::caseOf($module, 'State', $c['expected']);
             $event = self::caseOf($module, 'Event', $c['event']);
             if (array_key_exists('error', $c['expect'])) {
-                self::assertCode($c['expect']['error'], fn() => Examples\transition($db, $module, 1, $expected, $event));
+                self::assertError($c['expect'], fn() => Examples\transition($db, $module, 1, $expected, $event));
             } else {
                 $step = Examples\transition($db, $module, 1, $expected, $event);
                 self::assertSame(self::caseOf($module, 'State', $c['expect']['stored_after']), $step->to);

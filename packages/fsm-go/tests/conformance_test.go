@@ -23,20 +23,28 @@ type machineVectors struct {
 }
 
 type vectorCase struct {
-	feature  string
-	id       string
-	state    string
-	event    string
-	expected string
-	actual   string
-	stored   string
-	scenario string
-	input    int64
-	code     int64
-	want     expectation
+	feature string
+	id      string
+	state   string
+	event   string
+	// expected and actual are keys; an invalid state value is given as its integer, with the flag that says so.
+	expected        string
+	actual          string
+	stored          string
+	scenario        string
+	value           int64
+	hasValue        bool
+	expectedValue   int64
+	expectedIsValue bool
+	actualValue     int64
+	actualIsValue   bool
+	input           int64
+	code            int64
+	want            expectation
 }
 
-// expectation holds the expected result of a case: the fields that its feature uses are set.
+// expectation holds the expected result of a case: the fields that its feature uses are set. For an error, expected, actual and
+// event are the fields of fsm.Error (docs/spec/fsm.md, B-6); zero means the field does not apply, as the null of the vectors.
 type expectation struct {
 	state       string
 	to          string
@@ -47,19 +55,34 @@ type expectation struct {
 	key         string
 	final       bool
 	events      []string
+	expected    int32
+	actual      int32
+	event       int32
 }
 
-// machineUnderTest is the adapter of one machine, generated into vectors_test.go. It takes and returns keys, and returns the errors
-// of the generated functions unchanged.
+// stateArg is a state argument of a case: a key, or the integer of a value that the state type holds (an invalid one included).
+type stateArg struct {
+	key     string
+	value   int64
+	isValue bool
+}
+
+// keyArg is the argument of a key, and valueArg the argument of an integer.
+func keyArg(key string) stateArg { return stateArg{key: key} }
+
+func valueArg(value int64) stateArg { return stateArg{value: value, isValue: true} }
+
+// machineUnderTest is the adapter of one machine, generated into vectors_test.go. It takes keys (and the integers of the state
+// arguments that carry a value), and returns keys; it returns the errors of the generated functions unchanged.
 type machineUnderTest interface {
 	initial() (string, error)
-	code(state string) (int32, error)
+	code(state stateArg) (int32, error)
 	key(code int64) (string, error)
 	fromCode(code int64) (string, error)
-	isFinal(state string) (bool, error)
+	isFinal(state stateArg) (bool, error)
 	eventsFrom(state string) ([]string, error)
 	target(expected, event string) (string, error)
-	apply(expected, event, actual string) (string, bool, error)
+	apply(expected stateArg, event string, actual stateArg) (string, bool, error)
 	decide(expected, event string) examples.Decide
 }
 
@@ -106,15 +129,19 @@ func keyOf[T comparable](table map[string]T, what string, value T) (string, erro
 	return "", fmt.Errorf("the %s %v has no key in the machine", what, value)
 }
 
-// assertCode fails the test unless err is a *fsm.Error whose code is code.
-func assertCode(t *testing.T, err error, code string) {
+// assertError fails the test unless err is a *fsm.Error with the code and the fields of want (docs/spec/fsm.md, B-4 and B-6).
+func assertError(t *testing.T, err error, want expectation) {
 	t.Helper()
 	var fsmErr *fsm.Error
 	if !errors.As(err, &fsmErr) {
-		t.Fatalf("want a *fsm.Error with %s, got %v", code, err)
+		t.Fatalf("want a *fsm.Error with %s, got %v", want.error, err)
 	}
-	if fsmErr.Code != code {
-		t.Fatalf("want the code %s, got %s (%s)", code, fsmErr.Code, fsmErr.Message)
+	if fsmErr.Code != want.error {
+		t.Fatalf("want the code %s, got %s (%s)", want.error, fsmErr.Code, fsmErr.Message)
+	}
+	if fsmErr.Expected != want.expected || fsmErr.Actual != want.actual || fsmErr.Event != want.event {
+		t.Fatalf("%s: want expected %d actual %d event %d, got %d %d %d (%s)", want.error, want.expected, want.actual, want.event,
+			fsmErr.Expected, fsmErr.Actual, fsmErr.Event, fsmErr.Message)
 	}
 }
 
@@ -124,6 +151,14 @@ func assertNoError(t *testing.T, err error) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+}
+
+// argOf is the argument of a case: its integer when the case gives one, its key otherwise.
+func argOf(key string, value int64, isValue bool) stateArg {
+	if isValue {
+		return valueArg(value)
+	}
+	return keyArg(key)
 }
 
 // runCase checks one case against the generated functions of its feature, through the adapter of its machine.
@@ -136,13 +171,21 @@ func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 			t.Fatalf("Initial = %q, want %q", got, c.want.state)
 		}
 	case "code":
-		got, err := m.code(c.state)
+		got, err := m.code(argOf(c.state, c.value, c.hasValue))
+		if c.want.error != "" {
+			assertError(t, err, c.want)
+			return
+		}
 		assertNoError(t, err)
 		if int64(got) != c.want.code {
 			t.Fatalf("Code = %d, want %d", got, c.want.code)
 		}
 	case "key":
 		got, err := m.key(c.code)
+		if c.want.error != "" {
+			assertError(t, err, c.want)
+			return
+		}
 		assertNoError(t, err)
 		if got != c.want.key {
 			t.Fatalf("Key = %q, want %q", got, c.want.key)
@@ -150,7 +193,7 @@ func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 	case "from_code":
 		got, err := m.fromCode(c.input)
 		if c.want.error != "" {
-			assertCode(t, err, c.want.error)
+			assertError(t, err, c.want)
 			return
 		}
 		assertNoError(t, err)
@@ -158,7 +201,11 @@ func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 			t.Fatalf("FromCode(%d) = %q, want %q", c.input, got, c.want.state)
 		}
 	case "is_final":
-		got, err := m.isFinal(c.state)
+		got, err := m.isFinal(argOf(c.state, c.value, c.hasValue))
+		if c.want.error != "" {
+			assertError(t, err, c.want)
+			return
+		}
 		assertNoError(t, err)
 		if got != c.want.final {
 			t.Fatalf("IsFinal = %t, want %t", got, c.want.final)
@@ -172,7 +219,7 @@ func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 	case "target":
 		got, err := m.target(c.state, c.event)
 		if c.want.error != "" {
-			assertCode(t, err, c.want.error)
+			assertError(t, err, c.want)
 			return
 		}
 		assertNoError(t, err)
@@ -180,9 +227,11 @@ func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 			t.Fatalf("Target = %q, want %q", got, c.want.state)
 		}
 	case "apply":
-		to, changed, err := m.apply(c.expected, c.event, c.actual)
+		expected := argOf(c.expected, c.expectedValue, c.expectedIsValue)
+		actual := argOf(c.actual, c.actualValue, c.actualIsValue)
+		to, changed, err := m.apply(expected, c.event, actual)
 		if c.want.error != "" {
-			assertCode(t, err, c.want.error)
+			assertError(t, err, c.want)
 			return
 		}
 		assertNoError(t, err)
@@ -206,15 +255,15 @@ func runPersist(t *testing.T, m machineUnderTest, c vectorCase) {
 			t.Errorf("close: %v", err)
 		}
 	})
-	stored, err := m.code(c.stored)
+	stored, err := m.code(keyArg(c.stored))
 	assertNoError(t, err)
 	assertNoError(t, examples.Seed(db, 1, stored))
 	to, changed, err := examples.Transition(db, 1, m.decide(c.expected, c.event))
 	if c.want.error != "" {
-		assertCode(t, err, c.want.error)
+		assertError(t, err, c.want)
 	} else {
 		assertNoError(t, err)
-		want, err := m.code(c.want.storedAfter)
+		want, err := m.code(keyArg(c.want.storedAfter))
 		assertNoError(t, err)
 		if to != want || changed != c.want.changed {
 			t.Fatalf("Transition = to %d changed %t, want to %d changed %t", to, changed, want, c.want.changed)
@@ -222,7 +271,7 @@ func runPersist(t *testing.T, m machineUnderTest, c vectorCase) {
 	}
 	got, err := examples.StatusOf(db, 1)
 	assertNoError(t, err)
-	want, err := m.code(c.want.storedAfter)
+	want, err := m.code(keyArg(c.want.storedAfter))
 	assertNoError(t, err)
 	if got != want {
 		t.Fatalf("the stored code after the run is %d, want %d", got, want)

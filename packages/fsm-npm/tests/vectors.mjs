@@ -117,7 +117,10 @@ export const vectors = [
         "id": "in_review_from_code_zero",
         "input": 0,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -125,7 +128,161 @@ export const vectors = [
         "id": "in_review_from_code_unknown",
         "input": 4,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "in_review_from_code_negative",
+        "input": -1,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "in_review_from_code_int32_overflow",
+        "input": 2147483648,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "in_review_from_code_int64_max",
+        "input": 9223372036854776000,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "in_review_code_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "in_review_is_final_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "in_review_key_v0",
+        "code": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "in_review_apply_expected_v0_e0_s0",
+        "expected_value": 0,
+        "event": "start_work",
+        "actual": "to_do",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "in_review_apply_actual_v0_e0_s0",
+        "expected": "to_do",
+        "event": "start_work",
+        "actual_value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "in_review_code_v4",
+        "value": 4,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "in_review_is_final_v4",
+        "value": 4,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "in_review_key_v4",
+        "code": 4,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "in_review_apply_expected_v4_e0_s0",
+        "expected_value": 4,
+        "event": "start_work",
+        "actual": "to_do",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "in_review_apply_actual_v4_e0_s0",
+        "expected": "to_do",
+        "event": "start_work",
+        "actual_value": 4,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -143,7 +300,10 @@ export const vectors = [
         "state": "to_do",
         "event": "finish_work",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -152,7 +312,10 @@ export const vectors = [
         "state": "to_do",
         "event": "reopen_work",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -161,7 +324,10 @@ export const vectors = [
         "state": "in_progress",
         "event": "start_work",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 2,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -188,7 +354,10 @@ export const vectors = [
         "state": "done_now",
         "event": "start_work",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -197,7 +366,10 @@ export const vectors = [
         "state": "done_now",
         "event": "finish_work",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -206,7 +378,10 @@ export const vectors = [
         "state": "done_now",
         "event": "reopen_work",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -238,7 +413,10 @@ export const vectors = [
         "event": "start_work",
         "actual": "done_now",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 3,
+          "event": 1
         }
       },
       {
@@ -270,7 +448,10 @@ export const vectors = [
         "event": "finish_work",
         "actual": "to_do",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 1,
+          "event": 2
         }
       },
       {
@@ -302,7 +483,10 @@ export const vectors = [
         "event": "reopen_work",
         "actual": "done_now",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 3,
+          "event": 3
         }
       },
       {
@@ -312,7 +496,10 @@ export const vectors = [
         "event": "finish_work",
         "actual": "to_do",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -322,7 +509,10 @@ export const vectors = [
         "event": "reopen_work",
         "actual": "to_do",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -332,7 +522,10 @@ export const vectors = [
         "event": "start_work",
         "actual": "in_progress",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 2,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -342,7 +535,10 @@ export const vectors = [
         "event": "start_work",
         "actual": "done_now",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -352,7 +548,10 @@ export const vectors = [
         "event": "finish_work",
         "actual": "done_now",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -362,7 +561,10 @@ export const vectors = [
         "event": "reopen_work",
         "actual": "done_now",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -398,6 +600,9 @@ export const vectors = [
         "stored": "done_now",
         "expect": {
           "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 3,
+          "event": 1,
           "stored_after": "done_now"
         }
       }
@@ -484,7 +689,10 @@ export const vectors = [
         "id": "limits_from_code_zero",
         "input": 0,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -492,7 +700,161 @@ export const vectors = [
         "id": "limits_from_code_unknown",
         "input": 2,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "limits_from_code_negative",
+        "input": -1,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "limits_from_code_int32_overflow",
+        "input": 2147483648,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "limits_from_code_int64_max",
+        "input": 9223372036854776000,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "limits_code_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "limits_is_final_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "limits_key_v0",
+        "code": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "limits_apply_expected_v0_e0_s0",
+        "expected_value": 0,
+        "event": "rise",
+        "actual": "floor",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "limits_apply_actual_v0_e0_s0",
+        "expected": "floor",
+        "event": "rise",
+        "actual_value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "limits_code_v2",
+        "value": 2,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "limits_is_final_v2",
+        "value": 2,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "limits_key_v2",
+        "code": 2,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "limits_apply_expected_v2_e0_s0",
+        "expected_value": 2,
+        "event": "rise",
+        "actual": "floor",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "limits_apply_actual_v2_e0_s0",
+        "expected": "floor",
+        "event": "rise",
+        "actual_value": 2,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -510,7 +872,10 @@ export const vectors = [
         "state": "ceiling",
         "event": "rise",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 2147483647,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -542,7 +907,10 @@ export const vectors = [
         "event": "rise",
         "actual": "ceiling",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 2147483647,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -756,7 +1124,10 @@ export const vectors = [
         "id": "order_from_code_zero",
         "input": 0,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -764,7 +1135,161 @@ export const vectors = [
         "id": "order_from_code_unknown",
         "input": 6,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "order_from_code_negative",
+        "input": -1,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "order_from_code_int32_overflow",
+        "input": 2147483648,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "order_from_code_int64_max",
+        "input": 9223372036854776000,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "order_code_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "order_is_final_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "order_key_v0",
+        "code": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "order_apply_expected_v0_e0_s0",
+        "expected_value": 0,
+        "event": "next",
+        "actual": "draft",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "order_apply_actual_v0_e0_s0",
+        "expected": "draft",
+        "event": "next",
+        "actual_value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "order_code_v6",
+        "value": 6,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "order_is_final_v6",
+        "value": 6,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "order_key_v6",
+        "code": 6,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "order_apply_expected_v6_e0_s0",
+        "expected_value": 6,
+        "event": "next",
+        "actual": "draft",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "order_apply_actual_v6_e0_s0",
+        "expected": "draft",
+        "event": "next",
+        "actual_value": 6,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -782,7 +1307,10 @@ export const vectors = [
         "state": "draft",
         "event": "prev",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -845,7 +1373,10 @@ export const vectors = [
         "state": "shipped",
         "event": "cancel",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -854,7 +1385,10 @@ export const vectors = [
         "state": "done",
         "event": "next",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 4,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -863,7 +1397,10 @@ export const vectors = [
         "state": "done",
         "event": "prev",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 4,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -872,7 +1409,10 @@ export const vectors = [
         "state": "done",
         "event": "cancel",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 4,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -881,7 +1421,10 @@ export const vectors = [
         "state": "canceled",
         "event": "next",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -890,7 +1433,10 @@ export const vectors = [
         "state": "canceled",
         "event": "prev",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -899,7 +1445,10 @@ export const vectors = [
         "state": "canceled",
         "event": "cancel",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -931,7 +1480,10 @@ export const vectors = [
         "event": "next",
         "actual": "shipped",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 3,
+          "event": 1
         }
       },
       {
@@ -941,7 +1493,10 @@ export const vectors = [
         "event": "next",
         "actual": "done",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 4,
+          "event": 1
         }
       },
       {
@@ -951,7 +1506,10 @@ export const vectors = [
         "event": "next",
         "actual": "canceled",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 5,
+          "event": 1
         }
       },
       {
@@ -983,7 +1541,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "paid",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 2,
+          "event": 3
         }
       },
       {
@@ -993,7 +1554,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "shipped",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 3,
+          "event": 3
         }
       },
       {
@@ -1003,7 +1567,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "done",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 4,
+          "event": 3
         }
       },
       {
@@ -1035,7 +1602,10 @@ export const vectors = [
         "event": "next",
         "actual": "draft",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 1,
+          "event": 1
         }
       },
       {
@@ -1045,7 +1615,10 @@ export const vectors = [
         "event": "next",
         "actual": "done",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 4,
+          "event": 1
         }
       },
       {
@@ -1055,7 +1628,10 @@ export const vectors = [
         "event": "next",
         "actual": "canceled",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 5,
+          "event": 1
         }
       },
       {
@@ -1087,7 +1663,10 @@ export const vectors = [
         "event": "prev",
         "actual": "shipped",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 3,
+          "event": 2
         }
       },
       {
@@ -1097,7 +1676,10 @@ export const vectors = [
         "event": "prev",
         "actual": "done",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 4,
+          "event": 2
         }
       },
       {
@@ -1107,7 +1689,10 @@ export const vectors = [
         "event": "prev",
         "actual": "canceled",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 5,
+          "event": 2
         }
       },
       {
@@ -1139,7 +1724,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "draft",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 1,
+          "event": 3
         }
       },
       {
@@ -1149,7 +1737,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "shipped",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 3,
+          "event": 3
         }
       },
       {
@@ -1159,7 +1750,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "done",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 2,
+          "actual": 4,
+          "event": 3
         }
       },
       {
@@ -1191,7 +1785,10 @@ export const vectors = [
         "event": "next",
         "actual": "draft",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 3,
+          "actual": 1,
+          "event": 1
         }
       },
       {
@@ -1201,7 +1798,10 @@ export const vectors = [
         "event": "next",
         "actual": "paid",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 3,
+          "actual": 2,
+          "event": 1
         }
       },
       {
@@ -1211,7 +1811,10 @@ export const vectors = [
         "event": "next",
         "actual": "canceled",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 3,
+          "actual": 5,
+          "event": 1
         }
       },
       {
@@ -1243,7 +1846,10 @@ export const vectors = [
         "event": "prev",
         "actual": "draft",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 3,
+          "actual": 1,
+          "event": 2
         }
       },
       {
@@ -1253,7 +1859,10 @@ export const vectors = [
         "event": "prev",
         "actual": "done",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 3,
+          "actual": 4,
+          "event": 2
         }
       },
       {
@@ -1263,7 +1872,10 @@ export const vectors = [
         "event": "prev",
         "actual": "canceled",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 3,
+          "actual": 5,
+          "event": 2
         }
       },
       {
@@ -1273,7 +1885,10 @@ export const vectors = [
         "event": "prev",
         "actual": "draft",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -1283,7 +1898,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "shipped",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -1293,7 +1911,10 @@ export const vectors = [
         "event": "next",
         "actual": "done",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 4,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -1303,7 +1924,10 @@ export const vectors = [
         "event": "prev",
         "actual": "done",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 4,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -1313,7 +1937,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "done",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 4,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -1323,7 +1950,10 @@ export const vectors = [
         "event": "next",
         "actual": "canceled",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -1333,7 +1963,10 @@ export const vectors = [
         "event": "prev",
         "actual": "canceled",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -1343,7 +1976,10 @@ export const vectors = [
         "event": "cancel",
         "actual": "canceled",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -1379,6 +2015,9 @@ export const vectors = [
         "stored": "shipped",
         "expect": {
           "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 3,
+          "event": 1,
           "stored_after": "shipped"
         }
       }
@@ -1431,7 +2070,10 @@ export const vectors = [
         "id": "standby_from_code_zero",
         "input": 0,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -1439,7 +2081,109 @@ export const vectors = [
         "id": "standby_from_code_unknown",
         "input": 2,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "standby_from_code_negative",
+        "input": -1,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "standby_from_code_int32_overflow",
+        "input": 2147483648,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "standby_from_code_int64_max",
+        "input": 9223372036854776000,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "standby_code_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "standby_is_final_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "standby_key_v0",
+        "code": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "standby_code_v2",
+        "value": 2,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "standby_is_final_v2",
+        "value": 2,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "standby_key_v2",
+        "code": 2,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       }
     ]
@@ -1560,7 +2304,10 @@ export const vectors = [
         "id": "ticket_from_code_zero",
         "input": 0,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -1568,7 +2315,10 @@ export const vectors = [
         "id": "ticket_from_code_unknown",
         "input": 6,
         "expect": {
-          "error": "E_UNKNOWN_CODE"
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -1576,7 +2326,10 @@ export const vectors = [
         "id": "ticket_from_code_r2",
         "input": 2,
         "expect": {
-          "error": "E_RESERVED_CODE"
+          "error": "E_RESERVED_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -1584,7 +2337,161 @@ export const vectors = [
         "id": "ticket_from_code_r4",
         "input": 4,
         "expect": {
-          "error": "E_RESERVED_CODE"
+          "error": "E_RESERVED_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "ticket_from_code_negative",
+        "input": -1,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "ticket_from_code_int32_overflow",
+        "input": 2147483648,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "ticket_from_code_int64_max",
+        "input": 9223372036854776000,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "ticket_code_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "ticket_is_final_v0",
+        "value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "ticket_key_v0",
+        "code": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "ticket_apply_expected_v0_e0_s0",
+        "expected_value": 0,
+        "event": "submit",
+        "actual": "open",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "ticket_apply_actual_v0_e0_s0",
+        "expected": "open",
+        "event": "submit",
+        "actual_value": 0,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "code",
+        "id": "ticket_code_v6",
+        "value": 6,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "is_final",
+        "id": "ticket_is_final_v6",
+        "value": 6,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "key",
+        "id": "ticket_key_v6",
+        "code": 6,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "ticket_apply_expected_v6_e0_s0",
+        "expected_value": 6,
+        "event": "submit",
+        "actual": "open",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "apply",
+        "id": "ticket_apply_actual_v6_e0_s0",
+        "expected": "open",
+        "event": "submit",
+        "actual_value": 6,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
         }
       },
       {
@@ -1602,7 +2509,10 @@ export const vectors = [
         "state": "open",
         "event": "approve",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -1611,7 +2521,10 @@ export const vectors = [
         "state": "open",
         "event": "reject",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -1620,7 +2533,10 @@ export const vectors = [
         "state": "review",
         "event": "submit",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -1647,7 +2563,10 @@ export const vectors = [
         "state": "closed",
         "event": "submit",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -1656,7 +2575,10 @@ export const vectors = [
         "state": "closed",
         "event": "approve",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -1665,7 +2587,10 @@ export const vectors = [
         "state": "closed",
         "event": "reject",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -1697,7 +2622,10 @@ export const vectors = [
         "event": "submit",
         "actual": "closed",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 5,
+          "event": 1
         }
       },
       {
@@ -1729,7 +2657,10 @@ export const vectors = [
         "event": "approve",
         "actual": "open",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 3,
+          "actual": 1,
+          "event": 2
         }
       },
       {
@@ -1761,7 +2692,10 @@ export const vectors = [
         "event": "reject",
         "actual": "closed",
         "expect": {
-          "error": "E_CONFLICT"
+          "error": "E_CONFLICT",
+          "expected": 3,
+          "actual": 5,
+          "event": 3
         }
       },
       {
@@ -1771,7 +2705,10 @@ export const vectors = [
         "event": "approve",
         "actual": "open",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -1781,7 +2718,10 @@ export const vectors = [
         "event": "reject",
         "actual": "open",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 1,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -1791,7 +2731,10 @@ export const vectors = [
         "event": "submit",
         "actual": "review",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 3,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -1801,7 +2744,10 @@ export const vectors = [
         "event": "submit",
         "actual": "closed",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 1
         }
       },
       {
@@ -1811,7 +2757,10 @@ export const vectors = [
         "event": "approve",
         "actual": "closed",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 2
         }
       },
       {
@@ -1821,7 +2770,10 @@ export const vectors = [
         "event": "reject",
         "actual": "closed",
         "expect": {
-          "error": "E_INVALID_TRANSITION"
+          "error": "E_INVALID_TRANSITION",
+          "expected": 5,
+          "actual": null,
+          "event": 3
         }
       },
       {
@@ -1857,6 +2809,9 @@ export const vectors = [
         "stored": "closed",
         "expect": {
           "error": "E_CONFLICT",
+          "expected": 1,
+          "actual": 5,
+          "event": 1,
           "stored_after": "closed"
         }
       }

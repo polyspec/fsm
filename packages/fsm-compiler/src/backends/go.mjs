@@ -5,7 +5,10 @@
 // dependency beyond the standard library and the shared package of the module (`<module>/src/fsm`), which the module path
 // names: a Go import needs it, and the backend cannot read go.mod. The core imports nothing from node:.
 
+import { forKind } from '../core/vectors.mjs';
+
 const SHARED = 'fsm';
+const KIND = 'go';
 
 /** The name of a key in the pascal notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
 const pascal = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
@@ -93,9 +96,12 @@ function machineGo(ir, lock, { module }) {
     'type Event int32',
     '',
     `// The events of ${machine}.`,
-    'const (',
-    ...aligned(events.map((event, index) => [`\t${eventOf(event.key)}`, 'Event', `= ${index + 1}`])),
-    ')',
+    // An empty const block is written on one line, as gofmt prints it.
+    ...(events.length === 0 ? ['const ()'] : [
+      'const (',
+      ...aligned(events.map((event, index) => [`\t${eventOf(event.key)}`, 'Event', `= ${index + 1}`])),
+      ')',
+    ]),
     '',
     '// Step is the result of Apply: the state that the event leads to, and whether the stored state changed.',
     'type Step struct {',
@@ -223,13 +229,30 @@ export function files(irs, lock, { module } = {}) {
   return out;
 }
 
-/** The Go literal of one vector case: its feature and id, its data fields in the order of the oracle, and its expectation. */
+/** The Go field of each data field of the oracle (docs/plans/fsm-v1.md, C-4): a state value is an int64 with a flag. */
+const DATA_FIELDS = {
+  state: 'state', event: 'event', expected: 'expected', actual: 'actual', scenario: 'scenario', stored: 'stored',
+  input: 'input', code: 'code', value: 'value', expected_value: 'expectedValue', actual_value: 'actualValue',
+};
+
+/** The Go literal of one vector case: its feature and id, its data fields, and its expectation (docs/plans/fsm-v1.md, C-4). */
 function caseLiteral(entry) {
   const fields = [`feature: ${quoted(entry.feature)}`, `id: ${quoted(entry.id)}`];
   const want = [];
   for (const [name, value] of Object.entries(entry)) {
     if (name === 'feature' || name === 'id' || name === 'expect') continue;
-    fields.push(typeof value === 'number' ? `${name}: ${value}` : `${name}: ${quoted(value)}`);
+    if (name === 'value' || name === 'expected_value' || name === 'actual_value') {
+      const flag = { value: 'hasValue', expected_value: 'expectedIsValue', actual_value: 'actualIsValue' }[name];
+      fields.push(`${DATA_FIELDS[name]}: ${integerLiteral(value, entry.id)}`, `${flag}: true`);
+      continue;
+    }
+    if (name === 'input' || name === 'code') {
+      fields.push(`${DATA_FIELDS[name]}: ${integerLiteral(value, entry.id)}`);
+      continue;
+    }
+    const field = DATA_FIELDS[name];
+    if (field === undefined || typeof value !== 'string') throw new Error(`go: the data field ${name} of ${entry.id} has no field`);
+    fields.push(`${field}: ${quoted(value)}`);
   }
   const { expect } = entry;
   if (typeof expect === 'number') want.push(`code: ${expect}`);
@@ -237,25 +260,41 @@ function caseLiteral(entry) {
   else if (typeof expect === 'boolean') want.push(`final: ${expect}`);
   else if (Array.isArray(expect)) want.push(`events: []string{${expect.map(quoted).join(', ')}}`);
   else {
+    // A null field is not applicable to the error (B-6): the zero value of the Go field is unset, so the literal omits it.
     for (const [name, value] of Object.entries(expect)) {
-      const field = { state: 'state', to: 'to', error: 'error', changed: 'changed', stored_after: 'storedAfter' }[name];
+      const field = { state: 'state', to: 'to', error: 'error', changed: 'changed', stored_after: 'storedAfter', expected: 'expected', actual: 'actual', event: 'event' }[name];
       if (field === undefined) throw new Error(`go: the expectation field ${name} of ${entry.id} has no field`);
+      if (value === null) continue;
       want.push(`${field}: ${typeof value === 'string' ? quoted(value) : value}`);
     }
   }
   return `{${fields.join(', ')}, want: expectation{${want.join(', ')}}}`;
 }
 
+/** The Go literal of an integer data field, given as a decimal string (the 64-bit range stays exact) or as a safe integer. */
+function integerLiteral(value, id) {
+  if (typeof value === 'number' && Number.isSafeInteger(value)) return String(value);
+  if (typeof value === 'string' && /^-?[0-9]+$/.test(value)) return value;
+  throw new Error(`go: the integer ${JSON.stringify(value)} of ${id} is neither a safe integer nor a decimal string`);
+}
+
 /** The keys of a machine from its vector cases: a code case names every state and a target case names every event (core, vectors.mjs). */
 function keysOf(cases) {
-  const states = [...new Set(cases.filter(entry => entry.feature === 'code').map(entry => entry.state))];
+  const states = [...new Set(cases.filter(entry => entry.feature === 'code' && entry.state !== undefined).map(entry => entry.state))];
   const events = [...new Set(cases.filter(entry => entry.feature === 'target').map(entry => entry.event))];
   return { states, events };
 }
 
+/** A map variable of the Go type map[string]<type> with the rows [key, constant]; an empty map is one line (gofmt). */
+function table(name, type, rows) {
+  if (rows.length === 0) return [`var ${name} = map[string]${type}{}`];
+  return [`var ${name} = map[string]${type}{`, ...aligned(rows.map(([key, value]) => [`\t${key}:`, `${value},`])), '}'];
+}
+
 /**
  * The adapter of one machine in tests/vectors_test.go: the key tables of its constants and the methods of the machineUnderTest
- * interface (declared by tests/conformance_test.go), which take and return keys and call the generated functions of its package.
+ * interface (declared by tests/conformance_test.go), which take keys (or the integers of invalid state values) and call the
+ * generated functions of its package.
  */
 function adapterOf(machine, cases) {
   const { states, events } = keysOf(cases);
@@ -269,27 +308,35 @@ function adapterOf(machine, cases) {
     `type ${type} struct{}`,
     '',
     `// ${statesTable} and ${eventsTable} map the keys of the ${machine} machine to its constants.`,
-    `var ${statesTable} = map[string]${machine}.State{`,
-    ...aligned(states.map(key => [`\t${quoted(key)}:`, `${stateConst(key)},`])),
-    '}',
+    ...table(statesTable, `${machine}.State`, states.map(key => [quoted(key), stateConst(key)])),
     '',
-    `var ${eventsTable} = map[string]${machine}.Event{`,
-    ...aligned(events.map(key => [`\t${quoted(key)}:`, `${eventConst(key)},`])),
-    '}',
+    ...table(eventsTable, `${machine}.Event`, events.map(key => [quoted(key), eventConst(key)])),
     '',
-    `func (${type}) initial() (string, error) {`,
+    `func (m ${type}) initial() (string, error) {`,
     `\treturn ${machine}.Key(${machine}.Initial())`,
     '}',
     '',
-    `func (${type}) code(state string) (int32, error) {`,
-    `\tvalue, err := lookup(${statesTable}, "state", state)`,
+    `// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).`,
+    `func (m ${type}) state(arg stateArg) (${machine}.State, error) {`,
+    '\tif arg.isValue {',
+    '\t\tvalue, err := int32Of(arg.value)',
+    '\t\tif err != nil {',
+    '\t\t\treturn 0, err',
+    '\t\t}',
+    `\t\treturn ${machine}.State(value), nil`,
+    '\t}',
+    `\treturn lookup(${statesTable}, "state", arg.key)`,
+    '}',
+    '',
+    `func (m ${type}) code(state stateArg) (int32, error) {`,
+    '\tvalue, err := m.state(state)',
     '\tif err != nil {',
     '\t\treturn 0, err',
     '\t}',
     `\treturn ${machine}.Code(value)`,
     '}',
     '',
-    `func (${type}) key(code int64) (string, error) {`,
+    `func (m ${type}) key(code int64) (string, error) {`,
     '\tvalue, err := int32Of(code)',
     '\tif err != nil {',
     '\t\treturn "", err',
@@ -297,7 +344,7 @@ function adapterOf(machine, cases) {
     `\treturn ${machine}.Key(${machine}.State(value))`,
     '}',
     '',
-    `func (${type}) fromCode(code int64) (string, error) {`,
+    `func (m ${type}) fromCode(code int64) (string, error) {`,
     `\tvalue, err := ${machine}.FromCode(code)`,
     '\tif err != nil {',
     '\t\treturn "", err',
@@ -305,15 +352,15 @@ function adapterOf(machine, cases) {
     `\treturn ${machine}.Key(value)`,
     '}',
     '',
-    `func (${type}) isFinal(state string) (bool, error) {`,
-    `\tvalue, err := lookup(${statesTable}, "state", state)`,
+    `func (m ${type}) isFinal(state stateArg) (bool, error) {`,
+    '\tvalue, err := m.state(state)',
     '\tif err != nil {',
     '\t\treturn false, err',
     '\t}',
     `\treturn ${machine}.IsFinal(value)`,
     '}',
     '',
-    `func (${type}) eventsFrom(state string) ([]string, error) {`,
+    `func (m ${type}) eventsFrom(state string) ([]string, error) {`,
     `\tvalue, err := lookup(${statesTable}, "state", state)`,
     '\tif err != nil {',
     '\t\treturn nil, err',
@@ -333,7 +380,7 @@ function adapterOf(machine, cases) {
     '\treturn keys, nil',
     '}',
     '',
-    `func (${type}) target(expected, event string) (string, error) {`,
+    `func (m ${type}) target(expected, event string) (string, error) {`,
     `\tfrom, err := lookup(${statesTable}, "state", expected)`,
     '\tif err != nil {',
     '\t\treturn "", err',
@@ -349,8 +396,8 @@ function adapterOf(machine, cases) {
     `\treturn keyOf(${statesTable}, "state", to)`,
     '}',
     '',
-    `func (${type}) apply(expected, event, actual string) (string, bool, error) {`,
-    `\tfrom, err := lookup(${statesTable}, "state", expected)`,
+    `func (m ${type}) apply(expected stateArg, event string, actual stateArg) (string, bool, error) {`,
+    '\tfrom, err := m.state(expected)',
     '\tif err != nil {',
     '\t\treturn "", false, err',
     '\t}',
@@ -358,7 +405,7 @@ function adapterOf(machine, cases) {
     '\tif err != nil {',
     '\t\treturn "", false, err',
     '\t}',
-    `\tobserved, err := lookup(${statesTable}, "state", actual)`,
+    '\tobserved, err := m.state(actual)',
     '\tif err != nil {',
     '\t\treturn "", false, err',
     '\t}',
@@ -370,7 +417,7 @@ function adapterOf(machine, cases) {
     '\treturn to, step.Changed, err',
     '}',
     '',
-    `func (${type}) decide(expected, event string) examples.Decide {`,
+    `func (m ${type}) decide(expected, event string) examples.Decide {`,
     '\treturn func(stored int64) (int32, bool, error) {',
     `\t\tfrom, err := lookup(${statesTable}, "state", expected)`,
     '\t\tif err != nil {',
@@ -400,8 +447,9 @@ function adapterOf(machine, cases) {
  * variable `vectors` of machineVectors (one literal per case), and per machine its adapter (adapterOf), which the variable
  * `machines` maps by machine key. The options { module } name the module path, which the imports of the machine packages need.
  */
-export function vectorsFile(vectorList, { module } = {}) {
+export function vectorsFile(list, { module } = {}) {
   if (typeof module !== 'string' || module === '') throw new Error('go: the module path of the package is required');
+  const vectorList = forKind(list, KIND);
   const lines = [
     header(SHARED),
     '',
@@ -423,9 +471,7 @@ export function vectorsFile(vectorList, { module } = {}) {
   }
   lines.push('}', '');
   lines.push('// machines maps the key of each machine to its adapter; the conformance test runs the cases of a machine through it.');
-  lines.push('var machines = map[string]machineUnderTest{');
-  for (const { machine } of vectorList) lines.push(`\t${quoted(machine)}: ${machine}Machine{},`);
-  lines.push('}', '');
+  lines.push(...table('machines', 'machineUnderTest', vectorList.map(({ machine }) => [quoted(machine), `${machine}Machine{}`])), '');
   for (const { machine, cases } of vectorList) lines.push(...adapterOf(machine, cases), '');
   return text(lines.slice(0, -1));
 }

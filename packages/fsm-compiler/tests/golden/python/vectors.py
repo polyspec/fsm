@@ -188,6 +188,9 @@ vectors = [
                 "input": 0,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
                 },
             },
             {
@@ -196,6 +199,160 @@ vectors = [
                 "input": 6,
                 "expect": {
                     "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "order_from_code_negative",
+                "input": -1,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "order_from_code_int32_overflow",
+                "input": 2147483648,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "from_code",
+                "id": "order_from_code_int64_max",
+                "input": 9223372036854775807,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "code",
+                "id": "order_code_v0",
+                "value": 0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "order_is_final_v0",
+                "value": 0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "key",
+                "id": "order_key_v0",
+                "code": 0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "order_apply_expected_v0_e0_s0",
+                "expected_value": 0,
+                "event": "next",
+                "actual": "draft",
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "order_apply_actual_v0_e0_s0",
+                "expected": "draft",
+                "event": "next",
+                "actual_value": 0,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "code",
+                "id": "order_code_v6",
+                "value": 6,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "is_final",
+                "id": "order_is_final_v6",
+                "value": 6,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "key",
+                "id": "order_key_v6",
+                "code": 6,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "order_apply_expected_v6_e0_s0",
+                "expected_value": 6,
+                "event": "next",
+                "actual": "draft",
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
+                },
+            },
+            {
+                "feature": "apply",
+                "id": "order_apply_actual_v6_e0_s0",
+                "expected": "draft",
+                "event": "next",
+                "actual_value": 6,
+                "expect": {
+                    "error": "E_UNKNOWN_CODE",
+                    "expected": None,
+                    "actual": None,
+                    "event": None,
                 },
             },
             {
@@ -214,6 +371,9 @@ vectors = [
                 "event": "prev",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 1,
+                    "actual": None,
+                    "event": 2,
                 },
             },
             {
@@ -277,6 +437,9 @@ vectors = [
                 "event": "cancel",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 3,
+                    "actual": None,
+                    "event": 3,
                 },
             },
             {
@@ -286,6 +449,9 @@ vectors = [
                 "event": "next",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 4,
+                    "actual": None,
+                    "event": 1,
                 },
             },
             {
@@ -295,6 +461,9 @@ vectors = [
                 "event": "prev",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 4,
+                    "actual": None,
+                    "event": 2,
                 },
             },
             {
@@ -304,6 +473,9 @@ vectors = [
                 "event": "cancel",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 4,
+                    "actual": None,
+                    "event": 3,
                 },
             },
             {
@@ -313,6 +485,9 @@ vectors = [
                 "event": "next",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 5,
+                    "actual": None,
+                    "event": 1,
                 },
             },
             {
@@ -322,6 +497,9 @@ vectors = [
                 "event": "prev",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 5,
+                    "actual": None,
+                    "event": 2,
                 },
             },
             {
@@ -331,6 +509,9 @@ vectors = [
                 "event": "cancel",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 5,
+                    "actual": None,
+                    "event": 3,
                 },
             },
             {
@@ -363,6 +544,9 @@ vectors = [
                 "actual": "shipped",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 1,
+                    "actual": 3,
+                    "event": 1,
                 },
             },
             {
@@ -373,6 +557,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 1,
+                    "actual": 4,
+                    "event": 1,
                 },
             },
             {
@@ -383,6 +570,9 @@ vectors = [
                 "actual": "canceled",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 1,
+                    "actual": 5,
+                    "event": 1,
                 },
             },
             {
@@ -415,6 +605,9 @@ vectors = [
                 "actual": "paid",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 1,
+                    "actual": 2,
+                    "event": 3,
                 },
             },
             {
@@ -425,6 +618,9 @@ vectors = [
                 "actual": "shipped",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 1,
+                    "actual": 3,
+                    "event": 3,
                 },
             },
             {
@@ -435,6 +631,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 1,
+                    "actual": 4,
+                    "event": 3,
                 },
             },
             {
@@ -467,6 +666,9 @@ vectors = [
                 "actual": "draft",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 1,
+                    "event": 1,
                 },
             },
             {
@@ -477,6 +679,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 4,
+                    "event": 1,
                 },
             },
             {
@@ -487,6 +692,9 @@ vectors = [
                 "actual": "canceled",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 5,
+                    "event": 1,
                 },
             },
             {
@@ -519,6 +727,9 @@ vectors = [
                 "actual": "shipped",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 3,
+                    "event": 2,
                 },
             },
             {
@@ -529,6 +740,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 4,
+                    "event": 2,
                 },
             },
             {
@@ -539,6 +753,9 @@ vectors = [
                 "actual": "canceled",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 5,
+                    "event": 2,
                 },
             },
             {
@@ -571,6 +788,9 @@ vectors = [
                 "actual": "draft",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 1,
+                    "event": 3,
                 },
             },
             {
@@ -581,6 +801,9 @@ vectors = [
                 "actual": "shipped",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 3,
+                    "event": 3,
                 },
             },
             {
@@ -591,6 +814,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 2,
+                    "actual": 4,
+                    "event": 3,
                 },
             },
             {
@@ -623,6 +849,9 @@ vectors = [
                 "actual": "draft",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 3,
+                    "actual": 1,
+                    "event": 1,
                 },
             },
             {
@@ -633,6 +862,9 @@ vectors = [
                 "actual": "paid",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 3,
+                    "actual": 2,
+                    "event": 1,
                 },
             },
             {
@@ -643,6 +875,9 @@ vectors = [
                 "actual": "canceled",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 3,
+                    "actual": 5,
+                    "event": 1,
                 },
             },
             {
@@ -675,6 +910,9 @@ vectors = [
                 "actual": "draft",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 3,
+                    "actual": 1,
+                    "event": 2,
                 },
             },
             {
@@ -685,6 +923,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 3,
+                    "actual": 4,
+                    "event": 2,
                 },
             },
             {
@@ -695,6 +936,9 @@ vectors = [
                 "actual": "canceled",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 3,
+                    "actual": 5,
+                    "event": 2,
                 },
             },
             {
@@ -705,6 +949,9 @@ vectors = [
                 "actual": "draft",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 1,
+                    "actual": None,
+                    "event": 2,
                 },
             },
             {
@@ -715,6 +962,9 @@ vectors = [
                 "actual": "shipped",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 3,
+                    "actual": None,
+                    "event": 3,
                 },
             },
             {
@@ -725,6 +975,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 4,
+                    "actual": None,
+                    "event": 1,
                 },
             },
             {
@@ -735,6 +988,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 4,
+                    "actual": None,
+                    "event": 2,
                 },
             },
             {
@@ -745,6 +1001,9 @@ vectors = [
                 "actual": "done",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 4,
+                    "actual": None,
+                    "event": 3,
                 },
             },
             {
@@ -755,6 +1014,9 @@ vectors = [
                 "actual": "canceled",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 5,
+                    "actual": None,
+                    "event": 1,
                 },
             },
             {
@@ -765,6 +1027,9 @@ vectors = [
                 "actual": "canceled",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 5,
+                    "actual": None,
+                    "event": 2,
                 },
             },
             {
@@ -775,6 +1040,9 @@ vectors = [
                 "actual": "canceled",
                 "expect": {
                     "error": "E_INVALID_TRANSITION",
+                    "expected": 5,
+                    "actual": None,
+                    "event": 3,
                 },
             },
             {
@@ -810,6 +1078,9 @@ vectors = [
                 "stored": "shipped",
                 "expect": {
                     "error": "E_CONFLICT",
+                    "expected": 1,
+                    "actual": 3,
+                    "event": 1,
                     "stored_after": "shipped",
                 },
             },
