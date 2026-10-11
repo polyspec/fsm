@@ -64,8 +64,11 @@ dependency pins, and that a conformance check asserts the expected value of its 
 ## Branches and worktrees
 
 Work on `main` directly is allowed. A branch is `{type}/{shortname}-{id}` and a worktree `fsm-{shortname}-{id}`; both are
-deleted right after the merge into `main`. Experimental code that cannot enter `main` is removed before the commit; when it
-cannot be removed at once, a sub-item records the removal condition.
+deleted right after the merge into `main`, because a merged branch or worktree takes space, scatters folders and hides
+which branches are merged. Test or experimental code that cannot enter `main` is, once its test is done, either
+cherry-picked into a proper commit when it is worth keeping or discarded, and always removed before the commit; when it
+cannot be removed at once, a sub-item records the removal condition. The same holds for the worktrees and the scratch
+files of a delegated agent.
 
 An item may be delegated to an agent that works in its own worktree. Whoever delegates reviews the result before the
 merge: the RED → GREEN evidence, and that every decision the item made (a new rule, tool, exception or name) is in the
