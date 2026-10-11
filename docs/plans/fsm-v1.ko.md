@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 23bb60938b94820c112286c22a5d962525d39c63566465873af6cfcb8a9d5f59 -->
+<!-- source-sha256: abea312e7f77daa50eb9a23ab6b803065f19b26e7d72de7ebb641f681e446839 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -399,7 +399,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - 테스트는 `tests/check-readmes/`(`make readme-test`)이고, `make readme-check`는 저장소에 검사를 실행한다.
 
 ### C-10. CI와 Pages(S-21)
-- `.github/workflows/ci.yml`은 main의 모든 push와 수동 실행(workflow_dispatch)에서 돈다. 한 job인 `check`는 ubuntu-24.04에서 실행되며 정확히 두 target을 호출한다: `make install`, 그다음 CHECK_TARGETS의 전체 검사인 `make check`. `make check` 전에 `packages/fsm-gui`에서 sudo로 `npx playwright install-deps chromium`을 실행한다(`gui-browser-test`가 구동하는 Chromium의 시스템 라이브러리다. 브라우저 자체는 `make check`가 `gui-browsers`로 설치한다).
+- `.github/workflows/ci.yml`은 main의 모든 push와 수동 실행(workflow_dispatch)에서 돈다. 한 job인 `check`는 ubuntu-26.04에서 실행되며(orm의 PHP client는 SQLite 3.46을 요구하는데 ubuntu-24.04의 PHP는 시스템 SQLite 3.45.1에 연결되어 CI run 38120456615에서 php persist case가 `CAPABILITY_UNSUPPORTED`로 실패했다. orm의 CI도 같은 이유로 ubuntu-26.04에서 돈다) 정확히 두 target을 호출한다: `make install`, 그다음 CHECK_TARGETS의 전체 검사인 `make check`. `make check` 전에 `packages/fsm-gui`에서 sudo로 `npx playwright install-deps chromium`을 실행한다(`gui-browser-test`가 구동하는 Chromium의 시스템 라이브러리다. 브라우저 자체는 `make check`가 `gui-browsers`로 설치한다).
 - job은 PostgreSQL 17과 MySQL 8.4를 서비스로 띄우고 `FSM_TEST_*` 변수 네 개를 설정한다. 서비스와 env는 C-6의 yaml 블록을 그대로 옮긴 것이다. `make workflows-test`가 job에 그 블록이 있는지 확인하므로 계획과 워크플로가 어긋나지 않는다.
 - 버전은 그것을 선언하는 파일에서 온다. Node.js는 `.node-version`(setup-node), Go는 `packages/fsm-go/go.mod`(setup-go, 모듈 캐시 없음), PHP는 `config/toolchain.json`의 `php`(setup-php, 확장 `pdo_pgsql`과 `pdo_mysql`: php-ext 빌드와 영속화 테스트가 쓴다), Rust는 `rust-toolchain.toml`(rustup으로 minimal 프로필을 설치한다. `RUSTUP_AUTO_INSTALL`은 `0`이다).
 - uv는 이 계획에서 `uv==0.12.11`로 고정하고, 워크플로가 `pipx install`로 설치한다. `make install`의 interpreter는 install-tools가 `config/toolchain.json`의 `pythonBuild`로 설치하며, uv는 python 패키지를 풀고 설치하는 데만 쓴다(S-41). 결정: S-21 이전에는 어떤 파일도 uv를 고정하지 않았고, `config/toolchain.json`은 고정값을 담을 수 없다. 그 스키마(`scripts/kit/schema`에 vendored)가 이름이 없는 키를 금지하기 때문이다. `make workflows-test`는 워크플로가 그 버전을 설치하는지 확인한다.

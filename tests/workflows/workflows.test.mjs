@@ -64,10 +64,11 @@ const ci = jobsOf(CI);
 const pages = jobsOf(PAGES);
 const CHECK_JOB = ci.get('check');
 
-test('the CI workflow has one job, check, on ubuntu-24.04', () => {
+// ubuntu-26.04: orm's PHP client requires SQLite 3.46, and the PHP of ubuntu-24.04 links its system SQLite 3.45.1 (S-21-1).
+test('the CI workflow has one job, check, on ubuntu-26.04', () => {
   assert.deepEqual([...ci.keys()], ['check']);
-  assert.match(CHECK_JOB, /^ {4}runs-on: ubuntu-24\.04$/m);
-  assert.match(pages.get('pages'), /^ {4}runs-on: ubuntu-24\.04$/m);
+  assert.match(CHECK_JOB, /^ {4}runs-on: ubuntu-26\.04$/m);
+  assert.match(pages.get('pages'), /^ {4}runs-on: ubuntu-26\.04$/m);
 });
 
 test('both workflows run on push to main and on workflow_dispatch', () => {
