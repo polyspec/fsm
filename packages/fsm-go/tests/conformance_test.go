@@ -83,7 +83,7 @@ type machineUnderTest interface {
 	eventsFrom(state string) ([]string, error)
 	target(expected, event string) (string, error)
 	apply(expected stateArg, event string, actual stateArg) (string, bool, error)
-	decide(expected, event string) examples.Decide
+	decide(expected, event string) func(stored int64) (int32, bool, error)
 }
 
 // TestConformance runs every vector case as the subtest test_<feature>__<id> of this test, through the adapter of its machine.

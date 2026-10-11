@@ -3,7 +3,6 @@
 package tests
 
 import (
-	"github.com/polyspec/fsm-go/examples"
 	"github.com/polyspec/fsm-go/src/order"
 )
 
@@ -247,7 +246,7 @@ func (m orderMachine) apply(expected stateArg, event string, actual stateArg) (s
 	return to, step.Changed, err
 }
 
-func (m orderMachine) decide(expected, event string) examples.Decide {
+func (m orderMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(orderStates, "state", expected)
 		if err != nil {

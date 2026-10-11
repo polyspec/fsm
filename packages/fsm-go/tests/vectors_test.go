@@ -3,7 +3,6 @@
 package tests
 
 import (
-	"github.com/polyspec/fsm-go/examples"
 	"github.com/polyspec/fsm-go/src/in_review"
 	"github.com/polyspec/fsm-go/src/limits"
 	"github.com/polyspec/fsm-go/src/order"
@@ -441,7 +440,7 @@ func (m in_reviewMachine) apply(expected stateArg, event string, actual stateArg
 	return to, step.Changed, err
 }
 
-func (m in_reviewMachine) decide(expected, event string) examples.Decide {
+func (m in_reviewMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(in_reviewStates, "state", expected)
 		if err != nil {
@@ -582,7 +581,7 @@ func (m limitsMachine) apply(expected stateArg, event string, actual stateArg) (
 	return to, step.Changed, err
 }
 
-func (m limitsMachine) decide(expected, event string) examples.Decide {
+func (m limitsMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(limitsStates, "state", expected)
 		if err != nil {
@@ -728,7 +727,7 @@ func (m orderMachine) apply(expected stateArg, event string, actual stateArg) (s
 	return to, step.Changed, err
 }
 
-func (m orderMachine) decide(expected, event string) examples.Decide {
+func (m orderMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(orderStates, "state", expected)
 		if err != nil {
@@ -866,7 +865,7 @@ func (m standbyMachine) apply(expected stateArg, event string, actual stateArg) 
 	return to, step.Changed, err
 }
 
-func (m standbyMachine) decide(expected, event string) examples.Decide {
+func (m standbyMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(standbyStates, "state", expected)
 		if err != nil {
@@ -1010,7 +1009,7 @@ func (m ticketMachine) apply(expected stateArg, event string, actual stateArg) (
 	return to, step.Changed, err
 }
 
-func (m ticketMachine) decide(expected, event string) examples.Decide {
+func (m ticketMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(ticketStates, "state", expected)
 		if err != nil {

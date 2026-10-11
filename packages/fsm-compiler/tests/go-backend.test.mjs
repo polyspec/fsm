@@ -5,7 +5,7 @@
 // path, so the module path is an input: the backend refuses to run without it, and gen --kind go needs --go-module.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -130,4 +130,130 @@ test('a reserved code is E_RESERVED_CODE in FromCode, and the order example has 
   assert.match(order, /\tcase 9:\n\t\treturn 0, &fsm\.Error\{Code: fsm\.CodeReservedCode, Message: "order: code 9 is reserved and is no state of order"\}\n/);
   const none = files(irs, lock, { module: MODULE }).find(file => file.path === 'order/order.go').content;
   assert.doesNotMatch(none, /CodeReservedCode, Message/);
+});
+
+/**
+ * The hand-written declarations that a consumer's tests/ package holds next to the generated vectors file: the shapes of the
+ * vector data and the helpers the adapters call (the same declarations as the test bed's tests/conformance_test.go). The
+ * consumer does not get the persist example, so the file holds no import of the test bed.
+ */
+const CONSUMER_FIXTURE = `package tests
+
+import (
+	"fmt"
+	"testing"
+)
+
+type machineVectors struct {
+	machine string
+	cases   []vectorCase
+}
+
+type vectorCase struct {
+	feature         string
+	id              string
+	state           string
+	event           string
+	expected        string
+	actual          string
+	stored          string
+	scenario        string
+	value           int64
+	hasValue        bool
+	expectedValue   int64
+	expectedIsValue bool
+	actualValue     int64
+	actualIsValue   bool
+	input           int64
+	code            int64
+	want            expectation
+}
+
+type expectation struct {
+	state       string
+	to          string
+	error       string
+	changed     bool
+	storedAfter string
+	code        int64
+	key         string
+	final       bool
+	events      []string
+	expected    int32
+	actual      int32
+	event       int32
+}
+
+type stateArg struct {
+	key     string
+	value   int64
+	isValue bool
+}
+
+type machineUnderTest interface {
+	initial() (string, error)
+	code(state stateArg) (int32, error)
+	key(code int64) (string, error)
+	fromCode(code int64) (string, error)
+	isFinal(state stateArg) (bool, error)
+	eventsFrom(state string) ([]string, error)
+	target(expected, event string) (string, error)
+	apply(expected stateArg, event string, actual stateArg) (string, bool, error)
+	decide(expected, event string) func(stored int64) (int32, bool, error)
+}
+
+func int32Of(code int64) (int32, error) {
+	if code != int64(int32(code)) {
+		return 0, fmt.Errorf("%d is outside the 32-bit range of the states", code)
+	}
+	return int32(code), nil
+}
+
+func lookup[T any](table map[string]T, what, key string) (T, error) {
+	value, ok := table[key]
+	if !ok {
+		var zero T
+		return zero, fmt.Errorf("%q is no %s of the machine", key, what)
+	}
+	return value, nil
+}
+
+func keyOf[T comparable](table map[string]T, what string, value T) (string, error) {
+	for key, candidate := range table {
+		if candidate == value {
+			return key, nil
+		}
+	}
+	return "", fmt.Errorf("the %s %v has no key in the machine", what, value)
+}
+
+// TestMachines checks that every machine of the vectors has its adapter, the check the test bed's TestConformance starts with.
+func TestMachines(t *testing.T) {
+	for _, machine := range vectors {
+		if _, ok := machines[machine.machine]; !ok {
+			t.Fatalf("no adapter for the machine %s", machine.machine)
+		}
+	}
+}
+`;
+
+test('a consumer module vets its vectors file with the generated src and no import of the test bed', async () => {
+  const { irs, lock } = await orderIrs();
+  const consumer = 'example.com/consumer';
+  const dir = mkdtempSync(path.join(tmpdir(), 'fsm-go-consumer-'));
+  try {
+    writeFileSync(path.join(dir, 'go.mod'), `module ${consumer}\n\ngo 1.27\n`);
+    for (const file of files(irs, lock, { module: consumer })) {
+      const target = path.join(dir, 'src', file.path);
+      mkdirSync(path.dirname(target), { recursive: true });
+      writeFileSync(target, file.content);
+    }
+    mkdirSync(path.join(dir, 'tests'));
+    writeFileSync(path.join(dir, 'tests/vectors_test.go'), vectorsFile(irs.map(ir => vectors(ir, lock)), { module: consumer }));
+    writeFileSync(path.join(dir, 'tests/consumer_test.go'), CONSUMER_FIXTURE);
+    const result = spawnSync('go', ['vet', './...'], { cwd: dir, encoding: 'utf8', env: { ...process.env, GOPROXY: 'off' } });
+    assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
