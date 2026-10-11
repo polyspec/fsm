@@ -63,25 +63,33 @@ export function nextCodeOf(machine, definitions, lock) {
 }
 
 /**
- * The edit form for the browser, as the JSON text of its template, of the data it renders and of the next code of its machine,
- * with `<` escaped so that the text can sit in a script element. The browser creates the instance that connectForm binds to the
- * rendered form and gives each added state the next code (client/main.ts), so the data is the data the server rendered.
+ * The crudui render options of the edit form of `machine`: its action, the CSRF token of the page, and the errors of a save
+ * (`formErrors` are the texts of the whole form, `errors` the { path, message } of its nodes; form-runtime.md, "Complete form").
+ * The server renders the form with these options and the browser re-renders it with the same ones, so both write one markup.
  */
-export function editState(data, next) {
-  return JSON.stringify({ template: EDIT_TEMPLATE, data, nextCode: next }).replaceAll('<', '\\u003c');
-}
-
-/**
- * The HTML of the edit form of `machine` with `data`, posted to its edit path with the CSRF token of the page. `formErrors`
- * are the texts of the whole form and `errors` the { path, message } of its nodes (crudui renderForm, form-runtime.md).
- */
-export function renderEdit(machine, data, { csrf, formErrors = [], errors = [] }) {
-  return renderForm(createForm(EDIT_TEMPLATE, data, { language: 'en' }), {
+export function editRenderOptions(machine, { csrf, formErrors = [], errors = [] }) {
+  return {
     action: { method: 'post', url: `/machines/${machine}/edit` },
     hidden: { _csrf: csrf },
     formErrors,
     errors,
-  });
+  };
+}
+
+/** The HTML of the edit form of `machine` with `data`, with the render options of editRenderOptions. */
+export function renderEdit(machine, data, options) {
+  return renderForm(createForm(EDIT_TEMPLATE, data, { language: 'en' }), editRenderOptions(machine, options));
+}
+
+/**
+ * The edit form for the browser, as the JSON text of its template, of the data it renders, of the next code of its machine and of
+ * the render options, with `<` escaped so that the text can sit in a script element. The browser creates the instance that connectForm
+ * binds to the rendered form, re-renders it with the same options after every change of its rows, and gives each added state the
+ * next code (client/main.ts), so the data is the data the server rendered.
+ */
+export function editState(machine, data, next, options) {
+  const render = editRenderOptions(machine, options);
+  return JSON.stringify({ template: EDIT_TEMPLATE, data, nextCode: next, render }).replaceAll('<', '\\u003c');
 }
 
 /**

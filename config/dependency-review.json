@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mjs) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-11T03:10:23.294Z",
+  "reviewed": "2026-10-11T03:23:20.028Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -15,7 +15,7 @@
     },
     {
       "lock": "packages/fsm-gui/package-lock.json",
-      "sha256": "141d45d369913d15abc087d5ddfc57a9b92209d210cbe8ae0214d21b448f6693",
+      "sha256": "0a9462259d95f7d79050da1c109bc03185effde61cbecf80fe12ce4dbaa819e4",
       "advisories": []
     },
     {
@@ -72,6 +72,13 @@
       "package": "yaml",
       "version": "2.9.1",
       "latest": "2.9.1"
+    },
+    {
+      "ecosystem": "npm",
+      "manifest": "packages/fsm-gui/package.json",
+      "package": "playwright",
+      "version": "1.64.0",
+      "latest": "1.64.0"
     },
     {
       "ecosystem": "npm",

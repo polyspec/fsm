@@ -10,14 +10,15 @@ include scripts/kit/kit.mk
 # appends the targets that it defines (docs/plans/fsm-v1.md, Verification). TOOL_TESTS are the tests of the tools, whose
 # records parity-check requires.
 comma := ,
-TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test docs-build-test
+TOOL_TESTS := layout-test parity-test compiler-test gen-check-test db-test gui-test npm-types name-test docs-build-test gui-browser-test
 # The kinds of contracts/layout.json, read from it so that the Makefile cannot name a kind the layout lacks. Each kind has
 # test-<kind> (its package tests) and parity-<kind> (its owner check) as literal targets, added by its package item.
 KINDS := $(shell node -p "Object.keys(require('./contracts/layout.json').kinds).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test parity-check
+CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check parity-test compiler-test gen-check-test gen-check db-test gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test parity-check
 
-.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python test-php-ext parity-php-ext
+.PHONY: check layout-test layout-check parity-test compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test gui-deps gui-build gui-test parity-check packages-test test-npm parity-npm test-go parity-go test-php parity-php test-rust parity-rust npm-types install-python test-python parity-python test-php-ext parity-php-ext gui-browsers gui-browser-test
+
 
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~]
 # (scripts/kit/full-run.mjs); it records its result in var/full-run.json.
@@ -95,9 +96,21 @@ gui-build: gui-deps
 	cd packages/fsm-gui && node_modules/.bin/hyper-build-assets --app . --api /api --output build
 
 # gui-test runs the tests of packages/fsm-gui (docs/plans/fsm-v1.md, C-7): the handlers and the server entry through the
-# built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI.
+# built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI. The
+# browser test is in tests/browser and runs with gui-browser-test, so gui-test takes the test files of tests/ only.
 gui-test: gui-build
-	node scripts/kit/run-tests.mjs node --results .results/gui-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db --inputs schema/fsm.dbs -- packages/fsm-gui/tests
+	node scripts/kit/run-tests.mjs node --results .results/gui-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db --inputs schema/fsm.dbs -- $(wildcard packages/fsm-gui/tests/*.test.mjs)
+
+# gui-browsers downloads the Chromium that the GUI browser test drives, for the Playwright version pinned in packages/fsm-gui
+# (devDependency, exact). It downloads from the Playwright CDN, so it is ONLINE; it installs the browser into the user's Playwright
+# cache and changes no tracked file (docs/plans/fsm-v1.md, C-7).
+gui-browsers: gui-deps
+	cd packages/fsm-gui && $(ONLINE) node_modules/.bin/playwright install chromium
+
+# gui-browser-test runs tests/browser/browser.test.mjs of packages/fsm-gui: the GUI forms in a headless Chromium on a temporary project
+# (docs/plans/execution-checklist.md, S-22-1 and S-22-2). It needs the browser of gui-browsers and the built assets of gui-build.
+gui-browser-test: gui-browsers gui-build
+	node scripts/kit/run-tests.mjs node --timeout 120 --results .results/gui-browser-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db --inputs schema/fsm.dbs -- packages/fsm-gui/tests/browser/browser.test.mjs
 
 parity-check:
 	node scripts/check-parity.mjs --tools $(subst $(eval) ,$(comma),$(TOOL_TESTS))
