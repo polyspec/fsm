@@ -1,17 +1,25 @@
 {
   "schema": 1,
   "implementations": [
-    { "name": "go", "runner": "go", "roots": ["packages/fsm-go"], "tests": ["packages/fsm-go/tests/conformance_test.go"] },
+    { "name": "go", "runner": "go", "roots": ["packages/fsm-go"], "tests": ["packages/fsm-go/tests/conformance_test.go"],
+      "support": ["packages/fsm-go/tests/vectors_test.go"] },
     { "name": "npm", "runner": "node", "roots": ["packages/fsm-npm"], "tests": ["packages/fsm-npm/tests/conformance.test.mjs"] },
     { "name": "php", "runner": "php", "roots": ["packages/fsm-php"], "tests": ["packages/fsm-php/tests/ConformanceTest.php"] },
     { "name": "php-ext", "runner": "php", "roots": ["packages/fsm-php-ext"], "tests": ["packages/fsm-php-ext/tests/ConformanceTest.php"],
+      "support": ["packages/fsm-php-ext/src/polyspec_fsm_test.stub.php", "packages/fsm-php-ext/src/php_polyspec_fsm_test.h"],
       "args": ["-d", "extension=packages/fsm-php-ext/src/modules/polyspec_fsm_test.so"] },
     { "name": "python", "runner": "python", "roots": ["packages/fsm-python"], "tests": ["packages/fsm-python/tests/test_conformance.py"],
-      "command": "packages/fsm-python/.venv/bin/python", "env": [{ "name": "PYTHONPATH", "value": "packages/fsm-python/tests" }] },
+      "command": "packages/fsm-python/.venv/bin/python" },
     { "name": "rust", "runner": "cargo", "roots": ["packages/fsm-rust"], "tests": ["packages/fsm-rust/tests/conformance.rs"] }
   ],
   "profiles": [{ "name": "fsm", "implementations": ["go", "npm", "php", "php-ext", "python", "rust"] }],
   "suites": ["conformance/vectors.json"],
+  "tools": [
+    { "root": "packages/fsm-compiler", "reason": "the node tests of the compiler (fsm-gen): validation, stores and backends, one implementation that every kind's code comes from (plan C-5)" },
+    { "root": "packages/fsm-db", "reason": "the node tests of the DB store and its CLI, a component of fsm, not a port of the spec (plan C-6)" },
+    { "root": "packages/fsm-gui", "reason": "the node tests of the GUI, a component of fsm, not a port of the spec (plan C-7)" },
+    { "root": "tests", "reason": "the node tests of the root tools (check-name, check-readmes, gen-check, the documentation site, the make targets and the workflows), which implement no contract" }
+  ],
   "testPatterns": [
     { "runner": "go", "globs": ["packages/*/tests/conformance_test.go"] },
     { "runner": "node", "globs": ["packages/*/tests/conformance.test.mjs"] },
