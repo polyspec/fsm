@@ -10,13 +10,14 @@ the compiler.
 
 ## Architecture
 
-The package has four parts. The core is the only part that holds the rules; the other three convert or write.
+The package has five parts. The core is the only part that holds the rules; the other four convert or write.
 
 | Part | Files | Role |
 |---|---|---|
 | core | `src/core/validate.mjs`, `normalize.mjs`, `lock.mjs`, `reserved.mjs`, `vectors.mjs`, `run.mjs` | the rules of `docs/spec/fsm.md`, B-5, B-3 and B-4: `validate` returns the findings, `normalize` turns a definition into the intermediate form, `lock` derives the lock and `nextCode`, `vectors` is the oracle of the conformance cases, and `run` and `copy` are the commands |
 | backends | `src/backends/index.mjs` (the kinds), `go.mjs`, `npm.mjs`, `php.mjs`, `php-ext.mjs`, `python.mjs`, `rust.mjs` | one file per language: `files(irs, lock, options)` returns the generated files and `vectorsFile(...)` the native vector module |
 | stores | `src/store-json/store.mjs`, `src/store-mermaid/store.mjs` with `parse.mjs` and `write.mjs`, `src/store-lock/lock-file.mjs` | the file stores: they convert between files and the objects of the core, and write each file atomically |
+| io | `src/io/files.mjs`, `src/io/git.mjs` | the atomic write of a file and the git commands of the stores and the cli, on `node:fs` and `node:child_process` |
 | cli | `src/cli/fsm-gen.mjs`, `src/cli/write-generated.mjs` | the command line, which chooses the store from `fsm.config.json`, prints the findings and sets the exit code; `write-generated.mjs` writes the generated files and refuses files without the header |
 
 The core imports nothing from `node:`, so the GUI (`packages/fsm-gui`) imports it as it is. The tests of the compiler are in

@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 770b9a8e2835c1ccca1546c4942d3ef44fc1ef3048abf7379c93b12fbe95a942 -->
+<!-- source-sha256: 7c3fdce816fa42a70486fb48ed5de6bdea52af2d17a288afb279c51207eca7b6 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -140,7 +140,7 @@ fsm/
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
   schema/fsm.schema.json  schema/fsm.dbs  schema/persist.dbs   # persist.dbs = shared by the six language package examples
   fsm.config.json  machines/order.fsm.json  fsm.lock.json  conformance/vectors.json
-  packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-lock/, src/store-mermaid/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
+  packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-lock/, src/store-mermaid/, src/io/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
   packages/fsm-db/        {src/, tests/}   # DbStore + fsm-db CLI, depends on orm
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
   packages/fsm-{go,npm,php,php-ext,python,rust}/
@@ -242,7 +242,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - vector parity(S-42-1, 결정): vector는 kit의 parity 검사(K33, K47을 담은 kit 0.0.26)로 실행되며, 이 검사가 모든 binding을 실행하고 kind마다 case를 허용한다. 저장된 기록을 읽던 fsm 자체의 scripts/check-parity.mjs는 있는 도구가 검사하므로 제거했다(kit에 case별 허용이 없는 동안 S-35-2와 S-42가 이를 유지했다).
 
 ### C-5. compiler `packages/fsm-compiler`
-- Import(S-32): `packages/fsm-compiler/src`는 다음만 import한다: (1) node 내장 모듈, `node:` specifier로; (2) 자기 파일, `src` 안에 머무르는 상대 경로; (3) 이 clone의 벤더 kit `scripts/kit/`(상대 경로, 복사하지 않는다). npm 패키지, bare 내장 이름, 동적 `import()`·`require()`는 없다. `src/core`는 `node:` 모듈을 전혀 import하지 않는다. `packages/fsm-compiler/tests/imports.test.mjs`가 `src`의 모든 import specifier를 검사하고 그 밖이면 실패한다.
+- Import(S-32): `packages/fsm-compiler/src`는 다음만 import한다: (1) node 내장 모듈, `node:` specifier로; (2) 자기 파일, `src` 안에 머무르는 상대 경로. kit의 파일은 import하지 않는다. package `@polyspec/kit`은 자기 tool API만 export하므로, `src/io/files.mjs`가 파일을 원자적으로 쓰고 `src/io/git.mjs`가 `node:fs`와 `node:child_process`로 git을 실행한다(S-44-1). npm 패키지, bare 내장 이름, 동적 `import()`·`require()`는 없다. `src/core`는 `node:` 모듈을 전혀 import하지 않는다. `packages/fsm-compiler/tests/imports.test.mjs`가 `src`의 모든 import specifier를 검사하고 그 밖이면 실패한다.
 - 구성
   - `src/core`: 객체 → validate → normalize → backends, 그리고 `run`, `copy`. `node:` import는 0개이고, GUI가 그대로 import한다.
   - `src/backends/<kind>.mjs`

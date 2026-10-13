@@ -9,9 +9,8 @@
 
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
-import { Stop } from '../../../../scripts/kit/process.mjs';
-import { writeAtomic } from '../../../../scripts/kit/files.mjs';
-import { git, gitResult } from '../../../../scripts/kit/git.mjs';
+import { writeAtomic } from '../io/files.mjs';
+import { git, gitResult } from '../io/git.mjs';
 
 // The header is in the comment syntax of the file: `//` (go, npm, php, rust, C), `#` (python) or `dnl` (the m4 of config.m4),
 // and the php tag, when present, comes first.
@@ -44,13 +43,13 @@ function filesUnder(dir, prefix = '') {
 
 /**
  * The paths below `dir` (relative, `/` separators) that Git ignores and that are not tracked. Outside a git work tree the set is
- * empty: nothing counts as ignored there. Any other failure of git is a Stop, never an empty set.
+ * empty: nothing counts as ignored there. Any other failure of git is an error, never an empty set.
  */
 function ignoredUnder(dir) {
   const probe = gitResult(dir, 'rev-parse', '--is-inside-work-tree');
   if (probe.status !== 0) {
     if (/^fatal: not a git repository/m.test(probe.stderr)) return new Set();
-    throw new Stop(`git rev-parse --is-inside-work-tree in ${dir} failed: ${(probe.error?.message ?? probe.stderr).trim()}`);
+    throw new Error(`git rev-parse --is-inside-work-tree in ${dir} failed: ${(probe.error?.message ?? probe.stderr).trim()}`);
   }
   if (probe.stdout.trim() !== 'true') return new Set();
   return new Set(git(dir, 'ls-files', '-z', '--others', '--ignored', '--exclude-standard').split('\0').filter(Boolean));

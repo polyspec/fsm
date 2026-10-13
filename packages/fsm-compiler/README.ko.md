@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: b93635d9630f19478611f83e4a9fec852ac3bcdd525ba15d8e3db91fe2fd4635 -->
+<!-- source-sha256: 7fcadbb2684be3d76c2e79fe0dad0f70c224d0d500f290c8b5523468df4bf59e -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -10,13 +10,14 @@ conformance vector를 쓰고, 여섯 언어의 소스를 생성한다. 의존성
 
 ## 구조
 
-패키지는 네 부분으로 이루어진다. 규칙을 가진 곳은 core뿐이며, 나머지 세 부분은 변환하거나 쓴다.
+패키지는 다섯 부분으로 이루어진다. 규칙을 가진 곳은 core뿐이며, 나머지 네 부분은 변환하거나 쓴다.
 
 | 부분 | 파일 | 역할 |
 |---|---|---|
 | core | `src/core/validate.mjs`, `normalize.mjs`, `lock.mjs`, `reserved.mjs`, `vectors.mjs`, `run.mjs` | `docs/spec/fsm.md`의 B-5, B-3, B-4 규칙. `validate`는 검사 결과를, `normalize`는 정의를 중간 형식으로, `lock`은 lock과 `nextCode`를, `vectors`는 conformance case의 oracle을, `run`과 `copy`는 명령을 만든다 |
 | backends | `src/backends/index.mjs`(종류), `go.mjs`, `npm.mjs`, `php.mjs`, `php-ext.mjs`, `python.mjs`, `rust.mjs` | 언어마다 한 파일: `files(irs, lock, options)`는 생성 파일을, `vectorsFile(...)`은 native vector module을 돌려준다 |
 | stores | `src/store-json/store.mjs`, `src/store-mermaid/store.mjs`와 `parse.mjs`, `write.mjs`, `src/store-lock/lock-file.mjs` | 파일 store: 파일과 core의 객체를 서로 바꾸고, 파일마다 원자적으로 쓴다 |
+| io | `src/io/files.mjs`, `src/io/git.mjs` | store와 cli가 쓰는 파일의 원자적 쓰기와 git 명령. `node:fs`와 `node:child_process` 위에 있다 |
 | cli | `src/cli/fsm-gen.mjs`, `src/cli/write-generated.mjs` | 명령 줄. `fsm.config.json`으로 store를 고르고, 검사 결과를 출력하고, 종료 코드를 정한다. `write-generated.mjs`는 생성 파일을 쓰고 header가 없는 파일을 거부한다 |
 
 core는 `node:`를 import하지 않으므로 GUI(`packages/fsm-gui`)가 그대로 import한다. 컴파일러의 테스트는 `packages/fsm-compiler/tests/`에

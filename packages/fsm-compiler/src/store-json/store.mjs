@@ -4,7 +4,7 @@
 
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
-import { jsonText, writeAtomic } from '../../../../scripts/kit/files.mjs';
+import { jsonText, writeAtomic } from '../io/files.mjs';
 import { committedLock, readLockFile, writeLockFile } from '../store-lock/lock-file.mjs';
 
 /** The $schema of every machine file: the editor schema, relative to machines/. */

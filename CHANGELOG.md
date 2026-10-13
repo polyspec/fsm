@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-1: the compiler imports no file of kit: `src/io/files.mjs` and `src/io/git.mjs` write files atomically and run git on node built-ins, and the import test refuses a path into `scripts/kit` (plan C-5).
 - S-43: AGENTS.md(.ko) Rules: an existing outside tool is used as it is, its own symbolic links accepted; the repository creates no symbolic link and no relative path, and a path is named in a tracked file or found by a stated discovery rule.
 - S-34-4: the python lock is checked by uv itself (`uv lock --check` and the export of uv.lock against pylock.toml); fsm's own lock script is removed.
 - S-42-2: fsm's own vector parity script (`scripts/check-parity.mjs`, `vector-parity-check`, `parity-<kind>`) is removed; kit's parity check does the work, and each kind's owner check runs its package tests.

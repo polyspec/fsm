@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 32397bcb6215eb02d21c356689d83e8bd99e93b17fd887580ff4b11af7c08b90 -->
+<!-- source-sha256: 8f0c46d0476a0679b465c8901c4cb801fc2782b9055945359dc91556534d9839 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-1: compiler는 kit 파일을 import하지 않는다. `src/io/files.mjs`와 `src/io/git.mjs`가 node 내장 모듈로 파일을 원자적으로 쓰고 git을 실행하며, import 테스트는 `scripts/kit`로 가는 경로를 거부한다(plan C-5).
 - S-43: AGENTS.md(.ko) 규칙을 추가했다: 기존 외부 도구는 있는 그대로 쓰고(그 도구의 symbolic link는 받아들임), 저장소는 symbolic link와 상대 경로를 만들지 않으며, 경로는 추적 파일에 이름을 적거나 명시된 탐색 규칙으로 찾는다.
 - S-34-4: python lock은 uv 자체가 검사한다(`uv lock --check`와 pylock.toml에 대한 uv.lock의 export 비교). fsm 자체의 lock 스크립트를 제거했다.
 - S-42-2: fsm 자체의 vector parity 스크립트(`scripts/check-parity.mjs`, `vector-parity-check`, `parity-<kind>`)를 제거했다. kit의 parity 검사가 그 일을 하고, kind의 소유 검사는 패키지 테스트를 실행한다.
