@@ -20,7 +20,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { writeJson } from '../../../../scripts/kit/files.mjs';
+import { jsonText, writeAtomic } from '../io/files.mjs';
 import { KINDS, backendOf } from '../backends/index.mjs';
 import { copy, run } from '../core/run.mjs';
 import { jsonStore } from '../store-json/store.mjs';
@@ -144,7 +144,7 @@ async function execute({ command, project, renames, to, root, out, kind, goModul
     const result = await run('vectors', configured.store, {});
     if (result.findings.length > 0) return result.findings;
     if (kind !== undefined) return writeGeneratedFile(out, backendOf(kind).vectorsFile(result.vectors, { phpNamespace, module: goModule }));
-    writeJson(out, { machines: result.vectors });
+    writeAtomic(out, jsonText({ machines: result.vectors }));
     return [];
   }
   if (command === 'gen') {

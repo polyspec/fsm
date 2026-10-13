@@ -7,9 +7,8 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { Stop } from '../../../../scripts/kit/process.mjs';
-import { jsonText, writeAtomic } from '../../../../scripts/kit/files.mjs';
-import { git, gitResult } from '../../../../scripts/kit/git.mjs';
+import { jsonText, writeAtomic } from '../io/files.mjs';
+import { git, gitResult } from '../io/git.mjs';
 import { canonicalLock } from '../core/lock.mjs';
 
 /** The name of the lock file under the root directory. */
@@ -61,19 +60,19 @@ export function readLockFile(root) {
 /**
  * The lock of the committed state of `root`: fsm.lock.json at git HEAD, the baseline of the lock rules (B-3). Nothing is committed,
  * and the empty lock is returned, when `root` is outside a git work tree, when the repository has no commit, or when the file is
- * not tracked at HEAD, or when the directory does not exist yet. A committed file that cannot be read is a finding. Any other failure of git is a Stop, never an empty lock.
+ * not tracked at HEAD, or when the directory does not exist yet. A committed file that cannot be read is a finding. Any other failure of git is an error, never an empty lock.
  */
 export function committedLock(root) {
   if (!existsSync(root)) return EMPTY;
   const probe = gitResult(root, 'rev-parse', '--is-inside-work-tree');
   if (probe.status !== 0) {
     if (/^fatal: not a git repository/m.test(probe.stderr)) return EMPTY;
-    throw new Stop(`git rev-parse --is-inside-work-tree in ${root} failed: ${(probe.error?.message ?? probe.stderr).trim()}`);
+    throw new Error(`git rev-parse --is-inside-work-tree in ${root} failed: ${(probe.error?.message ?? probe.stderr).trim()}`);
   }
   if (probe.stdout.trim() !== 'true') return EMPTY;
   const head = gitResult(root, 'rev-parse', '--verify', '--quiet', 'HEAD');
   if (head.status === 1) return EMPTY;
-  if (head.status !== 0) throw new Stop(`git rev-parse --verify HEAD in ${root} failed: ${(head.error?.message ?? head.stderr).trim()}`);
+  if (head.status !== 0) throw new Error(`git rev-parse --verify HEAD in ${root} failed: ${(head.error?.message ?? head.stderr).trim()}`);
   if (git(root, 'ls-tree', 'HEAD', '--', `./${LOCK_FILE}`).trim() === '') return EMPTY;
   return parseLock(git(root, 'show', `HEAD:./${LOCK_FILE}`), `the committed ${LOCK_FILE}`);
 }

@@ -139,7 +139,7 @@ fsm/
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
   schema/fsm.schema.json  schema/fsm.dbs  schema/persist.dbs   # persist.dbs = shared by the six language package examples
   fsm.config.json  machines/order.fsm.json  fsm.lock.json  conformance/vectors.json
-  packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-lock/, src/store-mermaid/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
+  packages/fsm-compiler/  {src/core/, src/backends/, src/store-json/, src/store-lock/, src/store-mermaid/, src/io/, src/cli/, tests/}  # imports only the set of C-5 (no npm package)
   packages/fsm-db/        {src/, tests/}   # DbStore + fsm-db CLI, depends on orm
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
   packages/fsm-{go,npm,php,php-ext,python,rust}/
@@ -253,7 +253,7 @@ Vectors (exhaustive; the core generates the oracle):
 - Vector parity (S-42-1, decision): the vectors run on kit's parity check (K33, kit 0.0.26 with K47), which runs every binding and admits cases per kind; fsm's own scripts/check-parity.mjs, which read the saved records, is removed, since an existing tool does the check (S-35-2 and S-42 had kept it while kit lacked per-case admission).
 
 ### C-5. compiler `packages/fsm-compiler`
-- Imports (S-32): `packages/fsm-compiler/src` imports only (1) node built-ins, by their `node:` specifier; (2) its own files, by a relative path that stays in `src`; (3) the vendored kit of this clone, `scripts/kit/` (a relative path, never a copy). No npm package, no bare built-in name and no dynamic `import()` or `require()`. `src/core` imports no `node:` module at all. `packages/fsm-compiler/tests/imports.test.mjs` scans every import specifier of `src` and fails on anything else.
+- Imports (S-32): `packages/fsm-compiler/src` imports only (1) node built-ins, by their `node:` specifier; (2) its own files, by a relative path that stays in `src`. It imports no file of kit: the package `@polyspec/kit` exports only its tool APIs, so `src/io/files.mjs` writes a file atomically and `src/io/git.mjs` runs git with `node:fs` and `node:child_process` (S-44-1). No npm package, no bare built-in name and no dynamic `import()` or `require()`. `src/core` imports no `node:` module at all. `packages/fsm-compiler/tests/imports.test.mjs` scans every import specifier of `src` and fails on anything else.
 - Parts
   - `src/core`: object → validate → normalize → backends, plus `run` and `copy`. It has zero `node:` imports, and the GUI imports it as is.
   - `src/backends/<kind>.mjs`

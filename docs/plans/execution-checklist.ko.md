@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 04710421ceeb7a618237b44071ee1881f36399c08c64baacf0fa6e6ff3b072c9 -->
+<!-- source-sha256: 7f17c3a2f5c44e7968c009185e334eea5d488f572d96c4d976ca417ecc673700 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -93,3 +93,4 @@
 | S-39 | go 테스트 파일과 충돌하는 machine key를 예약한다: 생성된 go 테스트 package의 식별자를 이름으로 쓰는 machine key는 fsm-gen check를 통과하면서 go 빌드를 깬다(S-25가 봄). go 1.27.2로 측정한 결과 `examples`, `vectors`, `machines`, `expectation`, `lookup`이 `go test ./...`를 깨고("redeclared in this block", "already declared through import"), 처음 의심한 `tests`는 깨지 않는다. 측정한 key를 근거와 함께 spec B-5의 고정 목록에 더한다 | 측정한 각 key가 fsm-gen check를 통과하고 go를 깸 RED → E_KEY_RESERVED GREEN. `tests`는 허용으로 남음 | [o] |
 | S-40 | `packages/fsm-gui/tests/command.test.mjs`가 root `fsm.lock.json` 전체를 order machine만 있는 프로젝트에 복사하므로 root의 다른 machine에 의존한다(S-25가 봄). 테스트는 machine 하나와 그 lock 항목으로 프로젝트를 만든다 | root에 machine을 더하면 테스트 프로젝트가 바뀜 RED → 바뀌지 않음 GREEN | [o] |
 | S-43 | AGENTS.md(.ko) 규칙: 기존 외부 도구나 라이브러리는 있는 그대로 쓰며 다시 만들지 않는다. 저장소는 추적 파일, 설정, 스크립트, 생성 출력에 symbolic link와 상대 경로를 만들지 않는다. 경로는 추적 파일에 이름을 적거나 명시된 탐색 규칙으로 찾는다 | 두 규칙이 AGENTS.md와 AGENTS.ko.md에 있고, 커밋된 트리에서 `make documents-check`가 통과 | [o] |
+| S-44-1 | compiler는 kit 파일을 import하지 않는다(kit K79: package `@polyspec/kit`은 자기 tool API만 export한다). `src/io/files.mjs`가 파일을 원자적으로 쓰고 `src/io/git.mjs`가 git을 실행하며, 둘 다 node 내장 모듈 위에 있다. plan C-5는 kit 없이 허용 집합을 적는다 | imports.test.mjs가 `scripts/kit`로 가는 상대 import를 거부하고 source가 kit 파일을 import함 RED → GREEN | [o] |

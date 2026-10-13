@@ -5,7 +5,7 @@
 
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
-import { writeAtomic } from '../../../../scripts/kit/files.mjs';
+import { writeAtomic } from '../io/files.mjs';
 import { committedLock, readLockFile, writeLockFile } from '../store-lock/lock-file.mjs';
 import { parseMermaid } from './parse.mjs';
 import { mermaidText } from './write.mjs';
