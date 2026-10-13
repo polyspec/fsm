@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "Node.js is declared in .node-version and Rust in rust-toolchain.toml; the npm kind adds nothing, because the kit declares npm only in a root package.json, which this repository does not have. The go kind declares the Go release in packages/fsm-go/go.mod (its toolchain line) and the govulncheck release of the dependency review. The php kind declares the PHP and Composer releases that run its tests; its dependencies resolve for PHP 8.4.0 (config.platform.php in packages/fsm-php/composer.json), the minimum of polyspec/orm. The rust kind adds cargoAudit, which the dependency review runs on the Cargo locks. The python kind declares Python 3.14 and its pythonBuild, the exact python-build-standalone release that make install-tools installs into var/tools, linked as var/tools/bin/python3; no uv installs an interpreter (docs/plans/execution-checklist.md, S-41). The repository publishes no wheel, so it declares no pythonBackend. Each remaining kind item adds the toolchain of its kind.",
+  "comment": "The toolchains of fsm at the pins of kit (S-44-2). Node.js is declared in .node-version and Rust in rust-toolchain.toml. The go kind declares the Go release in the go line of packages/fsm-go/go.mod and the govulncheck release of the dependency review. The php kind declares the PHP and Composer releases that run its tests; its dependencies resolve for PHP 8.5 (config.platform.php of each composer.json). The rust kind adds cargoAudit, which the dependency review runs on the Cargo locks. The python kind declares Python 3.14 and the exact release of pythonBuild, which make install-tools installs with the declared uv into var/tools; uv also resolves and installs the python package. alint runs make layout-check. The repository publishes no wheel, so it declares no pythonBackend.",
   "go": {
     "mod": "packages/fsm-go/go.mod"
   },
@@ -15,13 +15,33 @@
   "cargoAudit": "0.22.2",
   "python": "3.14",
   "pythonBuild": {
-    "version": "3.14.8",
-    "release": "20261009",
+    "version": "3.14.8"
+  },
+  "uv": {
+    "version": "0.12.24",
     "sha256": {
-      "darwin-arm64": "ff8e1ddc02a9df3190b62d5af475cb642a02cfc77901ef780f9826cc23b51934",
-      "darwin-x64": "9694bf8c8c1fb1250dd6f05e7914ebbbe7180e0f11b7feaf5edb2f6acebe4153",
-      "linux-arm64": "2a99838d2ba71c91d9c72929ee73cdfad2ccd093d7746a14094f50e583989ec3",
-      "linux-x64": "83f9cb480b702548c592443f86209cf0fc03448d90692df257f095c01791dccc"
+      "darwin-arm64": "0c4346de7abdb49495b393b9ec809fe387aa43e586be20fecb972216c1e71732",
+      "darwin-x64": "4fa82e37cb94767661f532b001e470b67a186c7260e305bd84ddb78fd545c0b6",
+      "linux-arm64": "5231be65f496304623895dacdbf1de8504fec90303684bdf05805aa34414dd21",
+      "linux-x64": "b4dfaef47d491a7296981f8374a4595f55dbf84e8937c8ecd2983574d8bb3da6"
     }
-  }
+  },
+  "alint": {
+    "version": "0.18.2",
+    "sha256": {
+      "darwin-arm64": "ccfb4d13c6001b6ee5d31f2e139ce3e9710df54ba75c5601ef2a96be9ad8d4b2",
+      "darwin-x64": "23dc62149aacc8168f922e35e067a244d3c715725182322dcc3564129968dd8c",
+      "linux-arm64": "133ae54580b1c84d6aa1641d72448267241064ee9c5be119bb649f6acad9e005",
+      "linux-x64": "ce1f182bf3205aceab62fad40dbdd7502de638ed89cbb4fef10320803384ff9b"
+    }
+  },
+  "exceptions": [
+    {
+      "tool": "typescript",
+      "channel": "6.0.3",
+      "scope": "packages/fsm-db",
+      "reason": "orm v0.0.7, the DB store's dependency, depends on typescript ^6.0.3, which its orm-gen scan imports; npm resolves it at the top level of packages/fsm-db/package-lock.json",
+      "retry": "an orm release that depends on typescript 7.0.2"
+    }
+  ]
 }

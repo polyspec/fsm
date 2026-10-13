@@ -20,7 +20,8 @@ DEST ?= .
 PYTHON := $(abspath $(ROOT))/var/tools/bin/python3
 VENV := .venv
 PYLOCK := pylock.toml
-UV ?= uv
+# uv is the one of config/toolchain.json that install-tools installs (S-44-2), never a uv of PATH.
+UV := $(abspath $(ROOT))/var/tools/bin/uv
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.

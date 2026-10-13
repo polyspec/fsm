@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: 0611e330954da3b4786a688fcfa5534a5ccb28a48cd84de077138caf235b2419 -->
+<!-- source-sha256: 8742559a7d292c30d50a564f505459b95e97f2bdb2da483ece2df38164ace973 -->
 # polyspec/fsm-php
 
 [English](README.md)
@@ -163,4 +163,4 @@ make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_D
 실행 결과는 89개 case 중 89개 통과다. `fsm-gen vectors --kind php`가 생성하는 `tests/ConformanceTest.php`는 vector case마다 PHPUnit test
 `test_<feature>__<id>` 하나를 가지며, 각 test는 손으로 쓴 `tests/ConformanceCase.php`의 검사를 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 루트의 `make gen-check`는
 생성 파일이 `fsm-gen`이 지금 쓰는 것과 같은지 검사한다. checkout의 PHP 릴리스는 8.5(`config/toolchain.json`)이며, `composer.json`의
-`config.platform.php`는 orm client의 최소 버전인 8.4.0이다.
+`config.platform.php`는 kit의 PHP pin인 8.5이고, `require.php`는 `>=8.5`다.

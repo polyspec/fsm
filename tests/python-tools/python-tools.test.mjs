@@ -11,7 +11,6 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { venvProblem } from '../../scripts/kit/python-venv.mjs';
-import { declaredToolchain } from '../../scripts/kit/toolchain-declared.mjs';
 import { put, tree } from '../kit/tree.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -107,16 +106,14 @@ test('the Makefile holds no uv python install and no link of a uv interpreter', 
   assert.doesNotMatch(makefile, /python find --managed-python/);
 });
 
-test('config/toolchain.json declares the pythonBuild of the python minor, and no pythonBackend', () => {
-  const declared = declaredToolchain(ROOT);
-  assert.equal(declared.python?.minor, '3.14', 'python must declare the minor 3.14');
-  assert.ok(declared.pythonBuild, 'config/toolchain.json must declare pythonBuild, the exact Python that install-tools installs');
-  assert.equal(declared.pythonBuild.version, '3.14.8');
-  assert.equal(declared.pythonBuild.release, '20261009');
-  for (const platform of ['darwin-arm64', 'linux-x64']) {
-    assert.match(declared.pythonBuild.sha256[platform] ?? '', /^[0-9a-f]{64}$/, `no sha256 of ${platform} in pythonBuild`);
-  }
-  assert.equal(declared.pythonBackend, undefined, 'fsm publishes no wheel, so it declares no pythonBackend');
+test('the interpreter is installed after the uv of config/toolchain.json, which installs it (S-44-2)', (t) => {
+  const out = printed(sandbox(t), PYTHON_BIN);
+  const uv = lineIndex(out, /install-tools\.mjs uv$/);
+  assert.ok(uv >= 0 && lineIndex(out, INSTALL_TOOLS_PYTHON) > uv, `var/tools/bin/python3 is not installed after install-tools uv:\n${out}`);
+});
+
+test('the python package runs the uv of var/tools, never a uv of PATH (S-44-2)', () => {
+  assert.match(makefileOf('packages/fsm-python'), /^UV := \$\(abspath \$\(ROOT\)\)\/var\/tools\/bin\/uv$/m);
 });
 
 // The environment of the python package (S-41): uv venv and uv sync write symbolic links that the runner refuses, so the

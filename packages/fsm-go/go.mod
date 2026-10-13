@@ -1,8 +1,6 @@
 module github.com/polyspec/fsm-go
 
-go 1.27
-
-toolchain go1.27.2
+go 1.27.2
 
 require github.com/polyspec/orm v0.0.7
 
