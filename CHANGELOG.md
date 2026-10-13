@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-3: config/parity.json follows kit's parity schema: no `PYTHONPATH`, `support` files for the generated go vectors and php-ext stub and header, and `tools` roots for the compiler, DB, GUI and root tool tests.
 - S-44-2: the toolchains are at kit's pins: Node.js 26.11.1, PHP 8.5, Python 3.14, Go 1.27.2 (no toolchain line), Rust 1.99.0 and TypeScript 7.0.2, with orm's TypeScript 6.0.3 in packages/fsm-db declared as an exception; uv and alint are declared in config/toolchain.json and installed into var/tools, and the CI workflow installs no uv of its own.
 - S-44-1: the compiler imports no file of kit: `src/io/files.mjs` and `src/io/git.mjs` write files atomically and run git on node built-ins, and the import test refuses a path into `scripts/kit` (plan C-5).
 - S-43: AGENTS.md(.ko) Rules: an existing outside tool is used as it is, its own symbolic links accepted; the repository creates no symbolic link and no relative path, and a path is named in a tracked file or found by a stated discovery rule.

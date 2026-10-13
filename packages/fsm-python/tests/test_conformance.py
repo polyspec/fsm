@@ -16,7 +16,8 @@ from pathlib import Path
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which make gen refuses.
 sys.dont_write_bytecode = True
 PACKAGE = Path(__file__).resolve().parent.parent
-sys.path[:0] = [str(PACKAGE / "src"), str(PACKAGE / "examples")]
+# The generated vectors module lies beside this test; the test names its own directory, so no PYTHONPATH is set (S-44-3).
+sys.path[:0] = [str(PACKAGE / "src"), str(PACKAGE / "examples"), str(PACKAGE / "tests")]
 
 import polyspec_fsm  # noqa: E402
 from persist import clear, open_database, seed, status_of, transition  # noqa: E402

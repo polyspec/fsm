@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: f4bd556695b979c046e24ecfb47fb595a10c64b9246b48179eb50f3ce8b630aa -->
+<!-- source-sha256: a368270f32e8b4e56759fe8944bd8211226c5877e297c69d7e2c11f9873db0f1 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -95,3 +95,4 @@
 | S-43 | AGENTS.md(.ko) 규칙: 기존 외부 도구나 라이브러리는 있는 그대로 쓰며 다시 만들지 않는다. 저장소는 추적 파일, 설정, 스크립트, 생성 출력에 symbolic link와 상대 경로를 만들지 않는다. 경로는 추적 파일에 이름을 적거나 명시된 탐색 규칙으로 찾는다 | 두 규칙이 AGENTS.md와 AGENTS.ko.md에 있고, 커밋된 트리에서 `make documents-check`가 통과 | [o] |
 | S-44-1 | compiler는 kit 파일을 import하지 않는다(kit K79: package `@polyspec/kit`은 자기 tool API만 export한다). `src/io/files.mjs`가 파일을 원자적으로 쓰고 `src/io/git.mjs`가 git을 실행하며, 둘 다 node 내장 모듈 위에 있다. plan C-5는 kit 없이 허용 집합을 적는다 | imports.test.mjs가 `scripts/kit`로 가는 상대 import를 거부하고 source가 kit 파일을 import함 RED → GREEN | [o] |
 | S-44-2 | toolchain을 kit의 pin에 맞춘다(kit K79, K78): `.node-version` 26.11.1, 모든 package.json의 `engines.node` `>=26.11.1`; Composer `require.php` `>=8.5`와 `config.platform.php` `8.5`(lock 갱신); `requires-python` `>=3.14`(uv.lock과 pylock.toml 갱신); go.mod `go 1.27.2`, toolchain 줄 없음; Cargo `rust-version`과 `rust-toolchain.toml` 1.99.0; config/toolchain.json은 kit의 schema를 따른다(pythonBuild는 version만, uv와 alint 선언), packages/fsm-db의 orm typescript 6.0.3은 예외로 선언; uv는 PATH나 워크플로가 아니라 var/tools에서 온다 | kit의 check-toolchain이 pin과 다른 선언 2개와 manifest floor 12개를 보고하고, workflows와 python-tools 테스트가 워크플로와 PATH의 uv에서 실패 RED → GREEN | [o] |
+| S-44-3 | config/parity.json이 kit K75의 parity schema를 따른다(kit K79): `PYTHONPATH`가 없고(python conformance 테스트가 자기 `tests/`를 넣는다), go의 생성 `vectors_test.go`와 php-ext의 `*_test` stub과 header는 `support` 파일이며, compiler, DB, GUI, 루트 도구의 테스트는 `tools` root다 | kit의 parity-declarations-check가 `PYTHONPATH` env를 거부하고, 그것 없이 python conformance 테스트가 `vectors`를 import하지 못함 RED → schema finding이 사라지고 python 테스트가 290 case를 통과 GREEN | [o] |

@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 5e4cec19da8d4c215c2663db092bff450d73ceced3ff63ebd97ea69705e7eaaf -->
+<!-- source-sha256: 9c0bda277346d2c234d0be52cfe861def652c2f7532d36a718dd80116fe1d420 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -204,6 +204,8 @@ kit의 parity 검사(`make parity-check`, kit 0.0.26의 K33, `config/parity.json
 - case가 실패하거나 skip이거나 todo이거나, binding이 0이 아닌 exit code로 끝난다.
 
 `make parity-declarations-check`는 아무것도 실행하지 않고 선언을 검사한다. feature 커버리지(contracts/features.json의 모든 feature가 case를 가진다)는 compiler 테스트 `vectors-file.test.mjs`가 단언한다. `.results/<kind>.json` 기록은 run-tests의 출력으로 남으며, fsm 도구는 읽지 않는다.
+
+선언은 kit K75의 parity schema를 따른다(S-44-3): 어떤 implementation도 `PYTHONPATH`를 두지 않는다(python conformance 테스트가 `src/`, `examples/`와 함께 자기 `tests/` 디렉터리를 module 경로에 넣는다). go의 생성 파일 `vectors_test.go`와 php-ext의 생성 `*_test` stub과 header는 테스트를 담지 않는 `support` 파일이다. compiler, DB store, GUI, 루트 도구의 node 테스트는 계약을 구현하지 않는 단일 언어 테스트이므로 `tools` root다. fsm은 모든 kind의 profile 하나만 선언하므로 `spec` anchor가 필요한 profile이 없고, 아직 `symbols`를 선언한 kind도 없다.
 
 `contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. vector 파일은 `conformance/vectors.json` = `{machines: [{machine, cases: [{feature, id, name, …}]}]}`이며 kit parity 검사의 suite 하나다. 케이스 이름은 `name` = `<feature>__<id>`다.
 
