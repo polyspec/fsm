@@ -257,17 +257,17 @@ a decision for you: the tools do not change `fsm.config.json` for you.
 
 ## Requirements and setup
 
-The tools run on Node.js. The pinned release is in `.node-version` (26.8.1), and npm comes with it. The generated code needs
+The tools run on Node.js. The pinned release is in `.node-version` (26.11.1), and npm comes with it. The generated code needs
 only the toolchain of its own language:
 
 | For | You need |
 |---|---|
-| fsm-gen, fsm-db, fsm-gui and the generated npm code | Node.js 26.8.1 (`.node-version`) and npm |
-| generated go code | Go 1.27 (`go 1.27` in the module, toolchain go1.27.2 in the checkout) |
+| fsm-gen, fsm-db, fsm-gui and the generated npm code | Node.js 26.11.1 (`.node-version`) and npm |
+| generated go code | Go 1.27.2 (`go 1.27.2` in the module) |
 | generated php code | PHP 8.4 or later (the orm client requires 8.4); the checkout tests with PHP 8.5 and Composer 2.10.3 (`config/toolchain.json`) |
 | generated php-ext code | the php requirements, plus `phpize`, `autoconf` and a C compiler |
-| generated python code | Python 3.14 (`config/toolchain.json` `pythonBuild`); `make install` installs it into `var/tools` (`make install-tools`); no uv installs an interpreter |
-| generated rust code | Rust 1.98.0 (`rust-toolchain.toml`); the generated library uses only the standard library |
+| generated python code | Python 3.14 (`config/toolchain.json` `pythonBuild`); `make install` installs it into `var/tools` with the uv of `config/toolchain.json` (`make install-tools`) |
+| generated rust code | Rust 1.99.0 (`rust-toolchain.toml`); the generated library uses only the standard library |
 
 The commands come from a clone of this repository. Install each one onto your PATH from the clone: npm links the package of the
 clone, so the command runs the code of that clone.

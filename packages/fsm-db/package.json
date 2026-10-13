@@ -5,6 +5,9 @@
   "description": "DbStore of fsm: the definitions and the lock in orm tables (docs/plans/fsm-v1.md, C-6)",
   "type": "module",
   "license": "MIT",
+  "engines": {
+    "node": ">=26.11.1"
+  },
   "bin": {
     "fsm-db": "src/cli/fsm-db.mjs"
   },

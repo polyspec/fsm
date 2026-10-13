@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 3051b7d2cb7f7f1232b360a9c51bc5a3cae98834701f820c3dd77460b971f338 -->
+<!-- source-sha256: 598cfd9bf12582794cfdbe19cc793ffbe3748d0cb1078a13f574ca348ffab238 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -251,17 +251,17 @@ conformance/vectors.json the expected results of the vector cases, written by fs
 
 ## 요구사항과 설정
 
-도구는 Node.js에서 실행된다. 고정된 release는 `.node-version`(26.8.1)에 있으며, npm은 함께 온다. 생성된 코드는 자기 언어의
+도구는 Node.js에서 실행된다. 고정된 release는 `.node-version`(26.11.1)에 있으며, npm은 함께 온다. 생성된 코드는 자기 언어의
 toolchain만 필요로 한다:
 
 | 대상 | 필요한 것 |
 |---|---|
-| fsm-gen, fsm-db, fsm-gui와 생성된 npm 코드 | Node.js 26.8.1(`.node-version`)과 npm |
-| 생성된 go 코드 | Go 1.27(module에 `go 1.27`, checkout에서는 toolchain go1.27.2) |
+| fsm-gen, fsm-db, fsm-gui와 생성된 npm 코드 | Node.js 26.11.1(`.node-version`)과 npm |
+| 생성된 go 코드 | Go 1.27.2(module에 `go 1.27.2`) |
 | 생성된 php 코드 | PHP 8.4 이상(orm client가 8.4를 요구한다). checkout은 PHP 8.5와 Composer 2.10.3으로 테스트한다(`config/toolchain.json`) |
 | 생성된 php-ext 코드 | php의 요구 사항, 그리고 `phpize`, `autoconf`, C 컴파일러 |
-| 생성된 python 코드 | Python 3.14(`config/toolchain.json`의 `pythonBuild`). `make install`이 `make install-tools`로 `var/tools`에 설치한다. uv는 인터프리터를 설치하지 않는다 |
-| 생성된 rust 코드 | Rust 1.98.0(`rust-toolchain.toml`). 생성된 library는 표준 라이브러리만 쓴다 |
+| 생성된 python 코드 | Python 3.14(`config/toolchain.json`의 `pythonBuild`). `make install`이 `config/toolchain.json`의 uv로 `var/tools`에 설치한다(`make install-tools`) |
+| 생성된 rust 코드 | Rust 1.99.0(`rust-toolchain.toml`). 생성된 library는 표준 라이브러리만 쓴다 |
 
 명령은 이 저장소의 clone에서 온다. clone에서 각 명령을 PATH에 설치한다. npm은 clone의 package를 link하므로 명령은 그 clone의 코드를
 실행한다:

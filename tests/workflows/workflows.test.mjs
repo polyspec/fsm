@@ -145,7 +145,8 @@ test('the node, go, php and rust versions come from the files that declare them'
   const goMod = TOOLCHAIN.go.mod;
   assert.equal(goMod, 'packages/fsm-go/go.mod');
   assert.match(CHECK_JOB, new RegExp(`\\n {10}go-version-file: ${goMod.replace(/[.]/g, '\\.')}\\n`));
-  assert.match(read(goMod), /^go 1\.27$/m);
+  assert.match(read(goMod), /^go 1\.27\.2$/m, 'the go line of go.mod is the Go pin of kit, 1.27.2 (S-44-2)');
+  assert.doesNotMatch(read(goMod), /^toolchain /m, 'go.mod has no toolchain line (S-44-2)');
 
   assert.equal(TOOLCHAIN.php.length, 1, 'config/toolchain.json must declare one PHP minor for the check job');
   assert.match(CHECK_JOB, new RegExp(`\\n {10}php-version: '${TOOLCHAIN.php[0].replace(/\./g, '\\.')}'\\n`));
@@ -159,11 +160,9 @@ test('the node, go, php and rust versions come from the files that declare them'
   assert.match(rustStep, /--profile minimal/);
 });
 
-test('uv is installed at the version that plan C-10 pins', () => {
-  const pin = /`uv==(\d+\.\d+\.\d+)`/.exec(PLAN.split('### C-10')[1] ?? '')?.[1];
-  assert.ok(pin, 'plan C-10 must pin uv as `uv==<version>`');
-  const install = CHECK_JOB.match(/pipx install uv==(\S+)/)?.[1];
-  assert.equal(install, pin);
+test('uv comes from config/toolchain.json through make install, and the workflow installs no uv of its own (S-44-2)', () => {
+  assert.match(TOOLCHAIN.uv?.version ?? '', /^\d+\.\d+\.\d+$/, 'config/toolchain.json must declare uv');
+  assert.doesNotMatch(CHECK_JOB, /pipx|install uv/, 'the check job installs a uv of its own');
 });
 
 test('the check job uploads the results of make check and the full-run record under !cancelled()', () => {

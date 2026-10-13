@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 7c3fdce816fa42a70486fb48ed5de6bdea52af2d17a288afb279c51207eca7b6 -->
+<!-- source-sha256: 5e4cec19da8d4c215c2663db092bff450d73ceced3ff63ebd97ea69705e7eaaf -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -388,7 +388,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - `.github/workflows/ci.yml`은 main의 모든 push와 수동 실행(workflow_dispatch)에서 돈다. 한 job인 `check`는 ubuntu-26.04에서 실행되며(orm의 PHP client는 SQLite 3.46을 요구하는데 ubuntu-24.04의 PHP는 시스템 SQLite 3.45.1에 연결되어 CI run 38120456615에서 php persist case가 `CAPABILITY_UNSUPPORTED`로 실패했다. orm의 CI도 같은 이유로 ubuntu-26.04에서 돈다) 정확히 두 target을 호출한다: `make install`, 그다음 CHECK_TARGETS의 전체 검사인 `make check`. `make check` 전에 `packages/fsm-gui`에서 sudo로 `npx playwright install-deps chromium`을 실행한다(`gui-browser-test`가 구동하는 Chromium의 시스템 라이브러리다. 브라우저 자체는 `make check`가 `gui-browsers`로 설치한다).
 - job은 PostgreSQL 17과 MySQL 8.4를 서비스로 띄우고 `FSM_TEST_*` 변수 네 개를 설정한다. 서비스와 env는 C-6의 yaml 블록을 그대로 옮긴 것이다. `make workflows-test`가 job에 그 블록이 있는지 확인하므로 계획과 워크플로가 어긋나지 않는다.
 - 버전은 그것을 선언하는 파일에서 온다. Node.js는 `.node-version`(setup-node), Go는 `packages/fsm-go/go.mod`(setup-go, 모듈 캐시 없음), PHP는 `config/toolchain.json`의 `php`(setup-php, 확장 `pdo_pgsql`과 `pdo_mysql`: php-ext 빌드와 영속화 테스트가 쓴다), Rust는 `rust-toolchain.toml`(rustup으로 minimal 프로필을 설치한다. `RUSTUP_AUTO_INSTALL`은 `0`이다).
-- uv는 이 계획에서 `uv==0.12.11`로 고정하고, 워크플로가 `pipx install`로 설치한다. `make install`의 interpreter는 install-tools가 `config/toolchain.json`의 `pythonBuild`로 설치하며, uv는 python 패키지를 풀고 설치하는 데만 쓴다(S-41). 결정: S-21 이전에는 어떤 파일도 uv를 고정하지 않았고, `config/toolchain.json`은 고정값을 담을 수 없다. 그 스키마(`scripts/kit/schema`에 vendored)가 이름이 없는 키를 금지하기 때문이다. `make workflows-test`는 워크플로가 그 버전을 설치하는지 확인한다.
+- uv는 `config/toolchain.json`에 선언한다(`uv`: 정확한 release와 platform별 archive의 sha256, S-44-2). `make install`이 install-tools로 `var/tools`에 설치하며, 워크플로는 uv를 따로 설치하지 않는다. uv는 `config/toolchain.json`의 pythonBuild interpreter를 설치하고 python 패키지를 풀고 설치한다. `make workflows-test`는 그 선언을 요구하고 워크플로의 uv 설치를 거부한다.
 - 모든 action은 전체 commit으로 고정하고 버전 주석(`# vX`, 태그에 `v`가 없으면 태그 이름)을 붙인다. commit은 템플릿 저장소가 같은 버전에 대해 검증한 것이다.
 - job은 `var/full-run.json`과 `.results/`를 `!cancelled()` 조건으로 artifact에 올린다. 실패한 실행도 기록을 남긴다.
 - `.github/workflows/pages.yml`은 main의 모든 push와 수동 실행에서 돈다. `VITEPRESS_BASE=/fsm/`(사이트의 base이며 `docs/.vitepress/config.mts`가 읽는다)로 `make docs-build`를 실행하고, `docs/.vitepress/dist`를 upload-pages-artifact로 올린 뒤 deploy-pages로 배포한다. 사이트는 https://polyspec.github.io/fsm/ 에 게시된다.

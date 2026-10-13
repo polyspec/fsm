@@ -8,6 +8,7 @@
         "build-path": "src"
     },
     "require": {
+        "php": ">=8.5",
         "polyspec/orm": "0.0.7"
     },
     "require-dev": {
@@ -93,7 +94,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.4.0"
+            "php": "8.5"
         }
     }
 }

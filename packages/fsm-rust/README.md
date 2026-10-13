@@ -168,5 +168,5 @@ make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_D
 
 The run passes 89 of 89 cases in about 100 seconds, which includes the compilation of the crate. `tests/vectors.rs` has one
 `#[test]` per vector case, named by its case name `<feature>__<id>` (`vectors::<feature>__<id>`), and each calls a check function of `tests/conformance.rs`; the persist
-cases are `#[tokio::test]`. The toolchain is `rust-toolchain.toml` at the root (Rust 1.98.0). The root `make gen-check` checks
+cases are `#[tokio::test]`. The toolchain is `rust-toolchain.toml` at the root (Rust 1.99.0). The root `make gen-check` checks
 that the generated files are the ones `fsm-gen` writes today.

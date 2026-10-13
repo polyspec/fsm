@@ -2,7 +2,7 @@
 # `make install` and then `make check`, the full suite of the repository, with the PostgreSQL and MySQL services of plan C-6.
 # The versions come from the files that declare them: Node.js from .node-version, Go from packages/fsm-go/go.mod, PHP from
 # config/toolchain.json, Python from the pythonBuild of config/toolchain.json (installed by make install through install-tools, S-41),
-# Rust from rust-toolchain.toml and uv from the pin of plan C-10, which resolves the python package only. The workflow runs on every push to
+# Rust from rust-toolchain.toml, and uv from config/toolchain.json (installed by make install through install-tools, S-44-2). The workflow runs on every push to
 # main and on a manual run (workflow_dispatch). A newer push does not cancel the run of an earlier one.
 name: CI
 
@@ -68,10 +68,6 @@ jobs:
       - name: Install the Rust toolchain of rust-toolchain.toml
         run: |
           rustup toolchain install "$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)" --profile minimal
-      - name: Install uv, the version of plan C-10
-        run: |
-          pipx install uv==0.12.11
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Install the toolchains and the package dependencies
         run: make install
       - name: Install the system libraries of Chromium

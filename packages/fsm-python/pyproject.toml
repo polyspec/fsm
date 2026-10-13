@@ -9,7 +9,7 @@ name = "polyspec-fsm-python"
 version = "0.0.0"
 description = "python consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example"
 license = "MIT"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "polyspec-orm @ https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/orm-python",
 ]

@@ -5,6 +5,9 @@
   "description": "The fsm compiler: validation, lock, the json and mermaid stores and the generators (docs/plans/fsm-v1.md, C-5)",
   "type": "module",
   "license": "MIT",
+  "engines": {
+    "node": ">=26.11.1"
+  },
   "bin": {
     "fsm-gen": "src/cli/fsm-gen.mjs"
   }
