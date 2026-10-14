@@ -93,6 +93,7 @@ function machineRs(ir, lock) {
   const outgoing = state => events.filter(event => transitions.some(item => item.state === state.key && item.event === event.key));
   const toOf = (state, event) => transitions.find(item => item.state === state && item.event === event).to;
   const edges = state => outgoing(state).map(event => [event, toOf(state.key, event.key)]);
+  const arms = states.flatMap(state => edges(state).map(([event, to]) => `        (${stateOf(state.key)}, ${eventOf(event.key)}) => Ok(${stateOf(to)}),`));
   const lines = [
     header(machine),
     '',
@@ -174,10 +175,10 @@ function machineRs(ir, lock) {
     '',
     '/// The state that an event leads to from the expected state; E_INVALID_TRANSITION when the event has no edge from it.',
     'pub fn target(expected: State, event: Event) -> Result<State, Error> {',
-    '    match (expected, event) {',
-    ...states.flatMap(state => edges(state).map(([event, to]) => `        (${stateOf(state.key)}, ${eventOf(event.key)}) => Ok(${stateOf(to)}),`)),
-    '        _ => Err(invalid_transition(expected, event)),',
-    '    }',
+    // A machine without edges has no arm but the error, and a match of one wildcard arm fails clippy (match_single_binding).
+    ...(arms.length === 0
+      ? ['    Err(invalid_transition(expected, event))']
+      : ['    match (expected, event) {', ...arms, '        _ => Err(invalid_transition(expected, event)),', '    }']),
     '}',
     '',
     '/// Applies an event that the observed state expected leads to, when the stored state is actual (docs/spec/fsm.md, B-4).',

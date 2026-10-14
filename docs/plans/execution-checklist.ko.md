@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 538537f124eb9bbbd69f0bec0b752a278715bf452670bdd95461520990b9bc6c -->
+<!-- source-sha256: 34b18aab6270090c439dbcc8122c208bb7154b7d25543d14e57ec145d8f93806 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -104,3 +104,4 @@
 | S-44-8-1 | Composer artifact zip의 다운로드(`make composer-artifacts`, curl과 `shasum -a 256 -c`의 shell loop)를 고정 다운로드용 kit 도구(kit K140)로 바꾼다. hyper의 template asset도 그 도구를 쓴다 | recipe와 config/composer-artifacts.txt를 지우고 php와 php-ext package의 설치가 선언된 zip에 kit 도구를 실행 | [!] cause: kit에 고정 다운로드 도구가 아직 없다; retry: K140이 든 kit 릴리스(config/release-assets.json과 `make release-assets-fetch`) |
 | S-44-9 | kind의 모든 테스트는 parity binding의 테스트다(kit R5): B-4의 persist 테스트는 config/parity.json의 feature unit 네 개로 여섯 kind 모두에 binding된다. 한 row에 동시에 일어나는 두 전이(같은 event: Changed 하나와 Unchanged 하나, 두 event: Changed 하나와 E_CONFLICT 하나)와 deadlock 재시도(orm의 DEADLOCK 오류는 transaction을 다시 실행하고, 다른 database 오류는 그렇지 않다)다. npm 타입 검사는 루트 도구 테스트 tests/npm-types이고, rust conformance target은 여러 파일로 된 Cargo의 layout인 tests/conformance/main.rs와 그 module tests/conformance/vectors.rs다 | `make parity-declarations-check`가 R5 finding 4개(persist-dialects.test.mjs, types.test.mjs, persist_retry.rs, vectors.rs)를 보고 RED → 통과 GREEN | [o] |
 | S-44-10 | kit 0.0.43으로 옮긴다(kit K136–K139, K141–K143, K146, K148): 게시된 파일의 integrity로 pin하고, kit의 복사본을 sync한다(`.oxlintrc.json`은 node:test의 등록을 허용하고, `knip.json`은 layout의 scripts, benchmarks, test를 entry로 삼으며, `config/api-extractor.kit.json`은 ae-missing-release-tag를 끄고, bootstrap script `install-mise.mts`와 `toolchain-declared.mts`) | `make kit-check`가 복사본이 @polyspec/kit 0.0.43과 다르다고 보고 RED → `make kit-sync` 뒤 `make kit-check toolchain-check owner-validate documents-check`가 통과 GREEN | [o] |
+| S-44-11 | rust backend는 edge가 없는 machine의 `target`을 오류 하나로 쓴다: 유일한 arm이 wildcard인 `match`는 clippy에서 실패한다(`match_single_binding`, `make lint-rust`). 생성된 packages/rust/src/standby.rs가 그렇다 | `make lint-rust`가 packages/rust/src/standby.rs:74에서 `this match could be replaced by its body itself`를 보고 RED → 그 finding이 사라지고 `make gen-check`가 통과하며 rust-backend.test와 `cargo test --test conformance`가 통과 GREEN | [ ] |
