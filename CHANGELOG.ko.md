@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 13224664e403577e0091dc1c1ebb7f9380089276862c7bd44d0591e8bef71f0c -->
+<!-- source-sha256: d43af6d1336eb2ce53a938bc6e565b9e569fd86788c391a253c1d3b5762d8f41 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-12: fsm의 PHP 파일은 `<?php` 뒤에 빈 줄을 둔다(PSR-12). 그래서 생성된 PHP 파일의 fsm-gen header는 셋째 줄이다.
 - S-44-11: edge가 없는 machine의 생성된 rust가 clippy를 통과한다. `target`은 wildcard arm 하나의 match 대신 오류만 반환한다.
 - S-44-9: 각 kind의 모든 test가 parity binding의 test다. persist test는 여섯 kind 모두에 bind된 네 feature unit(한 row의 동시 transition 두 개와 deadlock 재시도)이고, npm 타입 검사는 root 도구 test tests/npm-types이며, rust conformance target은 module vectors.rs를 가진 tests/conformance/main.rs다.
 - S-44-10: 공유 도구는 kit 0.0.43이다. parity는 cargo target tests/<name>/main.rs의 module 파일을 그 binding의 파일로 세고, oxlint 설정은 node:test의 등록을 허용하며, knip은 layout의 scripts, benchmarks, test를 entry로 삼고, API Extractor는 더 이상 모든 export에 release tag를 요구하지 않는다.

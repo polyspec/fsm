@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-12: the PHP files of fsm put a blank line after `<?php` (PSR-12), so the fsm-gen header of a generated PHP file is its third line.
 - S-44-11: the generated rust of a machine without edges passes clippy: `target` returns the error alone instead of a match of one wildcard arm.
 - S-44-9: every test of a kind is the test of a parity binding: the persist tests are four feature units bound in all six kinds (two transitions of one row at the same time, and the deadlock retry), the npm type check is the root tool test tests/npm-types, and the rust conformance target is tests/conformance/main.rs with its module vectors.rs.
 - S-44-10: the shared tools are kit 0.0.43: parity counts the module files of a cargo target tests/<name>/main.rs as files of its binding, the oxlint configuration allows the registrations of node:test, knip takes the scripts, benchmarks and tests of the layout as entries, and API Extractor no longer asks every export for a release tag.
