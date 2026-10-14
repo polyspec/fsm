@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 2a28282709d4d7391e9e82da58b165dc783c8f7a04094c4c87c4ccb1970907df -->
+<!-- source-sha256: 77301e6c6668e7268dec31428da8e6add601ff9b0d1ade743c0f834a07fd02d0 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-14: fsm의 PHP가 phpcs를 통과한다. 생성된 ConformanceTest.php는 method `testConformance` 하나를 data provider `cases()` 위에서 실행하고 case마다 이름이 `<feature>__<id>`인 data set을 두며 parity는 이를 symbol로 실행한다(kit K137). 생성된 throw는 인자 하나에 한 줄을 쓴다.
 - S-44-13: rustls는 RUSTSEC-2026-0346~0349를 고친 0.23.46이고 playwright는 1.64.1이다.
 - S-44-12: fsm의 PHP 파일은 `<?php` 뒤에 빈 줄을 둔다(PSR-12). 그래서 생성된 PHP 파일의 fsm-gen header는 셋째 줄이다.
 - S-44-11: edge가 없는 machine의 생성된 rust가 clippy를 통과한다. `target`은 wildcard arm 하나의 match 대신 오류만 반환한다.
