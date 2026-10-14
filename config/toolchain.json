@@ -1,39 +1,17 @@
 {
   "schema": 1,
-  "comment": "The toolchains of fsm at the pins of kit (S-44-2). Node.js is declared in .node-version and Rust in rust-toolchain.toml. The go kind declares the Go release in the go line of packages/fsm-go/go.mod and the govulncheck release of the dependency review. The php kind declares the PHP and Composer releases that run its tests; its dependencies resolve for PHP 8.5 (config.platform.php of each composer.json). The rust kind adds cargoAudit, which the dependency review runs on the Cargo locks. The python kind declares Python 3.14 and the exact release of pythonBuild, which make install-tools installs with the declared uv into var/tools; uv also resolves and installs the python package. alint runs make layout-check. The repository publishes no wheel, so it declares no pythonBackend.",
-  "go": {
-    "mod": "packages/fsm-go/go.mod"
-  },
-  "govulncheck": "1.8.0",
+  "comment": "The toolchains of fsm that no other file declares (S-44-2). Node.js is .node-version and Rust rust-toolchain.toml. The php kind runs on PHP 8.5, whose dependencies resolve for config.platform.php of each composer.json. mise is the release that make install-tools TOOLS=npm installs; mise.toml declares the tools it installs at the pins of kit (Go, Python with uv, govulncheck of the dependency review, cargo-audit of the Cargo locks, Composer, alint of make layout-check) and mise.lock locks them. The repository publishes no wheel, so it declares no pythonBackend.",
   "php": [
     "8.5"
   ],
-  "composer": {
-    "version": "2.10.3",
-    "sha256": "7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6"
-  },
-  "cargoAudit": "0.22.2",
-  "python": "3.14",
-  "pythonBuild": {
-    "version": "3.14.8"
-  },
-  "uv": {
-    "version": "0.12.24",
+  "exceptions": [],
+  "mise": {
+    "version": "2026.10.8",
     "sha256": {
-      "darwin-arm64": "0c4346de7abdb49495b393b9ec809fe387aa43e586be20fecb972216c1e71732",
-      "darwin-x64": "4fa82e37cb94767661f532b001e470b67a186c7260e305bd84ddb78fd545c0b6",
-      "linux-arm64": "5231be65f496304623895dacdbf1de8504fec90303684bdf05805aa34414dd21",
-      "linux-x64": "b4dfaef47d491a7296981f8374a4595f55dbf84e8937c8ecd2983574d8bb3da6"
+      "darwin-arm64": "8228699f316dc17931beb86f7a1aac70e4685535430441492ff4e857c72535ad",
+      "darwin-x64": "28c924c5703c6344489bc73227c59da2194eaf7fd962c5f3d233b9524b7419e9",
+      "linux-x64": "e908ea27810ae358c9a9a7d897ea10197bdc38d39839243e1b36acc31cbef868",
+      "linux-arm64": "88aea77e41c2a3c45a9cbd64df9516ba887017442846213b3de178acbd3c9a46"
     }
-  },
-  "alint": {
-    "version": "0.18.2",
-    "sha256": {
-      "darwin-arm64": "ccfb4d13c6001b6ee5d31f2e139ce3e9710df54ba75c5601ef2a96be9ad8d4b2",
-      "darwin-x64": "23dc62149aacc8168f922e35e067a244d3c715725182322dcc3564129968dd8c",
-      "linux-arm64": "133ae54580b1c84d6aa1641d72448267241064ee9c5be119bb649f6acad9e005",
-      "linux-x64": "ce1f182bf3205aceab62fad40dbdd7502de638ed89cbb4fef10320803384ff9b"
-    }
-  },
-  "exceptions": []
+  }
 }

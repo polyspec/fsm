@@ -1,5 +1,5 @@
 # The python package (docs/plans/fsm-v1.md, C-2; docs/plans/execution-checklist.md, S-41, S-41-1, S-34 and S-44). install makes
-# the virtual environment .venv with the Python of the checkout, var/tools/bin/python3, which `make install-tools` installs with
+# the virtual environment .venv with the Python of the checkout, var/tools/mise/shims/python3, which `make install-tools` installs with
 # the uv of config/toolchain.json. The venv is made by kit's python-venv (`make python-venv DIR=...` at the checkout root, uv venv
 # from that Python), and uv fills it with --link-mode copy: the locked packages of pylock.toml (PEP 751, written by kit's
 # `make python-lock` from pyproject.toml and constraints.txt and checked by `make python-lock-check`, so each registry artifact is
@@ -13,13 +13,13 @@ ROOT := ../..
 # The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
 RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
-# PYTHON is not an override: the kit tool makes the venv from var/tools/bin/python3 of the checkout, and this check names that
+# PYTHON is not an override: the kit tool makes the venv from var/tools/mise/shims/python3 of the checkout, and this check names that
 # interpreter too.
-PYTHON := $(abspath $(ROOT))/var/tools/bin/python3
+PYTHON := $(abspath $(ROOT))/var/tools/mise/shims/python3
 VENV := .venv
 PYLOCK := pylock.toml
 # uv is the one of config/toolchain.json that install-tools installs (S-44-2), never a uv of PATH.
-UV := $(abspath $(ROOT))/var/tools/bin/uv
+UV := $(abspath $(ROOT))/var/tools/mise/shims/uv
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
