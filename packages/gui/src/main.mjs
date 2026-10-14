@@ -55,7 +55,11 @@ async function main(argv) {
   const server = app.server(new FileSessions({ directory: sessions }), { files: path.join(GUI, 'public') });
   const stop = () => {
     server.close();
-    void opened.close().finally(() => process.exit(0));
+    // A store that fails to close is a failure of the stop: it is printed and the process ends with 1, never 0.
+    opened.close().then(() => process.exit(0), (error) => {
+      process.stderr.write(`[fsm-gui] closing the store failed: ${error instanceof Error ? error.message : String(error)}\n`);
+      process.exit(1);
+    });
   };
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);
