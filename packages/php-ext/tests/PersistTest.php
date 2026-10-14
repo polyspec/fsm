@@ -109,7 +109,7 @@ namespace Polyspec\FsmTest\Tests {
             }
             $outcomes = [];
             foreach ($children as $pid => $file) {
-                pcntl_waitpid($pid, $status);
+                pcntl_waitpid($pid, $waited);
                 $outcomes[] = json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
             }
             return $outcomes;
