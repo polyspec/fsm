@@ -50,24 +50,18 @@ PACKAGE_DEPS := $(NPM_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(R
 $(NPM_DEP): packages/js/package-lock.json
 	$(ONLINE) $(MAKE) -C packages/js install
 
-$(PHP_DEP): packages/php/composer.lock packages/php/composer.json config/composer-artifacts.txt
+$(PHP_DEP): packages/php/composer.lock packages/php/composer.json config/release-assets.json
 	$(ONLINE) $(MAKE) -C packages/php install
 	touch $@
 
-$(PHP_EXT_DEP): packages/php-ext/composer.lock packages/php-ext/composer.json config/composer-artifacts.txt
+$(PHP_EXT_DEP): packages/php-ext/composer.lock packages/php-ext/composer.json config/release-assets.json
 	$(ONLINE) $(MAKE) -C packages/php-ext install
 	touch $@
 
 # The polyspec packages of Composer (orm and ordered-json) are on no registry: their releases publish the zips that
-# config/composer-artifacts.txt names, one `<sha256> <url>` per line, and Composer reads them from an artifact repository, the
-# folder artifacts/ of each Composer package that its composer.json names. composer-artifacts downloads each zip into DIR and
-# checks its sha256 before Composer reads it; the install of each Composer package runs it, and composer.lock records the dist
-# of each zip with its shasum. kit K140 brings one tool for a pinned download; it replaces this recipe (S-44-8-1).
-.PHONY: composer-artifacts
-composer-artifacts:
-	@test -n "$(DIR)" || { echo "composer-artifacts: DIR=<folder> names the artifact repository"; exit 2; }
-	rm -rf $(DIR) && mkdir -p $(DIR)
-	while read -r sum url; do curl --fail --silent --show-error --location --output $(DIR)/$${url##*/} "$$url" && echo "$$sum  $(DIR)/$${url##*/}" | shasum -a 256 -c - || exit 1; done < config/composer-artifacts.txt
+# config/release-assets.json pins by version and sha256, and Composer reads them from var/composer-artifacts, the artifact
+# repository that the composer.json of packages/php and packages/php-ext names. The install of each Composer package runs
+# make release-assets-fetch of kit first (K140), and composer.lock records the dist of each zip with its shasum.
 
 $(PYTHON_BIN):
 	$(ONLINE) $(MAKE) install-tools

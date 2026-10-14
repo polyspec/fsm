@@ -17,7 +17,7 @@
     "repositories": [
         {
             "type": "artifact",
-            "url": "artifacts"
+            "url": "../../var/composer-artifacts"
         }
     ],
     "autoload-dev": {
