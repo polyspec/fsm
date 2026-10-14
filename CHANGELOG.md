@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-13: rustls is 0.23.46, which fixes RUSTSEC-2026-0346 to 0349, and playwright is 1.64.1.
 - S-44-12: the PHP files of fsm put a blank line after `<?php` (PSR-12), so the fsm-gen header of a generated PHP file is its third line.
 - S-44-11: the generated rust of a machine without edges passes clippy: `target` returns the error alone instead of a match of one wildcard arm.
 - S-44-9: every test of a kind is the test of a parity binding: the persist tests are four feature units bound in all six kinds (two transitions of one row at the same time, and the deadlock retry), the npm type check is the root tool test tests/npm-types, and the rust conformance target is tests/conformance/main.rs with its module vectors.rs.
