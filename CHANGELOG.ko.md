@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4e4a1ca3846a3ed9d2acc03f182a6b271d306f5b2d19cf05261f7634475952bb -->
+<!-- source-sha256: e35d25b20b1cc5ee8ccc4a77986edc3ec189c01003693cc94d9f4e101ae78fe7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-5: 폴더가 kit의 layout을 따른다. package는 packages/compiler, db, gui, go, js(npm kind), php, php-ext, python, rust이고, 저장소의 fsm 프로젝트(fsm.config.json, fsm.lock.json, machines/, schema/, conformance/vectors.json)는 contracts/이며, db store의 table은 packages/db/schema/fsm.dbs다. 루트 script와 도구 테스트는 TypeScript(.mts)다. Go module 경로는 github.com/polyspec/fsm/packages/go다(이전에는 github.com/polyspec/fsm-go).
 - S-44-8: 의존성이 최신 release다. 모든 kind에서 orm v0.0.14와 ordered-json v0.0.8을 쓰며 그 generator는 set 파일 `dbspec-set.json`을 읽는다. Composer는 `config/composer-artifacts.txt`가 sha256으로 고정한 `artifact` repository에서 orm과 ordered-json의 release zip을 받으며, 그 metadata를 복사한 Composer `package`는 사라졌다. python은 release wheel을 받는다. hyper v0.0.13, mysql2 3.24.6, mermaid 12.2.0, PHPUnit 13.4.2이다. npm 설치는 `--allow-remote=root`를 주고, package 테스트는 kit의 run-tests를 checkout root에서 실행하며, CI는 자기 Go를 설치하지 않는다.
 - S-44-7: 공유 도구는 kit 0.0.42다. mise.lock은 linux-arm64와 macos-x64의 tool도 pin하고, bootstrap이 `var/tools/go.mod`를 써서 mise의 Go가 별도 module이 된다.
 - S-44-6: 공유 도구는 kit 0.0.40이며, 그 mise가 `mise.toml`의 toolchain을 `mise.lock`의 digest로 설치한다. python package는 mise shim의 uv와 Python을 실행한다. checkout Python의 test가 다시 parse된다. S-44-4에서 따옴표가 그것을 깨뜨렸다.
