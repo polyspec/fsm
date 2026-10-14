@@ -1,5 +1,5 @@
-// Git in a checkout: `git` returns the output and throws when git does not end with status 0; `gitResult` returns the
-// outcome for a command whose status is an answer, such as `git rev-parse --verify --quiet`.
+// Git in a checkout: `git` returns the output and throws when git does not exit with status 0; `gitResult` returns the
+// outcome for a command whose exit status is an answer, such as `git rev-parse --verify --quiet`.
 import { spawnSync } from 'node:child_process';
 
 const MAX_BUFFER = 256 * 1024 * 1024;
