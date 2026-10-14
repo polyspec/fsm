@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 94cc2dd385cb2890fbbb7544be20c7483b57afeca0009ea23d3b0356976eaacb -->
+<!-- source-sha256: c86902b8e35fe8bc1a1733785eee04c5bfa7837b0e37e2fa4147a9064efafefb -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -145,7 +145,7 @@ fsm/
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
   packages/fsm-{go,npm,php,php-ext,python,rust}/
 ```
-- 외부 의존은 릴리스 태그로 고정한다: orm v0.0.14, ordered-json v0.0.8, hyper v0.0.11, template v0.0.5, crudui v0.0.5, mermaid(npm 정확 버전).
+- 외부 의존은 릴리스 태그로 고정한다: orm v0.0.14, ordered-json v0.0.8, hyper v0.0.13, template v0.0.5, crudui v0.0.5, mermaid(npm 정확 버전).
   - npm: release asset URL을 `dependencies`에 쓴다. 전이 `@polyspec/*`는 같은 URL로 `overrides`에 쓴다.
   - composer: orm과 ordered-json이 문서화한 대로(둘은 registry에 게시하지 않는다) 각 Composer package의 `artifacts/` 폴더인 `artifact` repository에 두는 두 release zip. `config/composer-artifacts.txt`가 각 zip을 sha256과 URL로 적고, `make install`이 zip을 받아 Composer가 읽기 전에 sha256을 확인하며, composer.lock은 그 dist를 shasum과 함께 기록한다. `config.platform.php` 8.5.0
   - go: `require github.com/polyspec/orm v0.0.14`
@@ -320,7 +320,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 
 ### C-7. GUI `packages/fsm-gui` (hyper Node 서버 + crudui + mermaid)
 - GUI는 단일 편집자 도구다. save는 전체 교체이고, 마지막 쓰기가 이긴다.
-- 빌드: `hyper-build-assets --app . --api /api --output build`(hyper v0.0.11은 `--app`·`--api`·`--output`을 요구한다)가 `templates.index.json`, `manifest.json`, `public/assets` 번들을 만든다(gui-test 전에 실행).
+- 빌드: `hyper-build-assets --app . --api /api --output build`(hyper v0.0.13은 `--app`·`--api`·`--output`을 요구한다)가 `templates.index.json`, `manifest.json`, `public/assets` 번들을 만든다(gui-test 전에 실행).
 - 실행: `fsm-gui [--project <dir>] [--port <n>]`, `packages/fsm-gui/package.json`의 `bin`. `make gui-build` 뒤 `npm install -g ./packages/fsm-gui`가 이를 PATH에 link한다. `tests/command.test.mjs`가 임시 npm prefix에 offline으로 설치하고 machine 목록을 요청한다(S-18-1).
   - store는 `fsm.config.json`을 따른다.
   - `App.open({manifest, templates: {index: build/templates.index.json, root: public}, handlers, timezone: 'UTC'})`, 경로는 절대 경로, `FileSessions`가 열기 전에 `var/sessions`를 만든다

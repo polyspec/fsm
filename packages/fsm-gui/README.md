@@ -23,8 +23,8 @@ make gui-build                      # installs the GUI's packages and builds bui
 npm install -g ./packages/fsm-gui   # puts the command fsm-gui on the PATH, linked to this clone
 ```
 
-`make gui-build` needs the network once, for the pinned packages (hyper v0.0.11, crudui v0.0.5, the template v0.0.5 and
-mermaid 12.1.0). Node.js 26.11.1 from `.node-version` runs the server. For a project whose store is the database, the orm
+`make gui-build` needs the network once, for the pinned packages (hyper v0.0.13, crudui v0.0.5, the template v0.0.5 and
+mermaid 12.2.0). Node.js 26.11.1 from `.node-version` runs the server. For a project whose store is the database, the orm
 packages of `packages/fsm-db` must be installed too: `make db-deps` (`make gui-build` runs it first).
 
 ## Running
@@ -166,5 +166,5 @@ with a browser DOM that Node does not have. The edit tests (`edit-machine`, `ren
 | `tests/browser/` | The browser test of the forms (`make gui-browser-test`) |
 
 The versions of the dependencies are pinned in `package.json` and `package-lock.json` and recorded in
-`config/dependency-policy.json`: hyper v0.0.11, crudui v0.0.5, the template v0.0.5 and mermaid, with the same release
+`config/dependency-policy.json`: hyper v0.0.13, crudui v0.0.5, the template v0.0.5 and mermaid, with the same release
 URLs in `overrides` for the `@polyspec/*` packages that they depend on.

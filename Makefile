@@ -192,12 +192,12 @@ db-deps: $(DB_DEP)
 db-test: $(DB_DEP)
 	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-db/schema --inputs packages/fsm-compiler --inputs packages/fsm-db/schema -- packages/fsm-db/tests
 
-# gui-deps installs the packages of packages/fsm-gui (hyper v0.0.11, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
+# gui-deps installs the packages of packages/fsm-gui (hyper v0.0.13, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
 # yaml, pinned in its package.json and package-lock.json; docs/plans/fsm-v1.md, C-1). The db store of the GUI is the one of
 # packages/fsm-db, whose orm packages db-deps installs first.
 gui-deps: $(GUI_DEP)
 
-# gui-build builds the browser assets of the GUI with the hyper v0.0.11 asset build: the templates, the client bundle that holds
+# gui-build builds the browser assets of the GUI with the hyper v0.0.13 asset build: the templates, the client bundle that holds
 # mermaid, build/templates.index.json and build/manifest.json (docs/plans/fsm-v1.md, C-7). gui-test runs it first. The crudui
 # stylesheet is copied into public/assets and given to the build with --static, which puts it in the static deployment (the way
 # hyper-build-assets takes the stylesheets that the layouts link); the layout links it as /assets/crudui.css (S-22-2).

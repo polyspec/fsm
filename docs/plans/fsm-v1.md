@@ -144,7 +144,7 @@ fsm/
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
   packages/fsm-{go,npm,php,php-ext,python,rust}/
 ```
-- External dependencies are pinned to release tags: orm v0.0.14, ordered-json v0.0.8, hyper v0.0.11, template v0.0.5, crudui v0.0.5, mermaid (exact npm version).
+- External dependencies are pinned to release tags: orm v0.0.14, ordered-json v0.0.8, hyper v0.0.13, template v0.0.5, crudui v0.0.5, mermaid (exact npm version).
   - npm: the release asset URL in `dependencies`; transitive `@polyspec/*` with the same URLs in `overrides`
   - composer: the release zips of orm and ordered-json in an `artifact` repository, the folder `artifacts/` of each Composer package, as orm and ordered-json document it (they publish to no registry): `config/composer-artifacts.txt` names each zip by its sha256 and URL, `make install` downloads it and checks the sha256 before Composer reads it, and composer.lock records its dist with its shasum; `config.platform.php` 8.5.0
   - go: `require github.com/polyspec/orm v0.0.14`
@@ -331,7 +331,7 @@ Vectors (exhaustive; the core generates the oracle):
 
 ### C-7. GUI `packages/fsm-gui` (hyper Node server + crudui + mermaid)
 - The GUI is a single-editor tool. save replaces everything; the last write wins.
-- Build: `hyper-build-assets --app . --api /api --output build` (hyper v0.0.11 requires `--app`, `--api` and `--output`) produces `templates.index.json`, `manifest.json` and the `public/assets` bundle (run before gui-test).
+- Build: `hyper-build-assets --app . --api /api --output build` (hyper v0.0.13 requires `--app`, `--api` and `--output`) produces `templates.index.json`, `manifest.json` and the `public/assets` bundle (run before gui-test).
 - Run: `fsm-gui [--project <dir>] [--port <n>]`, the `bin` of `packages/fsm-gui/package.json`. After `make gui-build`, `npm install -g ./packages/fsm-gui` links it onto the PATH; `tests/command.test.mjs` installs it offline into a temporary npm prefix and requests the machine list from it (S-18-1).
   - The store follows `fsm.config.json`.
   - `App.open({manifest, templates: {index: build/templates.index.json, root: public}, handlers, timezone: 'UTC'})` with absolute paths; `var/sessions` is created before `FileSessions` opens it
