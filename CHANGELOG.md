@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-8-1: `config/release-assets.json` pins the release zips of orm and ordered-json, and `make release-assets-fetch` of kit downloads them into var/composer-artifacts, the Composer artifact repository of packages/php and packages/php-ext; the `composer-artifacts` recipe and `config/composer-artifacts.txt` are removed.
 - S-44-16: the shared tools are kit 0.0.44: `make install-tools` installs the Rust toolchain of `rust-toolchain.toml`, so CI runs no rustup step of its own, ruff keeps its cache in var/ruff, and knip takes the entries of `config/knip-entries.json`.
 - S-44-14: the PHP of fsm passes phpcs: the generated ConformanceTest.php runs one method `testConformance` over the data provider `cases()`, one data set per case named `<feature>__<id>`, which parity runs by its symbol (kit K137), and the generated throws take one line per argument.
 - S-44-13: rustls is 0.23.46, which fixes RUSTSEC-2026-0346 to 0349, and playwright is 1.64.1.
