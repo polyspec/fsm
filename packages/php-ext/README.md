@@ -99,7 +99,7 @@ make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_P
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-The run passes 89 of 89 cases: `tests/ConformanceTest.php` (byte-identical to the php package's file) runs one PHPUnit test per vector case,
-named `test_<feature>__<id>`, against the built module, with the checks of `tests/ConformanceCase.php`. `make gen` runs after a build without `make clean`. The root
+The run passes 89 of 89 cases: `tests/ConformanceTest.php` (byte-identical to the php package's file) runs its one PHPUnit test `testConformance` on every vector case,
+a data set named `<feature>__<id>`, against the built module, with the checks of `tests/ConformanceCase.php`. `make gen` runs after a build without `make clean`. The root
 `make gen-check` checks that the generated files and the copies are current, and `make parity-php-ext` checks that every vector
 case ran once and passed.

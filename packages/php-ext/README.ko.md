@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: 25874b8fbbeb93888344c2ecac1b06183a29fa663206760cd347900bb2725bcb -->
+<!-- source-sha256: 8ac1fb39f327672341a07e425dba3e10cfa90799356fa158bc9482fd16040179 -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
@@ -96,6 +96,6 @@ make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_P
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `tests/ConformanceTest.php`(php 패키지 파일과 바이트가 같다)는 빌드된 module을 대상으로 vector case마다
-하나의 PHPUnit test를 `test_<feature>__<id>` 이름으로, `tests/ConformanceCase.php`의 검사로 실행한다. `make gen`은 `make clean` 없이 빌드 뒤에 실행한다. 루트의
+실행 결과는 89개 case 중 89개 통과다. `tests/ConformanceTest.php`(php 패키지 파일과 바이트가 같다)는 빌드된 module을 대상으로 PHPUnit test
+`testConformance` 하나를 vector case마다 이름이 `<feature>__<id>`인 data set으로, `tests/ConformanceCase.php`의 검사로 실행한다. `make gen`은 `make clean` 없이 빌드 뒤에 실행한다. 루트의
 `make gen-check`는 생성 파일과 복사본이 최신인지 검사하며, `make parity-php-ext`는 모든 vector case가 한 번씩 실행되어 통과했는지 검사한다.

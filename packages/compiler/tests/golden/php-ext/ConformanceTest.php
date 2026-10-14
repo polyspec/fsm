@@ -5,46 +5,41 @@ declare(strict_types=1);
 
 namespace Polyspec\FsmTest\Tests;
 
-/** The vector cases of every machine, one test per case under its case name (docs/plans/fsm-v1.md, C-4). */
+use PHPUnit\Framework\Attributes\DataProvider;
+
+/** The vector cases of every machine, one data set per case under its case name (docs/plans/fsm-v1.md, C-4). */
 final class ConformanceTest extends ConformanceCase
 {
-    public function test_initial__order_initial(): void
+    /**
+     * The machine and the case of every vector case, keyed by the case name.
+     *
+     * @return iterable<string, array{string, array<string, mixed>}>
+     */
+    public static function cases(): iterable
     {
-        $this->conformance('order', [
+        yield 'initial__order_initial' => ['order', [
             'feature' => 'initial',
             'id' => 'order_initial',
             'name' => 'initial__order_initial',
             'expect' => [
                 'state' => 'draft',
             ],
-        ]);
-    }
-
-    public function test_code__order_code_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'code__order_code_s0' => ['order', [
             'feature' => 'code',
             'id' => 'order_code_s0',
             'name' => 'code__order_code_s0',
             'state' => 'draft',
             'expect' => 1,
-        ]);
-    }
-
-    public function test_key__order_key_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'key__order_key_s0' => ['order', [
             'feature' => 'key',
             'id' => 'order_key_s0',
             'name' => 'key__order_key_s0',
             'code' => 1,
             'expect' => 'draft',
-        ]);
-    }
-
-    public function test_from_code__order_from_code_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_s0' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_s0',
             'name' => 'from_code__order_from_code_s0',
@@ -52,23 +47,15 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'draft',
             ],
-        ]);
-    }
-
-    public function test_is_final__order_is_final_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'is_final__order_is_final_s0' => ['order', [
             'feature' => 'is_final',
             'id' => 'order_is_final_s0',
             'name' => 'is_final__order_is_final_s0',
             'state' => 'draft',
             'expect' => false,
-        ]);
-    }
-
-    public function test_events_from__order_events_from_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'events_from__order_events_from_s0' => ['order', [
             'feature' => 'events_from',
             'id' => 'order_events_from_s0',
             'name' => 'events_from__order_events_from_s0',
@@ -77,34 +64,22 @@ final class ConformanceTest extends ConformanceCase
                 'next',
                 'cancel',
             ],
-        ]);
-    }
-
-    public function test_code__order_code_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'code__order_code_s1' => ['order', [
             'feature' => 'code',
             'id' => 'order_code_s1',
             'name' => 'code__order_code_s1',
             'state' => 'paid',
             'expect' => 2,
-        ]);
-    }
-
-    public function test_key__order_key_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'key__order_key_s1' => ['order', [
             'feature' => 'key',
             'id' => 'order_key_s1',
             'name' => 'key__order_key_s1',
             'code' => 2,
             'expect' => 'paid',
-        ]);
-    }
-
-    public function test_from_code__order_from_code_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_s1' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_s1',
             'name' => 'from_code__order_from_code_s1',
@@ -112,23 +87,15 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'paid',
             ],
-        ]);
-    }
-
-    public function test_is_final__order_is_final_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'is_final__order_is_final_s1' => ['order', [
             'feature' => 'is_final',
             'id' => 'order_is_final_s1',
             'name' => 'is_final__order_is_final_s1',
             'state' => 'paid',
             'expect' => false,
-        ]);
-    }
-
-    public function test_events_from__order_events_from_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'events_from__order_events_from_s1' => ['order', [
             'feature' => 'events_from',
             'id' => 'order_events_from_s1',
             'name' => 'events_from__order_events_from_s1',
@@ -138,34 +105,22 @@ final class ConformanceTest extends ConformanceCase
                 'prev',
                 'cancel',
             ],
-        ]);
-    }
-
-    public function test_code__order_code_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'code__order_code_s2' => ['order', [
             'feature' => 'code',
             'id' => 'order_code_s2',
             'name' => 'code__order_code_s2',
             'state' => 'shipped',
             'expect' => 3,
-        ]);
-    }
-
-    public function test_key__order_key_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'key__order_key_s2' => ['order', [
             'feature' => 'key',
             'id' => 'order_key_s2',
             'name' => 'key__order_key_s2',
             'code' => 3,
             'expect' => 'shipped',
-        ]);
-    }
-
-    public function test_from_code__order_from_code_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_s2' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_s2',
             'name' => 'from_code__order_from_code_s2',
@@ -173,23 +128,15 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'shipped',
             ],
-        ]);
-    }
-
-    public function test_is_final__order_is_final_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'is_final__order_is_final_s2' => ['order', [
             'feature' => 'is_final',
             'id' => 'order_is_final_s2',
             'name' => 'is_final__order_is_final_s2',
             'state' => 'shipped',
             'expect' => false,
-        ]);
-    }
-
-    public function test_events_from__order_events_from_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'events_from__order_events_from_s2' => ['order', [
             'feature' => 'events_from',
             'id' => 'order_events_from_s2',
             'name' => 'events_from__order_events_from_s2',
@@ -198,34 +145,22 @@ final class ConformanceTest extends ConformanceCase
                 'next',
                 'prev',
             ],
-        ]);
-    }
-
-    public function test_code__order_code_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'code__order_code_s3' => ['order', [
             'feature' => 'code',
             'id' => 'order_code_s3',
             'name' => 'code__order_code_s3',
             'state' => 'done',
             'expect' => 4,
-        ]);
-    }
-
-    public function test_key__order_key_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'key__order_key_s3' => ['order', [
             'feature' => 'key',
             'id' => 'order_key_s3',
             'name' => 'key__order_key_s3',
             'code' => 4,
             'expect' => 'done',
-        ]);
-    }
-
-    public function test_from_code__order_from_code_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_s3' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_s3',
             'name' => 'from_code__order_from_code_s3',
@@ -233,56 +168,36 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'done',
             ],
-        ]);
-    }
-
-    public function test_is_final__order_is_final_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'is_final__order_is_final_s3' => ['order', [
             'feature' => 'is_final',
             'id' => 'order_is_final_s3',
             'name' => 'is_final__order_is_final_s3',
             'state' => 'done',
             'expect' => true,
-        ]);
-    }
-
-    public function test_events_from__order_events_from_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'events_from__order_events_from_s3' => ['order', [
             'feature' => 'events_from',
             'id' => 'order_events_from_s3',
             'name' => 'events_from__order_events_from_s3',
             'state' => 'done',
             'expect' => [],
-        ]);
-    }
-
-    public function test_code__order_code_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'code__order_code_s4' => ['order', [
             'feature' => 'code',
             'id' => 'order_code_s4',
             'name' => 'code__order_code_s4',
             'state' => 'canceled',
             'expect' => 5,
-        ]);
-    }
-
-    public function test_key__order_key_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'key__order_key_s4' => ['order', [
             'feature' => 'key',
             'id' => 'order_key_s4',
             'name' => 'key__order_key_s4',
             'code' => 5,
             'expect' => 'canceled',
-        ]);
-    }
-
-    public function test_from_code__order_from_code_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_s4' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_s4',
             'name' => 'from_code__order_from_code_s4',
@@ -290,34 +205,22 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'canceled',
             ],
-        ]);
-    }
-
-    public function test_is_final__order_is_final_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'is_final__order_is_final_s4' => ['order', [
             'feature' => 'is_final',
             'id' => 'order_is_final_s4',
             'name' => 'is_final__order_is_final_s4',
             'state' => 'canceled',
             'expect' => true,
-        ]);
-    }
-
-    public function test_events_from__order_events_from_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'events_from__order_events_from_s4' => ['order', [
             'feature' => 'events_from',
             'id' => 'order_events_from_s4',
             'name' => 'events_from__order_events_from_s4',
             'state' => 'canceled',
             'expect' => [],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_zero(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_zero' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_zero',
             'name' => 'from_code__order_from_code_zero',
@@ -328,12 +231,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_unknown(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_unknown' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_unknown',
             'name' => 'from_code__order_from_code_unknown',
@@ -344,12 +243,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_negative(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_negative' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_negative',
             'name' => 'from_code__order_from_code_negative',
@@ -360,12 +255,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_int32_overflow(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_int32_overflow' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_int32_overflow',
             'name' => 'from_code__order_from_code_int32_overflow',
@@ -376,12 +267,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_int64_max(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_int64_max' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_int64_max',
             'name' => 'from_code__order_from_code_int64_max',
@@ -392,12 +279,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_string(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_string' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_string',
             'name' => 'from_code__order_from_code_string',
@@ -408,12 +291,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_bool(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_bool' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_bool',
             'name' => 'from_code__order_from_code_bool',
@@ -424,12 +303,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_float(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_float' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_float',
             'name' => 'from_code__order_from_code_float',
@@ -440,12 +315,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_from_code__order_from_code_fraction(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'from_code__order_from_code_fraction' => ['order', [
             'feature' => 'from_code',
             'id' => 'order_from_code_fraction',
             'name' => 'from_code__order_from_code_fraction',
@@ -456,12 +327,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => null,
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s0_e0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s0_e0' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s0_e0',
             'name' => 'target__order_target_s0_e0',
@@ -470,12 +337,8 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'paid',
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s0_e1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s0_e1' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s0_e1',
             'name' => 'target__order_target_s0_e1',
@@ -487,12 +350,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s0_e2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s0_e2' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s0_e2',
             'name' => 'target__order_target_s0_e2',
@@ -501,12 +360,8 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'canceled',
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s1_e0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s1_e0' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s1_e0',
             'name' => 'target__order_target_s1_e0',
@@ -515,12 +370,8 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'shipped',
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s1_e1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s1_e1' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s1_e1',
             'name' => 'target__order_target_s1_e1',
@@ -529,12 +380,8 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'draft',
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s1_e2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s1_e2' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s1_e2',
             'name' => 'target__order_target_s1_e2',
@@ -543,12 +390,8 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'canceled',
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s2_e0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s2_e0' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s2_e0',
             'name' => 'target__order_target_s2_e0',
@@ -557,12 +400,8 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'done',
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s2_e1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s2_e1' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s2_e1',
             'name' => 'target__order_target_s2_e1',
@@ -571,12 +410,8 @@ final class ConformanceTest extends ConformanceCase
             'expect' => [
                 'state' => 'paid',
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s2_e2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s2_e2' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s2_e2',
             'name' => 'target__order_target_s2_e2',
@@ -588,12 +423,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s3_e0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s3_e0' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s3_e0',
             'name' => 'target__order_target_s3_e0',
@@ -605,12 +436,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s3_e1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s3_e1' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s3_e1',
             'name' => 'target__order_target_s3_e1',
@@ -622,12 +449,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s3_e2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s3_e2' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s3_e2',
             'name' => 'target__order_target_s3_e2',
@@ -639,12 +462,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s4_e0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s4_e0' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s4_e0',
             'name' => 'target__order_target_s4_e0',
@@ -656,12 +475,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s4_e1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s4_e1' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s4_e1',
             'name' => 'target__order_target_s4_e1',
@@ -673,12 +488,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_target__order_target_s4_e2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'target__order_target_s4_e2' => ['order', [
             'feature' => 'target',
             'id' => 'order_target_s4_e2',
             'name' => 'target__order_target_s4_e2',
@@ -690,12 +501,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e0_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e0_s0' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e0_s0',
             'name' => 'apply__order_apply_s0_e0_s0',
@@ -706,12 +513,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'paid',
                 'changed' => true,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e0_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e0_s1' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e0_s1',
             'name' => 'apply__order_apply_s0_e0_s1',
@@ -722,12 +525,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'paid',
                 'changed' => false,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e0_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e0_s2' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e0_s2',
             'name' => 'apply__order_apply_s0_e0_s2',
@@ -740,12 +539,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 3,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e0_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e0_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e0_s3',
             'name' => 'apply__order_apply_s0_e0_s3',
@@ -758,12 +553,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 4,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e0_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e0_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e0_s4',
             'name' => 'apply__order_apply_s0_e0_s4',
@@ -776,12 +567,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 5,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e2_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e2_s0' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e2_s0',
             'name' => 'apply__order_apply_s0_e2_s0',
@@ -792,12 +579,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'canceled',
                 'changed' => true,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e2_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e2_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e2_s4',
             'name' => 'apply__order_apply_s0_e2_s4',
@@ -808,12 +591,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'canceled',
                 'changed' => false,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e2_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e2_s1' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e2_s1',
             'name' => 'apply__order_apply_s0_e2_s1',
@@ -826,12 +605,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 2,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e2_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e2_s2' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e2_s2',
             'name' => 'apply__order_apply_s0_e2_s2',
@@ -844,12 +619,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 3,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e2_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e2_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e2_s3',
             'name' => 'apply__order_apply_s0_e2_s3',
@@ -862,12 +633,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 4,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e0_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e0_s1' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e0_s1',
             'name' => 'apply__order_apply_s1_e0_s1',
@@ -878,12 +645,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'shipped',
                 'changed' => true,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e0_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e0_s2' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e0_s2',
             'name' => 'apply__order_apply_s1_e0_s2',
@@ -894,12 +657,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'shipped',
                 'changed' => false,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e0_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e0_s0' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e0_s0',
             'name' => 'apply__order_apply_s1_e0_s0',
@@ -912,12 +671,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 1,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e0_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e0_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e0_s3',
             'name' => 'apply__order_apply_s1_e0_s3',
@@ -930,12 +685,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 4,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e0_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e0_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e0_s4',
             'name' => 'apply__order_apply_s1_e0_s4',
@@ -948,12 +699,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 5,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e1_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e1_s1' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e1_s1',
             'name' => 'apply__order_apply_s1_e1_s1',
@@ -964,12 +711,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'draft',
                 'changed' => true,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e1_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e1_s0' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e1_s0',
             'name' => 'apply__order_apply_s1_e1_s0',
@@ -980,12 +723,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'draft',
                 'changed' => false,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e1_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e1_s2' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e1_s2',
             'name' => 'apply__order_apply_s1_e1_s2',
@@ -998,12 +737,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 3,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e1_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e1_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e1_s3',
             'name' => 'apply__order_apply_s1_e1_s3',
@@ -1016,12 +751,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 4,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e1_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e1_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e1_s4',
             'name' => 'apply__order_apply_s1_e1_s4',
@@ -1034,12 +765,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 5,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e2_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e2_s1' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e2_s1',
             'name' => 'apply__order_apply_s1_e2_s1',
@@ -1050,12 +777,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'canceled',
                 'changed' => true,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e2_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e2_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e2_s4',
             'name' => 'apply__order_apply_s1_e2_s4',
@@ -1066,12 +789,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'canceled',
                 'changed' => false,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e2_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e2_s0' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e2_s0',
             'name' => 'apply__order_apply_s1_e2_s0',
@@ -1084,12 +803,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 1,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e2_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e2_s2' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e2_s2',
             'name' => 'apply__order_apply_s1_e2_s2',
@@ -1102,12 +817,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 3,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s1_e2_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s1_e2_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s1_e2_s3',
             'name' => 'apply__order_apply_s1_e2_s3',
@@ -1120,12 +831,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 4,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e0_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e0_s2' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e0_s2',
             'name' => 'apply__order_apply_s2_e0_s2',
@@ -1136,12 +843,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'done',
                 'changed' => true,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e0_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e0_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e0_s3',
             'name' => 'apply__order_apply_s2_e0_s3',
@@ -1152,12 +855,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'done',
                 'changed' => false,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e0_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e0_s0' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e0_s0',
             'name' => 'apply__order_apply_s2_e0_s0',
@@ -1170,12 +869,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 1,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e0_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e0_s1' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e0_s1',
             'name' => 'apply__order_apply_s2_e0_s1',
@@ -1188,12 +883,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 2,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e0_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e0_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e0_s4',
             'name' => 'apply__order_apply_s2_e0_s4',
@@ -1206,12 +897,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 5,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e1_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e1_s2' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e1_s2',
             'name' => 'apply__order_apply_s2_e1_s2',
@@ -1222,12 +909,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'paid',
                 'changed' => true,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e1_s1(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e1_s1' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e1_s1',
             'name' => 'apply__order_apply_s2_e1_s1',
@@ -1238,12 +921,8 @@ final class ConformanceTest extends ConformanceCase
                 'to' => 'paid',
                 'changed' => false,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e1_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e1_s0' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e1_s0',
             'name' => 'apply__order_apply_s2_e1_s0',
@@ -1256,12 +935,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 1,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e1_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e1_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e1_s3',
             'name' => 'apply__order_apply_s2_e1_s3',
@@ -1274,12 +949,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 4,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e1_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e1_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e1_s4',
             'name' => 'apply__order_apply_s2_e1_s4',
@@ -1292,12 +963,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => 5,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s0_e1_s0(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s0_e1_s0' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s0_e1_s0',
             'name' => 'apply__order_apply_s0_e1_s0',
@@ -1310,12 +977,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s2_e2_s2(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s2_e2_s2' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s2_e2_s2',
             'name' => 'apply__order_apply_s2_e2_s2',
@@ -1328,12 +991,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s3_e0_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s3_e0_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s3_e0_s3',
             'name' => 'apply__order_apply_s3_e0_s3',
@@ -1346,12 +1005,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s3_e1_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s3_e1_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s3_e1_s3',
             'name' => 'apply__order_apply_s3_e1_s3',
@@ -1364,12 +1019,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s3_e2_s3(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s3_e2_s3' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s3_e2_s3',
             'name' => 'apply__order_apply_s3_e2_s3',
@@ -1382,12 +1033,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s4_e0_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s4_e0_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s4_e0_s4',
             'name' => 'apply__order_apply_s4_e0_s4',
@@ -1400,12 +1047,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 1,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s4_e1_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s4_e1_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s4_e1_s4',
             'name' => 'apply__order_apply_s4_e1_s4',
@@ -1418,12 +1061,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 2,
             ],
-        ]);
-    }
-
-    public function test_apply__order_apply_s4_e2_s4(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'apply__order_apply_s4_e2_s4' => ['order', [
             'feature' => 'apply',
             'id' => 'order_apply_s4_e2_s4',
             'name' => 'apply__order_apply_s4_e2_s4',
@@ -1436,12 +1075,8 @@ final class ConformanceTest extends ConformanceCase
                 'actual' => null,
                 'event' => 3,
             ],
-        ]);
-    }
-
-    public function test_persist__order_persist_first(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'persist__order_persist_first' => ['order', [
             'feature' => 'persist',
             'id' => 'order_persist_first',
             'name' => 'persist__order_persist_first',
@@ -1453,12 +1088,8 @@ final class ConformanceTest extends ConformanceCase
                 'stored_after' => 'paid',
                 'changed' => true,
             ],
-        ]);
-    }
-
-    public function test_persist__order_persist_retry(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'persist__order_persist_retry' => ['order', [
             'feature' => 'persist',
             'id' => 'order_persist_retry',
             'name' => 'persist__order_persist_retry',
@@ -1470,12 +1101,8 @@ final class ConformanceTest extends ConformanceCase
                 'stored_after' => 'paid',
                 'changed' => false,
             ],
-        ]);
-    }
-
-    public function test_persist__order_persist_conflict(): void
-    {
-        $this->conformance('order', [
+        ]];
+        yield 'persist__order_persist_conflict' => ['order', [
             'feature' => 'persist',
             'id' => 'order_persist_conflict',
             'name' => 'persist__order_persist_conflict',
@@ -1490,6 +1117,17 @@ final class ConformanceTest extends ConformanceCase
                 'event' => 1,
                 'stored_after' => 'shipped',
             ],
-        ]);
+        ]];
+    }
+
+    /**
+     * Runs one vector case of a machine through the checks of ConformanceCase.
+     *
+     * @param array<string, mixed> $case
+     */
+    #[DataProvider('cases')]
+    public function testConformance(string $machine, array $case): void
+    {
+        $this->conformance($machine, $case);
     }
 }

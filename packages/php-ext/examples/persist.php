@@ -1,14 +1,15 @@
 <?php
 
-// The B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite, PostgreSQL and MySQL (docs/plans/fsm-v1.md,
-// C-2 and C-6; the DSN selects the dialect). A row keeps the status code. A transition runs in one transaction: the row is read under its lock (forUpdate), the event is applied
-// to the state that the caller observed, and the row is updated only when the state changed. The caller passes the same observed
-// state on a retry, so a retry is Unchanged and a stale request is E_CONFLICT.
+// The B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite, PostgreSQL and MySQL
+// (docs/plans/fsm-v1.md, C-2 and C-6; the DSN selects the dialect). A row keeps the status code. A transition runs in
+// one transaction: the row is read under its lock (forUpdate), the event is applied to the state that the caller
+// observed, and the row is updated only when the state changed. The caller passes the same observed state on a retry,
+// so a retry is Unchanged and a stale request is E_CONFLICT.
 //
 // The machine is a namespace of functions, so a transition takes the namespace of the machine module (such as
-// Polyspec\FsmTest\Order) and calls its apply, fromCode and code functions by name. The model is generated from the root
-// contracts/schema/persist.dbs into ./model; its bootstrap is loaded when a database is opened, not when this file is autoloaded,
-// because `make gen` runs orm-gen after composer install.
+// Polyspec\FsmTest\Order) and calls its apply, fromCode and code functions by name. The model is generated from the
+// root contracts/schema/persist.dbs into ./model; its bootstrap is loaded when a database is opened, not when this file
+// is autoloaded, because `make gen` runs orm-gen after composer install.
 declare(strict_types=1);
 
 namespace Polyspec\FsmTest\Examples;
@@ -39,9 +40,9 @@ function statusOf(Db $db, int $id): int
 }
 
 /**
- * One attempt of the transition $event from the observed state $expected on the row $id, with the functions of the machine
- * module $module. It returns the Step of apply. An error of apply (E_CONFLICT, E_INVALID_TRANSITION or E_UNKNOWN_CODE) is thrown,
- * and the transaction rolls back, so the stored state stays as it was.
+ * One attempt of the transition $event from the observed state $expected on the row $id, with the functions of the
+ * machine module $module. It returns the Step of apply. An error of apply (E_CONFLICT, E_INVALID_TRANSITION or
+ * E_UNKNOWN_CODE) is thrown, and the transaction rolls back, so the stored state stays as it was.
  */
 function transition(Db $db, string $module, int $id, \UnitEnum $expected, \UnitEnum $event): object
 {

@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: feb96e1541d897a38247a31882c26b84cabd89ccc7c58509ff37adedbf775401 -->
+<!-- source-sha256: b7243206adf33e87bcd08348c71b42f3014bc44e613aaade527119e5ad52aa01 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -194,7 +194,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 - kit `test-progress.mjs`의 `close()`가 쓰는 counts에 `cases: [{id, status, elapsedMs}]`를 더한다.
 - `run-tests --results <file>`이면 `{tool, inputs, elapsedMs}`를 붙여 임시파일+rename으로 한 번 쓴다.
 - `inputs` = kit `inputsDigest(root, paths)`. `paths`(패키지 디렉터리와 `contracts/schema/persist.dbs`) 아래의 추적 파일과 무시되지 않은 신규 파일의 경로·sha256으로 만든다.
-- 케이스 이름은 `<featureId>__<vectorId>`이며 contracts/conformance/vectors.json에서 case의 `name`이다. go는 subtest `TestConformance/<name>`, npm은 node:test test `<name>`, rust는 `vectors::<name>`, php와 python은 method `test_<name>`으로 실행한다. kit의 parity 검사(K33, `config/parity.json`, S-42-1)가 이 이름을 읽는다.
+- 케이스 이름은 `<featureId>__<vectorId>`이며 contracts/conformance/vectors.json에서 case의 `name`이다. go는 subtest `TestConformance/<name>`, npm은 node:test test `<name>`, rust는 `vectors::<name>`, php는 ConformanceTest의 method `testConformance` 하나의 data set `<name>`(K137, PSR-1은 밑줄이 든 method 이름을 거부한다), python은 method `test_<name>`으로 실행한다. kit의 parity 검사(K33, `config/parity.json`, S-42-1)가 이 이름을 읽는다.
   - 두 id는 `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`이며 `__`를 포함하지 않는다.
   - vectorId는 `<machine>_`로 시작한다.
   - 언어 테스트 이름에 이 이름을 그대로 쓴다.
