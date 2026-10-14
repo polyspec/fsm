@@ -18,7 +18,7 @@ export const RAW_STATE_KINDS = Object.freeze(['go', 'npm', 'python']);
  * (any object). A typed input of from_code is given to these kinds only; go, rust and npm cannot hold it (npm's number holds 2.0 as
  * the int 2, and no npm value is a string or a bool, so only the non-integer fraction is given to npm too).
  */
-export const TYPED_KINDS = Object.freeze(['php', 'php-ext', 'python']);
+const TYPED_KINDS = Object.freeze(['php', 'php-ext', 'python']);
 
 /**
  * The cases of `vectorList` (the list of { machine, cases } of vectors) that the kind `kind` runs: a case without a `kinds` list is
@@ -30,7 +30,7 @@ export function forKind(vectorList, kind) {
     machine,
     cases: cases
       .filter(entry => entry.kinds === undefined || entry.kinds.includes(kind))
-      .map(({ kinds, ...entry }) => entry),
+      .map(entry => Object.fromEntries(Object.entries(entry).filter(([key]) => key !== 'kinds'))),
   }));
 }
 

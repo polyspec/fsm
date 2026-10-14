@@ -81,7 +81,7 @@ export const ORDER_STATES = [
   { code: 5, key: 'canceled', persisted: true, final: true },
 ].map(state => ({ ...state, rk: rowKey(state.code) }));
 
-export const ORDER_EVENTS = [
+const ORDER_EVENTS = [
   { key: 'next', edges: [{ from: 'draft', to: 'paid' }, { from: 'paid', to: 'shipped' }, { from: 'shipped', to: 'done' }] },
   { key: 'prev', edges: [{ from: 'paid', to: 'draft' }, { from: 'shipped', to: 'paid' }] },
   { key: 'cancel', edges: [{ from: 'draft', to: 'canceled' }, { from: 'paid', to: 'canceled' }] },

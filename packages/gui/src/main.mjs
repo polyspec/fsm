@@ -55,7 +55,7 @@ async function main(argv) {
   const server = app.server(new FileSessions({ directory: sessions }), { files: path.join(GUI, 'public') });
   const stop = () => {
     server.close();
-    opened.close().finally(() => process.exit(0));
+    void opened.close().finally(() => process.exit(0));
   };
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);

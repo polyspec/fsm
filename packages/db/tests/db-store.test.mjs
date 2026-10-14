@@ -41,9 +41,9 @@ async function freshDb() {
 
 /** The text of every row of every table, one line per row in sorted order: the bytes that the store holds. */
 async function tablesOf(db) {
-  const tables = [['machine', Machine], ['state', State], ['event', Event], ['edge', Edge], ['lock_code', LockCode], ['lock_reserved', LockReserved]];
+  const tables = { machine: Machine, state: State, event: Event, edge: Edge, lock_code: LockCode, lock_reserved: LockReserved };
   const parts = [];
-  for (const [name, model] of tables) {
+  for (const [name, model] of Object.entries(tables)) {
     const rows = (await new model().connect(db).gets()).toArray().map(row => JSON.stringify(row)).sort();
     parts.push(`${name}\n${rows.join('\n')}`);
   }

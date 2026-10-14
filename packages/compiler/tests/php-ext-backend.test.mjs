@@ -20,7 +20,6 @@ import { jsonStore } from '../src/store-json/store.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, '../../..');
 const GOLDEN = path.join(HERE, 'golden/php-ext');
 const GOLDEN_PHP = path.join(HERE, 'golden/php');
 const NAMESPACE = 'Polyspec\\FsmTest';

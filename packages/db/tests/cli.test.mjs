@@ -8,6 +8,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'n
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { after } from 'node:test';
+import { stripVTControlCharacters } from 'node:util';
 import { jsonStore } from '../../compiler/src/store-json/store.mjs';
 import { mermaidStore } from '../../compiler/src/store-mermaid/store.mjs';
 import { dbStore } from '../src/db-store.mjs';
@@ -55,7 +56,7 @@ function cli(args, { dir, dsn }, env = { FSM_DSN: dsn }) {
   const result = spawnSync(process.execPath, [CLI, ...args, '--project', dir], {
     encoding: 'utf8', env: { PATH: process.env.PATH, ...env },
   });
-  return { status: result.status, stdout: result.stdout, stderr: result.stderr.replace(/\x1b\[[0-9;]*m/g, '') };
+  return { status: result.status, stdout: result.stdout, stderr: stripVTControlCharacters(result.stderr) };
 }
 
 /** A canonical JSON checkout with one machine, written by the JSON store, and its root. */

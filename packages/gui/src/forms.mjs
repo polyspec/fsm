@@ -74,7 +74,7 @@ export function nextCodeErrors(next) {
  * (`formErrors` are the texts of the whole form, `errors` the { path, message } of its nodes; form-runtime.md, "Complete form").
  * The server renders the form with these options and the browser re-renders it with the same ones, so both write one markup.
  */
-export function editRenderOptions(machine, { csrf, formErrors = [], errors = [] }) {
+function editRenderOptions(machine, { csrf, formErrors = [], errors = [] }) {
   return {
     action: { method: 'post', url: `/machines/${machine}/edit` },
     hidden: { _csrf: csrf },

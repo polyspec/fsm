@@ -12,7 +12,7 @@ import { git, gitResult } from '../io/git.mjs';
 import { canonicalLock } from '../core/lock.mjs';
 
 /** The name of the lock file under the root directory. */
-export const LOCK_FILE = 'fsm.lock.json';
+const LOCK_FILE = 'fsm.lock.json';
 
 const finding = (code, machine, path, message) => ({ code, machine, path, message });
 const isObject = value => typeof value === 'object' && value !== null && !Array.isArray(value);

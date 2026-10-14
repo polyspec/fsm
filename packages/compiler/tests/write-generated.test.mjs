@@ -12,7 +12,6 @@ import { fileURLToPath } from 'node:url';
 import { ORDER_PROJECT } from './order-project.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, '../../..');
 const CLI = path.resolve(HERE, '../src/cli/fsm-gen.mjs');
 const GOLDEN = path.join(HERE, 'golden/npm');
 const roots = [];

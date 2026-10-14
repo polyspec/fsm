@@ -31,7 +31,7 @@ for (const kind of KINDS) {
     const { definitions, lock } = await project.store.load();
     assert.deepEqual(definitions.find(definition => definition.machine === 'order').states.map(state => state.key), ['draft', 'paid', 'shipped', 'done']);
     assert.equal(Object.hasOwn(lock.order.codes, '5'), false);
-    assert.deepEqual(Object.values(lock.order.codes).sort(), ['done', 'draft', 'paid', 'shipped']);
+    assert.deepEqual(Object.values(lock.order.codes).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)), ['done', 'draft', 'paid', 'shipped']);
     assert.deepEqual(lock.order.reserved, [5]);
     if (kind !== 'db') {
       const check = spawnSync(process.execPath, [FSM_GEN, 'check', '--project', project.root], { encoding: 'utf8' });

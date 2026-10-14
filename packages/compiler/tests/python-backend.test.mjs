@@ -17,7 +17,6 @@ import { jsonStore } from '../src/store-json/store.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, '../../..');
 const CLI = path.resolve(HERE, '../src/cli/fsm-gen.mjs');
 const GOLDEN = path.join(HERE, 'golden/python');
 const NAMES = ['order.py', 'fsm.py', '__init__.py'];

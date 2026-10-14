@@ -158,7 +158,7 @@ export function nextLock(definitions, lock, { renames = [] } = {}) {
         entry.codes.set(state.code, state.key);
       }
     });
-    for (const code of [...entry.codes.keys()]) {
+    for (const code of entry.codes.keys()) {
       if (!current.has(code)) {
         entry.codes.delete(code);
         entry.reserved.add(code);
