@@ -1,17 +1,18 @@
-// The conformance tests of the rust package (docs/plans/fsm-v1.md, C-4). tests/vectors.rs is generated from the core oracle: one
-// #[test] per vector case, named test_<feature>__<id>, which calls the check functions below with the values of its case. The
-// persist cases run the B-4 transaction through examples/persist.rs on the dialect of FSM_TEST_DIALECT (sqlite by default;
-// docs/plans/fsm-v1.md, C-6). The names follow docs/spec/fsm.md, B-6.
+// The conformance tests of the rust package (docs/plans/fsm-v1.md, C-4), the crate root of the test target conformance.
+// tests/conformance/vectors.rs, its module, is generated from the core oracle: one #[test] per vector case, named
+// test_<feature>__<id>, which calls the check functions below with the values of its case. The persist cases run the B-4
+// transaction through examples/persist.rs on the dialect of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1.md, C-6). The
+// names follow docs/spec/fsm.md, B-6.
 
-#[path = "../examples/persist.rs"]
+#[path = "../common/mod.rs"]
+mod common;
+#[path = "../../examples/persist.rs"]
 mod persist;
 mod vectors;
 
 use fsm_rust::fsm::{Code, Error};
+use common::{persist_dsn, scratch_directory, server_cases};
 use std::fmt::Debug;
-use std::path::PathBuf;
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Mutex, MutexGuard};
 
 /// Asserts that a value of a feature is the expected value (initial, code, is_final).
 pub fn check_value<T: PartialEq + Debug>(actual: T, expect: T) {
@@ -49,51 +50,6 @@ pub fn check_result<T: PartialEq + Debug>(actual: Result<T, Error>, expect: Resu
     }
 }
 
-/// Removes the directory of a persist case when the case ends, also when it panics.
-struct Scratch(PathBuf);
-
-impl Drop for Scratch {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.0);
-    }
-}
-
-/// A directory of this run that no other persist case uses.
-fn scratch_directory() -> Scratch {
-    static NEXT: AtomicU64 = AtomicU64::new(0);
-    let nanos = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .expect("the clock is after 1970")
-        .as_nanos();
-    let dir = std::env::temp_dir().join(format!(
-        "fsm-rust-persist-{}-{nanos}-{}",
-        std::process::id(),
-        NEXT.fetch_add(1, Ordering::Relaxed)
-    ));
-    std::fs::create_dir_all(&dir).expect("create the directory of the persist case");
-    Scratch(dir)
-}
-
-/// The database of the persist cases (docs/plans/fsm-v1.md, C-6): FSM_TEST_DIALECT names the dialect, sqlite by default. sqlite is a new
-/// file of the case's scratch directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN, and a missing
-/// DSN fails the case, so no dialect is skipped. The DSN of the dialect is returned with its name.
-fn persist_dsn(scratch: &Scratch) -> (String, String) {
-    let dialect = std::env::var("FSM_TEST_DIALECT").unwrap_or_else(|_| "sqlite".to_string());
-    let variable = match dialect.as_str() {
-        "sqlite" => return (dialect, format!("sqlite://{}/persist.db", scratch.0.display())),
-        "postgres" => "FSM_TEST_PG_DSN",
-        "mysql" => "FSM_TEST_MYSQL_DSN",
-        other => panic!("FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is {other:?}"),
-    };
-    match std::env::var(variable) {
-        Ok(dsn) if !dsn.is_empty() => (dialect, dsn),
-        _ => panic!("{variable} is not set: the {dialect} persist cases need a database DSN and never skip"),
-    }
-}
-
-/// Serializes the persist cases of a server dialect: they share one table, and each case clears it before it seeds its row.
-static SERVER_CASES: Mutex<()> = Mutex::new(());
-
 /// Asserts one persist case (docs/spec/fsm.md, B-4). The row starts with the code `stored`; one transition runs with `decide`,
 /// the machine's step on the stored code; its outcome is `expect` (the code of the target and whether it changed, or the error
 /// code); and the row then holds the code `stored_after`.
@@ -105,11 +61,7 @@ pub async fn check_persist(
 ) {
     let scratch = scratch_directory();
     let (dialect, dsn) = persist_dsn(&scratch);
-    let _serial: Option<MutexGuard<'_, ()>> = if dialect == "sqlite" {
-        None
-    } else {
-        Some(SERVER_CASES.lock().unwrap_or_else(|poisoned| poisoned.into_inner()))
-    };
+    let _serial = server_cases(&dialect);
     let db = persist::open(&dsn)
         .await
         .expect("open the persist database");

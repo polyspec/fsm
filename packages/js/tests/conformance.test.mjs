@@ -1,8 +1,9 @@
 // The conformance tests of the npm package (docs/plans/fsm-v1.md, C-4). Every vector case of tests/vectors.mjs (generated from
 // the core oracle) is one node:test test named test_<feature>__<id>: it calls the generated function of src/ and asserts the
 // expected value and, for an error, the code and the fields of fsm.Error (docs/spec/fsm.md, B-4 and B-6; a field that does not
-// apply is null in the vector and undefined in the error). The persist cases run the B-4 example (examples/persist.mjs) on SQLite
-// and assert the stored value after the run. The names are the notation of docs/spec/fsm.md, B-6: a key becomes a member by pascal
+// apply is null in the vector and undefined in the error). The persist cases run the B-4 example (examples/persist.mjs) on the
+// dialect of FSM_TEST_DIALECT (sqlite by default, through the dialect helper of the fsm-db tests) and assert the stored value
+// after the run. The names are the notation of docs/spec/fsm.md, B-6: a key becomes a member by pascal
 // case. A state argument is a key, or an integer where the case gives one (an invalid state value).
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -11,6 +12,8 @@ import path from 'node:path';
 import test from 'node:test';
 import * as api from '../src/index.js';
 import { open, seed, statusOf, transition } from '../examples/persist.mjs';
+import { Item } from '../examples/model/models.ts';
+import { dialectOf, serverDsn } from '../../db/tests/dialect.mjs';
 import { vectors } from './vectors.mjs';
 
 /** The member of a key: its pascal notation (docs/spec/fsm.md, B-6). */
@@ -63,11 +66,16 @@ function assertFields(error, expect) {
   );
 }
 
-/** Runs the persist case `c` of `machine` on a new SQLite database, and asserts the stored state after the run. */
+/**
+ * Runs the persist case `c` of `machine` on the dialect of FSM_TEST_DIALECT: a new SQLite file, or the server database of the
+ * dialect's DSN with the rows of the persist table cleared. It asserts the stored state after the run.
+ */
 async function persistCase(machine, c) {
+  const dialect = dialectOf();
   const dir = mkdtempSync(path.join(tmpdir(), 'fsm-npm-persist-'));
-  const db = await open(`sqlite://${dir}/persist.db`);
+  const db = await open(dialect === 'sqlite' ? `sqlite://${dir}/persist.db` : serverDsn(dialect));
   try {
+    await (await new Item().connect(db).gets()).delete();
     await seed(db, 1, stateOf(machine, c.stored));
     const expected = stateOf(machine, c.expected);
     const event = eventOf(machine, c.event);

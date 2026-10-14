@@ -125,27 +125,39 @@ abstract class ConformanceCase extends TestCase
     }
 
     /**
-     * Opens the database of one persist case on the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6): sqlite, the
-     * default, is a new file of $directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A missing
-     * DSN fails the case, so no dialect is skipped. The rows of the persist table are cleared, so a case reads only the row it seeds.
+     * The DSN and the name of the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6): sqlite, the default, is a new
+     * file of $directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A missing DSN fails the
+     * case, so no dialect is skipped.
+     *
+     * @return array{string, string}
      */
-    private function openPersistDatabase(string $directory): \Polyspec\Orm\Db
+    protected static function persistDsn(string $directory): array
     {
         $dialect = getenv('FSM_TEST_DIALECT');
         if ($dialect === false || $dialect === '') {
             $dialect = 'sqlite';
         }
         if ($dialect === 'sqlite') {
-            $dsn = 'sqlite://' . $directory . '/persist.db';
-        } elseif ($dialect === 'postgres' || $dialect === 'mysql') {
-            $variable = $dialect === 'postgres' ? 'FSM_TEST_PG_DSN' : 'FSM_TEST_MYSQL_DSN';
-            $dsn = getenv($variable);
-            if ($dsn === false || $dsn === '') {
-                self::fail("{$variable} is not set: the {$dialect} persist cases need a database DSN and never skip");
-            }
-        } else {
+            return ['sqlite://' . $directory . '/persist.db', $dialect];
+        }
+        if ($dialect !== 'postgres' && $dialect !== 'mysql') {
             self::fail("FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is {$dialect}");
         }
+        $variable = $dialect === 'postgres' ? 'FSM_TEST_PG_DSN' : 'FSM_TEST_MYSQL_DSN';
+        $dsn = getenv($variable);
+        if ($dsn === false || $dsn === '') {
+            self::fail("{$variable} is not set: the {$dialect} persist cases need a database DSN and never skip");
+        }
+        return [$dsn, $dialect];
+    }
+
+    /**
+     * Opens the database of one persist case on the dialect of persistDsn. The rows of the persist table are cleared, so a case
+     * reads only the row it seeds.
+     */
+    protected static function openPersistDatabase(string $directory): \Polyspec\Orm\Db
+    {
+        [$dsn, $dialect] = self::persistDsn($directory);
         $db = Examples\open($dsn);
         self::assertSame($dialect, $db->driver(), 'the database dialect');
         if ($dialect !== 'sqlite') {
@@ -159,7 +171,7 @@ abstract class ConformanceCase extends TestCase
     {
         $directory = sys_get_temp_dir() . '/fsm-php-persist-' . bin2hex(random_bytes(8));
         mkdir($directory, 0700);
-        $db = $this->openPersistDatabase($directory);
+        $db = self::openPersistDatabase($directory);
         try {
             Examples\seed($db, 1, self::call($module, 'code', self::caseOf($module, 'State', $c['stored'])));
             $expected = self::caseOf($module, 'State', $c['expected']);

@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: baa616f9fba5f84645398ef8936b2c9965d6a91d4578f9180561b74c8535b95c -->
+<!-- source-sha256: feb96e1541d897a38247a31882c26b84cabd89ccc7c58509ff37adedbf775401 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -165,8 +165,9 @@ packages/<folder>/   # the first root of the kind in config/parity.json
   <manifest>        # [allowed difference] depends on orm (SQLite) for tests and examples
   <lock>            # [allowed difference] go.sum, package-lock.json, composer.lock, Cargo.lock (read by the kit dependency gate); python has `pylock.toml`, which kit's `make python-lock` writes from `pyproject.toml` and `constraints.txt` and `uv pip install` reads (S-34, S-44)
   src/…             # fsm-gen output only
-  tests/conformance.<ext>   # hand-written check functions; except in rust, iterates the vectors and registers one test per case
-  tests/vectors.<ext>       # fsm-gen output (language-native data); in rust, one #[test] per case
+  tests/conformance.<ext>   # hand-written check functions; except in rust, iterates the vectors and registers one test per case; rust tests/conformance/main.rs
+  tests/vectors.<ext>       # fsm-gen output (language-native data); in rust tests/conformance/vectors.rs, one #[test] per case
+  tests/persist.<ext>       # the persist feature units of config/parity.json: concurrency and deadlock retry (S-44-9); go persist_test.go, php PersistTest.php, python test_persist.py
   examples/persist.<ext>    # B-4 orm persistence; tests run it with the persist vectors
   examples/model/           # orm-generated model from the root contracts/schema/persist.dbs (committed, covered by gen-check); rust uses build.rs as an allowed difference
 ```
@@ -186,7 +187,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
   - kind 패키지에 정규 파일(`README.md`, `README.ko.md`, `Makefile`), 정규 폴더(`src`, `tests`, `examples`), kind의 필수 파일이 없거나, kind가 허용하지 않는 파일이 있음
   - php와 php-ext의 `tests/` 파일이 바이트 단위로 다름
   - `PYTHONPATH`가 있거나, 경로가 저장소를 벗어나거나, `scripts/`나 `tests/` 아래 인프라 스크립트가 TypeScript가 아님(S9)
-  필수 집합 밖의 허용 테스트 파일(npm의 `tests/types.test.mjs`, `tests/types/**`, `tests/persist-dialects.test.mjs`, rust의 `tests/persist_retry.rs`)은 규칙 위 주석에 이유를 적는다.
+  필수 집합 밖의 허용 파일(rust의 두 test crate가 쓰는 dialect module `tests/common/mod.rs`)은 규칙 위 주석에 이유를 적는다.
 - kind는 패키지 항목에서 하나씩 추가한다.
 
 ### C-3. 결과 기록 (K18)
@@ -240,7 +241,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - rust, php, php-ext의 native vector 모듈은 자기 kind가 허용하는 case만 담는다(core `forKind`). 그래서 다섯 machine의 270개 case 중 224개를 돌리고, go, npm, python은 270개를 모두 돌린다.
 - persist 케이스는 machine에 transition이 있을 때만 존재한다. `conflict`는 third state가 있을 때만 존재하므로, state가 2개인 machine은 `first`와 `retry`만 갖고, transition이 없는 machine(예: state가 1개인 machine)은 persist 케이스가 없다.
 
-- 영속화 패턴의 동시성(S-37, 결정): 동시성 증명은 npm에 한 번만 쓴다(`packages/js/tests/persist-dialects.test.mjs`, 기록 `npm-persist-test`, `npm-persist-test-postgres`, `npm-persist-test-mysql`). 이유: npm client는 한 database에 실제 연결 두 개를 열므로, 한 row의 transaction 두 개가 PostgreSQL과 MySQL에서 동시에 실행되며, B-4가 기대는 잠금은 database 자체의 잠금이다. 다른 kind가 이 테스트를 반드시 되풀이할 필요는 없다. 그 kind들은 동시성 테스트를 되풀이하지 않는다. persist case는 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`로 PostgreSQL과 MySQL에서 실행한다(S-37-1). `FSM_TEST_DIALECT`가 dialect를 고르고, `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, case마다 persist table을 비우고, 서버 dialect의 case는 차례로 실행한다(rust는 static 잠금을 쓰고, 다른 kind는 순차 실행한다). DSN이 비어 있으면 각 target은 exit 2로 멈추며(Makefile의 `require_dsn`), 테스트도 실패한다. kind별 RED: 테스트가 `FSM_TEST_DIALECT`를 읽기 전에는 PostgreSQL target이 SQLite의 persist case 11개를 통과시켰다(rust, php, php-ext, python). go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이라, 같은 프로세스의 두 번째 `BEGIN IMMEDIATE`가 첫 번째를 커밋할 thread를 막고, 5000밀리초 busy timeout 뒤 `CANCELED: sqlite: database is locked`로 실패하기 때문이다. RED: `examples/persist.mjs`에서 `forUpdate()`를 빼면 PostgreSQL 17.11과 MySQL 8.4.11 모두에서 두 전이가 Changed를 보고하고 두 테스트가 실패한다. 복원한 패턴은 세 dialect에서 통과한다.
+- 영속화 패턴의 동시성과 재시도(S-37, S-44-9, 결정): B-4는 모든 kind에 행 잠금과 deadlock 재시도를 약속하므로, 모든 kind가 자기 persist 테스트(go `tests/persist_test.go`, npm `tests/persist.test.mjs`, php와 php-ext `tests/PersistTest.php`, python `tests/test_persist.py`, rust `tests/persist.rs`)에서 config/parity.json의 feature unit 네 개로 이를 증명한다. 같은 event로 한 row에 동시에 일어나는 두 전이(Changed 하나, Unchanged 하나)와 두 event의 두 전이(Changed 하나, E_CONFLICT 하나)를 각자의 연결에서 실행하고(goroutine, thread, tokio task, 한 thread만 쓰는 PHP는 pcntl_fork의 두 process), transaction 안의 orm DEADLOCK 오류는 transaction을 다시 실행하지만 다른 database 오류는 그렇지 않음을 보인다(machine step으로 주입하거나 rust 예제의 fault hook으로 주입). persist case는 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`로 PostgreSQL과 MySQL에서 실행한다(S-37-1). `FSM_TEST_DIALECT`가 dialect를 고르고, `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, case마다 persist table을 비우고, 서버 dialect의 case는 차례로 실행한다(rust는 static 잠금을 쓰고, 다른 kind는 순차 실행한다). DSN이 비어 있으면 각 target은 exit 2로 멈추며(Makefile의 `require_dsn`), 테스트도 실패한다. kind별 RED: 테스트가 `FSM_TEST_DIALECT`를 읽기 전에는 PostgreSQL target이 SQLite의 persist case 11개를 통과시켰다(rust, php, php-ext, python). go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이라, 같은 프로세스의 두 번째 `BEGIN IMMEDIATE`가 첫 번째를 커밋할 thread를 막고, 5000밀리초 busy timeout 뒤 `CANCELED: sqlite: database is locked`로 실패하기 때문이다. RED: `examples/persist.mjs`에서 `forUpdate()`를 빼면 PostgreSQL 17.11과 MySQL 8.4.11 모두에서 두 전이가 Changed를 보고하고 두 테스트가 실패한다. 복원한 패턴은 세 dialect에서 통과한다.
 
 - vector parity(S-42-1, 결정): vector는 kit의 parity 검사(K33, K47을 담은 kit 0.0.26)로 실행되며, 이 검사가 모든 binding을 실행하고 kind마다 case를 허용한다. 저장된 기록을 읽던 fsm 자체의 scripts/check-parity.mjs는 있는 도구가 검사하므로 제거했다(kit에 case별 허용이 없는 동안 S-35-2와 S-42가 이를 유지했다).
 

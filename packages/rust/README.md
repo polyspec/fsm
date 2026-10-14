@@ -31,7 +31,7 @@ path = "src/lib.rs"
 ```
 
 Run the command again after every change of the definition. The vectors come from `fsm-gen vectors --kind rust --out <file>`,
-written into a test file of your own (the test bed writes `tests/vectors.rs`).
+written into a test file of your own (the test bed writes `tests/conformance/vectors.rs`).
 
 ## Generated files
 
@@ -61,7 +61,7 @@ The functions of the module `order` (`src/order.rs`):
 `Step` has the fields `to: State` and `changed: bool`. `from_code` takes an `i64`, so a value that a database returns is passed
 without narrowing it.
 
-A complete `apply` call, copied from `packages/rust/tests/vectors.rs` (the first case of the `apply` feature, which is a test
+A complete `apply` call, copied from `packages/rust/tests/conformance/vectors.rs` (the first case of the `apply` feature, which is a test
 function that checks the result):
 
 ```rust
@@ -94,7 +94,7 @@ The functions return `Result<_, fsm::Error>`. `Error` (`src/fsm.rs`) is a struct
 
 `Error` implements `Display` (`E_CONFLICT: the stored state ...`) and `std::error::Error`.
 
-Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/vectors.rs` assert it:
+Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/conformance/vectors.rs` assert it:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -134,7 +134,7 @@ pub async fn transition_with_fault(
 }
 ```
 
-The caller's closure is the `apply` use. It is copied from `packages/rust/tests/vectors.rs` (the persist case of the draft
+The caller's closure is the `apply` use. It is copied from `packages/rust/tests/conformance/vectors.rs` (the persist case of the draft
 state with the `next` event):
 
 ```rust
@@ -166,7 +166,7 @@ make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-The run passes 89 of 89 cases in about 100 seconds, which includes the compilation of the crate. `tests/vectors.rs` has one
-`#[test]` per vector case, named by its case name `<feature>__<id>` (`vectors::<feature>__<id>`), and each calls a check function of `tests/conformance.rs`; the persist
+The run passes 89 of 89 cases in about 100 seconds, which includes the compilation of the crate. `tests/conformance/vectors.rs` has one
+`#[test]` per vector case, named by its case name `<feature>__<id>` (`vectors::<feature>__<id>`), and each calls a check function of `tests/conformance/main.rs`; the persist
 cases are `#[tokio::test]`. The toolchain is `rust-toolchain.toml` at the root (Rust 1.99.0). The root `make gen-check` checks
 that the generated files are the ones `fsm-gen` writes today.

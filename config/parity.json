@@ -10,15 +10,18 @@
       "args": ["-d", "extension=packages/php-ext/src/modules/polyspec_fsm_test.so"] },
     { "name": "python", "runner": "python", "roots": ["packages/python"], "tests": ["packages/python/tests/test_conformance.py"],
       "command": "packages/python/.venv/bin/python" },
-    { "name": "rust", "runner": "cargo", "roots": ["packages/rust"], "tests": ["packages/rust/tests/conformance.rs"] }
+    { "name": "rust", "runner": "cargo", "roots": ["packages/rust"], "tests": ["packages/rust/tests/conformance/main.rs"],
+      "support": ["packages/rust/tests/common/mod.rs"] }
   ],
-  "profiles": [{ "name": "fsm", "implementations": ["go", "npm", "php", "php-ext", "python", "rust"] }],
+  "profiles": [
+    { "name": "fsm", "implementations": ["go", "npm", "php", "php-ext", "python", "rust"] }
+  ],
   "suites": ["contracts/conformance/vectors.json"],
   "tools": [
     { "root": "packages/compiler", "reason": "the node tests of the compiler (fsm-gen): validation, stores and backends, one implementation that every kind's code comes from (plan C-5)" },
     { "root": "packages/db", "reason": "the node tests of the DB store and its CLI, a component of fsm, not a port of the spec (plan C-6)" },
     { "root": "packages/gui", "reason": "the node tests of the GUI, a component of fsm, not a port of the spec (plan C-7)" },
-    { "root": "tests", "reason": "the node tests of the root tools (check-name, check-readmes, gen-check, the documentation site, the make targets and the workflows), which implement no contract" }
+    { "root": "tests", "reason": "the node tests of the root tools (check-name, check-readmes, gen-check, the documentation site, the make targets, the workflows and the type check of the npm declarations), which implement no contract" }
   ],
   "testPatterns": [
     { "runner": "go", "globs": ["packages/*/tests/conformance_test.go"] },
@@ -36,7 +39,43 @@
         { "implementation": "php", "test": "packages/php/tests/ConformanceTest.php" },
         { "implementation": "php-ext", "test": "packages/php-ext/tests/ConformanceTest.php" },
         { "implementation": "python", "test": "packages/python/tests/test_conformance.py" },
-        { "implementation": "rust", "test": "packages/rust/tests/conformance.rs", "symbol": "vectors" }
+        { "implementation": "rust", "test": "packages/rust/tests/conformance/main.rs", "symbol": "vectors" }
+      ] },
+    { "id": "persist_concurrent_same_event", "kind": "feature", "profile": "fsm",
+      "bindings": [
+        { "implementation": "go", "test": "packages/go/tests/persist_test.go", "id": "TestPersistConcurrentSameEvent" },
+        { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_concurrent_same_event" },
+        { "implementation": "php", "test": "packages/php/tests/PersistTest.php", "id": "testPersistConcurrentSameEvent" },
+        { "implementation": "php-ext", "test": "packages/php-ext/tests/PersistTest.php", "id": "testPersistConcurrentSameEvent" },
+        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_concurrent_same_event" },
+        { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_concurrent_same_event" }
+      ] },
+    { "id": "persist_concurrent_conflict", "kind": "feature", "profile": "fsm",
+      "bindings": [
+        { "implementation": "go", "test": "packages/go/tests/persist_test.go", "id": "TestPersistConcurrentConflict" },
+        { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_concurrent_conflict" },
+        { "implementation": "php", "test": "packages/php/tests/PersistTest.php", "id": "testPersistConcurrentConflict" },
+        { "implementation": "php-ext", "test": "packages/php-ext/tests/PersistTest.php", "id": "testPersistConcurrentConflict" },
+        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_concurrent_conflict" },
+        { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_concurrent_conflict" }
+      ] },
+    { "id": "persist_retry_on_deadlock", "kind": "feature", "profile": "fsm",
+      "bindings": [
+        { "implementation": "go", "test": "packages/go/tests/persist_test.go", "id": "TestPersistRetryOnDeadlock" },
+        { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_retry_on_deadlock" },
+        { "implementation": "php", "test": "packages/php/tests/PersistTest.php", "id": "testPersistRetryOnDeadlock" },
+        { "implementation": "php-ext", "test": "packages/php-ext/tests/PersistTest.php", "id": "testPersistRetryOnDeadlock" },
+        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_retry_on_deadlock" },
+        { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_retry_on_deadlock" }
+      ] },
+    { "id": "persist_no_retry_on_other_error", "kind": "feature", "profile": "fsm",
+      "bindings": [
+        { "implementation": "go", "test": "packages/go/tests/persist_test.go", "id": "TestPersistNoRetryOnOtherError" },
+        { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_no_retry_on_other_error" },
+        { "implementation": "php", "test": "packages/php/tests/PersistTest.php", "id": "testPersistNoRetryOnOtherError" },
+        { "implementation": "php-ext", "test": "packages/php-ext/tests/PersistTest.php", "id": "testPersistNoRetryOnOtherError" },
+        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_no_retry_on_other_error" },
+        { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_no_retry_on_other_error" }
       ] }
   ],
   "exclusions": []

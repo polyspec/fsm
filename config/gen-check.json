@@ -19,7 +19,7 @@
     ],
     "rust": [
       "src/**",
-      "tests/vectors.rs"
+      "tests/conformance/vectors.rs"
     ],
     "python": [
       "src/**",
@@ -30,6 +30,7 @@
       "src/**",
       "tests/ConformanceCase.php",
       "tests/ConformanceTest.php",
+      "tests/PersistTest.php",
       "examples/persist.php",
       "examples/model/**"
     ]

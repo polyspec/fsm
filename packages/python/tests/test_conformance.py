@@ -111,22 +111,30 @@ def check(test, machine, case):
         raise AssertionError(f"no check for the feature {feature}; the vectors and this file must agree")
 
 
-def open_persist_database(directory):
-    """Opens the database of one persist case on the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6).
+def persist_dsn(directory):
+    """The DSN of the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6), and the dialect.
 
     sqlite, the default, is a new file of `directory`; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN.
-    A missing DSN fails the case, so no dialect is skipped. The rows of the persist table are cleared, so a case reads only its row.
+    A missing DSN fails the case, so no dialect is skipped.
     """
     dialect = os.environ.get("FSM_TEST_DIALECT") or "sqlite"
     if dialect == "sqlite":
-        dsn = f"sqlite:///{directory}/persist.db"
-    elif dialect in ("postgres", "mysql"):
+        return f"sqlite:///{directory}/persist.db", dialect
+    if dialect in ("postgres", "mysql"):
         variable = "FSM_TEST_PG_DSN" if dialect == "postgres" else "FSM_TEST_MYSQL_DSN"
         dsn = os.environ.get(variable, "")
         if not dsn:
             raise AssertionError(f"{variable} is not set: the {dialect} persist cases need a database DSN and never skip")
-    else:
-        raise AssertionError(f"FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is {dialect}")
+        return dsn, dialect
+    raise AssertionError(f"FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is {dialect}")
+
+
+def open_persist_database(directory):
+    """Opens the database of one persist case on the dialect of persist_dsn.
+
+    The rows of the persist table are cleared, so a case reads only its row.
+    """
+    dsn, dialect = persist_dsn(directory)
     db = open_database(dsn)
     if db.driver != dialect:
         db.close()

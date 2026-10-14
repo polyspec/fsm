@@ -1,7 +1,7 @@
-// The consumer of the generated declarations (docs/spec/fsm.md, B-6). tests/types.test.mjs compiles this file with
+// The consumer of the generated declarations (docs/spec/fsm.md, B-6). tests/npm-types/npm-types.test.mts compiles this file with
 // tsc --noEmit --strict: every name of the notation is used, and every @ts-expect-error line must fail to compile, so a
 // declaration that is too loose makes an unused directive, which tsc reports as an error.
-import { order, fsm } from '../../src/index.js';
+import { order, fsm } from '../../packages/js/src/index.js';
 
 // The states and events are typed by their values, and the functions by their signatures.
 const draft: order.State = order.State.Draft;

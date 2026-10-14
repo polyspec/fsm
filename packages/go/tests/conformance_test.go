@@ -251,16 +251,15 @@ func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 	}
 }
 
-// openPersistDB opens the database of one persist case on the dialect that FSM_TEST_DIALECT names: sqlite, the default, is a new
-// file of the test's temporary directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A missing
-// DSN fails the case, so no dialect is skipped. The rows of the persist table are cleared, so a case reads only the row it seeds.
-func openPersistDB(t *testing.T) *orm.DB {
+// persistDSN is the DSN of the dialect that FSM_TEST_DIALECT names: sqlite, the default, is a new file of the test's temporary
+// directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A missing DSN fails the case, so no
+// dialect is skipped.
+func persistDSN(t *testing.T) (dsn, dialect string) {
 	t.Helper()
-	dialect := os.Getenv("FSM_TEST_DIALECT")
+	dialect = os.Getenv("FSM_TEST_DIALECT")
 	if dialect == "" {
 		dialect = "sqlite"
 	}
-	var dsn string
 	switch dialect {
 	case "sqlite":
 		dsn = "sqlite://" + filepath.Join(t.TempDir(), "persist.db")
@@ -276,6 +275,12 @@ func openPersistDB(t *testing.T) *orm.DB {
 	default:
 		t.Fatalf("FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is %q", dialect)
 	}
+	return dsn, dialect
+}
+
+// openDSN opens the persist database of dsn with the B-4 example, closes it when the test ends, and checks its dialect.
+func openDSN(t *testing.T, dsn, dialect string) *orm.DB {
+	t.Helper()
 	db, err := examples.Open(dsn)
 	assertNoError(t, err)
 	t.Cleanup(func() {
@@ -286,6 +291,15 @@ func openPersistDB(t *testing.T) *orm.DB {
 	if db.Driver() != dialect {
 		t.Fatalf("the database is %s, want %s", db.Driver(), dialect)
 	}
+	return db
+}
+
+// openPersistDB opens the database of one persist case on the dialect of persistDSN. The rows of the persist table are cleared,
+// so a case reads only the row it seeds.
+func openPersistDB(t *testing.T) *orm.DB {
+	t.Helper()
+	dsn, dialect := persistDSN(t)
+	db := openDSN(t, dsn, dialect)
 	rows, err := model.Item().Connect(db).Gets()
 	assertNoError(t, err)
 	assertNoError(t, rows.Delete())
