@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ac6d1b448648f3499c95944d071b84275cf77f53a4184e0ff644f595b30dfab7 -->
+<!-- source-sha256: 13224664e403577e0091dc1c1ebb7f9380089276862c7bd44d0591e8bef71f0c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-11: edge가 없는 machine의 생성된 rust가 clippy를 통과한다. `target`은 wildcard arm 하나의 match 대신 오류만 반환한다.
 - S-44-9: 각 kind의 모든 test가 parity binding의 test다. persist test는 여섯 kind 모두에 bind된 네 feature unit(한 row의 동시 transition 두 개와 deadlock 재시도)이고, npm 타입 검사는 root 도구 test tests/npm-types이며, rust conformance target은 module vectors.rs를 가진 tests/conformance/main.rs다.
 - S-44-10: 공유 도구는 kit 0.0.43이다. parity는 cargo target tests/<name>/main.rs의 module 파일을 그 binding의 파일로 세고, oxlint 설정은 node:test의 등록을 허용하며, knip은 layout의 scripts, benchmarks, test를 entry로 삼고, API Extractor는 더 이상 모든 export에 release tag를 요구하지 않는다.
 - S-44-5: 폴더가 kit의 layout을 따른다. package는 packages/compiler, db, gui, go, js(npm kind), php, php-ext, python, rust이고, 저장소의 fsm 프로젝트(fsm.config.json, fsm.lock.json, machines/, schema/, conformance/vectors.json)는 contracts/이며, db store의 table은 packages/db/schema/fsm.dbs다. 루트 script와 도구 테스트는 TypeScript(.mts)다. Go module 경로는 github.com/polyspec/fsm/packages/go다(이전에는 github.com/polyspec/fsm-go).
