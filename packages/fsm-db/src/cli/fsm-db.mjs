@@ -8,10 +8,10 @@
 // --project is the project root, whose fsm.config.json must name the db store:
 //   {"store":"db","dsnEnv":"FSM_DSN"}
 // The DSN is the value of the environment variable that dsnEnv names; it is never read from anywhere else. The database
-// schema is the one of schema/fsm.dbs. `install` creates it through orm (`utils().schema().install`): on a database
+// schema is the one of packages/fsm-db/schema/fsm.dbs. `install` creates it through orm (`utils().schema().install`): on a database
 // without the tables it creates them; on a database that already has all of them it changes nothing and exits 0; on a
 // database that has only some of them orm rejects it with CONFIG, which is printed with its stack and exits 1 (verified by
-// the install cases of tests/cli.test.mjs with orm v0.0.7). A finding prints as
+// the install cases of tests/cli.test.mjs with orm v0.0.14). A finding prints as
 // `[fsm-db] <code> <machine> <path>: <message>` on stderr and exits 1. A usage error exits 2. Otherwise the command exits 0
 // with a one-line summary on stdout (`[fsm-db] install: ok` for install). An unexpected rejection (for example a missing
 // table, or the CONFIG of a partial install) is printed with its stack and exits 1.

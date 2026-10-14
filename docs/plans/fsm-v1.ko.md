@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: ec56512dda73dbd28b34b5452f070467f529ac692235b103545f23156d9b2758 -->
+<!-- source-sha256: 94cc2dd385cb2890fbbb7544be20c7483b57afeca0009ea23d3b0356976eaacb -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -145,15 +145,15 @@ fsm/
   packages/fsm-gui/       {app/app.json, templates/, client/main.ts, public/assets/, build/, src/, crud/*.yml, tests/}
   packages/fsm-{go,npm,php,php-ext,python,rust}/
 ```
-- 외부 의존은 릴리스 태그로 고정한다: orm v0.0.7, ordered-json v0.0.7, hyper v0.0.11, template v0.0.5, crudui v0.0.5, mermaid(npm 정확 버전).
+- 외부 의존은 릴리스 태그로 고정한다: orm v0.0.14, ordered-json v0.0.8, hyper v0.0.11, template v0.0.5, crudui v0.0.5, mermaid(npm 정확 버전).
   - npm: release asset URL을 `dependencies`에 쓴다. 전이 `@polyspec/*`는 같은 URL로 `overrides`에 쓴다.
-  - composer: `package` repository의 dist zip, `config.platform.php` 8.4.x
-  - go: `require github.com/polyspec/orm v0.0.7`
-  - python: `polyspec-orm @ https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/orm-python`, ordered-json은 `[tool.uv] override-dependencies`로 `v0.0.7` tag의 archive에서 받는다(S-34-3). orm과 ordered-json v0.0.7은 wheel을 내지 않으므로 kit의 python-lock은 이 source archive를 고정할 수 없다. 해결은 wheel이 있는 릴리스로 옮기는 것이다(S-44, 등록된 항목)
-  - cargo: `{ git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }`
+  - composer: orm과 ordered-json이 문서화한 대로(둘은 registry에 게시하지 않는다) 각 Composer package의 `artifacts/` 폴더인 `artifact` repository에 두는 두 release zip. `config/composer-artifacts.txt`가 각 zip을 sha256과 URL로 적고, `make install`이 zip을 받아 Composer가 읽기 전에 sha256을 확인하며, composer.lock은 그 dist를 shasum과 함께 기록한다. `config.platform.php` 8.5.0
+  - go: `require github.com/polyspec/orm v0.0.14`
+  - python: `polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.14/polyspec_orm-0.0.14-py3-none-any.whl`, 즉 release의 wheel이며, 이 wheel이 ordered-json v0.0.8의 wheel을 sha256과 함께 적는다
+  - cargo: `{ git = "https://github.com/polyspec/orm.git", tag = "v0.0.14" }`
   - `.node-version`에는 정확한 26.y.z 릴리스를 쓴다(hyper 요구. kit toolchain-declared.mjs는 `<major>.<minor>.<patch>`만 받는다).
-- 고정은 manifest와 lock 파일에 하고 `config/dependency-policy.json`에 적는다. kit gate는 npm URL, Composer `package` dist URL, python `git+…@tag`, cargo tag를 검사하지 않는다. 고정 확인은 리뷰 규칙이다(이를 도구로 요구하는 R은 없다). 단 python lock은 예외로 `make python-lock-check`가 검사한다(아래 결정).
-  - 결정(python lock, S-34, S-44): python 의존성 트리는 kit의 유일한 Python lock 형식인 `packages/fsm-python/pylock.toml`(PEP 751)로 잠근다. kit의 `make python-lock`(ONLINE)이 `config/toolchain.json`의 uv로 `pyproject.toml`(requirement)과 `constraints.txt`(전이 package까지 모든 package의 고정: registry package는 `name==version`, polyspec archive는 `name @ <url>#sha256=<digest>`)에서 쓰고, kit의 `make python-lock-check`(offline)가 그 원본과 대조한다(kit K54). `config/dependency-policy.json`은 `pythonLocks`에 lock과 원본을 적으므로, kit gate와 review 기록(`config/dependency-review.json`)이 모든 전이 python package를 덮는다. fsm 자체의 uv.lock, 그 export, `lock-check`는 제거했다(S-44): 같은 트리의 두 번째 lock이었고, fsm의 `python-lock-check`가 같은 이름의 kit 타깃을 대체했기 때문이다. `make -C packages/fsm-python install`은 kit의 `make python-venv DIR=packages/fsm-python/.venv`가 install-tools의 Python으로 만든 venv에 pylock.toml을 `uv pip install --link-mode copy`로 설치하므로 uv가 각 artifact를 hash와 대조한다(S-34에서 측정: 변조한 wheel hash는 `Hash mismatch for pyyaml==6.0.3`으로 거부된다). `make install`은 새 venv를 만들기 전에 기존 venv를 지운다. orm과 ordered-json v0.0.7은 wheel을 내지 않고, 그 source archive에는 kit의 constraint가 담을 수 없는 `#subdirectory=` fragment가 필요하므로, fsm-python이 wheel을 내는 orm과 ordered-json 릴리스(orm은 v0.0.9부터, ordered-json은 v0.0.8부터)로 옮겨 `name @ <wheel asset URL>#sha256=<digest>`로 고정할 때까지 `make python-lock-check`는 실패한다(S-44의 등록 항목). build backend `setuptools==84.0.0`은 pyproject.toml에서 버전으로 고정되고 격리된 환경에서 빌드되며, uv는 그 hash를 검사하지 않는다.
+- 고정은 manifest와 lock 파일에 하고 `config/dependency-policy.json`에 적는다. kit gate는 npm URL, Composer artifact zip, python wheel URL, cargo tag를 검사하지 않는다. 고정 확인은 리뷰 규칙이다(이를 도구로 요구하는 R은 없다). 단 python lock은 예외로 `make python-lock-check`가 검사한다(아래 결정).
+  - 결정(python lock, S-34, S-44): python 의존성 트리는 kit의 유일한 Python lock 형식인 `packages/fsm-python/pylock.toml`(PEP 751)로 잠근다. kit의 `make python-lock`(ONLINE)이 `config/toolchain.json`의 uv로 `pyproject.toml`(requirement)과 `constraints.txt`(전이 package까지 모든 package의 고정: registry package는 `name==version`, polyspec wheel은 `name @ <url>#sha256=<digest>`)에서 쓰고, kit의 `make python-lock-check`(offline)가 그 원본과 대조한다(kit K54). `config/dependency-policy.json`은 `pythonLocks`에 lock과 원본을 적으므로, kit gate와 review 기록(`config/dependency-review.json`)이 모든 전이 python package를 덮는다. fsm 자체의 uv.lock, 그 export, `lock-check`는 제거했다(S-44): 같은 트리의 두 번째 lock이었고, fsm의 `python-lock-check`가 같은 이름의 kit 타깃을 대체했기 때문이다. `make -C packages/fsm-python install`은 kit의 `make python-venv DIR=packages/fsm-python/.venv`가 install-tools의 Python으로 만든 venv에 pylock.toml을 `uv pip install --link-mode copy`로 설치하므로 uv가 각 artifact를 hash와 대조한다(S-34에서 측정: 변조한 wheel hash는 `Hash mismatch for pyyaml==6.0.3`으로 거부된다). `make install`은 새 venv를 만들기 전에 기존 venv를 지운다. orm과 ordered-json은 wheel asset으로 `name @ <wheel asset URL>#sha256=<digest>`처럼 고정한다. build backend `setuptools==84.0.0`은 pyproject.toml에서 버전으로 고정되고 격리된 환경에서 빌드되며, uv는 그 hash를 검사하지 않는다.
 
 ### C-2. 언어 패키지 정규 구조 (6개 동일)
 ```

@@ -66,7 +66,7 @@ export const ALLOWED = Object.freeze([
   },
   {
     files: ['packages/*/examples/model/**'],
-    match: /\b(?:[Aa]dd_?[Cc]olumn|[Rr]emove_?[Cc]olumn|[Kk]ey_?[Nn]ame|[Pp]lus|[Mm]inus|[Ss]um|[Aa]vg|[Gg]roup_?[Bb]y|[Oo]rder_?[Bb]y|[Gg]et|[Ss]et|f)_?[Ss]tatus(?:_?(?:[Aa]sc|[Dd]esc))?\b|(['"])status\1|\bcolumn status:|\b(?:returns|sets) status\.|\bstatus: int\./,
+    match: /\b(?:[Aa]dd_?[Cc]olumn|[Rr]emove_?[Cc]olumn|[Kk]ey_?[Nn]ame|[Pp]lus|[Mm]inus|[Ss]um|[Aa]vg|[Gg]roup_?[Bb]y|[Oo]rder_?[Bb]y|[Gg]et|[Ss]et|f)_?[Ss]tatus(?:_?(?:[Aa]sc|[Dd]esc))?\b|(['"])status\1|\bcolumn status:|\b(?:returns|sets) status\.|\bstatus: int\.|\bThe condition of status:|\bfunction status\(/,
     reason: 'the model that orm-gen writes from schema/persist.dbs: its helpers are named after the status column, and its column name and doc comments say so',
   },
   {

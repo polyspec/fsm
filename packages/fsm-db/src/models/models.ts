@@ -82,6 +82,9 @@ export class Machine extends Model {
   public orderByNameAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('name', false, fn); return this; }
   public orderByNameDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('name', true, fn); return this; }
 }
+export interface Machine {
+  name(v0: string | readonly (string)[] | ValueFunction | Model): this;
+}
 
 /** A state model or row. */
 export class State extends Model {
@@ -145,6 +148,12 @@ export class State extends Model {
   public forceIndexUqStateCode(): this { this[CORE].index = 'uq_state_code'; return this; }
   public forceIndexUqStatePosition(): this { this[CORE].index = 'uq_state_position'; return this; }
 }
+export interface State {
+  machine(v0: string | readonly (string)[] | ValueFunction | Model): this;
+  tupleMachineWithCode(v0: ReadonlyArray<readonly [string, number]>): this;
+  tupleMachineWithKey(v0: ReadonlyArray<readonly [string, string]>): this;
+  tupleMachineWithPosition(v0: ReadonlyArray<readonly [string, number]>): this;
+}
 
 /** A event model or row. */
 export class Event extends Model {
@@ -177,6 +186,10 @@ export class Event extends Model {
   public minusPosition(n: number): this { this[CORE].putSet({ column: 'position', value: n, minus: true }); return this; }
   public sumPosition(): this { this[CORE].aggregate('sum', 'position'); return this; }
   public avgPosition(): this { this[CORE].aggregate('avg', 'position'); return this; }
+}
+export interface Event {
+  machine(v0: string | readonly (string)[] | ValueFunction | Model): this;
+  tupleMachineWithKey(v0: ReadonlyArray<readonly [string, string]>): this;
 }
 
 /** A edge model or row. */
@@ -229,6 +242,13 @@ export class Edge extends Model {
   public forceIndexIxEdgeMachineFrom(): this { this[CORE].index = 'ix_edge_machine_from'; return this; }
   public forceIndexIxEdgeMachineTo(): this { this[CORE].index = 'ix_edge_machine_to'; return this; }
 }
+export interface Edge {
+  machine(v0: string | readonly (string)[] | ValueFunction | Model): this;
+  tupleMachineWithEvent(v0: ReadonlyArray<readonly [string, string]>): this;
+  tupleMachineWithEventWithFrom(v0: ReadonlyArray<readonly [string, string, string]>): this;
+  tupleMachineWithFrom(v0: ReadonlyArray<readonly [string, string]>): this;
+  tupleMachineWithTo(v0: ReadonlyArray<readonly [string, string]>): this;
+}
 
 /** A lock_code model or row. */
 export class LockCode extends Model {
@@ -262,6 +282,10 @@ export class LockCode extends Model {
   public orderByKeyAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('key', false, fn); return this; }
   public orderByKeyDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('key', true, fn); return this; }
 }
+export interface LockCode {
+  machine(v0: string | readonly (string)[] | ValueFunction | Model): this;
+  tupleMachineWithCode(v0: ReadonlyArray<readonly [string, number]>): this;
+}
 
 /** A lock_reserved model or row. */
 export class LockReserved extends Model {
@@ -286,4 +310,8 @@ export class LockReserved extends Model {
   public minusCode(n: number): this { this[CORE].putSet({ column: 'code', value: n, minus: true }); return this; }
   public sumCode(): this { this[CORE].aggregate('sum', 'code'); return this; }
   public avgCode(): this { this[CORE].aggregate('avg', 'code'); return this; }
+}
+export interface LockReserved {
+  machine(v0: string | readonly (string)[] | ValueFunction | Model): this;
+  tupleMachineWithCode(v0: ReadonlyArray<readonly [string, number]>): this;
 }

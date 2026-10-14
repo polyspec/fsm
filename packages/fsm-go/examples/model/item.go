@@ -295,4 +295,11 @@ func (x *ItemModel) GetById[T0 argIntEq](v0 T0) (*ItemModel, error) {
 	return oneItem(x.m.By(chainItemGetById, v0))
 }
 
+func (x *ItemModel) Id[T0 argIntEq](v0 T0) *ItemModel {
+	x.m.Where("", chainItemId, v0)
+	return x
+}
+
 var chainItemGetById = []orm.ChainKey{{Column: "id"}}
+
+var chainItemId = []orm.ChainKey{{Column: "id"}}

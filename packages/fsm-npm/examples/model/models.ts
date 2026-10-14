@@ -51,3 +51,6 @@ export class Item extends Model {
   public sumStatus(): this { this[CORE].aggregate('sum', 'status'); return this; }
   public avgStatus(): this { this[CORE].aggregate('avg', 'status'); return this; }
 }
+export interface Item {
+  id(v0: number | readonly (number)[] | ValueFunction | Model): this;
+}

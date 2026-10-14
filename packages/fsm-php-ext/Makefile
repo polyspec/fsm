@@ -7,8 +7,9 @@
 # The test target builds the extension in src/ (phpize, ./configure, make) and runs phpunit with the built module loaded; its
 # --results and --inputs paths are relative to the checkout root, as in the php package.
 ROOT := ../..
-# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
-RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
+# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages). It takes its working
+# directory as the checkout root, so the test target runs it there and names every path from the root.
+RUN_TESTS := node node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
 PHP := $(ROOT)/packages/fsm-php
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
@@ -18,8 +19,10 @@ MODULE := packages/fsm-php-ext/src/modules/$(EXTENSION).so
 
 .PHONY: install gen build test clean
 
-# install installs the dependencies of composer.lock (the orm release and phpunit); gen and test need them.
+# install downloads the release zips of orm and ordered-json into artifacts/, the artifact repository of composer.json, with
+# the composer-artifacts target of the root, then installs the dependencies of composer.lock; gen and test need them.
 install:
+	$(MAKE) -C $(ROOT) composer-artifacts DIR=packages/fsm-php-ext/artifacts
 	composer install --no-interaction --no-progress
 
 gen:
@@ -28,7 +31,7 @@ gen:
 	$(FSM_GEN) vectors --project $(ROOT) --kind php-ext --php-namespace '$(NAMESPACE)' --out $(DEST)/tests/ConformanceTest.php
 	cp $(PHP)/tests/ConformanceCase.php $(DEST)/tests/ConformanceCase.php
 	cp $(PHP)/examples/persist.php $(DEST)/examples/persist.php
-	./vendor/bin/orm-gen gen --out $(DEST)/examples/model --namespace '$(NAMESPACE)\Model' $(ROOT)/schema/persist.dbs
+	./vendor/bin/orm-gen gen --set $(ROOT)/schema/dbspec-set.json --out $(DEST)/examples/model --namespace '$(NAMESPACE)\Model'
 
 # build compiles the extension in src/ with phpize, ./configure and make; the module is then src/modules/<extension>.so.
 build:
@@ -36,7 +39,7 @@ build:
 
 # test builds the extension and runs the conformance cases and the persist example with the built module.
 test: build
-	$(RUN_TESTS) phpunit --php-extension $(MODULE) --cwd packages/fsm-php-ext --results .results/php-ext.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs -- tests
+	cd $(ROOT) && $(RUN_TESTS) phpunit --php-extension $(MODULE) --cwd packages/fsm-php-ext --results .results/php-ext.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- tests
 
 # clean removes the phpize output of src/ (the generated files and config.m4 stay). gen does not need it: it skips the git-ignored files.
 clean:

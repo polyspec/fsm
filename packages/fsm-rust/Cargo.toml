@@ -23,8 +23,8 @@ path = "tests/persist_retry.rs"
 
 # The orm pins of docs/plans/fsm-v1.md, C-1: the model generator runs in build.rs, the runtime is used by the persist example.
 [build-dependencies]
-polyspec-orm-build = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }
+polyspec-orm-build = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.14" }
 
 [dev-dependencies]
-polyspec-orm = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }
+polyspec-orm = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.14" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

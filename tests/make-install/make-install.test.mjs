@@ -23,6 +23,8 @@ const LOCKS = [
   'packages/fsm-php/composer.json',
   'packages/fsm-php-ext/composer.lock',
   'packages/fsm-php-ext/composer.json',
+  // The zips of the Composer artifact repositories (S-44-8): both Composer packages are keyed on their pins too.
+  'config/composer-artifacts.txt',
   'packages/fsm-python/pylock.toml',
   'packages/fsm-python/pyproject.toml',
   'packages/fsm-go/go.sum',

@@ -1,9 +1,9 @@
 # Continuous integration (docs/plans/fsm-v1.md, C-10 and Verification; docs/plans/execution-checklist.md, S-21). One job runs
 # `make install` and then `make check`, the full suite of the repository, with the PostgreSQL and MySQL services of plan C-6.
-# The versions come from the files that declare them: Node.js from .node-version, Go from packages/fsm-go/go.mod, PHP from
-# config/toolchain.json, Python from the pythonBuild of config/toolchain.json (installed by make install through install-tools, S-41),
-# Rust from rust-toolchain.toml, and uv from config/toolchain.json (installed by make install through install-tools, S-44-2). The workflow runs on every push to
-# main and on a manual run (workflow_dispatch). A newer push does not cancel the run of an earlier one.
+# The versions come from the files that declare them: Node.js from .node-version, PHP from config/toolchain.json, Rust from
+# rust-toolchain.toml, and Go, Python and uv from mise.toml, which make install installs with mise at the digests of mise.lock
+# (install-tools, S-44-6). The workflow runs on every push to main and on a manual run (workflow_dispatch). A newer push does
+# not cancel the run of an earlier one.
 name: CI
 
 on:
@@ -57,10 +57,6 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version-file: .node-version
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
-        with:
-          go-version-file: packages/fsm-go/go.mod
-          cache: false
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '8.5'

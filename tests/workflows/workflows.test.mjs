@@ -19,13 +19,13 @@ const CI = read('.github/workflows/ci.yml');
 const PAGES = read('.github/workflows/pages.yml');
 const PLAN = read('docs/plans/fsm-v1.md');
 const TOOLCHAIN = JSON.parse(read('config/toolchain.json'));
+const MISE = read('mise.toml');
 
 // The commits of the template repository for the actions that these workflows use (its action-pins test, T22.4-8).
 const VERIFIED = [
   { action: 'actions/checkout', version: 'v6.1.0', commit: 'd23441a48e516b6c34aea4fa41551a30e30af803' },
   { action: 'actions/configure-pages', version: 'v6.0.0', commit: '45bfe0192ca1faeb007ade9deae92b16b8254a0d' },
   { action: 'actions/deploy-pages', version: 'v5.0.1', commit: '368f82528645a54fb793d4d04e342629a3f51346' },
-  { action: 'actions/setup-go', version: 'v6.5.0', commit: '924ae3a1cded613372ab5595356fb5720e22ba16' },
   { action: 'actions/setup-node', version: 'v6.5.0', commit: '249970729cb0ef3589644e2896645e5dc5ba9c38' },
   { action: 'actions/upload-artifact', version: 'v7.0.1', commit: '043fb46d1a93c77aae656e7c1c64a875d1fc6a0a' },
   { action: 'actions/upload-pages-artifact', version: 'v5.0.0', commit: 'fc324d3547104276b827a68afc52ff2a11cc49c9' },
@@ -143,9 +143,10 @@ test('the node, go, php and rust versions come from the files that declare them'
   assert.doesNotMatch(CHECK_JOB, /node-version: /);
   assert.match(read('.node-version'), /^\d+\.\d+\.\d+\n$/);
 
-  const goMod = TOOLCHAIN.go.mod;
-  assert.equal(goMod, 'packages/fsm-go/go.mod');
-  assert.match(CHECK_JOB, new RegExp(`\\n {10}go-version-file: ${goMod.replace(/[.]/g, '\\.')}\\n`));
+  // Go is a tool of mise.toml, which make install installs with mise (S-44-6): the workflow sets up no Go of its own.
+  assert.match(MISE, /^go = "1\.27\.2"$/m, 'mise.toml declares the Go pin of kit, 1.27.2');
+  assert.doesNotMatch(CHECK_JOB, /setup-go|go-version/, 'the check job sets up a Go of its own');
+  const goMod = 'packages/fsm-go/go.mod';
   assert.match(read(goMod), /^go 1\.27\.2$/m, 'the go line of go.mod is the Go pin of kit, 1.27.2 (S-44-2)');
   assert.doesNotMatch(read(goMod), /^toolchain /m, 'go.mod has no toolchain line (S-44-2)');
 
@@ -158,13 +159,13 @@ test('the node, go, php and rust versions come from the files that declare them'
   const rustStep = stepsOf(CHECK_JOB).find(step => step.includes('rustup toolchain install'));
   assert.ok(rustStep, 'the check job installs no rust toolchain with rustup');
   assert.match(rustStep, /rust-toolchain\.toml/);
-  assert.match(rustStep, /\n\s+rustup toolchain install\n/, 'rustup installs the channel, profile and components that rust-toolchain.toml names (S-44)');
+  assert.match(rustStep, /\n\s+rustup toolchain install$/m, 'rustup installs the channel, profile and components that rust-toolchain.toml names (S-44)');
   assert.match(read('rust-toolchain.toml'), /^profile = "minimal"$/m);
   assert.match(read('rust-toolchain.toml'), /^components = \["clippy"\]$/m, 'rust-toolchain.toml names clippy, which kit\'s lint-rust runs');
 });
 
-test('uv comes from config/toolchain.json through make install, and the workflow installs no uv of its own (S-44-2)', () => {
-  assert.match(TOOLCHAIN.uv?.version ?? '', /^\d+\.\d+\.\d+$/, 'config/toolchain.json must declare uv');
+test('uv comes from mise.toml through make install, and the workflow installs no uv of its own (S-44-2, S-44-6)', () => {
+  assert.match(MISE, /^uv = "\d+\.\d+\.\d+"$/m, 'mise.toml must declare uv');
   assert.doesNotMatch(CHECK_JOB, /pipx|install uv/, 'the check job installs a uv of its own');
 });
 
