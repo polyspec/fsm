@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: bc05061bf65963c5edb507849b9f7fb53c88d3edd3be753fa297a74e12de1370 -->
+<!-- source-sha256: 6a4456f4de077ad1b9621da832a51fd34bf9e8ce14f6f9ff2d2fc82e9c76a6bf -->
 # polyspec/fsm-php
 
 [English](README.md)
@@ -153,7 +153,7 @@ database를 열 때 `examples/model/bootstrap.php`를 읽는다.
 checkout에서 실행한다:
 
 ```sh
-make -C packages/fsm-php install   # composer install: the pinned orm release and PHPUnit 12.5.38 (composer.lock)
+make -C packages/fsm-php install   # composer install: the pinned orm release and PHPUnit 13.4.2 (composer.lock)
 make -C packages/fsm-php test      # PHPUnit through kit's run-tests
 make test-php                      # the same from the root
 make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)

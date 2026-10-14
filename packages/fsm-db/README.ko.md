@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: 53bd3018ae06c98c2687413982c12a0c15b1e794793960ba8a2df285d084efaf -->
+<!-- source-sha256: 5882143b9e349ff4ccdec18ccec0ce338a34e0d18b1e89c609ea470a06c51cb5 -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -17,8 +17,8 @@ fsm의 DB store와 그 명령줄 `fsm-db`다. fsm 프로젝트는 정의와 lock
 
 ## 준비
 
-1. 저장소 루트에서 `make db-deps`로 패키지를 설치한다. release tarball에서 `@polyspec/orm`과
-   `@polyspec/ordered-json` v0.0.7을 설치하며, 버전은 `package-lock.json`에 고정되어 있다.
+1. 저장소 루트에서 `make db-deps`로 패키지를 설치한다. release tarball에서 `@polyspec/orm` v0.0.14와
+   `@polyspec/ordered-json` v0.0.8을 설치하며, 버전은 `package-lock.json`에 고정되어 있다.
 2. 프로젝트 루트에 `fsm.config.json`을 만든다. database에 쓸 수 있는 형식은 이것뿐이다:
 
    ```json
@@ -55,7 +55,7 @@ db store에는 커밋된 기록이 없으므로 기준선은 `load`가 명령의
 
 ## DSN
 
-DSN은 `dsnEnv`가 가리키는 환경 변수의 값이다. fsm-db는 다른 곳에서 DSN을 읽지 않는다. orm v0.0.7이 문서화한 DSN 형식
+DSN은 `dsnEnv`가 가리키는 환경 변수의 값이다. fsm-db는 다른 곳에서 DSN을 읽지 않는다. orm v0.0.14이 문서화한 DSN 형식
 (orm 저장소의 `docs/config.md`)은 다음과 같다:
 
 ```text
@@ -91,7 +91,7 @@ $ fsm-db check --project ./order-machines
 
 ### install
 
-orm `utils().schema().install`로 여섯 table과 orm 자신의 table을 설치한다. 동작은 orm v0.0.7에서 관찰했고
+orm `utils().schema().install`로 여섯 table과 orm 자신의 table을 설치한다. 동작은 orm v0.0.14에서 관찰했고
 `tests/cli.test.mjs`가 검증하며, database 상태에 따라 다음과 같다:
 
 - table이 없다: table을 만들고 `[fsm-db] install: ok`를 출력한다. 종료 코드 0.

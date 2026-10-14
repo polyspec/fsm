@@ -1,0 +1,2 @@
+01506a06a883d1f58fa7c977aff76d1802e0558b5ea1627ce900756c911961d3 https://github.com/polyspec/orm/releases/download/v0.0.14/polyspec-orm-php-0.0.14.zip
+a2874f46f681e66f6dd275cf905e38f65be7b9902b278083ddcd11e7b0923baf https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec-ordered-json-php-0.0.8.zip

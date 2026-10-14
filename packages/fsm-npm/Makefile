@@ -6,8 +6,9 @@
 # target names the conformance file only: the type check of tests/types.test.mjs has its own record (make npm-types), and the
 # conformance test of this kind must hold vector cases alone for kit's parity check.
 ROOT := ../..
-# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
-RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
+# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages). It takes its working
+# directory as the checkout root, so the test target runs it there and names every path from the root.
+RUN_TESTS := node node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 
@@ -15,12 +16,12 @@ FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 
 # install installs the dependencies of package-lock.json (the orm release); gen and test need them.
 install:
-	npm ci --no-audit --no-fund
+	npm ci --allow-remote=root --no-audit --no-fund
 
 gen:
 	$(FSM_GEN) gen --project $(ROOT) --kind npm --out $(DEST)/src
 	$(FSM_GEN) vectors --project $(ROOT) --kind npm --out $(DEST)/tests/vectors.mjs
-	./node_modules/.bin/orm-gen gen --schema $(ROOT)/schema/persist.dbs --out $(DEST)/examples/model
+	./node_modules/.bin/orm-gen gen --set $(ROOT)/schema/dbspec-set.json --out $(DEST)/examples/model
 
 test:
-	$(RUN_TESTS) node --results .results/npm.json --inputs packages/fsm-npm --inputs schema/persist.dbs -- packages/fsm-npm/tests/conformance.test.mjs
+	cd $(ROOT) && $(RUN_TESTS) node --results .results/npm.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- packages/fsm-npm/tests/conformance.test.mjs

@@ -50,17 +50,25 @@ PACKAGE_DEPS := $(NPM_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(R
 $(NPM_DEP): packages/fsm-npm/package-lock.json
 	$(ONLINE) $(MAKE) -C packages/fsm-npm install
 
-$(PHP_DEP): packages/fsm-php/composer.lock packages/fsm-php/composer.json
+$(PHP_DEP): packages/fsm-php/composer.lock packages/fsm-php/composer.json config/composer-artifacts.txt
 	$(ONLINE) $(MAKE) -C packages/fsm-php install
 	touch $@
 
-$(PHP_EXT_DEP): packages/fsm-php-ext/composer.lock packages/fsm-php-ext/composer.json
+$(PHP_EXT_DEP): packages/fsm-php-ext/composer.lock packages/fsm-php-ext/composer.json config/composer-artifacts.txt
 	$(ONLINE) $(MAKE) -C packages/fsm-php-ext install
 	touch $@
 
-# install-tools installs every tool of mise.lock with mise, the uv and the Python of mise.toml among them, and their shims run
-# them (docs/plans/execution-checklist.md, S-41, S-44-2; kit K127): the python package runs var/tools/mise/shims/uv and makes
-# its venv from var/tools/mise/shims/python3.
+# The polyspec packages of Composer (orm and ordered-json) are on no registry: their releases publish the zips that
+# config/composer-artifacts.txt names, one `<sha256> <url>` per line, and Composer reads them from an artifact repository, the
+# folder artifacts/ of each Composer package that its composer.json names. composer-artifacts downloads each zip into DIR and
+# checks its sha256 before Composer reads it; the install of each Composer package runs it, and composer.lock records the dist
+# of each zip with its shasum. kit K140 brings one tool for a pinned download; it replaces this recipe (S-44-8-1).
+.PHONY: composer-artifacts
+composer-artifacts:
+	@test -n "$(DIR)" || { echo "composer-artifacts: DIR=<folder> names the artifact repository"; exit 2; }
+	rm -rf $(DIR) && mkdir -p $(DIR)
+	while read -r sum url; do curl --fail --silent --show-error --location --output $(DIR)/$${url##*/} "$$url" && echo "$$sum  $(DIR)/$${url##*/}" | shasum -a 256 -c - || exit 1; done < config/composer-artifacts.txt
+
 $(PYTHON_BIN):
 	$(ONLINE) $(MAKE) install-tools
 
@@ -79,14 +87,14 @@ $(RUST_DEP): packages/fsm-rust/Cargo.lock
 	touch $@
 
 $(DB_DEP): packages/fsm-db/package-lock.json
-	cd packages/fsm-db && $(ONLINE) npm ci --no-audit --no-fund
+	cd packages/fsm-db && $(ONLINE) npm ci --allow-remote=root --no-audit --no-fund
 
 # The GUI installs after the db packages, because its tests run the db store (order only: a db install does not reinstall the GUI).
 $(GUI_DEP): packages/fsm-gui/package-lock.json | $(DB_DEP)
-	cd packages/fsm-gui && $(ONLINE) npm ci --no-audit --no-fund
+	cd packages/fsm-gui && $(ONLINE) npm ci --allow-remote=root --no-audit --no-fund
 
 $(DOCS_DEP): docs/package-lock.json
-	cd docs && $(ONLINE) npm ci --no-audit --no-fund
+	cd docs && $(ONLINE) npm ci --allow-remote=root --no-audit --no-fund
 
 # install is for a fresh clone and for CI, which runs `make install` once and then `make check`. It installs the toolchains of
 # install-tools into var/tools and every package dependency above; a later run downloads nothing.
@@ -168,21 +176,21 @@ DB_DIALECT_TESTS := packages/fsm-db/tests/db-store.test.mjs packages/fsm-db/test
 db-test-postgres: $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	@$(call require_dsn,FSM_TEST_PG_ADMIN_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-db/schema --inputs packages/fsm-compiler --inputs packages/fsm-db/schema -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 db-test-mysql: $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	@$(call require_dsn,FSM_TEST_MYSQL_ADMIN_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-db/schema --inputs packages/fsm-compiler --inputs packages/fsm-db/schema -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 # db-deps installs the packages of packages/fsm-db (orm and ordered-json from their release tarballs, pinned in its
 # package-lock.json). db-test runs the tests of packages/fsm-db: the DB store against the store contract, the round trips
-# of json and db, the atomicity of save, the CLI, and the generated models, which orm-gen must reproduce from schema/fsm.dbs
+# of json and db, the atomicity of save, the CLI, and the generated models, which orm-gen must reproduce from packages/fsm-db/schema/fsm.dbs
 # (docs/plans/fsm-v1.md, C-6).
 db-deps: $(DB_DEP)
 
 db-test: $(DB_DEP)
-	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-compiler --inputs schema/fsm.dbs -- packages/fsm-db/tests
+	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/fsm-db/src --inputs packages/fsm-db/tests --inputs packages/fsm-db/package.json --inputs packages/fsm-db/package-lock.json --inputs packages/fsm-db/schema --inputs packages/fsm-compiler --inputs packages/fsm-db/schema -- packages/fsm-db/tests
 
 # gui-deps installs the packages of packages/fsm-gui (hyper v0.0.11, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
 # yaml, pinned in its package.json and package-lock.json; docs/plans/fsm-v1.md, C-1). The db store of the GUI is the one of
@@ -200,7 +208,7 @@ gui-build: $(GUI_DEP)
 # built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI. The
 # browser test is in tests/browser and runs with gui-browser-test, so gui-test takes the test files of tests/ only.
 gui-test: gui-build $(DB_DEP)
-	$(RUN_TESTS) node --results .results/gui-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db --inputs schema/fsm.dbs -- $(wildcard packages/fsm-gui/tests/*.test.mjs)
+	$(RUN_TESTS) node --results .results/gui-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db -- $(wildcard packages/fsm-gui/tests/*.test.mjs)
 
 # GUI_BROWSERS is the stamp of the Chromium that the GUI browser test drives, keyed on the Playwright version that
 # packages/fsm-gui/package-lock.json pins (devDependency, exact). A new version is a new stamp, so it downloads once; a later run
@@ -222,7 +230,7 @@ gui-browsers: $(GUI_BROWSERS)
 # gui-browser-test runs the tests of tests/browser (browser.test.mjs, diagram.test.mjs; S-38 adds the drawn diagram) of packages/fsm-gui: the GUI forms in a headless Chromium on a temporary project
 # (docs/plans/execution-checklist.md, S-22-1 and S-22-2). It needs the browser of gui-browsers and the built assets of gui-build.
 gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP)
-	$(RUN_TESTS) node --timeout 120 --results .results/gui-browser-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db --inputs schema/fsm.dbs -- packages/fsm-gui/tests/browser/browser.test.mjs packages/fsm-gui/tests/browser/diagram.test.mjs
+	$(RUN_TESTS) node --timeout 120 --results .results/gui-browser-test.json --inputs packages/fsm-gui --inputs packages/fsm-compiler/src --inputs packages/fsm-db -- packages/fsm-gui/tests/browser/browser.test.mjs packages/fsm-gui/tests/browser/diagram.test.mjs
 
 # packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1.md, Verification). It refuses an empty kind list,
 # because make with no goal would run the default goal, check, from inside check.
@@ -239,15 +247,15 @@ test-npm: $(NPM_DEP)
 # The three targets run it on each dialect: sqlite (a temporary file), postgres (FSM_TEST_PG_DSN) and mysql (FSM_TEST_MYSQL_DSN).
 NPM_PERSIST_TESTS := packages/fsm-npm/tests/persist-dialects.test.mjs
 npm-persist-test: $(NPM_DEP) $(DB_DEP)
-	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs schema/dbspec-set.json --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
 
 npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs schema/dbspec-set.json --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
 
 npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/fsm-npm --inputs schema/persist.dbs --inputs schema/dbspec-set.json --inputs packages/fsm-db/tests/dialect.mjs --inputs packages/fsm-db/src/models -- $(NPM_PERSIST_TESTS)
 
 # npm-types runs tests/types.test.mjs of packages/fsm-npm: tsc compiles tests/types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/execution-checklist.md, S-09-2). It is a tool test with
@@ -269,7 +277,7 @@ test-rust: $(RUST_DEP)
 # rust-persist-test runs tests/persist_retry.rs of packages/fsm-rust: a deadlock runs the persistence transaction again and another
 # database error does not (docs/spec/fsm.md, B-4; docs/plans/execution-checklist.md, S-31). It is a tool test with its own record.
 rust-persist-test: $(RUST_DEP)
-	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test persist_retry
+	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/fsm-rust --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- --manifest-path packages/fsm-rust/Cargo.toml --test persist_retry
 # python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/mise/shims/python3
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
@@ -296,42 +304,42 @@ endef
 
 go-persist-test-postgres: $(GO_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/fsm-go --results .results/go-persist-test-postgres.json --inputs packages/fsm-go --inputs schema/persist.dbs -- ./tests -run 'TestConformance/test_persist__'
+	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/fsm-go --results .results/go-persist-test-postgres.json --inputs packages/fsm-go --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__'
 
 go-persist-test-mysql: $(GO_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/fsm-go --results .results/go-persist-test-mysql.json --inputs packages/fsm-go --inputs schema/persist.dbs -- ./tests -run 'TestConformance/test_persist__'
+	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/fsm-go --results .results/go-persist-test-mysql.json --inputs packages/fsm-go --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__'
 
 rust-persist-test-postgres: $(RUST_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/fsm-rust --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance persist
 
 rust-persist-test-mysql: $(RUST_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/fsm-rust --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance persist
 
 php-persist-test-postgres: $(PHP_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --cwd packages/fsm-php --results .results/php-persist-test-postgres.json --inputs packages/fsm-php --inputs schema/persist.dbs -- tests --filter persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --cwd packages/fsm-php --results .results/php-persist-test-postgres.json --inputs packages/fsm-php --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- tests --filter persist
 
 php-persist-test-mysql: $(PHP_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --cwd packages/fsm-php --results .results/php-persist-test-mysql.json --inputs packages/fsm-php --inputs schema/persist.dbs -- tests --filter persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --cwd packages/fsm-php --results .results/php-persist-test-mysql.json --inputs packages/fsm-php --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- tests --filter persist
 
 php-ext-persist-test-postgres: $(PHP_EXT_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	$(MAKE) -C packages/fsm-php-ext build
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension packages/fsm-php-ext/src/modules/polyspec_fsm_test.so --cwd packages/fsm-php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs -- tests --filter persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension packages/fsm-php-ext/src/modules/polyspec_fsm_test.so --cwd packages/fsm-php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- tests --filter persist
 
 php-ext-persist-test-mysql: $(PHP_EXT_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	$(MAKE) -C packages/fsm-php-ext build
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension packages/fsm-php-ext/src/modules/polyspec_fsm_test.so --cwd packages/fsm-php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs -- tests --filter persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension packages/fsm-php-ext/src/modules/polyspec_fsm_test.so --cwd packages/fsm-php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- tests --filter persist
 
 python-persist-test-postgres: $(PYTHON_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) python --venv packages/fsm-python/.venv --results .results/python-persist-test-postgres.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) python --venv packages/fsm-python/.venv --results .results/python-persist-test-postgres.json --inputs packages/fsm-python --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist
 
 python-persist-test-mysql: $(PYTHON_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) python --venv packages/fsm-python/.venv --results .results/python-persist-test-mysql.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) python --venv packages/fsm-python/.venv --results .results/python-persist-test-mysql.json --inputs packages/fsm-python --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests -k persist

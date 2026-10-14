@@ -102,7 +102,7 @@
     {
       "paths": [
         "packages/fsm-db/**",
-        "schema/fsm.dbs"
+        "packages/fsm-db/schema/**"
       ],
       "targets": [
         "db-test",
@@ -154,7 +154,8 @@
     },
     {
       "paths": [
-        "schema/persist.dbs"
+        "schema/persist.dbs",
+        "schema/dbspec-set.json"
       ],
       "targets": [
         "gen-check",
@@ -189,7 +190,7 @@
     {
       "paths": [
         "packages/fsm-db/**",
-        "schema/fsm.dbs"
+        "packages/fsm-db/schema/**"
       ],
       "targets": [
         "db-test",

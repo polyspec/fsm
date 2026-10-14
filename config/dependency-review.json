@@ -1,51 +1,65 @@
 {
   "schema": 1,
-  "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mjs) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-11T14:42:41.740Z",
+  "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mts) from the registries; make dependency-policy-check compares the checkout with it without a network.",
+  "reviewed": "2026-10-14T08:33:57.726Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
-      "sha256": "5ad56e8e53cc850f2ef380e80f6feca828511ef453c85bf737a8ed1342585ccf",
+      "sha256": "2d9357c7bf510f138850ee1bfbbd446927eb493132f2fbf35761a72a795278a7",
       "advisories": []
     },
     {
+      "lock": "package-lock.json",
+      "sha256": "6c9435aee77b2f959dcd75609cb2aa13ba0b0729183519b371179fbefaa3d1f0",
+      "advisories": [
+        {
+          "package": "sprintf-js",
+          "version": "1.0.3",
+          "id": "1241202",
+          "severity": "moderate",
+          "title": "sprintf-js vulnerable to denial of service through unbounded precision specifiers",
+          "url": "https://github.com/advisories/GHSA-hp3w-g68c-fv3c"
+        }
+      ]
+    },
+    {
       "lock": "packages/fsm-db/package-lock.json",
-      "sha256": "92774d04bbc17d07f7193cb6cf73dfa255a534a7ee1663099d16c1278b5b5ac3",
+      "sha256": "d9dceb9aeaeab711c35cc7c9e106133a651800097ca32a7f1d14113a7a55eafd",
       "advisories": []
     },
     {
       "lock": "packages/fsm-gui/package-lock.json",
-      "sha256": "0a9462259d95f7d79050da1c109bc03185effde61cbecf80fe12ce4dbaa819e4",
+      "sha256": "0d3e634420fe2a0a24696c722c5b5acabb6a1fd2e3cb4512e6752e40883d76db",
       "advisories": []
     },
     {
       "lock": "packages/fsm-npm/package-lock.json",
-      "sha256": "546099fad8366f90cf311e4a5e425987086c8d924698e0c3e409a7b9f81e3b98",
+      "sha256": "dd5a6d21f5ea18c987f15dd724bc46b4a19da183a8057ec5818119e37c0804b8",
       "advisories": []
     },
     {
       "lock": "packages/fsm-php/composer.lock",
-      "sha256": "ee1153a984445f67bedcca376ee0690cc86cc78fdb7fd7eb83631ac8d5102724",
+      "sha256": "bcdb128f302518efb2edc3bbe44e4fc023e3aace6bbfb4448c60833e80945beb",
       "advisories": []
     },
     {
       "lock": "packages/fsm-php-ext/composer.lock",
-      "sha256": "7edc097a278714abd7cffc0cefc577c44adc9153e5191cc12bab65b1ccf21c6f",
+      "sha256": "0346dc0ddbae8ce86f896a2311acca3b743b2a7181ee083e6b5c76b69ac66cce",
       "advisories": []
     },
     {
       "lock": "packages/fsm-python/pylock.toml",
-      "sha256": "2a19d3d7182a6902f7d1660e17a7ff2599d09fdffddfd78e2300456000dc2f26",
+      "sha256": "2b362cb6c53a2f45bb66b8348229b76004e65171f8338b0965403b4ff030489f",
       "advisories": []
     },
     {
       "lock": "packages/fsm-go/go.sum",
-      "sha256": "f2f8d2d627cde2973d3fd0a77c9355f2f92249629acae4bd3ae2b43b4b6a058b",
+      "sha256": "01877093eefff5b8412e44faab52eb34025cc3152f56e6c8f57d2ccde6c6f796",
       "advisories": []
     },
     {
       "lock": "packages/fsm-rust/Cargo.lock",
-      "sha256": "498ace7f6e35cc19df5e48d2a8e154637aec3ff32af296a16f2084120b6dbca7",
+      "sha256": "53850219968818c5b0db4c4d05f3283636bd56af98fb561b85ec83b9f78e59ef",
       "advisories": []
     }
   ],
@@ -59,10 +73,24 @@
     },
     {
       "ecosystem": "npm",
+      "manifest": "package.json",
+      "package": "ajv",
+      "version": "8.20.0",
+      "latest": "8.20.0"
+    },
+    {
+      "ecosystem": "npm",
+      "manifest": "package.json",
+      "package": "picomatch",
+      "version": "4.0.7",
+      "latest": "4.0.7"
+    },
+    {
+      "ecosystem": "npm",
       "manifest": "packages/fsm-db/package.json",
       "package": "mysql2",
-      "version": "3.24.5",
-      "latest": "3.24.5"
+      "version": "3.24.6",
+      "latest": "3.24.6"
     },
     {
       "ecosystem": "npm",
@@ -82,8 +110,8 @@
       "ecosystem": "npm",
       "manifest": "packages/fsm-gui/package.json",
       "package": "mermaid",
-      "version": "12.1.0",
-      "latest": "12.1.0"
+      "version": "12.2.0",
+      "latest": "12.2.0"
     },
     {
       "ecosystem": "npm",
@@ -110,29 +138,29 @@
       "ecosystem": "composer",
       "manifest": "packages/fsm-php/composer.json",
       "package": "polyspec/orm",
-      "version": "0.0.7",
-      "latest": "0.0.7"
+      "version": "0.0.14",
+      "latest": "0.0.14"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/fsm-php/composer.json",
       "package": "phpunit/phpunit",
-      "version": "12.5.38",
-      "latest": "12.5.38"
+      "version": "13.4.2",
+      "latest": "13.4.2"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/fsm-php-ext/composer.json",
       "package": "polyspec/orm",
-      "version": "0.0.7",
-      "latest": "0.0.7"
+      "version": "0.0.14",
+      "latest": "0.0.14"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/fsm-php-ext/composer.json",
       "package": "phpunit/phpunit",
-      "version": "12.5.38",
-      "latest": "12.5.38"
+      "version": "13.4.2",
+      "latest": "13.4.2"
     },
     {
       "ecosystem": "pypi",
@@ -186,13 +214,6 @@
     {
       "ecosystem": "pypi",
       "manifest": "packages/fsm-python/pylock.toml",
-      "package": "typing-extensions",
-      "version": "4.16.0",
-      "latest": "4.16.0"
-    },
-    {
-      "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
       "package": "tzdata",
       "version": "2026.5",
       "latest": "2026.5"
@@ -208,8 +229,8 @@
       "ecosystem": "go",
       "manifest": "packages/fsm-go/go.mod",
       "package": "github.com/polyspec/orm",
-      "version": "v0.0.7",
-      "latest": "v0.0.7"
+      "version": "v0.0.14",
+      "latest": "v0.0.14"
     }
   ],
   "vcs": []

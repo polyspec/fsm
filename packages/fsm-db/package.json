@@ -12,17 +12,17 @@
     "fsm-db": "src/cli/fsm-db.mjs"
   },
   "scripts": {
-    "gen": "orm-gen gen --schema ../../schema/fsm.dbs --out src/models --scan src"
+    "gen": "orm-gen gen --set schema/dbspec-set.json --out src/models --scan src"
   },
   "dependencies": {
-    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.7/polyspec-orm-npm-0.0.7.tgz",
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.7/polyspec-ordered-json-npm-0.0.7.tgz"
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec-ordered-json-npm-0.0.8.tgz",
+    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.14/polyspec-orm-npm-0.0.14.tgz"
   },
   "overrides": {
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.7/polyspec-ordered-json-npm-0.0.7.tgz"
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec-ordered-json-npm-0.0.8.tgz"
   },
   "devDependencies": {
-    "mysql2": "3.24.5",
+    "mysql2": "3.24.6",
     "pg": "8.23.1"
   }
 }

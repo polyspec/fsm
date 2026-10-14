@@ -9,11 +9,11 @@
     "node": ">=26.11.1"
   },
   "devDependencies": {
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.7/polyspec-ordered-json-npm-0.0.7.tgz",
-    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.7/polyspec-orm-npm-0.0.7.tgz",
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec-ordered-json-npm-0.0.8.tgz",
+    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.14/polyspec-orm-npm-0.0.14.tgz",
     "typescript": "7.0.2"
   },
   "overrides": {
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.7/polyspec-ordered-json-npm-0.0.7.tgz"
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec-ordered-json-npm-0.0.8.tgz"
   }
 }

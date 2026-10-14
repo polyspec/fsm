@@ -1,7 +1,7 @@
 // Tests of the Python of the checkout (docs/plans/execution-checklist.md, S-41; docs/plans/fsm-v1.md, C-1 and Verification).
-// The Python 3.14 of the python package comes from `make install-tools`: the kit installs the uv of config/toolchain.json and
-// then, with that uv, the pythonBuild into var/tools (var/tools/bin/python3). No recipe of fsm installs an interpreter, and the
-// Makefile has no install-python target. The tests run `make -n` on a copy of the Makefile, the kit targets of the installed
+// The Python 3.14 of the python package comes from `make install-tools`: kit installs the tools of mise.toml with mise at the
+// digests of mise.lock, Python and uv among them, and their shims are var/tools/mise/shims/python3 and uv (S-44-6, kit K127).
+// No recipe of fsm installs an interpreter, and the Makefile has no install-python target. The tests run `make -n` on a copy of the Makefile, the kit targets of the installed
 // @polyspec/kit, config/parity.json (the kinds) and the package Makefiles in a temporary directory: make only prints the
 // recipes, so no network is used and nothing is installed.
 import assert from 'node:assert/strict';
@@ -13,8 +13,9 @@ import { fileURLToPath } from 'node:url';
 import { put, tree } from '../support/tree.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const PYTHON_BIN = 'var/tools/bin/python3';
-const INSTALL_TOOLS_PYTHON = /install-tools\.mjs python/;
+const PYTHON_BIN = 'var/tools/mise/shims/python3';
+// The recipe of make install-tools: kit's install-tools with no TOOLS, which installs every tool of mise.lock.
+const INSTALL_TOOLS = /install-tools\.mjs\s*$/;
 const UV_INTERPRETER = /uv python/;
 
 // The lock or manifest that each package dependency is keyed on: an empty file in the copy (make -n reads none of them).
@@ -27,6 +28,7 @@ const LOCKS = [
   'packages/fsm-php/composer.json',
   'packages/fsm-php-ext/composer.lock',
   'packages/fsm-php-ext/composer.json',
+  'config/composer-artifacts.txt',
   'packages/fsm-python/pylock.toml',
   'packages/fsm-python/pyproject.toml',
   'packages/fsm-go/go.sum',
@@ -74,10 +76,10 @@ function lineIndex(output, pattern) {
   return output.split('\n').findIndex(line => pattern.test(line));
 }
 
-test('the interpreter var/tools/bin/python3 is made by install-tools, never by uv', (t) => {
+test('the interpreter var/tools/mise/shims/python3 is made by install-tools, never by uv', (t) => {
   const out = printed(sandbox(t), PYTHON_BIN);
-  assert.ok(lineIndex(out, INSTALL_TOOLS_PYTHON) >= 0, `var/tools/bin/python3 is not made by install-tools python:\n${out}`);
-  assert.equal(lineIndex(out, UV_INTERPRETER), -1, `var/tools/bin/python3 is made with uv:\n${out}`);
+  assert.ok(lineIndex(out, INSTALL_TOOLS) >= 0, `var/tools/mise/shims/python3 is not made by install-tools:\n${out}`);
+  assert.equal(lineIndex(out, UV_INTERPRETER), -1, `var/tools/mise/shims/python3 is made with uv:\n${out}`);
 });
 
 test('make install prints no uv interpreter install and runs install-tools', (t) => {
@@ -88,7 +90,7 @@ test('make install prints no uv interpreter install and runs install-tools', (t)
 
 test('the python package environment follows the install-tools interpreter', (t) => {
   const out = printed(sandbox(t), 'test-python');
-  const interpreter = lineIndex(out, INSTALL_TOOLS_PYTHON);
+  const interpreter = lineIndex(out, INSTALL_TOOLS);
   const venv = lineIndex(out, /-C packages\/fsm-python install/);
   assert.ok(interpreter >= 0 && venv > interpreter, `the python environment does not follow install-tools python:\n${out}`);
   assert.equal(lineIndex(out, UV_INTERPRETER), -1, `test-python installs an interpreter with uv:\n${out}`);
@@ -105,14 +107,9 @@ test('the Makefile holds no uv python install and no link of a uv interpreter', 
   assert.doesNotMatch(makefile, /python find --managed-python/);
 });
 
-test('the interpreter is installed after the uv of config/toolchain.json, which installs it (S-44-2)', (t) => {
-  const out = printed(sandbox(t), PYTHON_BIN);
-  const uv = lineIndex(out, /install-tools\.mjs uv$/);
-  assert.ok(uv >= 0 && lineIndex(out, INSTALL_TOOLS_PYTHON) > uv, `var/tools/bin/python3 is not installed after install-tools uv:\n${out}`);
-});
-
-test('the python package runs the uv of var/tools, never a uv of PATH (S-44-2)', () => {
-  assert.match(makefileOf('packages/fsm-python'), /^UV := \$\(abspath \$\(ROOT\)\)\/var\/tools\/bin\/uv$/m);
+test('the python package runs the uv and the Python of the shims of mise, never those of PATH (S-44-2, S-44-6)', () => {
+  assert.match(makefileOf('packages/fsm-python'), /^UV := \$\(abspath \$\(ROOT\)\)\/var\/tools\/mise\/shims\/uv$/m);
+  assert.match(makefileOf('packages/fsm-python'), /^PYTHON := \$\(abspath \$\(ROOT\)\)\/var\/tools\/mise\/shims\/python3$/m);
 });
 
 // The package venv is made by kit's python-venv (uv venv) and accepted by kit's runner; kit tests both itself (S-44).

@@ -10,8 +10,9 @@
 # with --venv, which runs the venv interpreter only when pyvenv.cfg names the install-tools Python; it runs from the checkout
 # root with root-relative paths, because the kit reporter names the file group relative to the working directory.
 ROOT := ../..
-# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
-RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
+# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages). It takes its working
+# directory as the checkout root, so the test target runs it there and names every path from the root.
+RUN_TESTS := node node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
 # PYTHON is not an override: the kit tool makes the venv from var/tools/mise/shims/python3 of the checkout, and this check names that
 # interpreter too.
@@ -41,8 +42,8 @@ install:
 gen:
 	$(FSM_GEN) gen --project $(ROOT) --kind python --out $(DEST)/src/polyspec_fsm
 	$(FSM_GEN) vectors --project $(ROOT) --kind python --out $(DEST)/tests/vectors.py
-	$(VENV)/bin/orm-gen gen --schema $(ROOT)/schema/persist.dbs --out $(DEST)/examples/model
+	$(VENV)/bin/orm-gen gen --set $(ROOT)/schema/dbspec-set.json --out $(DEST)/examples/model
 
 test:
 	@test -x $(VENV)/bin/python || { echo "test: $(VENV) is missing; run make install first"; exit 1; }
-	$(RUN_TESTS) python --venv $(CURDIR)/$(VENV) --results .results/python.json --inputs packages/fsm-python --inputs schema/persist.dbs -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests
+	cd $(ROOT) && $(RUN_TESTS) python --venv $(CURDIR)/$(VENV) --results .results/python.json --inputs packages/fsm-python --inputs schema/persist.dbs --inputs schema/dbspec-set.json -- discover -s packages/fsm-python/tests -t packages/fsm-python/tests

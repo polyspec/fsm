@@ -50,4 +50,138 @@ final class Item extends Model
     {
         return $this->writeColumn('status', $v);
     }
+
+    public function addColumnId(): static
+    {
+        $this->__call('addColumnId', func_get_args());
+        return $this;
+    }
+
+    public function addColumnStatus(): static
+    {
+        $this->__call('addColumnStatus', func_get_args());
+        return $this;
+    }
+
+    public function avgId(): static
+    {
+        $this->__call('avgId', func_get_args());
+        return $this;
+    }
+
+    public function avgStatus(): static
+    {
+        $this->__call('avgStatus', func_get_args());
+        return $this;
+    }
+
+    public function groupById(): static
+    {
+        $this->__call('groupById', func_get_args());
+        return $this;
+    }
+
+    public function groupByStatus(): static
+    {
+        $this->__call('groupByStatus', func_get_args());
+        return $this;
+    }
+
+    /** The condition of id: a value, a list, a value function, a model, or a column function and its compared value. */
+    public function id(mixed $value, mixed ...$compared): static
+    {
+        $this->__call('id', func_get_args());
+        return $this;
+    }
+
+    public function keyNameId(): static
+    {
+        $this->__call('keyNameId', func_get_args());
+        return $this;
+    }
+
+    public function keyNameStatus(): static
+    {
+        $this->__call('keyNameStatus', func_get_args());
+        return $this;
+    }
+
+    public function minusId(int|float $n): static
+    {
+        $this->__call('minusId', func_get_args());
+        return $this;
+    }
+
+    public function minusStatus(int|float $n): static
+    {
+        $this->__call('minusStatus', func_get_args());
+        return $this;
+    }
+
+    public function orderByIdAsc(\Polyspec\Orm\Func ...$fn): static
+    {
+        $this->__call('orderByIdAsc', func_get_args());
+        return $this;
+    }
+
+    public function orderByIdDesc(\Polyspec\Orm\Func ...$fn): static
+    {
+        $this->__call('orderByIdDesc', func_get_args());
+        return $this;
+    }
+
+    public function orderByStatusAsc(\Polyspec\Orm\Func ...$fn): static
+    {
+        $this->__call('orderByStatusAsc', func_get_args());
+        return $this;
+    }
+
+    public function orderByStatusDesc(\Polyspec\Orm\Func ...$fn): static
+    {
+        $this->__call('orderByStatusDesc', func_get_args());
+        return $this;
+    }
+
+    public function plusId(int|float $n): static
+    {
+        $this->__call('plusId', func_get_args());
+        return $this;
+    }
+
+    public function plusStatus(int|float $n): static
+    {
+        $this->__call('plusStatus', func_get_args());
+        return $this;
+    }
+
+    public function removeColumnId(): static
+    {
+        $this->__call('removeColumnId', func_get_args());
+        return $this;
+    }
+
+    public function removeColumnStatus(): static
+    {
+        $this->__call('removeColumnStatus', func_get_args());
+        return $this;
+    }
+
+    /** The condition of status: a value, a list, a value function, a model, or a column function and its compared value. */
+    public function status(mixed $value, mixed ...$compared): static
+    {
+        $this->__call('status', func_get_args());
+        return $this;
+    }
+
+    public function sumId(): static
+    {
+        $this->__call('sumId', func_get_args());
+        return $this;
+    }
+
+    public function sumStatus(): static
+    {
+        $this->__call('sumStatus', func_get_args());
+        return $this;
+    }
 }

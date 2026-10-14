@@ -17,8 +17,8 @@ published: it is used from this repository.
 
 ## Set up
 
-1. Install the packages from the repository root with `make db-deps`. It installs `@polyspec/orm` and
-   `@polyspec/ordered-json` v0.0.7 from their release tarballs, pinned in `package-lock.json`.
+1. Install the packages from the repository root with `make db-deps`. It installs `@polyspec/orm` v0.0.14 and
+   `@polyspec/ordered-json` v0.0.8 from their release tarballs, pinned in `package-lock.json`.
 2. Create `fsm.config.json` in the project root. The only accepted form for the database is:
 
    ```json
@@ -58,7 +58,7 @@ outside fsm (in SQL) leave no record that a command could compare, so they are n
 ## DSN
 
 The DSN is the value of the environment variable that `dsnEnv` names. fsm-db reads no DSN from any other place. The
-DSN forms that orm v0.0.7 documents (`docs/config.md` of the orm repository) are:
+DSN forms that orm v0.0.14 documents (`docs/config.md` of the orm repository) are:
 
 ```text
 mysql://user:password@host:3306/orm_example
@@ -96,7 +96,7 @@ stderr (`-` in place of a missing machine).
 
 ### install
 
-Installs the six tables, and the table of orm itself, through orm `utils().schema().install`. The behaviour, as observed with orm v0.0.7
+Installs the six tables, and the table of orm itself, through orm `utils().schema().install`. The behaviour, as observed with orm v0.0.14
 and tested in `tests/cli.test.mjs`, depends on the database:
 
 - No table exists: the tables are created and the command prints `[fsm-db] install: ok`, exit 0.

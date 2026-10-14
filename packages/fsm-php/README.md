@@ -154,7 +154,7 @@ writes nothing. `open`, `seed` and `statusOf` in the same file create the tables
 From the checkout:
 
 ```sh
-make -C packages/fsm-php install   # composer install: the pinned orm release and PHPUnit 12.5.38 (composer.lock)
+make -C packages/fsm-php install   # composer install: the pinned orm release and PHPUnit 13.4.2 (composer.lock)
 make -C packages/fsm-php test      # PHPUnit through kit's run-tests
 make test-php                      # the same from the root
 make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)

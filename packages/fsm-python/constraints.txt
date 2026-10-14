@@ -1,9 +1,9 @@
 cffi==2.1.1
 cryptography==50.0.2
-polyspec-ordered-json @ https://github.com/polyspec/ordered-json/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/ordered-json-python#sha256=b2f645a0bf4b9427213288a7ccefc65a6dd1dc50ed82fd94855c98482a559a39
-polyspec-orm @ https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/orm-python#sha256=79d9c99b00a0813106511b26d14e1f8b14e92c2472049b3dbcd95e8f668eca16
-psycopg==3.3.6
+polyspec-ordered-json @ https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec_ordered_json-0.0.8-py3-none-any.whl#sha256=db981125f5ed860ebe242e6afd18015c7cc29719b0ab200ceed44aedefec645a
+polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.14/polyspec_orm-0.0.14-py3-none-any.whl#sha256=a4a096f2eaa10a32ce8febcb7c071dc78914fd8a3ef2373bcd6e6ab3803b5ca5
 psycopg-binary==3.3.6
+psycopg==3.3.6
 pycparser==3.11
 pymysql==1.2.3
 pyyaml==6.0.3

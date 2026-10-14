@@ -196,7 +196,7 @@ test('a save on the database refuses a swap of the stored codes and changes no r
 test('the generated models are the ones orm-gen produces from the schema and the scan of src', () => {
   const packageDir = new URL('..', import.meta.url).pathname;
   const out = tempDir();
-  const result = spawnSync(path.join(packageDir, 'node_modules/.bin/orm-gen'), ['gen', '--schema', '../../schema/fsm.dbs', '--out', out, '--scan', 'src'], { cwd: packageDir, encoding: 'utf8' });
+  const result = spawnSync(path.join(packageDir, 'node_modules/.bin/orm-gen'), ['gen', '--set', 'schema/dbspec-set.json', '--out', out, '--scan', 'src'], { cwd: packageDir, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(readFileSync(path.join(out, 'models.ts'), 'utf8'), readFileSync(path.join(packageDir, 'src/models/models.ts'), 'utf8'));
 });
