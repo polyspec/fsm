@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c0e118556bd1f9f866fb7b06f6c894d17f9d3e0c355ecee235202ebfa79cbeac -->
+<!-- source-sha256: 6c57785d15f4e01229c520fd68120ae5938b7267c9d5d25a3efc99ea40c41875 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-8-1: `config/release-assets.json`이 orm과 ordered-json의 release zip을 고정하고, kit의 `make release-assets-fetch`가 그것을 packages/php와 packages/php-ext의 Composer artifact repository인 var/composer-artifacts에 받는다. `composer-artifacts` recipe와 `config/composer-artifacts.txt`는 제거했다.
 - S-44-16: 공유 도구가 kit 0.0.44다. `make install-tools`가 `rust-toolchain.toml`의 Rust toolchain을 설치하므로 CI는 자체 rustup step을 실행하지 않고, ruff는 cache를 var/ruff에 두며, knip은 `config/knip-entries.json`의 entry를 받는다.
 - S-44-14: fsm의 PHP가 phpcs를 통과한다. 생성된 ConformanceTest.php는 method `testConformance` 하나를 data provider `cases()` 위에서 실행하고 case마다 이름이 `<feature>__<id>`인 data set을 두며 parity는 이를 symbol로 실행한다(kit K137). 생성된 throw는 인자 하나에 한 줄을 쓴다.
 - S-44-13: rustls는 RUSTSEC-2026-0346~0349를 고친 0.23.46이고 playwright는 1.64.1이다.
