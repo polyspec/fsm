@@ -126,10 +126,10 @@ test('make -n install of the package makes the venv with the kit python-venv, ne
   assert.doesNotMatch(result.stdout, /-m venv/, `install runs -m venv itself:\n${result.stdout}`);
 });
 
-test('the package Makefile installs pylock.toml, which kit's python-lock writes, and writes no lock of its own (S-44)', () => {
+test("the package Makefile installs pylock.toml, which kit's python-lock writes, and writes no lock of its own (S-44)", () => {
   const makefile = readFileSync(path.join(PACKAGE, 'Makefile'), 'utf8');
   assert.match(makefile, /\$\(UV\) pip install --python \$\(VENV\)\/bin\/python --link-mode copy -r \$\(PYLOCK\)/);
-  assert.doesNotMatch(makefile, /\$\(UV\) (export|lock)\b/, 'the package Makefile writes or checks a lock itself; kit's python-lock does');
+  assert.doesNotMatch(makefile, /\$\(UV\) (export|lock)\b/, "the package Makefile writes or checks a lock itself; kit's python-lock does");
   assert.doesNotMatch(makefile, /-m venv/, 'the package Makefile runs -m venv itself; the kit python-venv makes the venv');
   assert.match(makefile, /python-venv DIR=packages\/fsm-python\/\.venv/);
   assert.match(makefile, /--link-mode copy/);
