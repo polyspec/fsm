@@ -5,6 +5,8 @@
 # The test target runs phpunit with this directory as its working directory (run-tests --cwd); its --results and --inputs paths
 # are relative to the checkout root, as in the npm package.
 ROOT := ../..
+# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
+RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 NAMESPACE := Polyspec\FsmTest
@@ -21,4 +23,4 @@ gen:
 	./vendor/bin/orm-gen gen --out $(DEST)/examples/model --namespace '$(NAMESPACE)\Model' $(ROOT)/schema/persist.dbs
 
 test:
-	node $(ROOT)/scripts/kit/run-tests.mjs phpunit --cwd packages/fsm-php --results .results/php.json --inputs packages/fsm-php --inputs schema/persist.dbs -- tests
+	$(RUN_TESTS) phpunit --cwd packages/fsm-php --results .results/php.json --inputs packages/fsm-php --inputs schema/persist.dbs -- tests

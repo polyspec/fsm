@@ -1,0 +1,331 @@
+# The folder layout of fsm (S5, S7, S9), checked by make layout-check: the common rules of config/layout.kit.yml (a copy of
+# kit) and the map of this repository. fsm has the runtime ports of its spec and three components: the compiler, the DB
+# store and the GUI. Each path that this map does not allow is a finding of layout-check until the item that moves it
+# lands (docs/plans/execution-checklist.md).
+version: 1
+extends:
+  - layout.kit.yml
+
+rules:
+  - extends_template: no-repository-prefix
+    id: layout-no-repository-prefix
+    vars: { repo: fsm }
+
+  - extends_template: go-module-path
+    id: layout-go-module-path
+    vars: { repo: fsm }
+
+  # The components of fsm beside the runtime ports: the compiler (fsm-gen), the DB store and the GUI (docs/plans/fsm-v1.md, C-5 to C-7).
+  - id: layout-packages
+    paths:
+      - "packages/*"
+      - "!packages/go"
+      - "!packages/php"
+      - "!packages/php-ext"
+      - "!packages/python"
+      - "!packages/rust"
+      - "!packages/ts"
+      - "!packages/js"
+      - "!packages/compiler"
+      - "!packages/db"
+      - "!packages/gui"
+
+  # The tool tests of the root: the checks of scripts/ (check-name, check-readmes, gen-check), the documentation site, the
+  # make targets of the package dependencies and of the Python toolchain, and the CI workflows.
+  - id: layout-root-tests
+    paths:
+      - "tests/*"
+      - "!tests/check-name"
+      # The shared helper of the root tool tests (a temporary Git checkout); it holds no test.
+      - "!tests/support"
+      - "!tests/check-readmes"
+      - "!tests/docs-build"
+      - "!tests/gen-check"
+      - "!tests/make-install"
+      - "!tests/python-tools"
+      - "!tests/workflows"
+
+  # ---- The kind packages (docs/plans/fsm-v1.md, C-2; S-44 moved these rules from fsm's own check-layout) ----------------
+  # Every kind package holds the canonical files and folders, the required files of its kind, and only files that its kind
+  # allows. The language-inherent difference of rust: it has no examples/model/, because its build.rs generates the orm model of
+  # schema/persist.dbs into OUT_DIR.
+  - id: layout-go-required
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-go"
+    require:
+      - { kind: file_exists, paths: "{path}/README.md" }
+      - { kind: file_exists, paths: "{path}/README.ko.md" }
+      - { kind: file_exists, paths: "{path}/Makefile" }
+      - { kind: file_exists, paths: "{path}/go.mod" }
+      - { kind: file_exists, paths: "{path}/go.sum" }
+      - { kind: file_exists, paths: "{path}/tests/conformance_test.go" }
+      - { kind: file_exists, paths: "{path}/tests/vectors_test.go" }
+      - { kind: file_exists, paths: "{path}/examples/persist.go" }
+    message: "C-2: the go package holds the canonical files and the required files of its kind"
+
+  - id: layout-go-folders
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-go"
+    require:
+      - { kind: file_exists, paths: "{path}/src/**" }
+      - { kind: file_exists, paths: "{path}/tests/**" }
+      - { kind: file_exists, paths: "{path}/examples/**" }
+    message: "C-2: the go package holds a file in each canonical folder (src, tests, examples)"
+
+  - id: layout-go-files
+    kind: file_absent
+    level: error
+    paths:
+      - "packages/fsm-go/**"
+      - "!packages/fsm-go/README.md"
+      - "!packages/fsm-go/README.ko.md"
+      - "!packages/fsm-go/Makefile"
+      - "!packages/fsm-go/go.mod"
+      - "!packages/fsm-go/go.sum"
+      - "!packages/fsm-go/tests/conformance_test.go"
+      - "!packages/fsm-go/tests/vectors_test.go"
+      - "!packages/fsm-go/examples/persist.go"
+      - "!packages/fsm-go/src/**/*.go"
+      - "!packages/fsm-go/examples/model/**"
+    message: "C-2: a file that the go package does not allow; add it to its canonical, required or allowed files with its reason"
+
+  - id: layout-npm-required
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-npm"
+    require:
+      - { kind: file_exists, paths: "{path}/README.md" }
+      - { kind: file_exists, paths: "{path}/README.ko.md" }
+      - { kind: file_exists, paths: "{path}/Makefile" }
+      - { kind: file_exists, paths: "{path}/package.json" }
+      - { kind: file_exists, paths: "{path}/package-lock.json" }
+      - { kind: file_exists, paths: "{path}/tests/conformance.test.mjs" }
+      - { kind: file_exists, paths: "{path}/tests/vectors.mjs" }
+      - { kind: file_exists, paths: "{path}/examples/persist.mjs" }
+    message: "C-2: the npm package holds the canonical files and the required files of its kind"
+
+  - id: layout-npm-folders
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-npm"
+    require:
+      - { kind: file_exists, paths: "{path}/src/**" }
+      - { kind: file_exists, paths: "{path}/tests/**" }
+      - { kind: file_exists, paths: "{path}/examples/**" }
+    message: "C-2: the npm package holds a file in each canonical folder (src, tests, examples)"
+
+  - id: layout-npm-files
+    kind: file_absent
+    level: error
+    paths:
+      - "packages/fsm-npm/**"
+      - "!packages/fsm-npm/README.md"
+      - "!packages/fsm-npm/README.ko.md"
+      - "!packages/fsm-npm/Makefile"
+      - "!packages/fsm-npm/package.json"
+      - "!packages/fsm-npm/package-lock.json"
+      - "!packages/fsm-npm/tests/conformance.test.mjs"
+      - "!packages/fsm-npm/tests/vectors.mjs"
+      - "!packages/fsm-npm/examples/persist.mjs"
+      - "!packages/fsm-npm/src/*.js"
+      - "!packages/fsm-npm/src/*.d.ts"
+      - "!packages/fsm-npm/examples/model/**"
+      # the type check of the generated declarations (S-09-2, make npm-types): TypeScript compiles tests/types/consumer.ts in strict mode against src/*.d.ts; only npm ships declaration files
+      - "!packages/fsm-npm/tests/types.test.mjs"
+      # the consumer files that the type check compiles (tests/types/consumer.ts); they are compiled, not run, so they have no vector case
+      - "!packages/fsm-npm/tests/types/**"
+      # the concurrency proof of the persistence pattern (B-4, plan C-4): two transactions of one row, concurrent on postgres and mysql, run through the dialect helper of fsm-db; a tool test with its own record (make npm-persist-test*), so the vector record of the kind holds the vector cases alone
+      - "!packages/fsm-npm/tests/persist-dialects.test.mjs"
+    message: "C-2: a file that the npm package does not allow; add it to its canonical, required or allowed files with its reason"
+
+  - id: layout-php-required
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-php"
+    require:
+      - { kind: file_exists, paths: "{path}/README.md" }
+      - { kind: file_exists, paths: "{path}/README.ko.md" }
+      - { kind: file_exists, paths: "{path}/Makefile" }
+      - { kind: file_exists, paths: "{path}/composer.json" }
+      - { kind: file_exists, paths: "{path}/composer.lock" }
+      - { kind: file_exists, paths: "{path}/tests/ConformanceCase.php" }
+      - { kind: file_exists, paths: "{path}/tests/ConformanceTest.php" }
+      - { kind: file_exists, paths: "{path}/examples/persist.php" }
+    message: "C-2: the php package holds the canonical files and the required files of its kind"
+
+  - id: layout-php-folders
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-php"
+    require:
+      - { kind: file_exists, paths: "{path}/src/**" }
+      - { kind: file_exists, paths: "{path}/tests/**" }
+      - { kind: file_exists, paths: "{path}/examples/**" }
+    message: "C-2: the php package holds a file in each canonical folder (src, tests, examples)"
+
+  - id: layout-php-files
+    kind: file_absent
+    level: error
+    paths:
+      - "packages/fsm-php/**"
+      - "!packages/fsm-php/README.md"
+      - "!packages/fsm-php/README.ko.md"
+      - "!packages/fsm-php/Makefile"
+      - "!packages/fsm-php/composer.json"
+      - "!packages/fsm-php/composer.lock"
+      - "!packages/fsm-php/tests/ConformanceCase.php"
+      - "!packages/fsm-php/tests/ConformanceTest.php"
+      - "!packages/fsm-php/examples/persist.php"
+      - "!packages/fsm-php/src/**/*.php"
+      - "!packages/fsm-php/examples/model/**"
+    message: "C-2: a file that the php package does not allow; add it to its canonical, required or allowed files with its reason"
+
+  - id: layout-rust-required
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-rust"
+    require:
+      - { kind: file_exists, paths: "{path}/README.md" }
+      - { kind: file_exists, paths: "{path}/README.ko.md" }
+      - { kind: file_exists, paths: "{path}/Makefile" }
+      - { kind: file_exists, paths: "{path}/Cargo.toml" }
+      - { kind: file_exists, paths: "{path}/Cargo.lock" }
+      - { kind: file_exists, paths: "{path}/build.rs" }
+      - { kind: file_exists, paths: "{path}/tests/conformance.rs" }
+      - { kind: file_exists, paths: "{path}/tests/vectors.rs" }
+      - { kind: file_exists, paths: "{path}/examples/persist.rs" }
+    message: "C-2: the rust package holds the canonical files and the required files of its kind"
+
+  - id: layout-rust-folders
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-rust"
+    require:
+      - { kind: file_exists, paths: "{path}/src/**" }
+      - { kind: file_exists, paths: "{path}/tests/**" }
+      - { kind: file_exists, paths: "{path}/examples/**" }
+    message: "C-2: the rust package holds a file in each canonical folder (src, tests, examples)"
+
+  - id: layout-rust-files
+    kind: file_absent
+    level: error
+    paths:
+      - "packages/fsm-rust/**"
+      - "!packages/fsm-rust/README.md"
+      - "!packages/fsm-rust/README.ko.md"
+      - "!packages/fsm-rust/Makefile"
+      - "!packages/fsm-rust/Cargo.toml"
+      - "!packages/fsm-rust/Cargo.lock"
+      - "!packages/fsm-rust/build.rs"
+      - "!packages/fsm-rust/tests/conformance.rs"
+      - "!packages/fsm-rust/tests/vectors.rs"
+      - "!packages/fsm-rust/examples/persist.rs"
+      - "!packages/fsm-rust/src/*.rs"
+      # the retry test of the persist example (B-4: a deadlock runs the transaction again, another error does not): a tool test with its own record (make rust-persist-test, S-31); the conformance test of the kind holds the vector cases alone for kit's parity check
+      - "!packages/fsm-rust/tests/persist_retry.rs"
+    message: "C-2: a file that the rust package does not allow; add it to its canonical, required or allowed files with its reason"
+
+  - id: layout-python-required
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-python"
+    require:
+      - { kind: file_exists, paths: "{path}/README.md" }
+      - { kind: file_exists, paths: "{path}/README.ko.md" }
+      - { kind: file_exists, paths: "{path}/Makefile" }
+      - { kind: file_exists, paths: "{path}/pyproject.toml" }
+      - { kind: file_exists, paths: "{path}/constraints.txt" }
+      - { kind: file_exists, paths: "{path}/pylock.toml" }
+      - { kind: file_exists, paths: "{path}/tests/test_conformance.py" }
+      - { kind: file_exists, paths: "{path}/tests/vectors.py" }
+      - { kind: file_exists, paths: "{path}/examples/persist.py" }
+    message: "C-2: the python package holds the canonical files and the required files of its kind"
+
+  - id: layout-python-folders
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-python"
+    require:
+      - { kind: file_exists, paths: "{path}/src/**" }
+      - { kind: file_exists, paths: "{path}/tests/**" }
+      - { kind: file_exists, paths: "{path}/examples/**" }
+    message: "C-2: the python package holds a file in each canonical folder (src, tests, examples)"
+
+  - id: layout-python-files
+    kind: file_absent
+    level: error
+    paths:
+      - "packages/fsm-python/**"
+      - "!packages/fsm-python/README.md"
+      - "!packages/fsm-python/README.ko.md"
+      - "!packages/fsm-python/Makefile"
+      - "!packages/fsm-python/pyproject.toml"
+      - "!packages/fsm-python/constraints.txt"
+      - "!packages/fsm-python/pylock.toml"
+      - "!packages/fsm-python/tests/test_conformance.py"
+      - "!packages/fsm-python/tests/vectors.py"
+      - "!packages/fsm-python/examples/persist.py"
+      - "!packages/fsm-python/src/polyspec_fsm/*.py"
+      - "!packages/fsm-python/examples/model/**"
+    message: "C-2: a file that the python package does not allow; add it to its canonical, required or allowed files with its reason"
+
+  - id: layout-php-ext-required
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-php-ext"
+    require:
+      - { kind: file_exists, paths: "{path}/README.md" }
+      - { kind: file_exists, paths: "{path}/README.ko.md" }
+      - { kind: file_exists, paths: "{path}/Makefile" }
+      - { kind: file_exists, paths: "{path}/composer.json" }
+      - { kind: file_exists, paths: "{path}/composer.lock" }
+      - { kind: file_exists, paths: "{path}/tests/ConformanceCase.php" }
+      - { kind: file_exists, paths: "{path}/tests/ConformanceTest.php" }
+      - { kind: file_exists, paths: "{path}/examples/persist.php" }
+    message: "C-2: the php-ext package holds the canonical files and the required files of its kind"
+
+  - id: layout-php-ext-folders
+    kind: for_each_dir
+    level: error
+    select: "packages/fsm-php-ext"
+    require:
+      - { kind: file_exists, paths: "{path}/src/**" }
+      - { kind: file_exists, paths: "{path}/tests/**" }
+      - { kind: file_exists, paths: "{path}/examples/**" }
+    message: "C-2: the php-ext package holds a file in each canonical folder (src, tests, examples)"
+
+  - id: layout-php-ext-files
+    kind: file_absent
+    level: error
+    paths:
+      - "packages/fsm-php-ext/**"
+      - "!packages/fsm-php-ext/README.md"
+      - "!packages/fsm-php-ext/README.ko.md"
+      - "!packages/fsm-php-ext/Makefile"
+      - "!packages/fsm-php-ext/composer.json"
+      - "!packages/fsm-php-ext/composer.lock"
+      - "!packages/fsm-php-ext/tests/ConformanceCase.php"
+      - "!packages/fsm-php-ext/tests/ConformanceTest.php"
+      - "!packages/fsm-php-ext/examples/persist.php"
+      - "!packages/fsm-php-ext/src/**"
+      - "!packages/fsm-php-ext/examples/model/**"
+    message: "C-2: a file that the php-ext package does not allow; add it to its canonical, required or allowed files with its reason"
+
+  # The php and php-ext packages hold the same tests (C-2): the php-ext tests are the php tests, byte for byte.
+  - id: layout-php-twin
+    kind: cross_file
+    level: error
+    relation: identical
+    source: { file: "packages/fsm-php/tests/ConformanceCase.php" }
+    targets: [{ file: "packages/fsm-php-ext/tests/ConformanceCase.php" }]
+    message: "C-2: the php-ext tests are byte-identical to the php tests"
+
+  - id: layout-php-twin-test
+    kind: cross_file
+    level: error
+    relation: identical
+    source: { file: "packages/fsm-php/tests/ConformanceTest.php" }
+    targets: [{ file: "packages/fsm-php-ext/tests/ConformanceTest.php" }]
+    message: "C-2: the php-ext tests are byte-identical to the php tests"

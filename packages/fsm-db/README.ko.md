@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: cf8c921ac62499b67fbf3a33519ed895fa043ef32acb88fd54b0f0e048e229f2 -->
+<!-- source-sha256: 53bd3018ae06c98c2687413982c12a0c15b1e794793960ba8a2df285d084efaf -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -196,7 +196,7 @@ $ fsm-gen check --project ./export
 
 ## 검사
 
-`make db-test`는 이 패키지의 테스트를 `scripts/kit/run-tests.mjs`로 실행한다. 먼저 `make db-deps`가 필요하다. 모든 테스트는
+`make db-test`는 이 패키지의 테스트를 kit의 test runner(`@polyspec/kit`의 `run-tests`)로 실행한다. 먼저 `make db-deps`가 필요하다. 모든 테스트는
 SQLite에서 실행한다. store, CLI, command 테스트는 PostgreSQL과 MySQL에서도 실행한다(`make db-test-postgres`, `make db-test-mysql`). 각각 `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`의 DSN과, CLI 테스트의 빈 database를 만드는 `FSM_TEST_PG_ADMIN_DSN`과 `FSM_TEST_MYSQL_ADMIN_DSN`을 쓴다.
 
 - `tests/db-store.test.mjs`는 store를 검사한다: json → db → json과 db → json → db가 같은 파일과 행을 준다. 64자 key는 바뀌지 않고

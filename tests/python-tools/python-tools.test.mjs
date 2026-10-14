@@ -1,17 +1,16 @@
 // Tests of the Python of the checkout (docs/plans/execution-checklist.md, S-41; docs/plans/fsm-v1.md, C-1 and Verification).
-// The Python 3.14 of the python package comes from `make install-tools`: the kit installs the pythonBuild of
-// config/toolchain.json into var/tools and links var/tools/bin/python3 to it. No uv installs an interpreter, and the
-// Makefile has no install-python target. The tests run `make -n` on a copy of the Makefile, the kit targets, the layout and
-// the package Makefiles in a temporary directory: make only prints the recipes, so no network is used and nothing is installed.
+// The Python 3.14 of the python package comes from `make install-tools`: the kit installs the uv of config/toolchain.json and
+// then, with that uv, the pythonBuild into var/tools (var/tools/bin/python3). No recipe of fsm installs an interpreter, and the
+// Makefile has no install-python target. The tests run `make -n` on a copy of the Makefile, the kit targets of the installed
+// @polyspec/kit, config/parity.json (the kinds) and the package Makefiles in a temporary directory: make only prints the
+// recipes, so no network is used and nothing is installed.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { venvProblem } from '../../scripts/kit/python-venv.mjs';
-import { put, tree } from '../kit/tree.mjs';
+import { put, tree } from '../support/tree.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const PYTHON_BIN = 'var/tools/bin/python3';
@@ -28,7 +27,7 @@ const LOCKS = [
   'packages/fsm-php/composer.json',
   'packages/fsm-php-ext/composer.lock',
   'packages/fsm-php-ext/composer.json',
-  'packages/fsm-python/uv.lock',
+  'packages/fsm-python/pylock.toml',
   'packages/fsm-python/pyproject.toml',
   'packages/fsm-go/go.sum',
   'packages/fsm-rust/Cargo.lock',
@@ -37,7 +36,7 @@ const LOCKS = [
 /** A copy of the Makefile and of the files that it reads, without any installed dependency. */
 function sandbox(t) {
   const dir = tree(t, {});
-  for (const file of ['Makefile', 'scripts/kit/kit.mk', 'contracts/layout.json']) {
+  for (const file of ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json']) {
     mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
     copyFileSync(path.join(ROOT, file), path.join(dir, file));
   }
@@ -116,23 +115,8 @@ test('the python package runs the uv of var/tools, never a uv of PATH (S-44-2)',
   assert.match(makefileOf('packages/fsm-python'), /^UV := \$\(abspath \$\(ROOT\)\)\/var\/tools\/bin\/uv$/m);
 });
 
-// The environment of the python package (S-41): uv venv and uv sync write symbolic links that the runner refuses, so the
-// package makes its venv with the install-tools interpreter (--copies, --without-pip) and fills it with --link-mode copy.
+// The package venv is made by kit's python-venv (uv venv) and accepted by kit's runner; kit tests both itself (S-44).
 const PACKAGE = path.join(ROOT, 'packages/fsm-python');
-const VENV = path.join(PACKAGE, '.venv');
-
-test('the package venv is accepted by the runner: it holds no link and names the install-tools Python (S-41, kit K37)', () => {
-  assert.ok(existsSync(path.join(VENV, 'pyvenv.cfg')), 'packages/fsm-python/.venv is missing: run make install first');
-  assert.equal(venvProblem(VENV, ROOT), undefined, 'the runner refuses packages/fsm-python/.venv');
-});
-
-test('a venv made by uv venv is refused by the runner, because it holds symbolic links (S-41 RED case)', (t) => {
-  const dir = mkdtempSync(path.join(tmpdir(), 'python-tools-uv-'));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  const made = spawnSync('uv', ['venv', '--python', path.join(ROOT, 'var/tools/bin/python3'), path.join(dir, 'venv')], { encoding: 'utf8' });
-  assert.equal(made.status, 0, `uv venv failed: ${made.stderr}`);
-  assert.ok(venvProblem(path.join(dir, 'venv'), ROOT), 'the runner accepted a uv venv with symbolic links');
-});
 
 test('make -n install of the package makes the venv with the kit python-venv, never with -m venv (S-41-1, kit K44)', (t) => {
   const dir = sandbox(t);
@@ -142,9 +126,10 @@ test('make -n install of the package makes the venv with the kit python-venv, ne
   assert.doesNotMatch(result.stdout, /-m venv/, `install runs -m venv itself:\n${result.stdout}`);
 });
 
-test('the package Makefile exports pylock.toml from uv.lock and builds the venv without uv venv or uv sync', () => {
+test('the package Makefile installs pylock.toml, which kit's python-lock writes, and writes no lock of its own (S-44)', () => {
   const makefile = readFileSync(path.join(PACKAGE, 'Makefile'), 'utf8');
-  assert.match(makefile, /\$\(UV\) export --format pylock\.toml --frozen --no-emit-project/);
+  assert.match(makefile, /\$\(UV\) pip install --python \$\(VENV\)\/bin\/python --link-mode copy -r \$\(PYLOCK\)/);
+  assert.doesNotMatch(makefile, /\$\(UV\) (export|lock)\b/, 'the package Makefile writes or checks a lock itself; kit's python-lock does');
   assert.doesNotMatch(makefile, /-m venv/, 'the package Makefile runs -m venv itself; the kit python-venv makes the venv');
   assert.match(makefile, /python-venv DIR=packages\/fsm-python\/\.venv/);
   assert.match(makefile, /--link-mode copy/);

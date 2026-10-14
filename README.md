@@ -275,13 +275,16 @@ clone, so the command runs the code of that clone.
 ```sh
 git clone https://github.com/polyspec/fsm.git
 cd fsm
+make install-tools TOOLS=npm                       # once, online: the npm of packageManager (package.json)
+make install-packages                              # once, online: the root packages, @polyspec/kit among them
 make install                                       # once, online: the toolchains and every package dependency
 npm install -g ./packages/fsm-compiler             # fsm-gen: no dependencies
 make db-deps && npm install -g ./packages/fsm-db   # fsm-db: needs the orm packages
 make gui-build && npm install -g ./packages/fsm-gui # fsm-gui: builds the browser assets first
 ```
 
-`make install` downloads the toolchains of `var/tools` (the Python 3.14 of `pythonBuild` among them) and every package dependency once; a later run finds them installed and
+The first two commands install the shared tools of polyspec, the package `@polyspec/kit`, whose make targets the Makefile
+includes (`scripts/kit/kit-bootstrap.mk`); before them, only these two targets run. `make install` downloads the toolchains of `var/tools` (the Python 3.14 of `pythonBuild` among them) and every package dependency once; a later run finds them installed and
 downloads nothing. The first `npm install -g` is all that the json and mermaid stores need. `make db-deps` installs the orm
 packages of `packages/fsm-db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
 
@@ -428,8 +431,8 @@ table uses the machine `order` of the example above (B-6 of the definition).
 
 ## Checks
 
-`make check` runs the full suite of the repository once, over the committed tree (`node scripts/kit/full-run.mjs run` with the
-targets of `CHECK_TARGETS` in the Makefile). It needs every toolchain above. On a fresh clone, run `make install` once before it:
+`make check` runs the full suite of the repository once, over the committed tree (kit's `full-run.mjs run` with the
+targets of `CHECK_TARGETS` in the Makefile). It needs every toolchain above. On a fresh clone, run `make install-tools TOOLS=npm`, `make install-packages` and `make install` once before it:
 the toolchains come only from `make install`, while the targets of `make check` install the package dependencies they need. The
 checks that the documents depend on can be run one at a time:
 
@@ -446,7 +449,7 @@ checks that the documents depend on can be run one at a time:
 | `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | the DB store, CLI and command tests, the persistence concurrency proof of npm and the persist cases of each kind on PostgreSQL and MySQL; they read `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` (and `FSM_TEST_PG_ADMIN_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN` for the empty databases of the CLI tests), stop with exit 2 without them, and skip no dialect (plan C-6). The tests run on SQLite too (`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
 | `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | the tests of each language package |
 
-CI (`.github/workflows/ci.yml`) runs `make install` and then `make check` on every push to main, with PostgreSQL and MySQL services. The documentation site is published to https://polyspec.github.io/fsm/ by `.github/workflows/pages.yml`.
+CI (`.github/workflows/ci.yml`) installs kit (`make install-tools TOOLS=npm`, `make install-packages`) and runs `make install` and then `make check` on every push to main, with PostgreSQL and MySQL services. The documentation site is published to https://polyspec.github.io/fsm/ by `.github/workflows/pages.yml`.
 
 The conformance tests of each language package run the same vector cases, one test per case, named by the case name `<feature>__<id>` (php and python: the method `test_<feature>__<id>`), the name that kit's parity check (K33, `config/parity.json`) reads.
 `make gen-check` checks that the generated files of the packages are the ones that `fsm-gen` writes today.

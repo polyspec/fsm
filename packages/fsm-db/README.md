@@ -201,7 +201,7 @@ $ fsm-gen check --project ./export
 
 ## Checks
 
-`make db-test` runs the tests of this package through `scripts/kit/run-tests.mjs`; it needs `make db-deps` first. Everything
+`make db-test` runs the tests of this package through kit's test runner (`run-tests` of `@polyspec/kit`); it needs `make db-deps` first. Everything
 runs on SQLite; the store, CLI and command tests also run on PostgreSQL and MySQL (`make db-test-postgres`, `make db-test-mysql`)
 with the DSNs of `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` and the admin DSNs of `FSM_TEST_PG_ADMIN_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN`,
 which create the empty databases of the CLI tests.

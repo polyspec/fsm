@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "The checks that own each tracked path, read by scripts/kit/owner-check.mjs: during an item only the owners of the changed paths run; make check runs the full suite once per tree. Each checklist item adds the rules of the paths it creates.",
+  "comment": "The checks that own each tracked path, read by kit's owner-check: during an item only the owners of the changed paths run; make check runs the full suite once per tree. Each checklist item adds the rules of the paths it creates.",
   "owners": [
     {
       "paths": [
@@ -23,9 +23,17 @@
     {
       "paths": [
         "scripts/kit/**",
-        "tests/kit/**",
-        ".kit/**",
-        "kit.json",
+        "package.json",
+        "package-lock.json",
+        "PRINCIPLES.md",
+        "PRINCIPLES.ko.md",
+        "ruff.toml",
+        "phpcs.xml.dist",
+        "phpstan.dist.neon",
+        ".golangci.yml",
+        ".oxlintrc.json",
+        "knip.json",
+        ".editorconfig",
         "config/**",
         "Makefile",
         ".gitignore",
@@ -58,20 +66,10 @@
     },
     {
       "paths": [
-        "scripts/check-layout.mjs",
-        "tests/check-layout/**"
+        "config/layout.yml",
+        "config/layout.kit.yml"
       ],
       "targets": [
-        "layout-test",
-        "layout-check"
-      ]
-    },
-    {
-      "paths": [
-        "contracts/layout.json"
-      ],
-      "targets": [
-        "layout-test",
         "layout-check"
       ]
     },
@@ -116,13 +114,13 @@
     },
     {
       "paths": [
-        "contracts/layout.json"
+        "config/gen-check.json",
+        "config/parity.json"
       ],
       "targets": [
-        "layout-test",
-        "layout-check",
         "gen-check",
-        "packages-test"
+        "packages-test",
+        "parity-declarations-check"
       ]
     },
     {
@@ -217,9 +215,17 @@
     {
       "paths": [
         "scripts/kit/**",
-        "tests/kit/**",
-        ".kit/**",
-        "kit.json",
+        "package.json",
+        "package-lock.json",
+        "PRINCIPLES.md",
+        "PRINCIPLES.ko.md",
+        "ruff.toml",
+        "phpcs.xml.dist",
+        "phpstan.dist.neon",
+        ".golangci.yml",
+        ".oxlintrc.json",
+        "knip.json",
+        ".editorconfig",
         "config/**",
         "Makefile",
         ".gitignore",
@@ -378,10 +384,22 @@
     {
       "paths": [
         "packages/fsm-python/pyproject.toml",
-        "packages/fsm-python/uv.lock"
+        "packages/fsm-python/constraints.txt",
+        "packages/fsm-python/pylock.toml"
       ],
       "targets": [
         "python-lock-check"
+      ]
+    },
+    {
+      "paths": [
+        "tests/support/**"
+      ],
+      "targets": [
+        "name-test",
+        "readme-test",
+        "make-install-test",
+        "python-tools-test"
       ]
     }
   ]

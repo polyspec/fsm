@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ffacb963a146bfcc907d1ef2ab88e7a5",
+    "content-hash": "ff9fd82ab756ba2bdc5e8045b7ae8e7c",
     "packages": [
         {
             "name": "polyspec/ordered-json",
@@ -2029,7 +2029,7 @@
     },
     "platform-dev": {},
     "platform-overrides": {
-        "php": "8.5"
+        "php": "8.5.0"
     },
     "plugin-api-version": "2.9.0"
 }

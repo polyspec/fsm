@@ -10,9 +10,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = file => readFileSync(path.join(ROOT, file), 'utf8');
-// The workflows that kit.json vendors belong to kit: make kit-check keeps them byte for byte, so the rules of fsm's own workflows
-// below do not read them.
-const VENDORED = Object.keys(JSON.parse(read('kit.json')).vendoredFiles);
+// The workflows among the copies of kit (kit.copies of the installed @polyspec/kit) belong to kit: make kit-check keeps them
+// byte for byte, so the rules of fsm's own workflows below do not read them.
+const VENDORED = Object.keys(JSON.parse(read('node_modules/@polyspec/kit/package.json')).kit.copies).filter(file => file.startsWith('.github/workflows/'));
 const WORKFLOWS = readdirSync(path.join(ROOT, '.github/workflows')).filter(name => name.endsWith('.yml')).sort().map(name => `.github/workflows/${name}`)
   .filter(file => !VENDORED.includes(file));
 const CI = read('.github/workflows/ci.yml');
@@ -114,9 +114,10 @@ test('every uses: is pinned to a full commit with the version comment of the ver
   assert.deepEqual(failures, []);
 });
 
-test('the check job runs make install, then the playwright dependencies, then make check, and no other make target', () => {
-  assert.deepEqual(makeTargets(CHECK_JOB), ['install', 'check']);
-  const install = CHECK_JOB.indexOf('make install');
+test('the check job installs kit, then runs make install, the playwright dependencies and make check, and no other make target', () => {
+  assert.deepEqual(makeTargets(CHECK_JOB), ['install-tools', 'install-packages', 'install', 'check']);
+  assert.match(CHECK_JOB, /make install-tools TOOLS=npm\n\s+make install-packages\n/, 'the check job installs the npm of packageManager and then @polyspec/kit (S-44)');
+  const install = CHECK_JOB.indexOf('make install\n');
   const deps = CHECK_JOB.indexOf('install-deps chromium');
   const check = CHECK_JOB.indexOf('make check');
   assert.ok(install > 0 && deps > install && check > deps, 'the order must be make install, install-deps chromium, make check');
@@ -125,8 +126,8 @@ test('the check job runs make install, then the playwright dependencies, then ma
   assert.match(depsStep, /working-directory: packages\/fsm-gui/);
 });
 
-test('the pages job runs make docs-build only', () => {
-  assert.deepEqual(makeTargets(pages.get('pages')), ['docs-build']);
+test('the pages job installs kit and then runs make docs-build only', () => {
+  assert.deepEqual(makeTargets(pages.get('pages')), ['install-tools', 'install-packages', 'docs-build']);
 });
 
 test('the services and env of the check job are the lines of plan C-6, copied exactly', () => {
@@ -157,7 +158,9 @@ test('the node, go, php and rust versions come from the files that declare them'
   const rustStep = stepsOf(CHECK_JOB).find(step => step.includes('rustup toolchain install'));
   assert.ok(rustStep, 'the check job installs no rust toolchain with rustup');
   assert.match(rustStep, /rust-toolchain\.toml/);
-  assert.match(rustStep, /--profile minimal/);
+  assert.match(rustStep, /\n\s+rustup toolchain install\n/, 'rustup installs the channel, profile and components that rust-toolchain.toml names (S-44)');
+  assert.match(read('rust-toolchain.toml'), /^profile = "minimal"$/m);
+  assert.match(read('rust-toolchain.toml'), /^components = \["clippy"\]$/m, 'rust-toolchain.toml names clippy, which kit\'s lint-rust runs');
 });
 
 test('uv comes from config/toolchain.json through make install, and the workflow installs no uv of its own (S-44-2)', () => {

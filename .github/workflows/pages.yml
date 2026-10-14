@@ -31,6 +31,10 @@ jobs:
         with:
           node-version-file: .node-version
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: Install kit, the npm of packageManager and then @polyspec/kit of package-lock.json
+        run: |
+          make install-tools TOOLS=npm
+          make install-packages
       - name: Build the site
         run: make docs-build
         env:

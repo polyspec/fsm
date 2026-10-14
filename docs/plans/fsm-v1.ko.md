@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 9c0bda277346d2c234d0be52cfe861def652c2f7532d36a718dd80116fe1d420 -->
+<!-- source-sha256: ec56512dda73dbd28b34b5452f070467f529ac692235b103545f23156d9b2758 -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -11,7 +11,7 @@
 - 모델은 세 매체가 **공식 문법만으로** 손실 없이 담을 수 있을 만큼 단순하게 설계한다. 매체가 담지 못하는 부분이 생기면 모델이 과하다는 신호로 본다.
 - 도구는 다음을 쓴다: GUI는 hyper(Node 서버), CRUD 화면은 crudui, DB 접근은 orm.
 - 저장소는 옛 이름 `status`로 시작했다. S-01이 kit 채택과 함께 이 계획을 커밋했고, S-18이 라이브러리와 패키지·명령·파일 이름을 fsm으로 바꿨다(R12). kit를 채택한다.
-- 언어 패키지 6개는 폴더 구조가 동일하다. 언어 특성 차이만 `contracts/layout.json`에 명시해서 허용한다.
+- 언어 패키지 6개는 폴더 구조가 동일하다. 언어 특성 차이만 `config/layout.yml`에 명시해서 허용하며, kit의 `make layout-check`(alint)가 검사한다(S-44).
 - 언어 패키지는 배포 라이브러리가 아니라 소비자 입장의 검증대다.
 - 확정 사항
   - 값 모델 = enum만(bit flag 없음)
@@ -65,17 +65,17 @@
   - 결정은 연관 문서에 기록한다.
 - kit 규칙
   - 영문이 정본이다. `.ko.md`에는 `source-sha256`을 붙이고, 기술 용어는 영어 그대로 쓴다.
-  - 벤더 파일은 수정하지 않는다. 같은 트리에서는 같은 결과가 나와야 한다.
+  - kit의 사본(`@polyspec/kit`의 `kit.copies`)은 수정하지 않는다. 같은 트리에서는 같은 결과가 나와야 한다.
   - 공용 도구 변경은 kit에서 하고, kit 체크리스트(K 항목)로 운영한다.
 - 개발 사이클: RED 재현 → 구현 → GREEN 검증. 관측 가능한 기준을 항목에 적는다.
-- 루트 도구 테스트(check-layout, gen-check)의 fixture는 테스트가 임시 디렉터리에 만들고 커밋하지 않는다. 그래서 kit gate가 읽지 않는다.
+- 루트 도구 테스트(check-name, check-readmes, gen-check)의 fixture는 테스트가 임시 디렉터리에 만들고 커밋하지 않는다. 그래서 kit gate가 읽지 않는다.
 - 테스트 위치
   - 기능의 기본 테스트는 소유 패키지에 둔다.
     - compiler → `packages/fsm-compiler/tests`
     - DB store → `packages/fsm-db/tests`
     - GUI → `packages/fsm-gui/tests`
   - 언어 패키지에는 소비자 입장 테스트만 둔다.
-  - 루트에는 루트 도구(check-layout, gen-check)의 테스트와 벤더 `tests/kit/`만 둔다.
+  - 루트에는 루트 도구(C-1)의 테스트와 그 helper `tests/support/`만 둔다.
 - 테스트 실행
   - 모든 테스트는 kit `run-tests.mjs`로 실행한다. 이 runner가 케이스별 진행·경과시간 출력과 케이스별 timeout을 강제한다. 전체 timeout은 없다.
   - 벡터 케이스 1개 = 언어 테스트 1개다.
@@ -130,12 +130,12 @@
 ### C-1. 저장소
 ```
 fsm/
-  AGENTS.md(.ko) README.md(.ko) CHANGELOG.md(.ko) Makefile kit.json .kit/ .node-version rust-toolchain.toml .githooks/
-  .gitignore            # anchored only: /var/, /.results/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/fsm-python/**/__pycache__/, php-ext phpize output under /packages/fsm-php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/fsm-gui/build/, /packages/fsm-gui/public/assets/, /packages/fsm-php*/.phpunit.result.cache, /packages/fsm-php*/.phpunit.cache/
-  config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review}.json
-  scripts/kit/ tests/kit/                    # vendored from kit
-  scripts/check-layout.mjs scripts/check-name.mjs scripts/gen-check.mjs   tests/check-layout/ tests/check-name/ tests/docs-build/ tests/gen-check/ tests/python-tools/
-  contracts/layout.json (tools, kinds, canonical tree, allowed differences)   contracts/features.json
+  AGENTS.md(.ko) README.md(.ko) CHANGELOG.md(.ko) Makefile package.json package-lock.json PRINCIPLES.md(.ko) .node-version rust-toolchain.toml .githooks/
+  .gitignore            # anchored only: /var/, /.results/, /node_modules/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/fsm-python/**/__pycache__/, php-ext phpize output under /packages/fsm-php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/fsm-gui/build/, /packages/fsm-gui/public/assets/, /packages/fsm-php*/.phpunit.result.cache, /packages/fsm-php*/.phpunit.cache/
+  config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review,parity,gen-check}.json config/layout.yml
+  scripts/kit/kit-bootstrap.mk scripts/kit/bootstrap/ config/layout.kit.yml ...   # copies of @polyspec/kit (kit.copies; make kit-sync, make kit-check)
+  scripts/check-name.mjs scripts/check-readmes.mjs scripts/gen-check.mjs   tests/support/ tests/check-name/ tests/check-readmes/ tests/docs-build/ tests/gen-check/ tests/python-tools/
+  contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
   schema/fsm.schema.json  schema/fsm.dbs  schema/persist.dbs   # persist.dbs = shared by the six language package examples
@@ -149,11 +149,11 @@ fsm/
   - npm: release asset URL을 `dependencies`에 쓴다. 전이 `@polyspec/*`는 같은 URL로 `overrides`에 쓴다.
   - composer: `package` repository의 dist zip, `config.platform.php` 8.4.x
   - go: `require github.com/polyspec/orm v0.0.7`
-  - python: `polyspec-orm @ https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/orm-python`, ordered-json은 `[tool.uv] override-dependencies`로 `v0.0.7` tag의 archive에서 받는다(S-34-3)
+  - python: `polyspec-orm @ https://github.com/polyspec/orm/archive/refs/tags/v0.0.7.tar.gz#subdirectory=packages/orm-python`, ordered-json은 `[tool.uv] override-dependencies`로 `v0.0.7` tag의 archive에서 받는다(S-34-3). orm과 ordered-json v0.0.7은 wheel을 내지 않으므로 kit의 python-lock은 이 source archive를 고정할 수 없다. 해결은 wheel이 있는 릴리스로 옮기는 것이다(S-44, 등록된 항목)
   - cargo: `{ git = "https://github.com/polyspec/orm.git", tag = "v0.0.7" }`
   - `.node-version`에는 정확한 26.y.z 릴리스를 쓴다(hyper 요구. kit toolchain-declared.mjs는 `<major>.<minor>.<patch>`만 받는다).
 - 고정은 manifest와 lock 파일에 하고 `config/dependency-policy.json`에 적는다. kit gate는 npm URL, Composer `package` dist URL, python `git+…@tag`, cargo tag를 검사하지 않는다. 고정 확인은 리뷰 규칙이다(이를 도구로 요구하는 R은 없다). 단 python lock은 예외로 `make python-lock-check`가 검사한다(아래 결정).
-  - 결정(python lock, S-34): python 의존성 트리는 `packages/fsm-python/uv.lock`(`uv lock`, version 1)으로 잠근다. 레지스트리 package마다 정확한 버전과 각 artifact의 sha256을, polyspec 라이브러리마다 릴리스 tag의 archive와 그 sha256을 적는다(orm과 ordered-json은 `v0.0.7`. S-34-3: git package가 없으므로 uv와 pip 모두 lock을 hash와 함께 설치한다). `make -C packages/fsm-python install`은 이 lock에서 `pylock.toml`을 export하고(`uv export --format pylock.toml --frozen --no-emit-project`, PEP 751) `install-tools`의 Python에서 kit 도구가 만든 venv(`make python-venv DIR=packages/fsm-python/.venv`, S-41-1, kit K44: CPython venv를 `--copies --without-pip`로 만들고 64비트 Linux의 `lib64 -> lib` link를 제거한다)에 그 파일을 `uv pip install --link-mode copy`로 설치하므로 uv가 각 artifact를 hash와 대조한다(S-41: uv venv와 uv sync는 symbolic link를 쓰며 kit runner가 거부한다. `make install`은 새 venv를 만들기 전에 기존 venv를 지우므로 install은 오래된 venv를 만나지 않는다. kit 도구는 다른 Python의 venv를 이유와 함께 거부하고 아무것도 바꾸지 않으므로, 사용자는 그 디렉터리를 지우고 make install을 다시 실행한다. Linux 경우는 S-41의 CI 실패(실행 38118092530, package venv의 `lib64`)였고, fsm 자신의 Makefile은 이를 지울 수 없었다)(측정: 변조한 wheel hash는 `Hash mismatch for pyyaml==6.0.3`으로 거부된다). 형식을 hash가 든 requirements 파일이 아니라 uv.lock으로 정한 이유: `pip install --require-hashes`는 git requirement를 거부하므로(pip 26.2.1로 측정: `Can't verify hashes for these requirements because we don't have a way to hash version control repositories`) git package를 두 번째 설치 단계로 옮겨야 한다. kit gate는 Python manifest의 build-system과 optional requirement(`pythonManifests`)만 읽고 Python lock은 읽지 않으므로 고정되지 않은 런타임 의존성을 통과시킨다(측정: 추적 파일의 복사본에 `requests>=2`를 더하고 lock이 없으면 `check-dependency-policy.mjs`가 통과한다). `make python-lock-check`는 uv 자체의 검사다(S-34-3, fsm 스크립트 없음): `uv lock --check --offline`은 uv.lock이 pyproject.toml에 맞지 않으면 실패하고, `pylock.toml`(S-34-2, kit gate가 필수 정책 필드 `pythonLocks`(kit K36)로 읽는 PEP 751 파일)의 본문은 uv.lock의 새 `uv export --format pylock.toml --frozen --no-emit-project`와 같아야 한다. kit review 기록(`config/dependency-review.json`)은 이제 pylock.toml의 모든 전이 python package를 덮는다: 최신 릴리스와 advisory(review 시점 등록 registry 의존성 23개; S-34-1), git package(`vcs`: polyspec-orm과 polyspec-ordered-json, `v0.0.7`의 commit). 결정(S-34-1, S-34-2): python lock은 kit의 한 형식이며 kit gate가 덮는다. build backend `setuptools==84.0.0`은 pyproject.toml에서 버전으로 고정되고 격리된 환경에서 빌드되며, uv는 그 hash를 검사하지 않는다.
+  - 결정(python lock, S-34, S-44): python 의존성 트리는 kit의 유일한 Python lock 형식인 `packages/fsm-python/pylock.toml`(PEP 751)로 잠근다. kit의 `make python-lock`(ONLINE)이 `config/toolchain.json`의 uv로 `pyproject.toml`(requirement)과 `constraints.txt`(전이 package까지 모든 package의 고정: registry package는 `name==version`, polyspec archive는 `name @ <url>#sha256=<digest>`)에서 쓰고, kit의 `make python-lock-check`(offline)가 그 원본과 대조한다(kit K54). `config/dependency-policy.json`은 `pythonLocks`에 lock과 원본을 적으므로, kit gate와 review 기록(`config/dependency-review.json`)이 모든 전이 python package를 덮는다. fsm 자체의 uv.lock, 그 export, `lock-check`는 제거했다(S-44): 같은 트리의 두 번째 lock이었고, fsm의 `python-lock-check`가 같은 이름의 kit 타깃을 대체했기 때문이다. `make -C packages/fsm-python install`은 kit의 `make python-venv DIR=packages/fsm-python/.venv`가 install-tools의 Python으로 만든 venv에 pylock.toml을 `uv pip install --link-mode copy`로 설치하므로 uv가 각 artifact를 hash와 대조한다(S-34에서 측정: 변조한 wheel hash는 `Hash mismatch for pyyaml==6.0.3`으로 거부된다). `make install`은 새 venv를 만들기 전에 기존 venv를 지운다. orm과 ordered-json v0.0.7은 wheel을 내지 않고, 그 source archive에는 kit의 constraint가 담을 수 없는 `#subdirectory=` fragment가 필요하므로, fsm-python이 wheel을 내는 orm과 ordered-json 릴리스(orm은 v0.0.9부터, ordered-json은 v0.0.8부터)로 옮겨 `name @ <wheel asset URL>#sha256=<digest>`로 고정할 때까지 `make python-lock-check`는 실패한다(S-44의 등록 항목). build backend `setuptools==84.0.0`은 pyproject.toml에서 버전으로 고정되고 격리된 환경에서 빌드되며, uv는 그 hash를 검사하지 않는다.
 
 ### C-2. 언어 패키지 정규 구조 (6개 동일)
 ```
@@ -162,14 +162,14 @@ packages/fsm-<kind>/
   Makefile          # gen (gen + vectors --kind; flags only here; DEST ?= .)
                     # test (run-tests --cwd packages/fsm-<kind> --results .results/<kind>.json; paths resolve against the checkout root)
   <manifest>        # [allowed difference] depends on orm (SQLite) for tests and examples
-  <lock>            # [allowed difference] go.sum, package-lock.json, composer.lock, Cargo.lock (read by the kit dependency gate); python has `uv.lock` (S-34; `python-lock-check` reads it) and `pylock.toml`, its export that `uv pip install` reads (S-41; S-34-2 commits it)
+  <lock>            # [allowed difference] go.sum, package-lock.json, composer.lock, Cargo.lock (read by the kit dependency gate); python has `pylock.toml`, which kit's `make python-lock` writes from `pyproject.toml` and `constraints.txt` and `uv pip install` reads (S-34, S-44)
   src/…             # fsm-gen output only
   tests/conformance.<ext>   # hand-written check functions; except in rust, iterates the vectors and registers one test per case
   tests/vectors.<ext>       # fsm-gen output (language-native data); in rust, one #[test] per case
   examples/persist.<ext>    # B-4 orm persistence; tests run it with the persist vectors
   examples/model/           # orm-generated model from the root schema/persist.dbs (committed, covered by gen-check); rust uses build.rs as an allowed difference
 ```
-- `make gen`은 fsm-gen 출력과 orm-gen 출력을 함께 만든다. `contracts/layout.json`에서 kind의 `generated` glob이 이 출력이 쓰는 파일을 이름 짓고, `gen-check`는 정확히 그 파일을 비교한다.
+- `make gen`은 fsm-gen 출력과 orm-gen 출력을 함께 만든다. `config/gen-check.json`에서 kind의 glob이 이 출력이 쓰는 파일을 이름 짓고(kind는 `config/parity.json`의 implementation이다, S-44), `gen-check`는 정확히 그 파일을 비교한다.
 
 | kind | manifest | src | tests 비고 |
 |---|---|---|---|
@@ -180,12 +180,12 @@ packages/fsm-<kind>/
 | python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py`(케이스 이름 그대로의 메서드 생성), `vectors.py` |
 | rust | Cargo.toml(`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs`(`pub mod order; pub mod fsm;`), `order.rs`, `fsm.rs` | `conformance.rs`(`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`), persist 케이스는 `#[tokio::test]`, 생성 `tests/vectors.rs`는 `#![allow(non_snake_case)]`로 시작 |
 
-- check-layout이 실패시키는 경우
-  - `packages/fsm-*` 디렉터리 집합에서 `layout.json`의 `tools`에 적은 도구 패키지 `fsm-compiler`, `fsm-db`, `fsm-gui`를 뺀 집합이 `kinds`와 다름
-  - 추적 파일과 무시되지 않은 신규 파일이 정규 트리에서 벗어남(추가/누락/개명)
-  - php와 php-ext의 테스트가 바이트 단위로 다름
-  - layout.json 형식 오류
-  - 테스트 파일(허용 glob `tests/` 중 필수 집합 밖)이 layout.json의 `differences`에 이유와 함께 없거나, 선언된 차이가 kind의 허용 glob이 아닐 때
+- `make layout-check`(kit, `config/layout.yml`과 `config/layout.kit.yml`의 공통 규칙을 alint로 검사)가 실패하는 경우(S-44):
+  - 루트, `packages/`, 루트 `tests/`의 폴더나 파일이 layout이 선언한 것이 아니거나(S5, S7), `packages/` 아래 폴더가 `fsm-` 접두사를 갖거나, go.mod module 경로가 `github.com/polyspec/fsm/<folder>`가 아님
+  - kind 패키지에 정규 파일(`README.md`, `README.ko.md`, `Makefile`), 정규 폴더(`src`, `tests`, `examples`), kind의 필수 파일이 없거나, kind가 허용하지 않는 파일이 있음
+  - php와 php-ext의 `tests/` 파일이 바이트 단위로 다름
+  - `PYTHONPATH`가 있거나, 경로가 저장소를 벗어나거나, `scripts/`나 `tests/` 아래 인프라 스크립트가 TypeScript가 아님(S9)
+  필수 집합 밖의 허용 테스트 파일(npm의 `tests/types.test.mjs`, `tests/types/**`, `tests/persist-dialects.test.mjs`, rust의 `tests/persist_retry.rs`)은 규칙 위 주석에 이유를 적는다.
 - kind는 패키지 항목에서 하나씩 추가한다.
 
 ### C-3. 결과 기록 (K18)
@@ -260,7 +260,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - 루트 `gen-check`
   1. `fsm-gen vectors --out var/gen-check/conformance/vectors.json` 실행
   2. `kinds`의 각 패키지에서 `make gen DEST=$(CURDIR)/var/gen-check/<kind>` 실행
-  3. `scripts/gen-check.mjs`가 kit `trackedFiles`(추적 파일과 무시되지 않은 파일만 읽으므로 `__pycache__/`, php-ext `src/`의 phpize 산출물 같은 무시된 출력은 읽지 않는다)로 작업 트리와 비교한다. `conformance/vectors.json`, 각 패키지 `src/`·`tests/vectors.<ext>`·`examples/model/`(rust 제외)의 파일 집합이 같고 내용이 바이트 동일해야 한다. 각 패키지에서 비교하는 파일은 `contracts/layout.json`의 kind `generated` glob이 맞는 파일이며, 이 glob이 없는 kind는 `layout-config` finding이다.
+  3. `scripts/gen-check.mjs`가 `@polyspec/kit/tracked-files`의 `trackedFiles`(추적 파일과 무시되지 않은 파일만 읽으므로 `__pycache__/`, php-ext `src/`의 phpize 산출물 같은 무시된 출력은 읽지 않는다)로 작업 트리와 비교한다. `conformance/vectors.json`, 각 패키지 `src/`·`tests/vectors.<ext>`·`examples/model/`(rust 제외)의 파일 집합이 같고 내용이 바이트 동일해야 한다. 각 패키지에서 비교하는 파일은 `contracts/layout.json`의 kind `generated` glob이 맞는 파일이며, 이 glob이 없는 kind는 `layout-config` finding이다.
   - `gen-check-test`(`tests/gen-check/`) RED: 1바이트 변경 fixture, 파일 추가 fixture, 읽지 말아야 할 무시된 파일
 
 ### C-6. fsm-db `packages/fsm-db`
@@ -363,7 +363,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - 빌드: `make docs-build`는 `docs-deps`(`docs/package-lock.json`으로 `npm ci --no-audit --no-fund`)를 실행한 뒤, VitePress로 사이트를 `docs/.vitepress/dist`에 빌드한다. `docs/node_modules`, `docs/.vitepress/dist`, `docs/.vitepress/cache`는 git-ignore한다.
 - 설치 script(S-20-2): npm 11이 `docs/package.json`이 결정하지 않은 설치 script 두 개에 `npm warn install-scripts`를 출력했다(`allowScripts` 필드). 그래서 `make docs-deps`마다 경고가 나왔다. 추적 결과: (1) `esbuild@0.25.12`(postinstall `node install.js`)는 명령 shim `bin/esbuild`를 플랫폼 binary로 바꾸고 버전을 확인한다. vite가 쓰는 JS API는 이 교체를 필요로 하지 않는다: esbuild의 `lib/main.js`(`generateBinPath`)가 `@esbuild/<platform>/bin/esbuild`를 직접 찾는다. 이 script는 고정 버전에 허용한다(`"esbuild@0.25.12": true`). 설치 상태는 이전과 같아진다. 설정하지 않은 설치에서도 postinstall은 실행되었으므로(shim이 교체되었다), npm 11.19에서 경고는 건너뛰기를 뜻하지 않았다. 결정은 이에 의존하지 않는다. (2) `fsevents@2.3.3`(macOS 전용, vite의 watcher인 chokidar의 optional 의존성)은 빌드된 `fsevents.node`(163,626 bytes, script를 건너뛰어도 크기가 같다)를 함께 담고, `npm ci --ignore-scripts` 뒤에도 `require('fsevents')`가 적재된다. 사이트는 watcher를 쓰지 않으므로 script를 거부한다(`"fsevents": false`). 테스트 `the docs install prints no npm warning`(tests/docs-build)은 lock으로 새 `npm ci`를 실행하고 경고 줄이 있으면 실패한다. 결정 전에 이 두 줄 때문에 실패했다.
 - 버전: `docs/package.json`은 `vitepress` 1.6.4를 정확히 고정한다(template 저장소의 릴리스). 또한 `vite`를 6.4.4로 override한다. vitepress 1.6.4는 `vite ^5.4.14`를 요구하는데, 5.4.x 줄에는 수정 릴리스가 없는 moderate 및 high advisory가 있다(첫 lock의 `npm audit`). 6.4.4에는 advisory가 없고 esbuild 0.25.x를 끌어온다. `make dependency-review RECORD=1`은 advisory가 없는 lock을 기록한다. 사이트는 dev server를 실행하지 않으며, `make docs-build-test`가 이 override로 통과하므로 override를 받아들인다.
-- 원본: 문서는 복사나 생성된 Markdown 없이 제자리에서 읽는다. VitePress의 srcDir은 저장소 루트다. 포함 목록은 다음과 같다: `README.md`와 `README.ko.md`; `packages/*/README.md`와 `packages/*/README.ko.md`; `docs/spec/**`; `docs/plans/fsm-v1.md`와 `docs/plans/fsm-v1.ko.md`; `docs/verification/**`; `CHANGELOG.md`와 `CHANGELOG.ko.md`. 그 밖의 모든 Markdown 파일은 빌드 시점에 저장소를 훑어 계산한 srcExclude에 들어가며, `node_modules`, `.git`, `var`, `vendor`, `target`, `tests/kit`, `docs/.vitepress`도 제외한다. 포함 목록 밖의 페이지는 빌드되지 않는다.
+- 원본: 문서는 복사나 생성된 Markdown 없이 제자리에서 읽는다. VitePress의 srcDir은 저장소 루트다. 포함 목록은 다음과 같다: `README.md`와 `README.ko.md`; `packages/*/README.md`와 `packages/*/README.ko.md`; `docs/spec/**`; `docs/plans/fsm-v1.md`와 `docs/plans/fsm-v1.ko.md`; `docs/verification/**`; `CHANGELOG.md`와 `CHANGELOG.ko.md`. 그 밖의 모든 Markdown 파일은 빌드 시점에 저장소를 훑어 계산한 srcExclude에 들어가며, `node_modules`, `.git`, `var`, `vendor`, `target`, `docs/.vitepress`도 제외한다. 포함 목록 밖의 페이지는 빌드되지 않는다.
 - 이미지: 문서는 상대 경로로 로컬 이미지를 보인다(`docs/verification/gui.md`는 옆에 둔 GUI 수동 확인 GIF를 보인다). VitePress가 이를 bundle하므로 없는 이미지는 빌드를 실패시키고, `tests/docs-build`의 깨진 링크 테스트는 모든 문서의 이미지를 사이트 복사본에 함께 복사한다.
 - 언어: VitePress locale은 쓰지 않는다. locale에는 디렉터리 접두사가 필요하기 때문이다. 한국어 문서는 각자 하나의 페이지이며, 각 페이지는 자기 쌍을 링크한다.
 - 재작성: `README.md`는 같은 디렉터리의 `index.md`로 렌더링된다. 따라서 루트는 `/`, 패키지는 `/packages/<name>/`이다. `README.ko.md`는 자기 경로 `/README.ko`를 유지한다. 쌍은 같은 디렉터리를 쓰므로 상대 링크는 둘 다에서 동작한다.
@@ -389,7 +389,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 ### C-10. CI와 Pages(S-21)
 - `.github/workflows/ci.yml`은 main의 모든 push와 수동 실행(workflow_dispatch)에서 돈다. 한 job인 `check`는 ubuntu-26.04에서 실행되며(orm의 PHP client는 SQLite 3.46을 요구하는데 ubuntu-24.04의 PHP는 시스템 SQLite 3.45.1에 연결되어 CI run 38120456615에서 php persist case가 `CAPABILITY_UNSUPPORTED`로 실패했다. orm의 CI도 같은 이유로 ubuntu-26.04에서 돈다) 정확히 두 target을 호출한다: `make install`, 그다음 CHECK_TARGETS의 전체 검사인 `make check`. `make check` 전에 `packages/fsm-gui`에서 sudo로 `npx playwright install-deps chromium`을 실행한다(`gui-browser-test`가 구동하는 Chromium의 시스템 라이브러리다. 브라우저 자체는 `make check`가 `gui-browsers`로 설치한다).
 - job은 PostgreSQL 17과 MySQL 8.4를 서비스로 띄우고 `FSM_TEST_*` 변수 네 개를 설정한다. 서비스와 env는 C-6의 yaml 블록을 그대로 옮긴 것이다. `make workflows-test`가 job에 그 블록이 있는지 확인하므로 계획과 워크플로가 어긋나지 않는다.
-- 버전은 그것을 선언하는 파일에서 온다. Node.js는 `.node-version`(setup-node), Go는 `packages/fsm-go/go.mod`(setup-go, 모듈 캐시 없음), PHP는 `config/toolchain.json`의 `php`(setup-php, 확장 `pdo_pgsql`과 `pdo_mysql`: php-ext 빌드와 영속화 테스트가 쓴다), Rust는 `rust-toolchain.toml`(rustup으로 minimal 프로필을 설치한다. `RUSTUP_AUTO_INSTALL`은 `0`이다).
+- 버전은 그것을 선언하는 파일에서 온다. Node.js는 `.node-version`(setup-node), Go는 `packages/fsm-go/go.mod`(setup-go, 모듈 캐시 없음), PHP는 `config/toolchain.json`의 `php`(setup-php, 확장 `pdo_pgsql`과 `pdo_mysql`: php-ext 빌드와 영속화 테스트가 쓴다), Rust는 `rust-toolchain.toml`(channel, minimal 프로필, kit의 `lint-rust`가 실행하는 clippy component를 적으며, 인자 없는 `rustup toolchain install`이 설치한다(S-44). `RUSTUP_AUTO_INSTALL`은 `0`이다).
 - uv는 `config/toolchain.json`에 선언한다(`uv`: 정확한 release와 platform별 archive의 sha256, S-44-2). `make install`이 install-tools로 `var/tools`에 설치하며, 워크플로는 uv를 따로 설치하지 않는다. uv는 `config/toolchain.json`의 pythonBuild interpreter를 설치하고 python 패키지를 풀고 설치한다. `make workflows-test`는 그 선언을 요구하고 워크플로의 uv 설치를 거부한다.
 - 모든 action은 전체 commit으로 고정하고 버전 주석(`# vX`, 태그에 `v`가 없으면 태그 이름)을 붙인다. commit은 템플릿 저장소가 같은 버전에 대해 검증한 것이다.
 - job은 `var/full-run.json`과 `.results/`를 `!cancelled()` 조건으로 artifact에 올린다. 실패한 실행도 기록을 남긴다.
@@ -405,14 +405,14 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 
 | 경로 | 소유 검사 |
 |---|---|
-| `scripts/kit/**`, `tests/kit/**`, `.kit/**`, `kit.json`, `config/**`, `Makefile`, `.gitignore`, `.node-version`, `rust-toolchain.toml` | `kit-check owner-validate documents-check commits-check toolchain-check dependency-policy-check` |
+| `scripts/kit/**`, `package.json`, `package-lock.json`, the other copies of kit, `config/**`, `Makefile`, `.gitignore`, `.node-version`, `rust-toolchain.toml` | `kit-check owner-validate documents-check commits-check toolchain-check dependency-policy-check` |
 | `.githooks/**` | `hooks-check` |
 | `**/*.md` | `documents-check` |
-| `scripts/check-layout.mjs`, `tests/check-layout/**` | `layout-test layout-check` |
-| `contracts/layout.json` | `layout-test layout-check gen-check packages-test` |
+| `config/layout.yml`, `config/layout.kit.yml` | `layout-check` |
+| `config/gen-check.json`, `config/parity.json` | `gen-check packages-test parity-declarations-check` |
 | `scripts/gen-check.mjs`, `tests/gen-check/**` | `gen-check-test gen-check` |
 | `tests/python-tools/**` | `python-tools-test` |
-| `packages/fsm-python/pyproject.toml`, `packages/fsm-python/uv.lock` | `python-lock-check` |
+| `packages/fsm-python/pyproject.toml`, `packages/fsm-python/constraints.txt`, `packages/fsm-python/pylock.toml` | `python-lock-check` |
 | `packages/fsm-compiler/**`, `schema/fsm.schema.json`, `machines/**`, `fsm.lock.json`, `conformance/**`, `contracts/features.json`, `fsm.config.json` | `compiler-test gen-check` |
 | `schema/persist.dbs` | `gen-check packages-test` |
 | `schema/fsm.dbs`, `packages/fsm-db/**` | `db-test` |
@@ -428,20 +428,18 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 2. 구현 중 감사 루프는 0절 감사 규칙을 따른다. 감사자는 정확한 수정 위치와 대체 문장을 내고, 근거를 확인해 판정하며, 핵심 이견이 0이 될 때까지 반복한다.
 
 ## Verification
-- 루트 Makefile이 `include scripts/kit/kit.mk` 뒤에 다음 타깃을 정의한다.
+- 루트 Makefile이 `include scripts/kit/kit-bootstrap.mk` 뒤에 다음 타깃을 정의한다.
   - `CHECK_TARGETS`, `check`
-  - `layout-test`, `layout-check`, kit의 `parity-declarations-check`와 `parity-check`
+  - kit의 `layout-check`, kit의 `parity-declarations-check`와 `parity-check`
   - `compiler-test`, `db-test`, `gui-test`, `gen-check-test`, `gen-check`
   - `python-tools-test` (`tests/python-tools`: checkout의 Python. S-41: `var/tools/bin/python3`은 `install-tools`가 만들고, 인터프리터를 uv로 설치하는 recipe가 없으며, `install-python` 타깃이 없고, `config/toolchain.json`이 `pythonBuild`를 선언한다. 복사한 Makefile에서 `make -n`으로 실행하며 네트워크를 쓰지 않는다)
-  - `python-lock-check` (uv's own check of `packages/fsm-python`: `uv lock --check --offline` and the export of uv.lock against the committed pylock.toml, S-34-3)
   - `workflows-test`(`tests/workflows`: CI와 Pages 워크플로의 pin, 버전, 서비스, C-10, S-21)
-  - `kit-test` (the vendored tests of `tests/kit`, run by kit.mk with `node --test`)
   - `test-<kind>`, `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
-- `check` = `node scripts/kit/full-run.mjs run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-test layout-check compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check kit-test python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-check workflows-test parity-declarations-check parity-check`
-- Python 인터프리터(S-41, kit 0.0.18 규칙): python 패키지는 `make install-tools`가 설치하는 Python에서 실행하며, uv는 인터프리터를 설치하지 않는다. `config/toolchain.json`은 `pythonBuild`를 선언한다: python-build-standalone release `3.14.8`(`20261009`)과 플랫폼별 `install_only` 아카이브의 sha256(`darwin-arm64`, `darwin-x64`, `linux-x64`, `linux-arm64`, kit 자체 선언의 값). `install-tools`는 플랫폼의 아카이브를 내려받아 다른 digest를 거부하고, `var/tools/python-build`에 풀고, `make install`과 모든 python 타깃이 쓰는 래퍼 `var/tools/bin/python3`를 쓴다. `install-python`(`uv python install --no-bin 3.14`, S-11-3)의 uv 관리 인터프리터는 테스트와 함께 제거했다. 그 인터프리터는 선언된 도구 밖의 uv 다운로드였고 저장소에 digest가 없었다. uv는 `packages/fsm-python`의 resolver이자 설치기로 남는다(`uv export`와 `uv pip install --python <venv>/bin/python --link-mode copy`, venv는 `make python-venv`가 `var/tools/bin/python3`로 만든다, S-41-1). 저장소가 wheel을 내지 않으므로 `pythonBackend`는 선언하지 않는다.
+- `check` = `node $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)`
+  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-check compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-check workflows-test parity-declarations-check parity-check`
+- Python 인터프리터(S-41, S-44-2): python 패키지는 `make install-tools`가 설치하는 Python에서 실행한다. `config/toolchain.json`은 `uv`(정확한 release와 플랫폼별 archive의 sha256)와 `pythonBuild`(`3.14.8`)를 선언한다. install-tools는 uv를 `var/tools`에 설치한 뒤 `uv python install`로 그 release에 uv가 지정한 python-build-standalone 빌드를 uv가 기록한 sha256과 대조해 설치하고, `make install`과 모든 python 타깃이 쓰는 래퍼 `var/tools/bin/python3`를 쓴다(kit K64). fsm의 recipe는 인터프리터를 설치하지 않으며, `install-python`(S-11-3)의 uv 관리 인터프리터는 제거된 채로 둔다. uv는 `packages/fsm-python`의 resolver이자 설치기다(`uv pip install --python <venv>/bin/python --link-mode copy`, venv는 `make python-venv`가 `var/tools/bin/python3`로 만든다). 저장소가 wheel을 내지 않으므로 `pythonBackend`는 선언하지 않는다.
 
-- 패키지 의존성(S-29): `make install`(ONLINE, clone마다 한 번)은 `install-tools`의 toolchain을 `var/tools`에 설치하고 모든 패키지 의존성을 설치한다: `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui`, `docs`의 lock으로 `npm ci`; `packages/fsm-php`와 `packages/fsm-php-ext`의 `composer install`(`composer.lock`과 `composer.json` 기준. `composer.json`의 autoload는 lock에 없으며, 설치 뒤 stamp를 갱신한다, S-29-2); `install-tools`의 Python 3.14(`var/tools/bin/python3`, S-41)와 `packages/fsm-python`의 venv(그 interpreter의 복사본, `uv.lock`에서 export한 `pylock.toml`로 채운다; python stamp는 `uv.lock`으로 키를 정한다); go module과 cargo crate(`var/deps/go`, `var/deps/rust`). 각각은 자기 lock을 키로 하는 file target이므로, 나중의 실행은 최신 상태를 확인하고 네트워크가 필요 없다. package를 쓰는 타깃은 그 file을 선행 조건으로 둔다: `npm-types`, `gen-check`, `test-<kind>`(그래서 `packages-test`와 kit의 `parity-check`), `db-test`, `gui-test`, `gui-browser-test`(browser stamp를 통해), `docs-build`, `docs-build-test`. 새 clone은 `make install`을 한 번 실행한 뒤 `make check`를 실행한다: toolchain은 `make install`에서만 온다. `make make-install-test`(`tests/make-install/`)는 Makefile 사본에서, 의존성이 하나도 없는 경우와 모두 있는 경우에 선행 조건을 검사한다.
+- 패키지 의존성(S-29): `make install`(ONLINE, clone마다 한 번)은 `install-tools`의 toolchain을 `var/tools`에 설치하고 모든 패키지 의존성을 설치한다: `packages/fsm-npm`, `packages/fsm-db`, `packages/fsm-gui`, `docs`의 lock으로 `npm ci`; `packages/fsm-php`와 `packages/fsm-php-ext`의 `composer install`(`composer.lock`과 `composer.json` 기준. `composer.json`의 autoload는 lock에 없으며, 설치 뒤 stamp를 갱신한다, S-29-2); `install-tools`의 Python 3.14(`var/tools/bin/python3`, S-41)와 `packages/fsm-python`의 venv(kit의 `make python-venv`가 그 interpreter로 만들고 `pylock.toml`로 채운다; python stamp는 `pylock.toml`으로 키를 정한다, S-44); go module과 cargo crate(`var/deps/go`, `var/deps/rust`). 각각은 자기 lock을 키로 하는 file target이므로, 나중의 실행은 최신 상태를 확인하고 네트워크가 필요 없다. package를 쓰는 타깃은 그 file을 선행 조건으로 둔다: `npm-types`, `gen-check`, `test-<kind>`(그래서 `packages-test`와 kit의 `parity-check`), `db-test`, `gui-test`, `gui-browser-test`(browser stamp를 통해), `docs-build`, `docs-build-test`. 새 clone은 `make install`을 한 번 실행한 뒤 `make check`를 실행한다: toolchain은 `make install`에서만 온다. `make make-install-test`(`tests/make-install/`)는 Makefile 사본에서, 의존성이 하나도 없는 경우와 모두 있는 경우에 선행 조건을 검사한다.
 - 항목 개발 중에는 owner-checks 매핑만 실행한다.
 - GUI 수동 확인: json·mermaid·db store 각각으로 다음을 확인한다(단계, driver `packages/fsm-gui/scripts/manual-check.mjs`, 기록된 결과는 `docs/verification/gui.md`).
   1. 상태를 추가·삭제·rename한 뒤 저장한다(lock은 save가 함께 갱신).

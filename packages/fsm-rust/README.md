@@ -160,7 +160,7 @@ From the checkout root:
 
 ```sh
 make -C packages/fsm-rust install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.7 by its git tag)
-make -C packages/fsm-rust test      # cargo test through scripts/kit/run-tests.mjs
+make -C packages/fsm-rust test      # cargo test through kit's run-tests
 make test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

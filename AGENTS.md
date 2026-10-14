@@ -21,13 +21,20 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1.md`; the definitio
 
 - English documents are canonical. Every document has a `.ko.md` file with the same information and a `source-sha256`
   marker (`make documents-stamp`); Korean documents write technical terms in English.
-- Vendored files (`scripts/kit/`, `tests/kit/`) are changed in kit and copied with `make kit-sync KIT_TAG=<tag>`, never
-  edited here.
+- The working principles of every polyspec repository are [PRINCIPLES.md](PRINCIPLES.md), a copy of kit; this file states
+  only the rules of fsm.
+- The shared tools are the package `@polyspec/kit`, a devDependency of the root `package.json` pinned to the asset URL of its
+  release with its integrity. The files of its `kit.copies` (`scripts/kit/kit-bootstrap.mk`, `scripts/kit/bootstrap/`, the
+  release workflow, `PRINCIPLES.md`, `config/layout.kit.yml` and the lint configuration) are copies that `make kit-sync`
+  writes from the installed package and `make kit-check` compares; they are changed in kit, never here. fsm imports no file
+  of kit: it runs a kit tool through its make target or `$(KIT)/<tool>.$(KIT_EXT)`, imports only what the package exports
+  (`@polyspec/kit/tracked-files`), and takes a generic need from its ecosystem library (ajv, picomatch, `node:`) declared in
+  its own `package.json`. Behavior of kit is tested in kit.
 - Every change follows RED → implementation → GREEN. A checklist item states its observable criterion.
 - The base test of a feature lives in the package that owns it (compiler, DB store, GUI). Language packages hold only
-  consumer-side tests. The root holds only the tests of its own tools and the vendored `tests/kit/`. Fixtures of the
+  consumer-side tests. The root holds only the tests of its own tools and their shared helper `tests/support/`. Fixtures of the
   root tool tests are built in temporary directories and never committed.
-- Every test runs through `scripts/kit/run-tests.mjs`, which prints the start, the progress, the result and the elapsed
+- Every test runs through kit's test runner (`$(KIT)/run-tests.$(KIT_EXT)`), which prints the start, the progress, the result and the elapsed
   time of each case and gives each case its own timeout. No run has an overall timeout, and no test process runs longer
   than 10 minutes; a longer one is reported with its reason.
 - During an item only the owner checks of the changed paths run (`config/owner-checks.json`). The full suite runs once

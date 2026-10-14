@@ -1,4 +1,4 @@
 #!/bin/sh
-# Git runs this hook from the top level of the working tree before it records a commit.
-# scripts/kit/owner-check.mjs refuses the commit while a tracked path matches no owner in config/owner-checks.json.
-exec node scripts/kit/owner-check.mjs --validate
+# Git runs this hook from the top level of the working tree before it records a commit. It calls the make target of kit's
+# owner check, which refuses the commit while a tracked path matches no owner in config/owner-checks.json.
+exec make --no-print-directory owner-validate

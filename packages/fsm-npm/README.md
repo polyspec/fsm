@@ -131,7 +131,7 @@ From the checkout:
 
 ```sh
 make -C packages/fsm-npm install   # npm ci: the pinned orm release and the TypeScript compiler
-make -C packages/fsm-npm test      # tests/conformance.test.mjs through scripts/kit/run-tests.mjs
+make -C packages/fsm-npm test      # tests/conformance.test.mjs through kit's run-tests
 make test-npm                      # the same from the root
 ```
 

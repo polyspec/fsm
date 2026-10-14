@@ -66,8 +66,13 @@ jobs:
           php-version: '8.5'
           extensions: pdo_pgsql, pdo_mysql
       - name: Install the Rust toolchain of rust-toolchain.toml
+        # With no argument rustup installs the channel, the profile and the components (clippy) that rust-toolchain.toml names.
         run: |
-          rustup toolchain install "$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)" --profile minimal
+          rustup toolchain install
+      - name: Install kit, the npm of packageManager and then @polyspec/kit of package-lock.json
+        run: |
+          make install-tools TOOLS=npm
+          make install-packages
       - name: Install the toolchains and the package dependencies
         run: make install
       - name: Install the system libraries of Chromium
