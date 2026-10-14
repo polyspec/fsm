@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "be40f09b6aedd85393bd8e80e5f0be6d",
+    "content-hash": "352b6a435e418eb8f6ddc483e1b74e2f",
     "packages": [
         {
             "name": "polyspec/ordered-json",
@@ -37,24 +37,25 @@
         },
         {
             "name": "polyspec/orm",
-            "version": "0.0.14",
+            "version": "0.0.15",
             "dist": {
                 "type": "zip",
-                "url": "../../var/composer-artifacts/polyspec-orm-php-0.0.14.zip",
-                "shasum": "7d56be4e5f72785258a46cc302cc2558fb7f34c4"
+                "url": "../../var/composer-artifacts/polyspec-orm-php-0.0.15.zip",
+                "shasum": "d199b948e5fa67266cc5af40ab923342d6d2a20b"
             },
             "require": {
                 "composer-runtime-api": "^2.2",
                 "ext-json": "*",
                 "ext-pdo": "*",
                 "ext-zlib": "*",
-                "php": ">=8.4",
+                "php": ">=8.5",
                 "polyspec/ordered-json": "0.0.8",
+                "purrphp/yaml": "1.0.0",
                 "symfony/yaml": "^7.4"
             },
             "suggest": {
                 "ext-openssl": "host-side AES on PostgreSQL and SQLite (aes columns)",
-                "ext-orm_dbspec": "Polyspec\\Orm\\Dbspec\\Native\\Dbspec, the dbspec surface of this client implemented in C (packages/orm-php-extension)",
+                "ext-orm_dbspec": "Polyspec\\Orm\\Dbspec\\Native\\Dbspec, the dbspec surface of this client implemented in C (packages/php-ext)",
                 "ext-pdo_mysql": "mysql:// DSNs",
                 "ext-pdo_pgsql": "postgres:// DSNs",
                 "ext-pdo_sqlite": "sqlite:// DSNs"
@@ -66,15 +67,130 @@
             "autoload": {
                 "psr-4": {
                     "Polyspec\\Orm\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Polyspec\\Orm\\Tests\\Model\\": "gen/",
+                    "Polyspec\\Orm\\Tests\\MarkdownModel\\": "markdownmodel/"
                 },
-                "classmap": [
-                    "src/"
+                "files": [
+                    "gen/bootstrap.php"
                 ]
             },
             "license": [
                 "MIT"
             ],
             "description": "PHP client of the orm model syntax: generated models over PDO with SQL assembled in process"
+        },
+        {
+            "name": "purrphp/pure-collection",
+            "version": "1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PurrPHP/pure-collection.git",
+                "reference": "40a8c7f15cdbd7e128a58b1da6feb8edeeb9d296"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PurrPHP/pure-collection/zipball/40a8c7f15cdbd7e128a58b1da6feb8edeeb9d296",
+                "reference": "40a8c7f15cdbd7e128a58b1da6feb8edeeb9d296",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "phpstan/phpstan": "^1.0",
+                "phpunit/phpunit": "^10.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Purr\\Collection\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Purr",
+                    "homepage": "https://github.com/purrphp"
+                }
+            ],
+            "description": "Immutable type-safe collections for PHP",
+            "homepage": "https://github.com/PurrPHP/pure-collection",
+            "keywords": [
+                "collection",
+                "data-structures",
+                "immutable",
+                "list",
+                "map",
+                "php",
+                "set",
+                "type-safe"
+            ],
+            "support": {
+                "issues": "https://github.com/PurrPHP/pure-collection/issues",
+                "source": "https://github.com/PurrPHP/pure-collection"
+            },
+            "time": "2026-08-02T22:20:14+00:00"
+        },
+        {
+            "name": "purrphp/yaml",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PurrPHP/yaml.git",
+                "reference": "c069a72e06e5a11a725b50226122f1eb26eb64fe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PurrPHP/yaml/zipball/c069a72e06e5a11a725b50226122f1eb26eb64fe",
+                "reference": "c069a72e06e5a11a725b50226122f1eb26eb64fe",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.3",
+                "purrphp/pure-collection": "^1.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "phpstan/phpstan": "^1.0",
+                "phpunit/phpunit": "^10.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Purr\\Yaml\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PurrPHP",
+                    "homepage": "https://github.com/purrphp"
+                }
+            ],
+            "description": "YAML utilities for PHP",
+            "homepage": "https://github.com/PurrPHP/yaml",
+            "keywords": [
+                "configuration",
+                "php",
+                "serialization",
+                "yaml"
+            ],
+            "support": {
+                "issues": "https://github.com/PurrPHP/yaml/issues",
+                "source": "https://github.com/PurrPHP/yaml"
+            },
+            "time": "2026-08-04T18:35:41+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",

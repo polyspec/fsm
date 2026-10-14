@@ -7,9 +7,9 @@
 package examples
 
 import (
-	"github.com/polyspec/orm/packages/orm-go/orm"
-	_ "github.com/polyspec/orm/packages/orm-go/orm/pg"
-	_ "github.com/polyspec/orm/packages/orm-go/orm/sqlite"
+	"github.com/polyspec/orm/packages/go/orm"
+	_ "github.com/polyspec/orm/packages/go/orm/pg"
+	_ "github.com/polyspec/orm/packages/go/orm/sqlite"
 
 	"github.com/polyspec/fsm/packages/go/examples/model"
 )

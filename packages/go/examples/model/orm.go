@@ -5,7 +5,7 @@ package model
 import (
 	"time"
 
-	"github.com/polyspec/orm/packages/orm-go/orm"
+	"github.com/polyspec/orm/packages/go/orm"
 )
 
 var _ time.Time

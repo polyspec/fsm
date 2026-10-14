@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-15: orm is v0.0.15 in every kind (npm and fsm-db tarballs, go module, python wheel with rapidyaml and ruamel.yaml, cargo tag, Composer zip with purrphp/yaml), whose generated TypeScript models import only what they use and whose generated Rust models carry no allow attribute; the Go imports read `github.com/polyspec/orm/packages/go/...`, and `config/knip-entries.json` declares the generated models.ts, whose MANIFEST_TEXT and MANIFEST_HASH orm exports by design.
 - S-44-15: `config/knip-entries.json` declares the files that make or a test runs or reads by path outside kit's layout entries (the fsm-gen and fsm-gui commands, the GUI client entry, the golden npm files, the generated declarations and their consumer, the configuration of the documentation site) and the two GUI programs run by hand, so knip reports no unused file; `isGenerated` of write-generated.mjs is no export.
 - S-44-8-1: `config/release-assets.json` pins the release zips of orm and ordered-json, and `make release-assets-fetch` of kit downloads them into var/composer-artifacts, the Composer artifact repository of packages/php and packages/php-ext; the `composer-artifacts` recipe and `config/composer-artifacts.txt` are removed.
 - S-44-16: the shared tools are kit 0.0.44: `make install-tools` installs the Rust toolchain of `rust-toolchain.toml`, so CI runs no rustup step of its own, ruff keeps its cache in var/ruff, and knip takes the entries of `config/knip-entries.json`.

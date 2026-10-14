@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 83091b557844c88909ebc7e744592ff176a9409595759312337bd076559b216b -->
+<!-- source-sha256: 7bd8d12a3e8f58879765a02f1aa05b251568d4f8a49965d1245c5a94fae950d8 -->
 # fsm-rust
 
 [English](README.md)
@@ -155,7 +155,7 @@ crate::check_persist(
 checkout 루트에서 실행한다:
 
 ```sh
-make -C packages/rust install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.14 by its git tag)
+make -C packages/rust install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.15 by its git tag)
 make -C packages/rust test      # cargo test through kit's run-tests
 make test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
