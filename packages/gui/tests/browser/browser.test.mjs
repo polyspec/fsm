@@ -72,8 +72,8 @@ function expectNoPageErrors() {
 before(async () => {
   root = tempProject({
     'fsm.config.json': '{"store":"json"}\n',
-    'machines/order.fsm.json': readFileSync(path.join(ROOT, 'machines/order.fsm.json'), 'utf8'),
-    'fsm.lock.json': readFileSync(path.join(ROOT, 'fsm.lock.json'), 'utf8'),
+    'machines/order.fsm.json': readFileSync(path.join(ROOT, 'contracts/machines/order.fsm.json'), 'utf8'),
+    'fsm.lock.json': readFileSync(path.join(ROOT, 'contracts/fsm.lock.json'), 'utf8'),
   });
   const started = await startGui(root);
   server = started.child;
