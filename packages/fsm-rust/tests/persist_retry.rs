@@ -2,8 +2,7 @@
 // database error does not. They are a tool test with their own record (make rust-persist-test), not vector cases: the record of
 // the rust kind (tests/conformance.rs) holds the vector cases alone for kit's parity check (docs/plans/fsm-v1.md, C-4).
 
-// The example has more functions than these tests call (its transition is the one of conformance.rs).
-#[allow(dead_code)]
+#[allow(dead_code, reason = "the example has more functions than these tests call; its transition is the one of conformance.rs")]
 #[path = "../examples/persist.rs"]
 mod persist;
 
