@@ -322,7 +322,7 @@ export function vectorsFile(list) {
   const tests = vectorList.flatMap(({ machine, cases }) => cases.map(c => testOf(machine, c)));
   return text([
     header(SHARED),
-    '#![allow(non_snake_case)]',
+    '#![allow(non_snake_case, reason = "each test is named by the name of its case in the vector file, which the parity check of kit matches")]',
     '',
     `use ${CRATE}::fsm::Code;`,
     ...vectorList.map(({ machine }) => `use ${CRATE}::${machine};`),

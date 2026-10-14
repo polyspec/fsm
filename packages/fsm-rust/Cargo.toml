@@ -11,6 +11,19 @@ description = "Rust consumer test bed of fsm: the generated state machines, the 
 autotests = false
 autoexamples = false
 
+[lints]
+workspace = true
+
+# The package is a workspace of its own, so it holds the lints of kit (config/cargo.schema.json): no unsafe code, and no allow
+# attribute without its reason.
+[workspace]
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+allow_attributes_without_reason = "deny"
+
 [[test]]
 name = "conformance"
 path = "tests/conformance.rs"
