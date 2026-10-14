@@ -12,7 +12,7 @@ three stores. It records the tree, the steps and the outcome of each store.
 - Commands: `fsm-gen`, `fsm-db` and `fsm-gui` installed from the checkout with `npm install -g --prefix <tmp> --offline`
   (S-18-1), the assets built with `make gui-build`.
 - Browser: the Chromium of the pinned Playwright 1.64.0 (`make gui-browsers`), headless, 1200 × 900; Mermaid 12.1.0.
-- Driver: `packages/fsm-gui/scripts/manual-check.mjs`, which walks the steps below, records a video and exits 1 when a step
+- Driver: `packages/gui/scripts/manual-check.mjs`, which walks the steps below, records a video and exits 1 when a step
   fails.
 
 ## Steps
@@ -36,7 +36,7 @@ For each store, the server runs and the driver walks it; then the store's own ch
 
 ```sh
 fsm-gui --project json --port 8204 &
-(cd packages/fsm-gui && node scripts/manual-check.mjs http://127.0.0.1:8204 out-json json)
+(cd packages/gui && node scripts/manual-check.mjs http://127.0.0.1:8204 out-json json)
 (cd json && fsm-gen check)
 ```
 

@@ -12,7 +12,7 @@
     },
     {
       "paths": [
-        "scripts/check-name.mjs",
+        "scripts/check-name.mts",
         "tests/check-name/**"
       ],
       "targets": [
@@ -75,13 +75,13 @@
     },
     {
       "paths": [
-        "packages/fsm-compiler/**",
-        "schema/fsm.schema.json",
-        "machines/**",
-        "fsm.lock.json",
-        "conformance/**",
+        "packages/compiler/**",
+        "contracts/schema/fsm.schema.json",
+        "contracts/machines/**",
+        "contracts/fsm.lock.json",
+        "contracts/conformance/**",
         "contracts/features.json",
-        "fsm.config.json"
+        "contracts/fsm.config.json"
       ],
       "targets": [
         "compiler-test",
@@ -91,7 +91,7 @@
     },
     {
       "paths": [
-        "scripts/gen-check.mjs",
+        "scripts/gen-check.mts",
         "tests/gen-check/**"
       ],
       "targets": [
@@ -101,8 +101,8 @@
     },
     {
       "paths": [
-        "packages/fsm-db/**",
-        "packages/fsm-db/schema/**"
+        "packages/db/**",
+        "packages/db/schema/**"
       ],
       "targets": [
         "db-test",
@@ -125,7 +125,7 @@
     },
     {
       "paths": [
-        "packages/fsm-npm/**"
+        "packages/js/**"
       ],
       "targets": [
         "layout-check",
@@ -140,7 +140,7 @@
     },
     {
       "paths": [
-        "packages/fsm-go/**"
+        "packages/go/**"
       ],
       "targets": [
         "layout-check",
@@ -154,8 +154,8 @@
     },
     {
       "paths": [
-        "schema/persist.dbs",
-        "schema/dbspec-set.json"
+        "contracts/schema/persist.dbs",
+        "contracts/schema/dbspec-set.json"
       ],
       "targets": [
         "gen-check",
@@ -164,7 +164,7 @@
     },
     {
       "paths": [
-        "packages/fsm-gui/**"
+        "packages/gui/**"
       ],
       "targets": [
         "gui-test",
@@ -174,13 +174,13 @@
     },
     {
       "paths": [
-        "packages/fsm-compiler/**",
-        "schema/fsm.schema.json",
-        "machines/**",
-        "fsm.lock.json",
-        "conformance/**",
+        "packages/compiler/**",
+        "contracts/schema/fsm.schema.json",
+        "contracts/machines/**",
+        "contracts/fsm.lock.json",
+        "contracts/conformance/**",
         "contracts/features.json",
-        "fsm.config.json"
+        "contracts/fsm.config.json"
       ],
       "targets": [
         "compiler-test",
@@ -189,8 +189,8 @@
     },
     {
       "paths": [
-        "packages/fsm-db/**",
-        "packages/fsm-db/schema/**"
+        "packages/db/**",
+        "packages/db/schema/**"
       ],
       "targets": [
         "db-test",
@@ -201,7 +201,7 @@
     },
     {
       "paths": [
-        "packages/fsm-php/**"
+        "packages/php/**"
       ],
       "targets": [
         "layout-check",
@@ -244,7 +244,7 @@
     },
     {
       "paths": [
-        "packages/fsm-rust/**"
+        "packages/rust/**"
       ],
       "targets": [
         "layout-check",
@@ -259,7 +259,7 @@
     },
     {
       "paths": [
-        "packages/fsm-npm/**"
+        "packages/js/**"
       ],
       "targets": [
         "layout-check",
@@ -273,7 +273,7 @@
     },
     {
       "paths": [
-        "packages/fsm-python/**"
+        "packages/python/**"
       ],
       "targets": [
         "layout-check",
@@ -288,7 +288,7 @@
     },
     {
       "paths": [
-        "packages/fsm-php-ext/**"
+        "packages/php-ext/**"
       ],
       "targets": [
         "layout-check",
@@ -311,7 +311,7 @@
     },
     {
       "paths": [
-        "scripts/check-readmes.mjs",
+        "scripts/check-readmes.mts",
         "tests/check-readmes/**"
       ],
       "targets": [
@@ -384,9 +384,9 @@
     },
     {
       "paths": [
-        "packages/fsm-python/pyproject.toml",
-        "packages/fsm-python/constraints.txt",
-        "packages/fsm-python/pylock.toml"
+        "packages/python/pyproject.toml",
+        "packages/python/constraints.txt",
+        "packages/python/pylock.toml"
       ],
       "targets": [
         "python-lock-check"

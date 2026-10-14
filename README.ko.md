@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 8d071b4b90b09b09b8738a046fa15d6d0432bbe94361d9d9195b5a86a60136ed -->
+<!-- source-sha256: b699dc9ddf66a59f012c863afea28f499ac6bca3a1ebc6c2d3f6f2d34a961f6b -->
 # polyspec/fsm
 
 [English](README.md)
@@ -38,7 +38,7 @@ fsm은 다음이 아니다(`docs/spec/fsm.ko.md`, B-0의 판정):
 - sequence 문법: next와 previous는 보통의 event다;
 - 저장 폭 설정: code는 항상 32비트 범위다.
 
-이 저장소의 언어 패키지(`packages/fsm-go` 등)는 test bed다. 생성 코드를 담고 conformance vector로 검사한다. 공개된 라이브러리가 아니다.
+이 저장소의 언어 패키지(`packages/go` 등)는 test bed다. 생성 코드를 담고 conformance vector로 검사한다. 공개된 라이브러리가 아니다.
 여러분은 각 언어 README가 설명하듯 생성 코드를 자신의 프로젝트에 생성해서 fsm을 쓴다.
 
 ## 모델
@@ -106,7 +106,7 @@ Mermaid 형식은 정규형이다. 줄은 정해진 순서(상태마다 label �
 줄을 `E_MERMAID_UNSUPPORTED`로 거부하고 줄을 이름으로 가리킨다. 복합 상태, note, fork와 join, choice, 스타일, 주석은 이 형식에
 없다.
 
-Database(`fsm-db copy --from json`으로 새 database에 옮긴 뒤의 `schema/fsm.dbs`의 여섯 table; `order`의 행):
+Database(`fsm-db copy --from json`으로 새 database에 옮긴 뒤의 `packages/db/schema/fsm.dbs`의 여섯 table; `order`의 행):
 
 | table | 예제의 행 |
 |---|---|
@@ -118,7 +118,7 @@ Database(`fsm-db copy --from json`으로 새 database에 옮긴 뒤의 `schema/f
 | `lock_reserved` (machine, code) | 행 없음 |
 
 세 store는 같은 정의를 담으며, 모든 명령은 셋 각각에서 같은 결과를 준다. table 구성은
-[packages/fsm-db/README.ko.md](packages/fsm-db/README.ko.md)에 있다.
+[packages/db/README.ko.md](packages/db/README.ko.md)에 있다.
 
 ## code와 lock
 
@@ -190,9 +190,9 @@ lock만 판정한다. 이 버전의 database에는 커밋된 기록이 없어 `E
 
 영속화 패턴은 한 transaction 안에서 row 잠금 아래 저장된 상태를 읽고, event를 그 상태에 적용하며, 결과가 `Changed`일 때만 쓴다.
 `apply`의 오류는 transaction을 되돌린다. 각 언어 패키지는 자신의 `examples/` 디렉터리에서 이 패턴을 인용한다:
-`packages/fsm-go/examples/persist.go`, `packages/fsm-npm/examples/persist.mjs`,
-`packages/fsm-php/examples/persist.php`(같은 파일이 `packages/fsm-php-ext/examples/`에도 있다),
-`packages/fsm-python/examples/persist.py`, `packages/fsm-rust/examples/persist.rs`.
+`packages/go/examples/persist.go`, `packages/js/examples/persist.mjs`,
+`packages/php/examples/persist.php`(같은 파일이 `packages/php-ext/examples/`에도 있다),
+`packages/python/examples/persist.py`, `packages/rust/examples/persist.rs`.
 
 ## 검증 오류
 
@@ -239,11 +239,12 @@ fsm 프로젝트는 디렉터리다. 도구는 그 루트에서 다음 파일을
 fsm.config.json          {"store":"json"}, {"store":"mermaid"} or {"store":"db","dsnEnv":"FSM_DSN"}
 machines/                one file per machine: <machine>.fsm.json or <machine>.fsm.mmd (one format per project)
 fsm.lock.json            the lock of the file stores (the db store keeps its lock in tables)
-schema/fsm.schema.json   the JSON schema of a machine file, for editors
-schema/fsm.dbs           the six database tables (dbspec `fsm`), installed by fsm-db install
-schema/persist.dbs       the example tables of the persistence pattern, used by the examples/ of the language packages
-conformance/vectors.json the expected results of the vector cases, written by fsm-gen vectors
+schema/fsm.schema.json   the JSON schema of a machine file, for editors; each machine file names it in `$schema`
 ```
+
+이 저장소의 프로젝트는 `contracts/`다. 그 machine이 여섯 언어 패키지를 생성하며, 언어 패키지의 examples/가 쓰는 영속화 패턴의 예제
+table인 `schema/persist.dbs`와 fsm-gen vectors가 쓰는 vector case의 기대 결과인 `conformance/vectors.json`도 담는다. fsm-db install이
+설치하는 db store의 여섯 database table(dbspec `fsm`)은 `packages/db/schema/fsm.dbs`다.
 
 `fsm.config.json`이 store를 고르며, fsm-gen, fsm-db, fsm-gui가 모두 이를 읽는다. fsm-gen은 json과 mermaid store를 처리하며, `db`는
 `E_STORE_NOT_CONFIGURED`로 거부한다. fsm-db는 `db`만 처리한다. 이주 뒤에 프로젝트의 store를 바꾸는 것은 여러분의 결정이다. 도구가
@@ -272,13 +273,13 @@ cd fsm
 make install-tools TOOLS=npm                       # once, online: the npm of packageManager (package.json)
 make install-packages                              # once, online: the root packages, @polyspec/kit among them
 make install                                       # once, online: the toolchains and every package dependency
-npm install -g ./packages/fsm-compiler             # fsm-gen: no dependencies
-make db-deps && npm install -g ./packages/fsm-db   # fsm-db: needs the orm packages
-make gui-build && npm install -g ./packages/fsm-gui # fsm-gui: builds the browser assets first
+npm install -g ./packages/compiler             # fsm-gen: no dependencies
+make db-deps && npm install -g ./packages/db   # fsm-db: needs the orm packages
+make gui-build && npm install -g ./packages/gui # fsm-gui: builds the browser assets first
 ```
 
 처음 두 명령은 polyspec의 공용 도구인 package `@polyspec/kit`을 설치한다. Makefile은 그 make 타깃을 include한다(`scripts/kit/kit-bootstrap.mk`). 그 전에는 이 두 타깃만 실행된다. `make install`은 `var/tools`의 toolchain(`pythonBuild`의 Python 3.14 포함)과 모든 패키지 의존성을 한 번 내려받는다. 나중의 실행은 이미 설치된 것을 찾고 아무것도
-내려받지 않는다. json과 mermaid store에는 첫 `npm install -g` 명령만 있으면 된다. `make db-deps`는 `packages/fsm-db`의 orm 패키지를
+내려받지 않는다. json과 mermaid store에는 첫 `npm install -g` 명령만 있으면 된다. `make db-deps`는 `packages/db`의 orm 패키지를
 release tarball에서 설치하고, `make gui-build`는 GUI를 설치하고 browser asset을 빌드한다.
 
 ## fsm-gen 명령
@@ -388,15 +389,15 @@ $ fsm-gen check --project ./broken
 
 ## 도구
 
-- [`fsm-gen`](packages/fsm-compiler/README.ko.md): 컴파일러와 그 명령 줄. 검사하고, lock을 유도하고, json과 mermaid store 사이를 바꾸고,
+- [`fsm-gen`](packages/compiler/README.ko.md): 컴파일러와 그 명령 줄. 검사하고, lock을 유도하고, json과 mermaid store 사이를 바꾸고,
   vector를 쓰고, 여섯 언어를 생성한다.
-- [`fsm-db`](packages/fsm-db/README.ko.md): database store. 여섯 table을 설치하고, database 프로젝트를 검사하고 lock을 걸며, database와
+- [`fsm-db`](packages/db/README.ko.md): database store. 여섯 table을 설치하고, database 프로젝트를 검사하고 lock을 걸며, database와
   파일 store 사이를 복사한다.
-- [`fsm-gui`](packages/fsm-gui/README.ko.md): 프로젝트 기계를 위한 browser 편집기이며, 기계마다 Mermaid 다이어그램을 보여준다. 모든 저장은
+- [`fsm-gui`](packages/gui/README.ko.md): 프로젝트 기계를 위한 browser 편집기이며, 기계마다 Mermaid 다이어그램을 보여준다. 모든 저장은
   `fsm-gen`과 같은 core 규칙을 거친다.
-- 언어 패키지(대상마다 하나): [go](packages/fsm-go/README.ko.md), [npm](packages/fsm-npm/README.ko.md),
-  [php](packages/fsm-php/README.ko.md), [php-ext](packages/fsm-php-ext/README.ko.md),
-  [python](packages/fsm-python/README.ko.md), [rust](packages/fsm-rust/README.ko.md). 각각 생성 코드의 사용, conformance 테스트,
+- 언어 패키지(대상마다 하나): [go](packages/go/README.ko.md), [npm](packages/js/README.ko.md),
+  [php](packages/php/README.ko.md), [php-ext](packages/php-ext/README.ko.md),
+  [python](packages/python/README.ko.md), [rust](packages/rust/README.ko.md). 각각 생성 코드의 사용, conformance 테스트,
   영속화 패턴을 보여준다.
 
 ## 생성 이름
@@ -427,7 +428,7 @@ $ fsm-gen check --project ./broken
 
 | 명령 | 검사 |
 |---|---|
-| `make readme-check` | 모든 README 쌍이 필수 절과, 같은 제목을 가진 한국어 짝을 가지는지(`scripts/check-readmes.mjs`) |
+| `make readme-check` | 모든 README 쌍이 필수 절과, 같은 제목을 가진 한국어 짝을 가지는지(`scripts/check-readmes.mts`) |
 | `make readme-test` | 그 검사의 테스트 |
 | `make workflows-test` | CI와 Pages 워크플로: 모든 action이 검증된 commit에 고정되고, check job이 `make install`과 `make check`를 C-6의 서비스와 함께 실행하며, 각 버전이 그것을 선언하는 파일에서 오는지(`tests/workflows`) |
 | `make docs-build` | 문서 사이트가 빌드된다. dead link는 빌드를 실패시킨다 |
