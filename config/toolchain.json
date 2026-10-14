@@ -35,13 +35,5 @@
       "linux-x64": "ce1f182bf3205aceab62fad40dbdd7502de638ed89cbb4fef10320803384ff9b"
     }
   },
-  "exceptions": [
-    {
-      "tool": "typescript",
-      "channel": "6.0.3",
-      "scope": "packages/fsm-db",
-      "reason": "orm v0.0.7, the DB store's dependency, depends on typescript ^6.0.3, which its orm-gen scan imports; npm resolves it at the top level of packages/fsm-db/package-lock.json",
-      "retry": "an orm release that depends on typescript 7.0.2"
-    }
-  ]
+  "exceptions": []
 }
