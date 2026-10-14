@@ -159,6 +159,7 @@ const FINAL = '    done --> [*]';
  * Each line outside the canonical form, in a file that is otherwise canonical, with the line numbers that the findings give.
  * The findings of a line-by-line parse are one per line, so each row lists every line that the parser refuses.
  */
+/** @type {Array<[string, string[], number[]]>} */
 const unsupportedCases = [
   ['a blank line', [...HEAD, DRAFT_LABEL, DRAFT, '', DONE_LABEL, DONE, INIT, EDGE, FINAL], [7]],
   ['a comment', [...HEAD, '    %% a comment', DRAFT_LABEL, DRAFT, DONE_LABEL, DONE, INIT, EDGE, FINAL], [5]],
@@ -228,6 +229,7 @@ for (const file of readdirSync(FIXTURES).filter(name => name.endsWith('.json')).
 }
 
 /** Definitions that the canonical form cannot carry: save refuses them and writes nothing. */
+/** @type {Array<[string, object, string]>} */
 const unrepresentable = [
   ['no initial state', { machine: 'order', states: [{ key: 'draft', code: 1 }], events: [] }, 'exactly one initial state'],
   ['two initial states', {

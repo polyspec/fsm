@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { stripVTControlCharacters } from 'node:util';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const VITEPRESS = path.join(REPO, 'docs/node_modules/vitepress/bin/vitepress.js');
@@ -32,10 +33,9 @@ function markdownFiles(base, relative = '') {
 // A build warning is a line of the build output (ANSI colour codes removed) that starts with `(!)`, `warn` or `warning`, or
 // that names a circular chunk or dependency. A build with any such line fails the test (S-20-1): the warning is a defect of the
 // configuration, not output to accept.
-const ANSI = /\u001b\[[0-9;]*m/g;
 const WARNING = /^(?:\(!\)|warn\b|warning\b)|Circular (?:chunk|dependency)/i;
 export function warningLines(output) {
-  return output.replace(ANSI, '').split('\n').filter(line => WARNING.test(line.trim()));
+  return stripVTControlCharacters(output).split('\n').filter(line => WARNING.test(line.trim()));
 }
 
 /** Runs the VitePress build of the site whose docs directory is `docs`, without VITEPRESS_BASE. */

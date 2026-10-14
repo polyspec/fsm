@@ -1,7 +1,6 @@
 // Tests of the store selection of packages/gui/src/store.mjs (docs/spec/fsm.md, B-2): the store that
 // fsm.config.json names is the store the GUI reads, and a configuration it cannot use is a finding, never a fallback.
 import assert from 'node:assert/strict';
-import path from 'node:path';
 import test from 'node:test';
 import { openStore } from '../src/store.mjs';
 import { ORDER_JSON_TEXT } from './canonical.mjs';

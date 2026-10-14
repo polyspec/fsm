@@ -15,6 +15,7 @@ import * as api from '../src/index.js';
 import { Item, SCHEMA, connect } from '../examples/model/models.ts';
 import { seed, statusOf, transition } from '../examples/persist.mjs';
 import { dialectOf, serverDsn } from '../../db/tests/dialect.mjs';
+import { inspect } from 'node:util';
 
 const { order } = api;
 const dialect = dialectOf();
@@ -63,9 +64,9 @@ test('persist_concurrent_same_event', async () => {
     () => transition(first, order, 1, order.State.Draft, order.Event.Next),
     () => transition(second, order, 1, order.State.Draft, order.Event.Next),
   ]);
-  assert.ok(outcomes.every(outcome => outcome.status === 'fulfilled'), `both transitions succeed: ${outcomes.map(o => o.reason)}`);
+  assert.ok(outcomes.every(outcome => outcome.status === 'fulfilled'), `both transitions succeed: ${inspect(outcomes.map(o => o.reason))}`);
   const steps = outcomes.map(outcome => outcome.value);
-  assert.deepEqual(steps.map(step => step.changed).sort(), [false, true]);
+  assert.deepEqual(steps.map(step => step.changed).sort((a, b) => Number(a) - Number(b)), [false, true]);
   assert.deepEqual(steps.map(step => step.to), [order.State.Paid, order.State.Paid]);
   assert.equal(await statusOf(first, 1), order.code(order.State.Paid), 'the stored state after both runs');
 });

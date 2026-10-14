@@ -35,7 +35,7 @@ const finding = (rule, file, message) => ({ rule, path: file, message });
 const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
 
 /** The files below `dir` as paths relative to it with `/` separators; none when the directory does not exist. */
-function filesUnder(dir, prefix = '') {
+function filesUnder(dir: string, prefix = ''): string[] {
   if (!existsSync(dir)) return [];
   return readdirSync(path.join(dir, prefix), { withFileTypes: true }).flatMap(entry => {
     const rel = prefix === '' ? entry.name : `${prefix}/${entry.name}`;
@@ -58,14 +58,17 @@ function generate(root, packages) {
   return [];
 }
 
+/** The order of two paths by their UTF-16 code units, the order of Array.prototype.sort without a compare function. */
+const byCodeUnits = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
 /** The findings of one compared area: `base` is the directory of the tree, `dir` the generated directory, `select` the files. */
-function compareArea(root, { base, dir, select }) {
-  const tree = new Map(trackedFiles(root)
+function compareArea(root: string, { base, dir, select }: { base: string; dir: string; select: (rel: string) => boolean }) {
+  const tree = new Map<string, string>(trackedFiles(root)
     .filter(file => file.startsWith(`${base}/`) && select(file.slice(base.length + 1)))
     .map(file => [file.slice(base.length + 1), path.join(root, file)]));
-  const generated = new Map(filesUnder(dir).filter(select).map(rel => [rel, path.join(dir, rel)]));
+  const generated = new Map<string, string>(filesUnder(dir).filter(select).map(rel => [rel, path.join(dir, rel)]));
   const found = [];
-  for (const rel of [...new Set([...tree.keys(), ...generated.keys()])].sort()) {
+  for (const rel of [...new Set([...tree.keys(), ...generated.keys()])].sort(byCodeUnits)) {
     const file = `${base}/${rel}`;
     if (!generated.has(rel)) found.push(finding('extra', file, 'is in the working tree, but the generator does not write it'));
     else if (!tree.has(rel)) found.push(finding('missing', file, 'is written by the generator, but it is not in the working tree'));

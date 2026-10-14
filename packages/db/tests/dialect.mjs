@@ -8,7 +8,7 @@ import pg from 'pg';
 import mysql from 'mysql2/promise';
 import { Edge, Event, LockCode, LockReserved, Machine, SCHEMA, State, connect } from '../src/models/models.ts';
 
-export const DIALECTS = ['sqlite', 'postgres', 'mysql'];
+const DIALECTS = ['sqlite', 'postgres', 'mysql'];
 
 /** The dialect that FSM_TEST_DIALECT names; sqlite when it is unset. Another value throws. */
 export function dialectOf(env = process.env) {
@@ -41,7 +41,7 @@ export async function openDialectDb(sqliteFile, env = process.env) {
 }
 
 /** The admin DSN of a server dialect: a user that creates and drops databases (FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_ADMIN_DSN). */
-export function adminDsnOf(dialect, env = process.env) {
+function adminDsnOf(dialect, env = process.env) {
   const variable = dialect === 'postgres' ? 'FSM_TEST_PG_ADMIN_DSN' : 'FSM_TEST_MYSQL_ADMIN_DSN';
   const dsn = env[variable];
   if (!dsn) throw new Error(`${variable} is not set: the ${dialect} CLI tests create their databases through it and never skip`);
@@ -55,7 +55,7 @@ const SIMPLE_NAME = /^[A-Za-z0-9_.%-]+$/;
  * owned by the user of the dialect's DSN; MySQL: every privilege on it for each account of that user). The returned DSN is the
  * dialect's DSN with this database in its path. `drop` removes the database again, with its name and no other.
  */
-export async function createEmptyDatabase(dialect, env = process.env) {
+async function createEmptyDatabase(dialect, env = process.env) {
   const base = new URL(serverDsn(dialect, env));
   const admin = adminDsnOf(dialect, env);
   const name = `fsm_test_${process.pid}_${Date.now().toString(36)}_${randomBytes(3).toString('hex')}`;

@@ -74,11 +74,9 @@ function machineC(ir, phpNs, ext, reserved) {
   const { machine, initial, states, events } = ir;
   const stateName = `${d.ns}\\State`;
   const eventName = `${d.ns}\\Event`;
-  const stepName = `${d.ns}\\Step`;
   const token = d.ns.replace(/\\/g, '_');
   const p = machine;
   const reservedCodes = [...reserved].sort((a, b) => a - b);
-  const stateCases = states.map(state => `\tcase ${state.code}:`);
   const noState = [
     '\t\tdefault:',
     `\t\t\t${p}_no_state(code);`,
@@ -688,7 +686,7 @@ function arginfoFile(irs, phpNs) {
 }
 
 /** The stub php_<ext>.stub.php: the declarations of the namespaces, for editors and static analysis; it is never run. */
-function stubFile(irs, phpNs, ext) {
+function stubFile(irs, phpNs) {
   const lines = [
     '<?php',
     '',
@@ -783,7 +781,7 @@ export function files(irs, lock, { phpNamespace, phpExtName } = {}) {
   out.push({ path: 'fsm.c', content: fsmC(phpNs, ext, machines) });
   out.push({ path: `php_${ext}.h`, content: headerFile(phpNs, ext, machines) });
   out.push({ path: `${ext}_arginfo.h`, content: arginfoFile(irs, phpNs) });
-  out.push({ path: `${ext}.stub.php`, content: stubFile(irs, phpNs, ext) });
+  out.push({ path: `${ext}.stub.php`, content: stubFile(irs, phpNs) });
   out.push({ path: 'config.m4', content: configM4(irs, ext) });
   return out;
 }

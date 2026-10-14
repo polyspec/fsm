@@ -33,11 +33,6 @@ let step = 0;
 const shot = async name => page.screenshot({ path: `${out}/${label}-${String(++step).padStart(2, '0')}-${name}.png`, fullPage: true });
 const log = (...a) => console.log(`[${label}]`, ...a);
 
-async function diagram() {
-  await page.waitForSelector('pre.mermaid svg', { timeout: 15000 });
-  const text = await page.locator('pre.mermaid svg').textContent();
-  return text.replace(/\s+/g, ' ').trim();
-}
 async function stateLabels() {
   // The svg element appears before mermaid has drawn its labels, so the wait is for the first label.
   await page.waitForFunction(() => [...document.querySelectorAll('pre.mermaid svg .nodeLabel, pre.mermaid svg text')].some(n => n.textContent.trim() !== ''), null, { timeout: 15000 });

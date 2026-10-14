@@ -80,7 +80,7 @@ export function dbStore(db) {
         for (const [position, event] of events.entries()) {
           await new Event().setMachine(machine).setKey(event.key).setPosition(position).create();
         }
-        for (const [position, event] of events.entries()) {
+        for (const event of events) {
           for (const [edgePosition, edge] of event.edges.entries()) {
             await new Edge().setMachine(machine).setEvent(event.key).setFrom(edge.from).setTo(edge.to)
               .setPosition(edgePosition).create();

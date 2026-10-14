@@ -15,6 +15,7 @@ import { open, seed, statusOf, transition } from '../examples/persist.mjs';
 import { Item } from '../examples/model/models.ts';
 import { dialectOf, serverDsn } from '../../db/tests/dialect.mjs';
 import { vectors } from './vectors.mjs';
+import { inspect } from 'node:util';
 
 /** The member of a key: its pascal notation (docs/spec/fsm.md, B-6). */
 const member = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
@@ -41,7 +42,7 @@ function errorOf(fn) {
   try {
     fn();
   } catch (error) {
-    assert.ok(error instanceof api.fsm.Error, `want a fsm.Error, got ${error}`);
+    assert.ok(error instanceof api.fsm.Error, `want a fsm.Error, got ${inspect(error)}`);
     return error;
   }
   assert.fail('the call must throw');
@@ -52,7 +53,7 @@ async function rejectionOf(promise) {
   try {
     await promise;
   } catch (error) {
-    assert.ok(error instanceof api.fsm.Error, `want a fsm.Error, got ${error}`);
+    assert.ok(error instanceof api.fsm.Error, `want a fsm.Error, got ${inspect(error)}`);
     return error;
   }
   assert.fail('the promise must reject');

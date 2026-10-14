@@ -129,7 +129,7 @@ function dropsFinal(store) {
     save: ({ definitions, lock }) => store.save({
       definitions: definitions.map(definition => ({
         ...definition,
-        states: definition.states.map(({ final, ...state }) => state),
+        states: definition.states.map(state => Object.fromEntries(Object.entries(state).filter(([key]) => key !== 'final'))),
       })),
       lock,
     }),
