@@ -14,6 +14,6 @@
     "typescript": "7.0.2"
   },
   "overrides": {
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec-ordered-json-npm-0.0.8.tgz"
+    "@polyspec/ordered-json": "$@polyspec/ordered-json"
   }
 }

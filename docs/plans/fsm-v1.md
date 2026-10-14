@@ -146,7 +146,7 @@ fsm/
   packages/{go,js,php,php-ext,python,rust}/   # the kinds go, npm, php, php-ext, python and rust; the npm kind lives in packages/js (S5)
 ```
 - External dependencies are pinned to release tags: orm v0.0.14, ordered-json v0.0.8, hyper v0.0.13, template v0.0.5, crudui v0.0.5, mermaid (exact npm version).
-  - npm: the release asset URL in `dependencies`; transitive `@polyspec/*` with the same URLs in `overrides`
+  - npm: the release asset URL of every `@polyspec/*` package in `dependencies`, the transitive ones too, since npm 12 fetches only the URLs that package.json names (`--allow-remote=root`); each override of a transitive one is the reference `$<name>` to that dependency
   - composer: the release zips of orm and ordered-json in an `artifact` repository, the folder `artifacts/` of each Composer package, as orm and ordered-json document it (they publish to no registry): `config/composer-artifacts.txt` names each zip by its sha256 and URL, `make install` downloads it and checks the sha256 before Composer reads it, and composer.lock records its dist with its shasum; `config.platform.php` 8.5.0
   - go: `require github.com/polyspec/orm v0.0.14`
   - python: `polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.14/polyspec_orm-0.0.14-py3-none-any.whl`, the wheel of the release, which names the wheel of ordered-json v0.0.8 with its sha256

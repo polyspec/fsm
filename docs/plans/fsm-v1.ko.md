@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: d3c77159d2a08358706324cdb7fe73d707cbec8ab512f98bcf35bb16cd016056 -->
+<!-- source-sha256: baa616f9fba5f84645398ef8936b2c9965d6a91d4578f9180561b74c8535b95c -->
 # fsm v1 계획
 
 [English](fsm-v1.md)
@@ -147,7 +147,7 @@ fsm/
   packages/{go,js,php,php-ext,python,rust}/   # the kinds go, npm, php, php-ext, python and rust; the npm kind lives in packages/js (S5)
 ```
 - 외부 의존은 릴리스 태그로 고정한다: orm v0.0.14, ordered-json v0.0.8, hyper v0.0.13, template v0.0.5, crudui v0.0.5, mermaid(npm 정확 버전).
-  - npm: release asset URL을 `dependencies`에 쓴다. 전이 `@polyspec/*`는 같은 URL로 `overrides`에 쓴다.
+  - npm: 전이 package까지 모든 `@polyspec/*` package의 release asset URL을 `dependencies`에 쓴다. npm 12는 package.json이 적은 URL만 받기 때문이다(`--allow-remote=root`). 전이 package의 override는 그 dependency를 가리키는 `$<name>`이다.
   - composer: orm과 ordered-json이 문서화한 대로(둘은 registry에 게시하지 않는다) 각 Composer package의 `artifacts/` 폴더인 `artifact` repository에 두는 두 release zip. `config/composer-artifacts.txt`가 각 zip을 sha256과 URL로 적고, `make install`이 zip을 받아 Composer가 읽기 전에 sha256을 확인하며, composer.lock은 그 dist를 shasum과 함께 기록한다. `config.platform.php` 8.5.0
   - go: `require github.com/polyspec/orm v0.0.14`
   - python: `polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.14/polyspec_orm-0.0.14-py3-none-any.whl`, 즉 release의 wheel이며, 이 wheel이 ordered-json v0.0.8의 wheel을 sha256과 함께 적는다

@@ -32,11 +32,11 @@
     "yaml": "2.9.1"
   },
   "overrides": {
-    "@polyspec/crudui-generator-core": "https://github.com/polyspec/crudui/releases/download/v0.0.5/polyspec-crudui-generator-core-npm-0.0.5.tgz",
-    "@polyspec/crudui-validator": "https://github.com/polyspec/crudui/releases/download/v0.0.5/polyspec-crudui-validator-npm-0.0.5.tgz",
-    "@polyspec/hyper-client": "https://github.com/polyspec/hyper/releases/download/v0.0.13/polyspec-hyper-client-npm-0.0.13.tgz",
-    "@polyspec/template": "https://github.com/polyspec/template/releases/download/v0.0.5/polyspec-template-npm-0.0.5.tgz",
-    "@polyspec/template-compiler": "https://github.com/polyspec/template/releases/download/v0.0.5/polyspec-template-compiler-npm-0.0.5.tgz"
+    "@polyspec/crudui-generator-core": "$@polyspec/crudui-generator-core",
+    "@polyspec/crudui-validator": "$@polyspec/crudui-validator",
+    "@polyspec/hyper-client": "$@polyspec/hyper-client",
+    "@polyspec/template": "$@polyspec/template",
+    "@polyspec/template-compiler": "$@polyspec/template-compiler"
   },
   "devDependencies": {
     "playwright": "1.64.0"

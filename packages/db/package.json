@@ -19,7 +19,7 @@
     "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.14/polyspec-orm-npm-0.0.14.tgz"
   },
   "overrides": {
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec-ordered-json-npm-0.0.8.tgz"
+    "@polyspec/ordered-json": "$@polyspec/ordered-json"
   },
   "devDependencies": {
     "mysql2": "3.24.6",
