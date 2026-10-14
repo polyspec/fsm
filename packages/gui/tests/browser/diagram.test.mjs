@@ -56,8 +56,8 @@ async function drawnLabels() {
 before(async () => {
   const root = tempProject({
     'fsm.config.json': '{"store":"json"}\n',
-    'machines/order.fsm.json': readFileSync(path.join(ROOT, 'machines/order.fsm.json'), 'utf8'),
-    'fsm.lock.json': readFileSync(path.join(ROOT, 'fsm.lock.json'), 'utf8'),
+    'machines/order.fsm.json': readFileSync(path.join(ROOT, 'contracts/machines/order.fsm.json'), 'utf8'),
+    'fsm.lock.json': readFileSync(path.join(ROOT, 'contracts/fsm.lock.json'), 'utf8'),
   });
   machine = JSON.parse(readFileSync(path.join(root, 'machines/order.fsm.json'), 'utf8'));
   const started = await startGui(root);
