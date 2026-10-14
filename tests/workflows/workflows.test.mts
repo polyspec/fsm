@@ -162,10 +162,10 @@ test('the node, go, php and rust versions come from the files that declare them'
 
   const rustChannel = /^channel = "(\d+\.\d+\.\d+)"$/m.exec(read('rust-toolchain.toml'))?.[1];
   assert.ok(rustChannel, 'rust-toolchain.toml must name an exact channel');
-  const rustStep = stepsOf(CHECK_JOB).find(step => step.includes('rustup toolchain install'));
-  assert.ok(rustStep, 'the check job installs no rust toolchain with rustup');
-  assert.match(rustStep, /rust-toolchain\.toml/);
-  assert.match(rustStep, /\n\s+rustup toolchain install$/m, 'rustup installs the channel, profile and components that rust-toolchain.toml names (S-44)');
+  // make install-tools of make install installs the channel, profile and components that rust-toolchain.toml names (kit
+  // K151, S-44-16): the workflow runs no rustup of its own.
+  assert.doesNotMatch(CHECK_JOB, /rustup/, 'the check job installs a Rust toolchain of its own');
+  assert.ok(stepsOf(CHECK_JOB).some(step => /\n\s+run: make install$/m.test(step)), 'the check job runs no make install');
   assert.match(read('rust-toolchain.toml'), /^profile = "minimal"$/m);
   assert.match(read('rust-toolchain.toml'), /^components = \["clippy"\]$/m, 'rust-toolchain.toml names clippy, which kit\'s lint-rust runs');
 });
