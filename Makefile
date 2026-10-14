@@ -176,12 +176,12 @@ DB_DIALECT_TESTS := packages/db/tests/db-store.test.mjs packages/db/tests/store-
 db-test-postgres: $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	@$(call require_dsn,FSM_TEST_PG_ADMIN_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler --inputs packages/db/schema -- --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 db-test-mysql: $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	@$(call require_dsn,FSM_TEST_MYSQL_ADMIN_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler --inputs packages/db/schema -- --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 # db-deps installs the packages of packages/db (orm and ordered-json from their release tarballs, pinned in its
 # package-lock.json). db-test runs the tests of packages/db: the DB store against the store contract, the round trips
@@ -190,7 +190,7 @@ db-test-mysql: $(DB_DEP)
 db-deps: $(DB_DEP)
 
 db-test: $(DB_DEP)
-	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler --inputs packages/db/schema -- packages/db/tests
+	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- packages/db/tests
 
 # gui-deps installs the packages of packages/gui (hyper v0.0.13, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
 # yaml, pinned in its package.json and package-lock.json; docs/plans/fsm-v1.md, C-1). The db store of the GUI is the one of
