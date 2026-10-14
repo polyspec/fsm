@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 0b290265fdc6713259129002596197d7751b7d27c0e3bfb07612838a8fdf041c -->
+<!-- source-sha256: ac6d1b448648f3499c95944d071b84275cf77f53a4184e0ff644f595b30dfab7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-9: 각 kind의 모든 test가 parity binding의 test다. persist test는 여섯 kind 모두에 bind된 네 feature unit(한 row의 동시 transition 두 개와 deadlock 재시도)이고, npm 타입 검사는 root 도구 test tests/npm-types이며, rust conformance target은 module vectors.rs를 가진 tests/conformance/main.rs다.
 - S-44-10: 공유 도구는 kit 0.0.43이다. parity는 cargo target tests/<name>/main.rs의 module 파일을 그 binding의 파일로 세고, oxlint 설정은 node:test의 등록을 허용하며, knip은 layout의 scripts, benchmarks, test를 entry로 삼고, API Extractor는 더 이상 모든 export에 release tag를 요구하지 않는다.
 - S-44-5: 폴더가 kit의 layout을 따른다. package는 packages/compiler, db, gui, go, js(npm kind), php, php-ext, python, rust이고, 저장소의 fsm 프로젝트(fsm.config.json, fsm.lock.json, machines/, schema/, conformance/vectors.json)는 contracts/이며, db store의 table은 packages/db/schema/fsm.dbs다. 루트 script와 도구 테스트는 TypeScript(.mts)다. Go module 경로는 github.com/polyspec/fsm/packages/go다(이전에는 github.com/polyspec/fsm-go).
 - S-44-8: 의존성이 최신 release다. 모든 kind에서 orm v0.0.14와 ordered-json v0.0.8을 쓰며 그 generator는 set 파일 `dbspec-set.json`을 읽는다. Composer는 `config/composer-artifacts.txt`가 sha256으로 고정한 `artifact` repository에서 orm과 ordered-json의 release zip을 받으며, 그 metadata를 복사한 Composer `package`는 사라졌다. python은 release wheel을 받는다. hyper v0.0.13, mysql2 3.24.6, mermaid 12.2.0, PHPUnit 13.4.2이다. npm 설치는 `--allow-remote=root`를 주고, package 테스트는 kit의 run-tests를 checkout root에서 실행하며, CI는 자기 Go를 설치하지 않는다.
