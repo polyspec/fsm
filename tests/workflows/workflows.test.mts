@@ -3,10 +3,12 @@
 // that declares it, and the services and env of the CI job with the block that plan C-6 holds, so the plan and the workflow
 // cannot drift apart. The action pins are the commits that the template repository verified for the same versions.
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { parse } from 'smol-toml';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = file => readFileSync(path.join(ROOT, file), 'utf8');
@@ -19,7 +21,8 @@ const CI = read('.github/workflows/ci.yml');
 const PAGES = read('.github/workflows/pages.yml');
 const PLAN = read('docs/plans/fsm-v1.md');
 const TOOLCHAIN = JSON.parse(read('config/toolchain.json'));
-const MISE = read('mise.toml');
+const PARITY = JSON.parse(read('config/parity.json'));
+const MISE = parse(read('mise.toml'));
 
 // The commits of the template repository for the actions that these workflows use (its action-pins test, T22.4-8).
 const VERIFIED = [
@@ -143,12 +146,15 @@ test('the node, go, php and rust versions come from the files that declare them'
   assert.doesNotMatch(CHECK_JOB, /node-version: /);
   assert.match(read('.node-version'), /^\d+\.\d+\.\d+\n$/);
 
-  // Go is a tool of mise.toml, which make install installs with mise (S-44-6): the workflow sets up no Go of its own.
-  assert.match(MISE, /^go = "1\.27\.2"$/m, 'mise.toml declares the Go pin of kit, 1.27.2');
+  // Go is a tool of mise.toml, which make install installs with mise (S-44-6): the workflow sets up no Go of its own, and the
+  // go directive of the go kind's go.mod (the first root of the implementation go in config/parity.json) is that release.
   assert.doesNotMatch(CHECK_JOB, /setup-go|go-version/, 'the check job sets up a Go of its own');
-  const goMod = 'packages/go/go.mod';
-  assert.match(read(goMod), /^go 1\.27\.2$/m, 'the go line of go.mod is the Go pin of kit, 1.27.2 (S-44-2)');
-  assert.doesNotMatch(read(goMod), /^toolchain /m, 'go.mod has no toolchain line (S-44-2)');
+  const goRoot = PARITY.implementations.find(implementation => implementation.name === 'go').roots[0];
+  const edit = spawnSync('go', ['mod', 'edit', '-json'], { cwd: path.join(ROOT, goRoot), encoding: 'utf8' });
+  assert.equal(edit.status, 0, edit.stderr);
+  const goMod = JSON.parse(edit.stdout);
+  assert.equal(goMod.Go, MISE.tools.go, `the go directive of ${goRoot}/go.mod is the go of mise.toml`);
+  assert.equal(goMod.Toolchain, undefined, `${goRoot}/go.mod has no toolchain line (S-44-2)`);
 
   assert.equal(TOOLCHAIN.php.length, 1, 'config/toolchain.json must declare one PHP minor for the check job');
   assert.match(CHECK_JOB, new RegExp(`\\n {10}php-version: '${TOOLCHAIN.php[0].replace(/\./g, '\\.')}'\\n`));
@@ -165,7 +171,7 @@ test('the node, go, php and rust versions come from the files that declare them'
 });
 
 test('uv comes from mise.toml through make install, and the workflow installs no uv of its own (S-44-2, S-44-6)', () => {
-  assert.match(MISE, /^uv = "\d+\.\d+\.\d+"$/m, 'mise.toml must declare uv');
+  assert.equal(typeof MISE.tools.uv, 'string', 'mise.toml must declare uv');
   assert.doesNotMatch(CHECK_JOB, /pipx|install uv/, 'the check job installs a uv of its own');
 });
 
