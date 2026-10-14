@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 51d915180a003dcc4ac80af7e4827b922b1f430a565e38a6f1ab56a5ddf0f789 -->
+<!-- source-sha256: 2ad21ffa3cedffb79f34ca8e675a1efeeac8f5424e96921a2fcdc55ca3f6c918 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -98,4 +98,4 @@
 | S-44-3 | config/parity.json이 kit K75의 parity schema를 따른다(kit K79): `PYTHONPATH`가 없고(python conformance 테스트가 자기 `tests/`를 넣는다), go의 생성 `vectors_test.go`와 php-ext의 `*_test` stub과 header는 `support` 파일이며, compiler, DB, GUI, 루트 도구의 테스트는 `tools` root다 | kit의 parity-declarations-check가 `PYTHONPATH` env를 거부하고, 그것 없이 python conformance 테스트가 `vectors`를 import하지 못함 RED → schema finding이 사라지고 python 테스트가 290 case를 통과 GREEN | [o] |
 | S-44-4 | 공유 도구는 npm package `@polyspec/kit` 0.0.38입니다(kit K79): package.json이 release asset을 게시된 파일의 integrity로 pin하고, Makefile은 복사된 `scripts/kit/kit-bootstrap.mk`를 include하며, vendor된 `scripts/kit/*`, `tests/kit/*`, `.kit/kit.lock.json`, `kit.json`은 삭제되고, `kit.copies`의 파일은 kit-sync가 쓴 복사본입니다 | 전환된 tree에서 `make kit-check toolchain-check layout-check documents-check owner-validate`를 실행하고, 실패하는 각 check를 행으로 기록합니다 | [o] |
 | S-44-5 | 폴더가 kit layout의 S5, S7, S9를 따른다(kit 0.0.38에서 kit K79가 red를 기록): `make layout-check`가 36개 finding을 보고하며 첫 줄은 `conformance: error: layout-root-folders: S5: the root holds only packages/, contracts/, docs/, scripts/, tests/, examples/, benchmarks/ and config/`이다 | `make layout-check`가 통과한다 | [ ] |
-| S-44-6 | kit 0.0.40과 그 mise toolchain으로 옮긴다(kit K131): 게시된 파일의 integrity로 pin하고, mise.toml은 kit pin의 Go, uv를 가진 Python, govulncheck, cargo-audit, Composer, alint를 선언하며 mise.lock이 이를 잠그고, config/toolchain.json은 mise의 release와 다른 파일이 선언하지 않는 것만 두며, python package의 Python은 install-tools 한 번이 설치하는 shim var/tools/mise/shims/python3이다 | python-tools.test와 make-install.test가 옛 kit의 install-tools(`TOOLS=uv`, `TOOLS=python`, var/tools/bin/python3)를 기대한다 RED → mise의 shim으로 통과하고 `make kit-check toolchain-check documents-check owner-validate`가 통과한다 GREEN | [ ] |
+| S-44-6 | kit 0.0.40과 그 mise toolchain으로 옮긴다(kit K131): 게시된 파일의 integrity로 pin하고, mise.toml은 kit pin의 Go, uv를 가진 Python, govulncheck, cargo-audit, Composer, alint를 선언하며 mise.lock이 이를 잠그고, config/toolchain.json은 mise의 release와 다른 파일이 선언하지 않는 것만 두며, python package의 Python은 install-tools 한 번이 설치하는 shim var/tools/mise/shims/python3이다 | python-tools.test와 make-install.test가 옛 kit의 install-tools(`TOOLS=uv`, `TOOLS=python`, var/tools/bin/python3)를 기대한다 RED → mise의 shim으로 통과하고 `make kit-check toolchain-check documents-check owner-validate`가 통과한다 GREEN | [o] |
