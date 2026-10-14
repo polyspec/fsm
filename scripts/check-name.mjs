@@ -71,7 +71,7 @@ export const ALLOWED = Object.freeze([
   },
   {
     files: ['**'],
-    match: /\.status(?![.\w-])|\bstatus(?:: | !== | === )(?:'|\d|0)|\bstatus: (?=\w+\.status\b)|\bstatus \d+\b|\bexits? with status\b|\bstatus but pass\b|\bstatusFindings\b|\bgit status\b|\bstatus \$\{response|\{id, status, elapsedMs\}|status other than `pass`|\breturns its status, stdout and stderr\b|\breturns its status and stderr\b/,
+    match: /\.status(?![.\w-])|\bstatus(?:: | !== | === )(?:'|\d|0)|\bstatus: (?=\w+\.status\b)|\bstatus \d+\b|\bexits? with status\b|\bstatus but pass\b|\bstatusFindings\b|\bgit status\b|\bstatus \$\{response|\{id, status, elapsedMs\}|status other than `pass`|\breturns its status, stdout and stderr\b|\breturns its status and stderr\b|\bexit status\b|\{ status, stdout, stderr, error \}/,
     reason: 'an exit status, an HTTP response status or a test result status (pass, fail, skip, timeout) of a process, a request or a test, not the library',
   },
 ]);
