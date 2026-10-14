@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6a0bce3271ad9d0e1da0ca58361c0257bc85928a39e93f8cf77002ba9ab36cde -->
+<!-- source-sha256: 96c126da51a2c83072882b0b65a324bc31c9ac5f34874bfe281632a1a184eae7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-17: 공유 도구가 kit 0.0.45다. 그 knip은 고정된 runtime의 binary를 무시하고, `config/knip-entries.json`이 workspace로 선언한 중첩 npm project를 읽는다.
 - S-44-15: 모든 kind에서 orm이 v0.0.15다(npm과 fsm-db tarball, go module, rapidyaml과 ruamel.yaml을 쓰는 python wheel, cargo tag, purrphp/yaml을 쓰는 Composer zip). 그 생성된 TypeScript model은 쓰는 것만 import하고, 생성된 Rust model에는 allow attribute가 없다. Go import는 `github.com/polyspec/orm/packages/go/...`를 읽고, `config/knip-entries.json`은 orm이 설계상 MANIFEST_TEXT와 MANIFEST_HASH를 export하는 생성된 models.ts를 선언한다.
 - S-44-15: `config/knip-entries.json`은 kit의 layout entry 밖에서 make나 테스트가 실행하거나 경로로 읽는 파일(fsm-gen과 fsm-gui 명령, GUI client entry, golden npm 파일, 생성된 declaration과 그 consumer, 문서 사이트 설정)과 손으로 실행하는 GUI 프로그램 두 개를 선언하므로 knip은 unused file을 보고하지 않는다. write-generated.mjs의 `isGenerated`는 export가 아니다.
 - S-44-8-1: `config/release-assets.json`이 orm과 ordered-json의 release zip을 고정하고, kit의 `make release-assets-fetch`가 그것을 packages/php와 packages/php-ext의 Composer artifact repository인 var/composer-artifacts에 받는다. `composer-artifacts` recipe와 `config/composer-artifacts.txt`는 제거했다.
