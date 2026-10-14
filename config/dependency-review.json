@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mts) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-14T09:10:43.838Z",
+  "reviewed": "2026-10-14T13:21:46.860Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -10,7 +10,7 @@
     },
     {
       "lock": "package-lock.json",
-      "sha256": "037722d11d04060c3f9f403b6debb11a42dd9aaca945ab56dc6ac56b567ed00c",
+      "sha256": "9f64353c26df618bd23f5c6a08560242428b27d2d4b36e4e919cc8808b87909c",
       "advisories": [
         {
           "package": "sprintf-js",
@@ -29,7 +29,7 @@
     },
     {
       "lock": "packages/gui/package-lock.json",
-      "sha256": "5469663e87d4631ca480c59b6bc69285c2a5f9b64f74a02d0ecce18a9398839c",
+      "sha256": "765e4d0fdb42be2c75dda7a470a4aeb0b863603c0abb6ec8a3ebe04f597c6f61",
       "advisories": []
     },
     {
@@ -59,7 +59,7 @@
     },
     {
       "lock": "packages/rust/Cargo.lock",
-      "sha256": "53850219968818c5b0db4c4d05f3283636bd56af98fb561b85ec83b9f78e59ef",
+      "sha256": "90388b702a1800dfed4a6741bd94a18383a5b644aec1d4be4ada675b23818e5b",
       "advisories": []
     }
   ],
@@ -131,8 +131,8 @@
       "ecosystem": "npm",
       "manifest": "packages/gui/package.json",
       "package": "playwright",
-      "version": "1.64.0",
-      "latest": "1.64.0"
+      "version": "1.64.1",
+      "latest": "1.64.1"
     },
     {
       "ecosystem": "npm",
