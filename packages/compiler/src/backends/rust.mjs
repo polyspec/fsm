@@ -1,11 +1,11 @@
 // The rust backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1.md, C-2): the generated files of the rust package
-// `src/` and the native vector module `tests/vectors.rs`. It takes the IRs of the machines (normalize.mjs), in definition order,
+// `src/` and the native vector module `tests/conformance/vectors.rs`. It takes the IRs of the machines (normalize.mjs), in definition order,
 // and the lock, and returns the text of every file; it writes nothing. The output is deterministic: declaration order, four
 // spaces of indentation and a final line break. The core imports nothing from node:, and the generated code has no runtime
 // dependency.
 //
-// The language difference of this kind is the vector module: `tests/vectors.rs` is one #[test] per case in the module of the
-// conformance test crate (tests/conformance.rs), which calls the check functions of that crate (check_value, check_slice,
+// The language difference of this kind is the vector module: `tests/conformance/vectors.rs` is one #[test] per case in the module of the
+// conformance test crate (tests/conformance/main.rs), which calls the check functions of that crate (check_value, check_slice,
 // check_result and check_persist). The machine functions return Result with fsm::Error, so a case compares the value or the
 // error code of the function it names.
 
@@ -314,8 +314,8 @@ function testOf(machine, c) {
 }
 
 /**
- * The native vector module tests/vectors.rs of `vectorList`, the vectors of every machine in order: one #[test] per case that
- * calls the check functions of tests/conformance.rs (the crate root `crate::`). The persist cases are #[tokio::test].
+ * The native vector module tests/conformance/vectors.rs of `vectorList`, the vectors of every machine in order: one #[test] per case that
+ * calls the check functions of tests/conformance/main.rs (the crate root `crate::`). The persist cases are #[tokio::test].
  */
 export function vectorsFile(list) {
   const vectorList = forKind(list, KIND);

@@ -1,8 +1,8 @@
-// The concurrency proof of the persistence pattern (docs/spec/fsm.md, B-4; docs/plans/fsm-v1.md, C-4): two transactions of one row
-// that run at the same time, each on its own connection, give the outcome that the pattern promises. Two transactions with the same
-// (expected, event) give one Changed and one Unchanged; two different events from one expected state give one Changed and one
-// E_CONFLICT. The dialect is FSM_TEST_DIALECT (sqlite by default; postgres and mysql take their DSN from FSM_TEST_PG_DSN and
-// FSM_TEST_MYSQL_DSN, and a missing DSN fails the run). The dialect helper is the one of the fsm-db tests. On postgres and mysql
+// The persistence tests of the npm package beyond the vector cases (docs/spec/fsm.md, B-4; docs/plans/fsm-v1.md, C-4): two
+// transitions of one row that run at the same time, each on its own connection, give the outcome that the pattern promises, and a
+// deadlock runs the transaction again while another database error does not. Each test is named by its feature unit of
+// config/parity.json. The dialect is FSM_TEST_DIALECT (sqlite by default; postgres and mysql take their DSN from FSM_TEST_PG_DSN
+// and FSM_TEST_MYSQL_DSN, and a missing DSN fails the run), through the dialect helper of the fsm-db tests. On postgres and mysql
 // the two transitions run at the same time. On sqlite they run one after the other: the sqlite driver is synchronous, so a second
 // BEGIN IMMEDIATE in the same process blocks the one thread that would commit the first (docs/plans/fsm-v1.md, C-4).
 import assert from 'node:assert/strict';
@@ -10,6 +10,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { after } from 'node:test';
+import { OrmError } from '@polyspec/orm';
 import * as api from '../src/index.js';
 import { Item, SCHEMA, connect } from '../examples/model/models.ts';
 import { seed, statusOf, transition } from '../examples/persist.mjs';
@@ -25,8 +26,8 @@ after(async () => {
   for (const dir of temp) rmSync(dir, { recursive: true, force: true });
 });
 
-/** Two connections to one database of the dialect, with the persist table installed and holding row 1 in the draft state. */
-async function twoConnections() {
+/** `count` connections to one database of the dialect, with the persist table installed and holding row 1 in the draft state. */
+async function connections(count) {
   let dsn;
   if (dialect === 'sqlite') {
     const dir = mkdtempSync(path.join(tmpdir(), 'fsm-npm-persist-'));
@@ -35,12 +36,13 @@ async function twoConnections() {
   } else {
     dsn = serverDsn(dialect);
   }
-  const pair = [await connect(dsn), await connect(dsn)];
-  dbs.push(...pair);
-  await pair[0].utils().schema().install(SCHEMA);
-  await (await new Item().connect(pair[0]).gets()).delete();
-  await seed(pair[0], 1, order.code(order.State.Draft));
-  return pair;
+  const opened = [];
+  for (let index = 0; index < count; index++) opened.push(await connect(dsn));
+  dbs.push(...opened);
+  await opened[0].utils().schema().install(SCHEMA);
+  await (await new Item().connect(opened[0]).gets()).delete();
+  await seed(opened[0], 1, order.code(order.State.Draft));
+  return opened;
 }
 
 /** Each call settled, as Promise.allSettled reports it: fulfilled with a value or rejected with a reason. Concurrent on postgres and mysql, in sequence on sqlite. */
@@ -52,8 +54,11 @@ async function together(calls) {
   return outcomes;
 }
 
-test('two concurrent transitions with the same (expected, event) give one Changed and one Unchanged', async () => {
-  const [first, second] = await twoConnections();
+/** The order machine whose apply runs `fault` before it applies the event, once per attempt of the transaction. */
+const faulty = fault => ({ ...order, apply: (...args) => { fault(); return order.apply(...args); } });
+
+test('persist_concurrent_same_event', async () => {
+  const [first, second] = await connections(2);
   const outcomes = await together([
     () => transition(first, order, 1, order.State.Draft, order.Event.Next),
     () => transition(second, order, 1, order.State.Draft, order.Event.Next),
@@ -65,8 +70,8 @@ test('two concurrent transitions with the same (expected, event) give one Change
   assert.equal(await statusOf(first, 1), order.code(order.State.Paid), 'the stored state after both runs');
 });
 
-test('two concurrent transitions with two events from one expected state give one Changed and one E_CONFLICT', async () => {
-  const [first, second] = await twoConnections();
+test('persist_concurrent_conflict', async () => {
+  const [first, second] = await connections(2);
   const outcomes = await together([
     () => transition(first, order, 1, order.State.Draft, order.Event.Next),
     () => transition(second, order, 1, order.State.Draft, order.Event.Cancel),
@@ -81,24 +86,25 @@ test('two concurrent transitions with two events from one expected state give on
   assert.equal(await statusOf(first, 1), order.code(changed[0].value.to), 'the stored state is the one the changed run reached');
 });
 
-test('the persistence pattern gives first, retry and conflict on the dialect (the persist vectors of B-4)', async () => {
-  const [db] = await twoConnections();
-  const first = await transition(db, order, 1, order.State.Draft, order.Event.Next);
-  assert.deepEqual(first, { to: order.State.Paid, changed: true }, 'first attempt');
-  const retry = await transition(db, order, 1, order.State.Draft, order.Event.Next);
-  assert.deepEqual(retry, { to: order.State.Paid, changed: false }, 'retry with the same observed state');
-  const conflict = await rejectionOf(transition(db, order, 1, order.State.Draft, order.Event.Cancel));
-  assert.equal(conflict.code, 'E_CONFLICT');
-  assert.equal(await statusOf(db, 1), order.code(order.State.Paid), 'the stored state after the three attempts');
+test('persist_retry_on_deadlock', async () => {
+  const [db] = await connections(1);
+  let attempts = 0;
+  const step = await transition(db, faulty(() => {
+    attempts += 1;
+    if (attempts === 1) throw new OrmError('DEADLOCK', 'injected deadlock');
+  }), 1, order.State.Draft, order.Event.Next);
+  assert.equal(attempts, 2, 'the transaction runs again after a deadlock');
+  assert.deepEqual(step, { to: order.State.Paid, changed: true });
+  assert.equal(await statusOf(db, 1), order.code(order.State.Paid));
 });
 
-/** The error of a rejected promise, which must be a fsm.Error. */
-async function rejectionOf(promise) {
-  try {
-    await promise;
-  } catch (error) {
-    assert.ok(error instanceof api.fsm.Error, `want a fsm.Error, got ${error}`);
-    return error;
-  }
-  assert.fail('the promise must reject');
-}
+test('persist_no_retry_on_other_error', async () => {
+  const [db] = await connections(1);
+  let attempts = 0;
+  await assert.rejects(transition(db, faulty(() => {
+    attempts += 1;
+    throw new OrmError('CONNECTION_LOST', 'injected');
+  }), 1, order.State.Draft, order.Event.Next), error => error instanceof OrmError && error.code === 'CONNECTION_LOST');
+  assert.equal(attempts, 1, 'a database error other than a deadlock is not run again');
+  assert.equal(await statusOf(db, 1), order.code(order.State.Draft), 'the row keeps its state');
+});

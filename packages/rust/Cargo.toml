@@ -6,8 +6,9 @@ rust-version = "1.99.0"
 publish = false
 description = "Rust consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1.md, C-2)"
 
-# tests/vectors.rs and examples/persist.rs are modules of the test crate tests/conformance.rs, not targets of their own, so
-# automatic test and example discovery is off and the one test target is named here.
+# The test targets are tests/conformance/main.rs, with its module tests/conformance/vectors.rs (Cargo's layout of a test target
+# of several files), and tests/persist.rs; both take the modules tests/common/mod.rs and examples/persist.rs. The modules are no targets of their own, so automatic test and example discovery
+# is off and the targets are named here.
 autotests = false
 autoexamples = false
 
@@ -26,13 +27,13 @@ allow_attributes_without_reason = "deny"
 
 [[test]]
 name = "conformance"
-path = "tests/conformance.rs"
+path = "tests/conformance/main.rs"
 
-# tests/persist_retry.rs is the retry test of the persist example: a tool test with its own record (make rust-persist-test), so the
-# record of the conformance target holds the vector cases alone.
+# tests/persist.rs holds the concurrency and retry tests of the persist example, the feature units of config/parity.json
+# beyond the vector cases (docs/spec/fsm.md, B-4).
 [[test]]
-name = "persist_retry"
-path = "tests/persist_retry.rs"
+name = "persist"
+path = "tests/persist.rs"
 
 # The orm pins of docs/plans/fsm-v1.md, C-1: the model generator runs in build.rs, the runtime is used by the persist example.
 [build-dependencies]

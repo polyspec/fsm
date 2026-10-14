@@ -1,4 +1,4 @@
-# The rust package (docs/plans/fsm-v1.md, C-2). gen writes the generated files: src/ and tests/vectors.rs with the fsm-gen of
+# The rust package (docs/plans/fsm-v1.md, C-2). gen writes the generated files: src/ and tests/conformance/vectors.rs with the fsm-gen of
 # the compiler. The orm models of contracts/schema/persist.dbs are written by build.rs into OUT_DIR, so gen writes no model directory: that
 # is the declared difference of rust. DEST names the directory of the generated files (DEST ?= .), so that gen-check can write them
 # into var/gen-check/rust and compare them with the working tree. The test target runs cargo from the checkout root with the
@@ -18,7 +18,7 @@ install:
 
 gen:
 	$(FSM_GEN) gen --project $(ROOT)/contracts --kind rust --out $(DEST)/src
-	$(FSM_GEN) vectors --project $(ROOT)/contracts --kind rust --out $(DEST)/tests/vectors.rs
+	$(FSM_GEN) vectors --project $(ROOT)/contracts --kind rust --out $(DEST)/tests/conformance/vectors.rs
 
 test:
 	cd $(ROOT) && $(RUN_TESTS) cargo --results .results/rust.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance

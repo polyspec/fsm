@@ -242,10 +242,11 @@ packages-test:
 test-npm: $(NPM_DEP)
 	$(MAKE) -C packages/js test
 
-# npm-persist-test runs tests/persist-dialects.test.mjs of packages/js: two concurrent transitions of one row give one Changed and one
-# Unchanged, and two events from one expected state give one Changed and one E_CONFLICT (docs/spec/fsm.md, B-4; docs/plans/fsm-v1.md, C-4).
-# The three targets run it on each dialect: sqlite (a temporary file), postgres (FSM_TEST_PG_DSN) and mysql (FSM_TEST_MYSQL_DSN).
-NPM_PERSIST_TESTS := packages/js/tests/persist-dialects.test.mjs
+# npm-persist-test runs the persist cases of packages/js on a dialect: the persist vector cases of tests/conformance.test.mjs and
+# tests/persist.test.mjs, whose two transitions of one row give one Changed and one Unchanged or one E_CONFLICT, and whose
+# deadlock runs the transaction again while another database error does not (docs/spec/fsm.md, B-4; docs/plans/fsm-v1.md, C-4).
+# The three targets run them on each dialect: sqlite (a temporary file), postgres (FSM_TEST_PG_DSN) and mysql (FSM_TEST_MYSQL_DSN).
+NPM_PERSIST_TESTS := --test-name-pattern=persist packages/js/tests/conformance.test.mjs packages/js/tests/persist.test.mjs
 npm-persist-test: $(NPM_DEP) $(DB_DEP)
 	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
@@ -257,11 +258,11 @@ npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
-# npm-types runs tests/types.test.mjs of packages/js: tsc compiles tests/types/consumer.ts against the generated
+# npm-types runs tests/npm-types: tsc compiles tests/npm-types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/execution-checklist.md, S-09-2). It is a tool test with
 # its own record, so the conformance test of the npm kind holds only vector cases for kit's parity check.
 npm-types: $(NPM_DEP)
-	$(RUN_TESTS) node --results .results/npm-types.json --inputs packages/js -- packages/js/tests/types.test.mjs
+	$(RUN_TESTS) node --results .results/npm-types.json --inputs packages/js -- tests/npm-types
 
 
 # test-go runs the tests of packages/go: the conformance cases and the persist example (docs/plans/fsm-v1.md, C-2).
@@ -274,10 +275,10 @@ test-php: $(PHP_DEP)
 # test-rust runs the tests of packages/rust: the conformance cases and the persist example (docs/plans/fsm-v1.md, C-2).
 test-rust: $(RUST_DEP)
 	$(MAKE) -C packages/rust test
-# rust-persist-test runs tests/persist_retry.rs of packages/rust: a deadlock runs the persistence transaction again and another
-# database error does not (docs/spec/fsm.md, B-4; docs/plans/execution-checklist.md, S-31). It is a tool test with its own record.
+# rust-persist-test runs tests/persist.rs of packages/rust on sqlite: two transitions of one row at the same time, and a deadlock
+# runs the persistence transaction again while another database error does not (docs/spec/fsm.md, B-4; S-31, S-44-9).
 rust-persist-test: $(RUST_DEP)
-	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test persist_retry
+	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test persist
 # python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/mise/shims/python3
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
@@ -304,37 +305,37 @@ endef
 
 go-persist-test-postgres: $(GO_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-postgres.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__'
+	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-postgres.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
 
 go-persist-test-mysql: $(GO_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-mysql.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__'
+	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-mysql.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
 
 rust-persist-test-postgres: $(RUST_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
 
 rust-persist-test-mysql: $(RUST_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
 
 php-persist-test-postgres: $(PHP_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-postgres.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-postgres.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
 php-persist-test-mysql: $(PHP_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-mysql.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-mysql.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
 php-ext-persist-test-postgres: $(PHP_EXT_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	$(MAKE) -C packages/php-ext build
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension packages/php-ext/src/modules/polyspec_fsm_test.so --cwd packages/php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension packages/php-ext/src/modules/polyspec_fsm_test.so --cwd packages/php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
 php-ext-persist-test-mysql: $(PHP_EXT_DEP)
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	$(MAKE) -C packages/php-ext build
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension packages/php-ext/src/modules/polyspec_fsm_test.so --cwd packages/php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension packages/php-ext/src/modules/polyspec_fsm_test.so --cwd packages/php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
 python-persist-test-postgres: $(PYTHON_DEP)
 	@$(call require_dsn,FSM_TEST_PG_DSN)

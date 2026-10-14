@@ -348,6 +348,14 @@
     },
     {
       "paths": [
+        "tests/npm-types/**"
+      ],
+      "targets": [
+        "npm-types"
+      ]
+    },
+    {
+      "paths": [
         ".github/workflows/**",
         "tests/workflows/**"
       ],

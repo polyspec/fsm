@@ -30,6 +30,8 @@ gen:
 	$(FSM_GEN) gen --project $(ROOT)/contracts --kind php-ext --php-namespace '$(NAMESPACE)' --php-ext-name $(EXTENSION) --out $(DEST)/src
 	$(FSM_GEN) vectors --project $(ROOT)/contracts --kind php-ext --php-namespace '$(NAMESPACE)' --out $(DEST)/tests/ConformanceTest.php
 	cp $(PHP)/tests/ConformanceCase.php $(DEST)/tests/ConformanceCase.php
+	cp $(PHP)/tests/PersistTest.php $(DEST)/tests/PersistTest.php
+	cp $(PHP)/tests/PersistTest.php $(DEST)/tests/PersistTest.php
 	cp $(PHP)/examples/persist.php $(DEST)/examples/persist.php
 	./vendor/bin/orm-gen gen --set $(ROOT)/contracts/schema/dbspec-set.json --out $(DEST)/examples/model --namespace '$(NAMESPACE)\Model'
 

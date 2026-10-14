@@ -3,8 +3,7 @@
 # files (DEST ?= .), so that gen-check can write them into var/gen-check/npm and compare them with the working tree. The test
 # target runs node from the checkout root with root-relative paths: node names each file relative to its working directory, and
 # the kit reporter matches the file group by that name, so a working directory other than the root would be misread. The test
-# target names the conformance file only: the type check of tests/types.test.mjs has its own record (make npm-types), and the
-# conformance test of this kind must hold vector cases alone for kit's parity check.
+# target names the conformance file only: the persist test tests/persist.test.mjs runs in the records of make npm-persist-test.
 ROOT := ../..
 # The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages). It takes its working
 # directory as the checkout root, so the test target runs it there and names every path from the root.

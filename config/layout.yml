@@ -44,6 +44,8 @@ rules:
       - "!tests/make-install"
       - "!tests/python-tools"
       - "!tests/workflows"
+      # the type check of the declarations of packages/js (S-09-2, make npm-types): tsc compiles tests/npm-types/consumer.ts in strict mode against packages/js/src/*.d.ts
+      - "!tests/npm-types"
 
   # ---- The kind packages (docs/plans/fsm-v1.md, C-2; S-44 moved these rules from fsm's own check-layout) ----------------
   # Every kind package holds the canonical files and folders, the required files of its kind, and only files that its kind
@@ -61,6 +63,7 @@ rules:
       - { kind: file_exists, paths: "{path}/go.sum" }
       - { kind: file_exists, paths: "{path}/tests/conformance_test.go" }
       - { kind: file_exists, paths: "{path}/tests/vectors_test.go" }
+      - { kind: file_exists, paths: "{path}/tests/persist_test.go" }
       - { kind: file_exists, paths: "{path}/examples/persist.go" }
     message: "C-2: the go package holds the canonical files and the required files of its kind"
 
@@ -86,6 +89,7 @@ rules:
       - "!packages/go/go.sum"
       - "!packages/go/tests/conformance_test.go"
       - "!packages/go/tests/vectors_test.go"
+      - "!packages/go/tests/persist_test.go"
       - "!packages/go/examples/persist.go"
       - "!packages/go/src/**/*.go"
       - "!packages/go/examples/model/**"
@@ -103,6 +107,7 @@ rules:
       - { kind: file_exists, paths: "{path}/package-lock.json" }
       - { kind: file_exists, paths: "{path}/tests/conformance.test.mjs" }
       - { kind: file_exists, paths: "{path}/tests/vectors.mjs" }
+      - { kind: file_exists, paths: "{path}/tests/persist.test.mjs" }
       - { kind: file_exists, paths: "{path}/examples/persist.mjs" }
     message: "C-2: the npm package holds the canonical files and the required files of its kind"
 
@@ -128,16 +133,11 @@ rules:
       - "!packages/js/package-lock.json"
       - "!packages/js/tests/conformance.test.mjs"
       - "!packages/js/tests/vectors.mjs"
+      - "!packages/js/tests/persist.test.mjs"
       - "!packages/js/examples/persist.mjs"
       - "!packages/js/src/*.js"
       - "!packages/js/src/*.d.ts"
       - "!packages/js/examples/model/**"
-      # the type check of the generated declarations (S-09-2, make npm-types): TypeScript compiles tests/types/consumer.ts in strict mode against src/*.d.ts; only npm ships declaration files
-      - "!packages/js/tests/types.test.mjs"
-      # the consumer files that the type check compiles (tests/types/consumer.ts); they are compiled, not run, so they have no vector case
-      - "!packages/js/tests/types/**"
-      # the concurrency proof of the persistence pattern (B-4, plan C-4): two transactions of one row, concurrent on postgres and mysql, run through the dialect helper of fsm-db; a tool test with its own record (make npm-persist-test*), so the vector record of the kind holds the vector cases alone
-      - "!packages/js/tests/persist-dialects.test.mjs"
     message: "C-2: a file that the npm package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-required
@@ -152,6 +152,7 @@ rules:
       - { kind: file_exists, paths: "{path}/composer.lock" }
       - { kind: file_exists, paths: "{path}/tests/ConformanceCase.php" }
       - { kind: file_exists, paths: "{path}/tests/ConformanceTest.php" }
+      - { kind: file_exists, paths: "{path}/tests/PersistTest.php" }
       - { kind: file_exists, paths: "{path}/examples/persist.php" }
     message: "C-2: the php package holds the canonical files and the required files of its kind"
 
@@ -177,6 +178,7 @@ rules:
       - "!packages/php/composer.lock"
       - "!packages/php/tests/ConformanceCase.php"
       - "!packages/php/tests/ConformanceTest.php"
+      - "!packages/php/tests/PersistTest.php"
       - "!packages/php/examples/persist.php"
       - "!packages/php/src/**/*.php"
       - "!packages/php/examples/model/**"
@@ -193,8 +195,9 @@ rules:
       - { kind: file_exists, paths: "{path}/Cargo.toml" }
       - { kind: file_exists, paths: "{path}/Cargo.lock" }
       - { kind: file_exists, paths: "{path}/build.rs" }
-      - { kind: file_exists, paths: "{path}/tests/conformance.rs" }
-      - { kind: file_exists, paths: "{path}/tests/vectors.rs" }
+      - { kind: file_exists, paths: "{path}/tests/conformance/main.rs" }
+      - { kind: file_exists, paths: "{path}/tests/conformance/vectors.rs" }
+      - { kind: file_exists, paths: "{path}/tests/persist.rs" }
       - { kind: file_exists, paths: "{path}/examples/persist.rs" }
     message: "C-2: the rust package holds the canonical files and the required files of its kind"
 
@@ -219,12 +222,13 @@ rules:
       - "!packages/rust/Cargo.toml"
       - "!packages/rust/Cargo.lock"
       - "!packages/rust/build.rs"
-      - "!packages/rust/tests/conformance.rs"
-      - "!packages/rust/tests/vectors.rs"
+      - "!packages/rust/tests/conformance/main.rs"
+      - "!packages/rust/tests/conformance/vectors.rs"
+      - "!packages/rust/tests/persist.rs"
+      # the dialect of the persist tests, the shared module of the test crates tests/conformance/ and tests/persist.rs (S-44-9)
+      - "!packages/rust/tests/common/mod.rs"
       - "!packages/rust/examples/persist.rs"
       - "!packages/rust/src/*.rs"
-      # the retry test of the persist example (B-4: a deadlock runs the transaction again, another error does not): a tool test with its own record (make rust-persist-test, S-31); the conformance test of the kind holds the vector cases alone for kit's parity check
-      - "!packages/rust/tests/persist_retry.rs"
     message: "C-2: a file that the rust package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-python-required
@@ -240,6 +244,7 @@ rules:
       - { kind: file_exists, paths: "{path}/pylock.toml" }
       - { kind: file_exists, paths: "{path}/tests/test_conformance.py" }
       - { kind: file_exists, paths: "{path}/tests/vectors.py" }
+      - { kind: file_exists, paths: "{path}/tests/test_persist.py" }
       - { kind: file_exists, paths: "{path}/examples/persist.py" }
     message: "C-2: the python package holds the canonical files and the required files of its kind"
 
@@ -266,6 +271,7 @@ rules:
       - "!packages/python/pylock.toml"
       - "!packages/python/tests/test_conformance.py"
       - "!packages/python/tests/vectors.py"
+      - "!packages/python/tests/test_persist.py"
       - "!packages/python/examples/persist.py"
       - "!packages/python/src/polyspec_fsm/*.py"
       - "!packages/python/examples/model/**"
@@ -283,6 +289,7 @@ rules:
       - { kind: file_exists, paths: "{path}/composer.lock" }
       - { kind: file_exists, paths: "{path}/tests/ConformanceCase.php" }
       - { kind: file_exists, paths: "{path}/tests/ConformanceTest.php" }
+      - { kind: file_exists, paths: "{path}/tests/PersistTest.php" }
       - { kind: file_exists, paths: "{path}/examples/persist.php" }
     message: "C-2: the php-ext package holds the canonical files and the required files of its kind"
 
@@ -308,6 +315,7 @@ rules:
       - "!packages/php-ext/composer.lock"
       - "!packages/php-ext/tests/ConformanceCase.php"
       - "!packages/php-ext/tests/ConformanceTest.php"
+      - "!packages/php-ext/tests/PersistTest.php"
       - "!packages/php-ext/examples/persist.php"
       - "!packages/php-ext/src/**"
       - "!packages/php-ext/examples/model/**"
@@ -328,4 +336,12 @@ rules:
     relation: identical
     source: { file: "packages/php/tests/ConformanceTest.php" }
     targets: [{ file: "packages/php-ext/tests/ConformanceTest.php" }]
+    message: "C-2: the php-ext tests are byte-identical to the php tests"
+
+  - id: layout-php-twin-persist
+    kind: cross_file
+    level: error
+    relation: identical
+    source: { file: "packages/php/tests/PersistTest.php" }
+    targets: [{ file: "packages/php-ext/tests/PersistTest.php" }]
     message: "C-2: the php-ext tests are byte-identical to the php tests"

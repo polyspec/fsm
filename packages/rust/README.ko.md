@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 6fe634ddf88d772d9be2e9424b4c1175a6264269789902b5b04507ddbe7f6bf6 -->
+<!-- source-sha256: 83091b557844c88909ebc7e744592ff176a9409595759312337bd076559b216b -->
 # fsm-rust
 
 [English](README.md)
@@ -32,7 +32,7 @@ path = "src/lib.rs"
 ```
 
 정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --kind rust --out <file>`로 자신의 test 파일에 쓴다(test bed는
-`tests/vectors.rs`에 쓴다).
+`tests/conformance/vectors.rs`에 쓴다).
 
 ## 생성 파일
 
@@ -61,7 +61,7 @@ module `order`의 함수(`src/order.rs`):
 
 `Step`은 `to: State`와 `changed: bool` 필드를 가진다. `from_code`는 `i64`를 받으므로, database가 돌려준 값을 줄이지 않고 그대로 넘긴다.
 
-완전한 `apply` 호출은 `packages/rust/tests/vectors.rs`에서 그대로 옮겼다. `apply` feature의 첫 case이며, 결과를 검사하는 test
+완전한 `apply` 호출은 `packages/rust/tests/conformance/vectors.rs`에서 그대로 옮겼다. `apply` feature의 첫 case이며, 결과를 검사하는 test
 함수다:
 
 ```rust
@@ -93,7 +93,7 @@ E_CONFLICT Some(1) Some(3) Some(1)
 
 `Error`는 `Display`(`E_CONFLICT: the stored state ...`)와 `std::error::Error`를 구현한다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/vectors.rs`의 vector가 이를 단언한다:
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/conformance/vectors.rs`의 vector가 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -132,7 +132,7 @@ pub async fn transition_with_fault(
 }
 ```
 
-호출자의 closure가 `apply` 사용이다. `packages/rust/tests/vectors.rs`에서 옮겼다(draft 상태에서 `next` event의 영속화 case):
+호출자의 closure가 `apply` 사용이다. `packages/rust/tests/conformance/vectors.rs`에서 옮겼다(draft 상태에서 `next` event의 영속화 case):
 
 ```rust
 crate::check_persist(
@@ -162,6 +162,6 @@ make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과이며, crate 컴파일을 포함해 약 100초가 걸린다. `tests/vectors.rs`는 vector case마다 `#[test]` 하나를 가지며
-이름은 case 이름 `<feature>__<id>`다(`vectors::<feature>__<id>`). 각 test는 `tests/conformance.rs`의 검사 함수를 부른다. 영속화 case는 `#[tokio::test]`다. toolchain은
+실행 결과는 89개 case 중 89개 통과이며, crate 컴파일을 포함해 약 100초가 걸린다. `tests/conformance/vectors.rs`는 vector case마다 `#[test]` 하나를 가지며
+이름은 case 이름 `<feature>__<id>`다(`vectors::<feature>__<id>`). 각 test는 `tests/conformance/main.rs`의 검사 함수를 부른다. 영속화 case는 `#[tokio::test]`다. toolchain은
 루트의 `rust-toolchain.toml`(Rust 1.99.0)이다. 루트의 `make gen-check`는 생성 파일이 `fsm-gen`이 지금 쓰는 것과 같은지 검사한다.
