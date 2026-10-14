@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-15: `make lint-ts` passes and `make check` runs it: `config/knip-entries.json` declares packages/db, packages/gui, packages/js and docs as knip workspaces.
 - S-44-17: the shared tools are kit 0.0.45, whose knip ignores the binaries of the pinned runtimes and reads the nested npm projects that `config/knip-entries.json` declares as workspaces.
 - S-44-15: orm is v0.0.15 in every kind (npm and fsm-db tarballs, go module, python wheel with rapidyaml and ruamel.yaml, cargo tag, Composer zip with purrphp/yaml), whose generated TypeScript models import only what they use and whose generated Rust models carry no allow attribute; the Go imports read `github.com/polyspec/orm/packages/go/...`, and `config/knip-entries.json` declares the generated models.ts, whose MANIFEST_TEXT and MANIFEST_HASH orm exports by design.
 - S-44-15: `config/knip-entries.json` declares the files that make or a test runs or reads by path outside kit's layout entries (the fsm-gen and fsm-gui commands, the GUI client entry, the golden npm files, the generated declarations and their consumer, the configuration of the documentation site) and the two GUI programs run by hand, so knip reports no unused file; `isGenerated` of write-generated.mjs is no export.
