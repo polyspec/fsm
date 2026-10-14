@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-6: the shared tools are kit 0.0.40, whose mise installs the toolchain of `mise.toml` at the digests of `mise.lock`; the python package runs the uv and the Python of the shims of mise. The test of the Python of the checkout parses again; its quoting broke it in S-44-4.
 - S-44-4: the shared tools are the npm package `@polyspec/kit` 0.0.38, pinned by its release asset and integrity; the Makefile includes the copied `scripts/kit/kit-bootstrap.mk`, the vendored `scripts/kit/`, `tests/kit/`, `.kit/kit.lock.json` and `kit.json` are gone, and the stale TypeScript exception of `packages/fsm-db` is removed. `make layout-check` is recorded red as S-44-5.
 - S-44-3: config/parity.json follows kit's parity schema: no `PYTHONPATH`, `support` files for the generated go vectors and php-ext stub and header, and `tools` roots for the compiler, DB, GUI and root tool tests.
 - S-44-2: the toolchains are at kit's pins: Node.js 26.11.1, PHP 8.5, Python 3.14, Go 1.27.2 (no toolchain line), Rust 1.99.0 and TypeScript 7.0.2, with orm's TypeScript 6.0.3 in packages/fsm-db declared as an exception; uv and alint are declared in config/toolchain.json and installed into var/tools, and the CI workflow installs no uv of its own.
