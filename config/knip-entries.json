@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "entries": {
+    "packages/compiler/src/cli/fsm-gen.mjs": "the command line of the compiler (bin fsm-gen), which the gen targets of the package Makefiles, make gen-check and the tests of make compiler-test run by path",
+    "packages/compiler/tests/golden/npm/**/*.{js,mjs,d.ts}": "the golden files of the npm kind, which gen-command.test.mjs of make compiler-test compares by path with the output of fsm-gen",
+    "packages/js/src/*.d.ts": "the generated declarations of the npm kind, which tsc of make npm-types compiles tests/npm-types/consumer.ts against",
+    "tests/npm-types/consumer.ts": "the consumer file that tsc of make npm-types compiles against the generated declarations",
+    "packages/gui/src/main.mjs": "the server of the GUI (bin fsm-gui), which the tests of make gui-test and make gui-browser-test start as a process",
+    "packages/gui/client/main.ts": "the client entry of the GUI, which hyper-build-assets of make gui-build bundles",
+    "packages/gui/scripts/make-favicon.mjs": "the program that writes the committed public/favicon.ico, run by hand with node to change the icon",
+    "packages/gui/scripts/manual-check.mjs": "the driver of the GUI manual check of docs/verification/gui.md, run by hand with node",
+    "docs/.vitepress/config.mts": "the configuration of the documentation site, which vitepress of make docs-build reads"
+  }
+}
