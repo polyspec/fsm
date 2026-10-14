@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-7: the shared tools are kit 0.0.42: mise.lock pins the tools for linux-arm64 and macos-x64 too, and the bootstrap writes `var/tools/go.mod`, so the Go of mise is a module of its own.
 - S-44-6: the shared tools are kit 0.0.40, whose mise installs the toolchain of `mise.toml` at the digests of `mise.lock`; the python package runs the uv and the Python of the shims of mise. The test of the Python of the checkout parses again; its quoting broke it in S-44-4.
 - S-44-4: the shared tools are the npm package `@polyspec/kit` 0.0.38, pinned by its release asset and integrity; the Makefile includes the copied `scripts/kit/kit-bootstrap.mk`, the vendored `scripts/kit/`, `tests/kit/`, `.kit/kit.lock.json` and `kit.json` are gone, and the stale TypeScript exception of `packages/fsm-db` is removed. `make layout-check` is recorded red as S-44-5.
 - S-44-3: config/parity.json follows kit's parity schema: no `PYTHONPATH`, `support` files for the generated go vectors and php-ext stub and header, and `tools` roots for the compiler, DB, GUI and root tool tests.
