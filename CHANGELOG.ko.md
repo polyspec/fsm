@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 8ccca600b428d87884d0ccfdfb24a17ddab4f8632473dc3e08c29740bdb7c834 -->
+<!-- source-sha256: 2a28282709d4d7391e9e82da58b165dc783c8f7a04094c4c87c4ccb1970907df -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-13: rustls는 RUSTSEC-2026-0346~0349를 고친 0.23.46이고 playwright는 1.64.1이다.
 - S-44-12: fsm의 PHP 파일은 `<?php` 뒤에 빈 줄을 둔다(PSR-12). 그래서 생성된 PHP 파일의 fsm-gen header는 셋째 줄이다.
 - S-44-11: edge가 없는 machine의 생성된 rust가 clippy를 통과한다. `target`은 wildcard arm 하나의 match 대신 오류만 반환한다.
 - S-44-9: 각 kind의 모든 test가 parity binding의 test다. persist test는 여섯 kind 모두에 bind된 네 feature unit(한 row의 동시 transition 두 개와 deadlock 재시도)이고, npm 타입 검사는 root 도구 test tests/npm-types이며, rust conformance target은 module vectors.rs를 가진 tests/conformance/main.rs다.
