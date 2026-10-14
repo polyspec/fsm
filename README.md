@@ -38,7 +38,7 @@ fsm is not (the verdicts of `docs/spec/fsm.md`, B-0):
 - a sequence syntax: next and previous are ordinary events;
 - a setting for the storage width: codes are always in the 32-bit range.
 
-The language packages of this repository (`packages/fsm-go` and the others) are test beds: they hold the generated code and
+The language packages of this repository (`packages/go` and the others) are test beds: they hold the generated code and
 check it against the conformance vectors. They are not published libraries. You use fsm by generating its code into your own
 project, as the README of each language explains.
 
@@ -109,7 +109,7 @@ line, the edges by event, the final lines), a code is written in decimal, the la
 refused), and the reader rejects any other line with `E_MERMAID_UNSUPPORTED`, which names
 the line. Composite states, notes, fork and join, choices, styles and comments are not part of the form.
 
-Database (the six tables of `schema/fsm.dbs`, after `fsm-db copy --from json` into a new database; the rows of `order`):
+Database (the six tables of `packages/db/schema/fsm.dbs`, after `fsm-db copy --from json` into a new database; the rows of `order`):
 
 | table | rows of the example |
 |---|---|
@@ -121,7 +121,7 @@ Database (the six tables of `schema/fsm.dbs`, after `fsm-db copy --from json` in
 | `lock_reserved` (machine, code) | no rows |
 
 The three stores hold the same definition, and every command gives the same result on each of them. The table layout is in
-[packages/fsm-db/README.md](packages/fsm-db/README.md).
+[packages/db/README.md](packages/db/README.md).
 
 ## Codes and the lock
 
@@ -195,9 +195,9 @@ result is `E_CONFLICT`. De-duplicating requests with an idempotency key is the c
 
 The persistence pattern reads the stored state under a row lock inside one transaction, applies the event to it, and writes
 only when the result is `Changed`. An error of `apply` rolls the transaction back. Each language package quotes its version of
-the pattern from its `examples/` directory: `packages/fsm-go/examples/persist.go`, `packages/fsm-npm/examples/persist.mjs`,
-`packages/fsm-php/examples/persist.php` (the same file is in `packages/fsm-php-ext/examples/`), `packages/fsm-python/examples/persist.py`
-and `packages/fsm-rust/examples/persist.rs`.
+the pattern from its `examples/` directory: `packages/go/examples/persist.go`, `packages/js/examples/persist.mjs`,
+`packages/php/examples/persist.php` (the same file is in `packages/php-ext/examples/`), `packages/python/examples/persist.py`
+and `packages/rust/examples/persist.rs`.
 
 ## Validation errors
 
@@ -245,11 +245,13 @@ A fsm project is a directory. The tools read these files from its root:
 fsm.config.json          {"store":"json"}, {"store":"mermaid"} or {"store":"db","dsnEnv":"FSM_DSN"}
 machines/                one file per machine: <machine>.fsm.json or <machine>.fsm.mmd (one format per project)
 fsm.lock.json            the lock of the file stores (the db store keeps its lock in tables)
-schema/fsm.schema.json   the JSON schema of a machine file, for editors
-schema/fsm.dbs           the six database tables (dbspec `fsm`), installed by fsm-db install
-schema/persist.dbs       the example tables of the persistence pattern, used by the examples/ of the language packages
-conformance/vectors.json the expected results of the vector cases, written by fsm-gen vectors
+schema/fsm.schema.json   the JSON schema of a machine file, for editors; each machine file names it in `$schema`
 ```
+
+The project of this repository is `contracts/`: its machines generate the six language packages, and it also holds
+`schema/persist.dbs`, the example tables of the persistence pattern that the examples/ of the language packages use, and
+`conformance/vectors.json`, the expected results of the vector cases that fsm-gen vectors writes. The six database tables of
+the db store (dbspec `fsm`), which fsm-db install installs, are `packages/db/schema/fsm.dbs`.
 
 `fsm.config.json` names the store, and fsm-gen, fsm-db and fsm-gui all read it. fsm-gen handles the json and mermaid stores; it
 refuses `db` with `E_STORE_NOT_CONFIGURED`, and fsm-db handles only `db`. Changing the store of a project after a migration is
@@ -278,15 +280,15 @@ cd fsm
 make install-tools TOOLS=npm                       # once, online: the npm of packageManager (package.json)
 make install-packages                              # once, online: the root packages, @polyspec/kit among them
 make install                                       # once, online: the toolchains and every package dependency
-npm install -g ./packages/fsm-compiler             # fsm-gen: no dependencies
-make db-deps && npm install -g ./packages/fsm-db   # fsm-db: needs the orm packages
-make gui-build && npm install -g ./packages/fsm-gui # fsm-gui: builds the browser assets first
+npm install -g ./packages/compiler             # fsm-gen: no dependencies
+make db-deps && npm install -g ./packages/db   # fsm-db: needs the orm packages
+make gui-build && npm install -g ./packages/gui # fsm-gui: builds the browser assets first
 ```
 
 The first two commands install the shared tools of polyspec, the package `@polyspec/kit`, whose make targets the Makefile
 includes (`scripts/kit/kit-bootstrap.mk`); before them, only these two targets run. `make install` downloads the toolchains of `var/tools` (the Python 3.14 of `pythonBuild` among them) and every package dependency once; a later run finds them installed and
 downloads nothing. The first `npm install -g` is all that the json and mermaid stores need. `make db-deps` installs the orm
-packages of `packages/fsm-db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
+packages of `packages/db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
 
 ## The fsm-gen CLI
 
@@ -397,15 +399,15 @@ their READMEs.
 
 ## The tools
 
-- [`fsm-gen`](packages/fsm-compiler/README.md): the compiler and its command line. It validates, locks, converts between the
+- [`fsm-gen`](packages/compiler/README.md): the compiler and its command line. It validates, locks, converts between the
   json and mermaid stores, writes the vectors and generates the six languages.
-- [`fsm-db`](packages/fsm-db/README.md): the database store. It installs the six tables, checks and locks a database project,
+- [`fsm-db`](packages/db/README.md): the database store. It installs the six tables, checks and locks a database project,
   and copies between the database and a file store.
-- [`fsm-gui`](packages/fsm-gui/README.md): a browser editor for the machines of a project, with a Mermaid diagram of each
+- [`fsm-gui`](packages/gui/README.md): a browser editor for the machines of a project, with a Mermaid diagram of each
   machine. Every save goes through the same core rules as `fsm-gen`.
-- The language packages, one for each target: [go](packages/fsm-go/README.md), [npm](packages/fsm-npm/README.md),
-  [php](packages/fsm-php/README.md), [php-ext](packages/fsm-php-ext/README.md), [python](packages/fsm-python/README.md) and
-  [rust](packages/fsm-rust/README.md). Each shows the generated code in use, its conformance tests and its persistence pattern.
+- The language packages, one for each target: [go](packages/go/README.md), [npm](packages/js/README.md),
+  [php](packages/php/README.md), [php-ext](packages/php-ext/README.md), [python](packages/python/README.md) and
+  [rust](packages/rust/README.md). Each shows the generated code in use, its conformance tests and its persistence pattern.
 
 ## Generated names
 
@@ -438,7 +440,7 @@ checks that the documents depend on can be run one at a time:
 
 | command | checks |
 |---|---|
-| `make readme-check` | every README pair has its required sections and a Korean twin with the same headings (`scripts/check-readmes.mjs`) |
+| `make readme-check` | every README pair has its required sections and a Korean twin with the same headings (`scripts/check-readmes.mts`) |
 | `make readme-test` | the tests of that check |
 | `make workflows-test` | the CI and Pages workflows: every action is pinned to a verified commit, the check job runs `make install` and `make check` with the services of plan C-6, and each version comes from the file that declares it (`tests/workflows`) |
 | `make docs-build` | the documentation site builds; a dead link fails the build |

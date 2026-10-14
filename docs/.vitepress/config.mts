@@ -22,15 +22,15 @@ const SKIPPED_DIRECTORIES = new Set(['.git', 'node_modules', 'var', 'vendor', 't
 
 // The language packages and the other packages, in the order of the sidebar (C-1).
 const PACKAGES: Record<string, { en: string; ko: string }> = {
-  'fsm-compiler': { en: 'Compiler and CLI', ko: '컴파일러와 CLI' },
-  'fsm-db': { en: 'DB store', ko: 'DB 저장소' },
-  'fsm-gui': { en: 'GUI', ko: 'GUI' },
-  'fsm-go': { en: 'Go', ko: 'Go' },
-  'fsm-npm': { en: 'npm (JavaScript and types)', ko: 'npm (JavaScript와 타입)' },
-  'fsm-php': { en: 'PHP', ko: 'PHP' },
-  'fsm-php-ext': { en: 'PHP extension', ko: 'PHP 확장' },
-  'fsm-python': { en: 'Python', ko: 'Python' },
-  'fsm-rust': { en: 'Rust', ko: 'Rust' },
+  compiler: { en: 'Compiler and CLI', ko: '컴파일러와 CLI' },
+  db: { en: 'DB store', ko: 'DB 저장소' },
+  gui: { en: 'GUI', ko: 'GUI' },
+  go: { en: 'Go', ko: 'Go' },
+  js: { en: 'npm (JavaScript and types)', ko: 'npm (JavaScript와 타입)' },
+  php: { en: 'PHP', ko: 'PHP' },
+  'php-ext': { en: 'PHP extension', ko: 'PHP 확장' },
+  python: { en: 'Python', ko: 'Python' },
+  rust: { en: 'Rust', ko: 'Rust' },
 };
 
 /** The Markdown files below the repository root, as posix paths; the skipped directories are not entered. */

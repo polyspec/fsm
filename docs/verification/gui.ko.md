@@ -1,5 +1,5 @@
 <!-- doc-id: verification-gui -->
-<!-- source-sha256: e5a94642ca5e0f781e04056fd6b1ec2fbd59c0e08335271d20b97b7b8d71711a -->
+<!-- source-sha256: 0c6107e133f7d77bc2a3f2aa068bfe08b0228f09d26ad2dd008a58212be78645 -->
 # GUI 수동 확인
 
 [English](gui.md)
@@ -13,7 +13,7 @@ store별 결과를 기록한다.
 - 명령: checkout에서 `npm install -g --prefix <tmp> --offline`으로 설치한 `fsm-gen`, `fsm-db`, `fsm-gui`(S-18-1), asset은
   `make gui-build`로 빌드.
 - Browser: 고정한 Playwright 1.64.0의 Chromium(`make gui-browsers`), headless, 1200 × 900. Mermaid 12.1.0.
-- Driver: `packages/fsm-gui/scripts/manual-check.mjs`. 아래 단계를 밟고, 영상을 녹화하며, 단계가 실패하면 1로 끝난다.
+- Driver: `packages/gui/scripts/manual-check.mjs`. 아래 단계를 밟고, 영상을 녹화하며, 단계가 실패하면 1로 끝난다.
 
 ## 단계
 
@@ -36,7 +36,7 @@ store마다 서버를 띄우고 driver가 단계를 밟은 뒤, 그 store의 che
 
 ```sh
 fsm-gui --project json --port 8204 &
-(cd packages/fsm-gui && node scripts/manual-check.mjs http://127.0.0.1:8204 out-json json)
+(cd packages/gui && node scripts/manual-check.mjs http://127.0.0.1:8204 out-json json)
 (cd json && fsm-gen check)
 ```
 

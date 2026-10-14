@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "The files that the generators of each kind write into its package (make -C packages/fsm-<kind> gen), as globs relative to the package: scripts/gen-check.mjs regenerates them into var/gen-check and compares exactly these files with the working tree (docs/plans/fsm-v1.md, C-5). The kinds are the implementations of config/parity.json; each one has its globs.",
+  "comment": "The files that the generators of each kind write into its package (make -C packages/fsm-<kind> gen), as globs relative to the package: scripts/gen-check.mts regenerates them into var/gen-check and compares exactly these files with the working tree (docs/plans/fsm-v1.md, C-5). The kinds are the implementations of config/parity.json; each one has its globs.",
   "generated": {
     "go": [
       "src/**",

@@ -23,42 +23,42 @@
       ]
     },
     {
-      "lock": "packages/fsm-db/package-lock.json",
+      "lock": "packages/db/package-lock.json",
       "sha256": "d9dceb9aeaeab711c35cc7c9e106133a651800097ca32a7f1d14113a7a55eafd",
       "advisories": []
     },
     {
-      "lock": "packages/fsm-gui/package-lock.json",
+      "lock": "packages/gui/package-lock.json",
       "sha256": "5469663e87d4631ca480c59b6bc69285c2a5f9b64f74a02d0ecce18a9398839c",
       "advisories": []
     },
     {
-      "lock": "packages/fsm-npm/package-lock.json",
+      "lock": "packages/js/package-lock.json",
       "sha256": "dd5a6d21f5ea18c987f15dd724bc46b4a19da183a8057ec5818119e37c0804b8",
       "advisories": []
     },
     {
-      "lock": "packages/fsm-php/composer.lock",
+      "lock": "packages/php/composer.lock",
       "sha256": "bcdb128f302518efb2edc3bbe44e4fc023e3aace6bbfb4448c60833e80945beb",
       "advisories": []
     },
     {
-      "lock": "packages/fsm-php-ext/composer.lock",
+      "lock": "packages/php-ext/composer.lock",
       "sha256": "0346dc0ddbae8ce86f896a2311acca3b743b2a7181ee083e6b5c76b69ac66cce",
       "advisories": []
     },
     {
-      "lock": "packages/fsm-python/pylock.toml",
+      "lock": "packages/python/pylock.toml",
       "sha256": "2b362cb6c53a2f45bb66b8348229b76004e65171f8338b0965403b4ff030489f",
       "advisories": []
     },
     {
-      "lock": "packages/fsm-go/go.sum",
+      "lock": "packages/go/go.sum",
       "sha256": "01877093eefff5b8412e44faab52eb34025cc3152f56e6c8f57d2ccde6c6f796",
       "advisories": []
     },
     {
-      "lock": "packages/fsm-rust/Cargo.lock",
+      "lock": "packages/rust/Cargo.lock",
       "sha256": "53850219968818c5b0db4c4d05f3283636bd56af98fb561b85ec83b9f78e59ef",
       "advisories": []
     }
@@ -87,147 +87,147 @@
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/fsm-db/package.json",
+      "manifest": "packages/db/package.json",
       "package": "mysql2",
       "version": "3.24.6",
       "latest": "3.24.6"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/fsm-db/package.json",
+      "manifest": "packages/db/package.json",
       "package": "pg",
       "version": "8.23.1",
       "latest": "8.23.1"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/fsm-gui/package.json",
+      "manifest": "packages/gui/package.json",
       "package": "htmx.org",
       "version": "4.0.0",
       "latest": "2.0.11"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/fsm-gui/package.json",
+      "manifest": "packages/gui/package.json",
       "package": "mermaid",
       "version": "12.2.0",
       "latest": "12.2.0"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/fsm-gui/package.json",
+      "manifest": "packages/gui/package.json",
       "package": "yaml",
       "version": "2.9.1",
       "latest": "2.9.1"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/fsm-gui/package.json",
+      "manifest": "packages/gui/package.json",
       "package": "playwright",
       "version": "1.64.0",
       "latest": "1.64.0"
     },
     {
       "ecosystem": "npm",
-      "manifest": "packages/fsm-npm/package.json",
+      "manifest": "packages/js/package.json",
       "package": "typescript",
       "version": "7.0.2",
       "latest": "7.0.2"
     },
     {
       "ecosystem": "composer",
-      "manifest": "packages/fsm-php/composer.json",
+      "manifest": "packages/php/composer.json",
       "package": "polyspec/orm",
       "version": "0.0.14",
       "latest": "0.0.14"
     },
     {
       "ecosystem": "composer",
-      "manifest": "packages/fsm-php/composer.json",
+      "manifest": "packages/php/composer.json",
       "package": "phpunit/phpunit",
       "version": "13.4.2",
       "latest": "13.4.2"
     },
     {
       "ecosystem": "composer",
-      "manifest": "packages/fsm-php-ext/composer.json",
+      "manifest": "packages/php-ext/composer.json",
       "package": "polyspec/orm",
       "version": "0.0.14",
       "latest": "0.0.14"
     },
     {
       "ecosystem": "composer",
-      "manifest": "packages/fsm-php-ext/composer.json",
+      "manifest": "packages/php-ext/composer.json",
       "package": "phpunit/phpunit",
       "version": "13.4.2",
       "latest": "13.4.2"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
+      "manifest": "packages/python/pylock.toml",
       "package": "cffi",
       "version": "2.1.1",
       "latest": "2.1.1"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
+      "manifest": "packages/python/pylock.toml",
       "package": "cryptography",
       "version": "50.0.2",
       "latest": "50.0.2"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
+      "manifest": "packages/python/pylock.toml",
       "package": "psycopg",
       "version": "3.3.6",
       "latest": "3.3.6"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
+      "manifest": "packages/python/pylock.toml",
       "package": "psycopg-binary",
       "version": "3.3.6",
       "latest": "3.3.6"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
+      "manifest": "packages/python/pylock.toml",
       "package": "pycparser",
       "version": "3.11",
       "latest": "3.11"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
+      "manifest": "packages/python/pylock.toml",
       "package": "pymysql",
       "version": "1.2.3",
       "latest": "1.2.3"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
+      "manifest": "packages/python/pylock.toml",
       "package": "pyyaml",
       "version": "6.0.3",
       "latest": "6.0.3"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pylock.toml",
+      "manifest": "packages/python/pylock.toml",
       "package": "tzdata",
       "version": "2026.5",
       "latest": "2026.5"
     },
     {
       "ecosystem": "pypi",
-      "manifest": "packages/fsm-python/pyproject.toml",
+      "manifest": "packages/python/pyproject.toml",
       "package": "setuptools",
       "version": "84.0.0",
       "latest": "84.0.0"
     },
     {
       "ecosystem": "go",
-      "manifest": "packages/fsm-go/go.mod",
+      "manifest": "packages/go/go.mod",
       "package": "github.com/polyspec/orm",
       "version": "v0.0.14",
       "latest": "v0.0.14"

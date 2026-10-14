@@ -48,11 +48,11 @@ rules:
   # ---- The kind packages (docs/plans/fsm-v1.md, C-2; S-44 moved these rules from fsm's own check-layout) ----------------
   # Every kind package holds the canonical files and folders, the required files of its kind, and only files that its kind
   # allows. The language-inherent difference of rust: it has no examples/model/, because its build.rs generates the orm model of
-  # schema/persist.dbs into OUT_DIR.
+  # contracts/schema/persist.dbs into OUT_DIR.
   - id: layout-go-required
     kind: for_each_dir
     level: error
-    select: "packages/fsm-go"
+    select: "packages/go"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -67,7 +67,7 @@ rules:
   - id: layout-go-folders
     kind: for_each_dir
     level: error
-    select: "packages/fsm-go"
+    select: "packages/go"
     require:
       - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
@@ -78,23 +78,23 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/fsm-go/**"
-      - "!packages/fsm-go/README.md"
-      - "!packages/fsm-go/README.ko.md"
-      - "!packages/fsm-go/Makefile"
-      - "!packages/fsm-go/go.mod"
-      - "!packages/fsm-go/go.sum"
-      - "!packages/fsm-go/tests/conformance_test.go"
-      - "!packages/fsm-go/tests/vectors_test.go"
-      - "!packages/fsm-go/examples/persist.go"
-      - "!packages/fsm-go/src/**/*.go"
-      - "!packages/fsm-go/examples/model/**"
+      - "packages/go/**"
+      - "!packages/go/README.md"
+      - "!packages/go/README.ko.md"
+      - "!packages/go/Makefile"
+      - "!packages/go/go.mod"
+      - "!packages/go/go.sum"
+      - "!packages/go/tests/conformance_test.go"
+      - "!packages/go/tests/vectors_test.go"
+      - "!packages/go/examples/persist.go"
+      - "!packages/go/src/**/*.go"
+      - "!packages/go/examples/model/**"
     message: "C-2: a file that the go package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-npm-required
     kind: for_each_dir
     level: error
-    select: "packages/fsm-npm"
+    select: "packages/js"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -109,7 +109,7 @@ rules:
   - id: layout-npm-folders
     kind: for_each_dir
     level: error
-    select: "packages/fsm-npm"
+    select: "packages/js"
     require:
       - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
@@ -120,30 +120,30 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/fsm-npm/**"
-      - "!packages/fsm-npm/README.md"
-      - "!packages/fsm-npm/README.ko.md"
-      - "!packages/fsm-npm/Makefile"
-      - "!packages/fsm-npm/package.json"
-      - "!packages/fsm-npm/package-lock.json"
-      - "!packages/fsm-npm/tests/conformance.test.mjs"
-      - "!packages/fsm-npm/tests/vectors.mjs"
-      - "!packages/fsm-npm/examples/persist.mjs"
-      - "!packages/fsm-npm/src/*.js"
-      - "!packages/fsm-npm/src/*.d.ts"
-      - "!packages/fsm-npm/examples/model/**"
+      - "packages/js/**"
+      - "!packages/js/README.md"
+      - "!packages/js/README.ko.md"
+      - "!packages/js/Makefile"
+      - "!packages/js/package.json"
+      - "!packages/js/package-lock.json"
+      - "!packages/js/tests/conformance.test.mjs"
+      - "!packages/js/tests/vectors.mjs"
+      - "!packages/js/examples/persist.mjs"
+      - "!packages/js/src/*.js"
+      - "!packages/js/src/*.d.ts"
+      - "!packages/js/examples/model/**"
       # the type check of the generated declarations (S-09-2, make npm-types): TypeScript compiles tests/types/consumer.ts in strict mode against src/*.d.ts; only npm ships declaration files
-      - "!packages/fsm-npm/tests/types.test.mjs"
+      - "!packages/js/tests/types.test.mjs"
       # the consumer files that the type check compiles (tests/types/consumer.ts); they are compiled, not run, so they have no vector case
-      - "!packages/fsm-npm/tests/types/**"
+      - "!packages/js/tests/types/**"
       # the concurrency proof of the persistence pattern (B-4, plan C-4): two transactions of one row, concurrent on postgres and mysql, run through the dialect helper of fsm-db; a tool test with its own record (make npm-persist-test*), so the vector record of the kind holds the vector cases alone
-      - "!packages/fsm-npm/tests/persist-dialects.test.mjs"
+      - "!packages/js/tests/persist-dialects.test.mjs"
     message: "C-2: a file that the npm package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-required
     kind: for_each_dir
     level: error
-    select: "packages/fsm-php"
+    select: "packages/php"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -158,7 +158,7 @@ rules:
   - id: layout-php-folders
     kind: for_each_dir
     level: error
-    select: "packages/fsm-php"
+    select: "packages/php"
     require:
       - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
@@ -169,23 +169,23 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/fsm-php/**"
-      - "!packages/fsm-php/README.md"
-      - "!packages/fsm-php/README.ko.md"
-      - "!packages/fsm-php/Makefile"
-      - "!packages/fsm-php/composer.json"
-      - "!packages/fsm-php/composer.lock"
-      - "!packages/fsm-php/tests/ConformanceCase.php"
-      - "!packages/fsm-php/tests/ConformanceTest.php"
-      - "!packages/fsm-php/examples/persist.php"
-      - "!packages/fsm-php/src/**/*.php"
-      - "!packages/fsm-php/examples/model/**"
+      - "packages/php/**"
+      - "!packages/php/README.md"
+      - "!packages/php/README.ko.md"
+      - "!packages/php/Makefile"
+      - "!packages/php/composer.json"
+      - "!packages/php/composer.lock"
+      - "!packages/php/tests/ConformanceCase.php"
+      - "!packages/php/tests/ConformanceTest.php"
+      - "!packages/php/examples/persist.php"
+      - "!packages/php/src/**/*.php"
+      - "!packages/php/examples/model/**"
     message: "C-2: a file that the php package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-rust-required
     kind: for_each_dir
     level: error
-    select: "packages/fsm-rust"
+    select: "packages/rust"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -201,7 +201,7 @@ rules:
   - id: layout-rust-folders
     kind: for_each_dir
     level: error
-    select: "packages/fsm-rust"
+    select: "packages/rust"
     require:
       - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
@@ -212,25 +212,25 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/fsm-rust/**"
-      - "!packages/fsm-rust/README.md"
-      - "!packages/fsm-rust/README.ko.md"
-      - "!packages/fsm-rust/Makefile"
-      - "!packages/fsm-rust/Cargo.toml"
-      - "!packages/fsm-rust/Cargo.lock"
-      - "!packages/fsm-rust/build.rs"
-      - "!packages/fsm-rust/tests/conformance.rs"
-      - "!packages/fsm-rust/tests/vectors.rs"
-      - "!packages/fsm-rust/examples/persist.rs"
-      - "!packages/fsm-rust/src/*.rs"
+      - "packages/rust/**"
+      - "!packages/rust/README.md"
+      - "!packages/rust/README.ko.md"
+      - "!packages/rust/Makefile"
+      - "!packages/rust/Cargo.toml"
+      - "!packages/rust/Cargo.lock"
+      - "!packages/rust/build.rs"
+      - "!packages/rust/tests/conformance.rs"
+      - "!packages/rust/tests/vectors.rs"
+      - "!packages/rust/examples/persist.rs"
+      - "!packages/rust/src/*.rs"
       # the retry test of the persist example (B-4: a deadlock runs the transaction again, another error does not): a tool test with its own record (make rust-persist-test, S-31); the conformance test of the kind holds the vector cases alone for kit's parity check
-      - "!packages/fsm-rust/tests/persist_retry.rs"
+      - "!packages/rust/tests/persist_retry.rs"
     message: "C-2: a file that the rust package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-python-required
     kind: for_each_dir
     level: error
-    select: "packages/fsm-python"
+    select: "packages/python"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -246,7 +246,7 @@ rules:
   - id: layout-python-folders
     kind: for_each_dir
     level: error
-    select: "packages/fsm-python"
+    select: "packages/python"
     require:
       - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
@@ -257,24 +257,24 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/fsm-python/**"
-      - "!packages/fsm-python/README.md"
-      - "!packages/fsm-python/README.ko.md"
-      - "!packages/fsm-python/Makefile"
-      - "!packages/fsm-python/pyproject.toml"
-      - "!packages/fsm-python/constraints.txt"
-      - "!packages/fsm-python/pylock.toml"
-      - "!packages/fsm-python/tests/test_conformance.py"
-      - "!packages/fsm-python/tests/vectors.py"
-      - "!packages/fsm-python/examples/persist.py"
-      - "!packages/fsm-python/src/polyspec_fsm/*.py"
-      - "!packages/fsm-python/examples/model/**"
+      - "packages/python/**"
+      - "!packages/python/README.md"
+      - "!packages/python/README.ko.md"
+      - "!packages/python/Makefile"
+      - "!packages/python/pyproject.toml"
+      - "!packages/python/constraints.txt"
+      - "!packages/python/pylock.toml"
+      - "!packages/python/tests/test_conformance.py"
+      - "!packages/python/tests/vectors.py"
+      - "!packages/python/examples/persist.py"
+      - "!packages/python/src/polyspec_fsm/*.py"
+      - "!packages/python/examples/model/**"
     message: "C-2: a file that the python package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-ext-required
     kind: for_each_dir
     level: error
-    select: "packages/fsm-php-ext"
+    select: "packages/php-ext"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -289,7 +289,7 @@ rules:
   - id: layout-php-ext-folders
     kind: for_each_dir
     level: error
-    select: "packages/fsm-php-ext"
+    select: "packages/php-ext"
     require:
       - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
@@ -300,17 +300,17 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/fsm-php-ext/**"
-      - "!packages/fsm-php-ext/README.md"
-      - "!packages/fsm-php-ext/README.ko.md"
-      - "!packages/fsm-php-ext/Makefile"
-      - "!packages/fsm-php-ext/composer.json"
-      - "!packages/fsm-php-ext/composer.lock"
-      - "!packages/fsm-php-ext/tests/ConformanceCase.php"
-      - "!packages/fsm-php-ext/tests/ConformanceTest.php"
-      - "!packages/fsm-php-ext/examples/persist.php"
-      - "!packages/fsm-php-ext/src/**"
-      - "!packages/fsm-php-ext/examples/model/**"
+      - "packages/php-ext/**"
+      - "!packages/php-ext/README.md"
+      - "!packages/php-ext/README.ko.md"
+      - "!packages/php-ext/Makefile"
+      - "!packages/php-ext/composer.json"
+      - "!packages/php-ext/composer.lock"
+      - "!packages/php-ext/tests/ConformanceCase.php"
+      - "!packages/php-ext/tests/ConformanceTest.php"
+      - "!packages/php-ext/examples/persist.php"
+      - "!packages/php-ext/src/**"
+      - "!packages/php-ext/examples/model/**"
     message: "C-2: a file that the php-ext package does not allow; add it to its canonical, required or allowed files with its reason"
 
   # The php and php-ext packages hold the same tests (C-2): the php-ext tests are the php tests, byte for byte.
@@ -318,14 +318,14 @@ rules:
     kind: cross_file
     level: error
     relation: identical
-    source: { file: "packages/fsm-php/tests/ConformanceCase.php" }
-    targets: [{ file: "packages/fsm-php-ext/tests/ConformanceCase.php" }]
+    source: { file: "packages/php/tests/ConformanceCase.php" }
+    targets: [{ file: "packages/php-ext/tests/ConformanceCase.php" }]
     message: "C-2: the php-ext tests are byte-identical to the php tests"
 
   - id: layout-php-twin-test
     kind: cross_file
     level: error
     relation: identical
-    source: { file: "packages/fsm-php/tests/ConformanceTest.php" }
-    targets: [{ file: "packages/fsm-php-ext/tests/ConformanceTest.php" }]
+    source: { file: "packages/php/tests/ConformanceTest.php" }
+    targets: [{ file: "packages/php-ext/tests/ConformanceTest.php" }]
     message: "C-2: the php-ext tests are byte-identical to the php tests"
