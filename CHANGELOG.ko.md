@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 070fc933e7c12bf1dbb26b917731e798461b4463a54566ea6607d8cda8e95fa6 -->
+<!-- source-sha256: 8566bebf0b23f83278855ec30d6db002db86b762bad6b1e7edb11f6dfc11123c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-4: 공유 도구는 release asset과 integrity로 pin한 npm package `@polyspec/kit` 0.0.38이다. Makefile은 복사된 `scripts/kit/kit-bootstrap.mk`를 include하고, vendor한 `scripts/kit/`, `tests/kit/`, `.kit/kit.lock.json`, `kit.json`은 없어졌으며, `packages/fsm-db`의 오래된 TypeScript 예외를 지웠다. `make layout-check`는 S-44-5로 red가 기록되었다.
 - S-44-3: config/parity.json이 kit의 parity schema를 따른다: `PYTHONPATH`가 없고, go의 생성 vector와 php-ext의 stub과 header는 `support` 파일이며, compiler, DB, GUI, 루트 도구의 테스트는 `tools` root다.
 - S-44-2: toolchain이 kit의 pin을 따른다: Node.js 26.11.1, PHP 8.5, Python 3.14, Go 1.27.2(toolchain 줄 없음), Rust 1.99.0, TypeScript 7.0.2. packages/fsm-db의 orm TypeScript 6.0.3은 예외로 선언했다. uv와 alint는 config/toolchain.json에 선언하여 var/tools에 설치하며, CI 워크플로는 uv를 따로 설치하지 않는다.
 - S-44-1: compiler는 kit 파일을 import하지 않는다. `src/io/files.mjs`와 `src/io/git.mjs`가 node 내장 모듈로 파일을 원자적으로 쓰고 git을 실행하며, import 테스트는 `scripts/kit`로 가는 경로를 거부한다(plan C-5).
