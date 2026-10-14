@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6c57785d15f4e01229c520fd68120ae5938b7267c9d5d25a3efc99ea40c41875 -->
+<!-- source-sha256: 286f6b59581403a741a124c6c018e972ccedecb3245f135b255bdb165248f9c7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-15: `config/knip-entries.json`은 kit의 layout entry 밖에서 make나 테스트가 실행하거나 경로로 읽는 파일(fsm-gen과 fsm-gui 명령, GUI client entry, golden npm 파일, 생성된 declaration과 그 consumer, 문서 사이트 설정)과 손으로 실행하는 GUI 프로그램 두 개를 선언하므로 knip은 unused file을 보고하지 않는다. write-generated.mjs의 `isGenerated`는 export가 아니다.
 - S-44-8-1: `config/release-assets.json`이 orm과 ordered-json의 release zip을 고정하고, kit의 `make release-assets-fetch`가 그것을 packages/php와 packages/php-ext의 Composer artifact repository인 var/composer-artifacts에 받는다. `composer-artifacts` recipe와 `config/composer-artifacts.txt`는 제거했다.
 - S-44-16: 공유 도구가 kit 0.0.44다. `make install-tools`가 `rust-toolchain.toml`의 Rust toolchain을 설치하므로 CI는 자체 rustup step을 실행하지 않고, ruff는 cache를 var/ruff에 두며, knip은 `config/knip-entries.json`의 entry를 받는다.
 - S-44-14: fsm의 PHP가 phpcs를 통과한다. 생성된 ConformanceTest.php는 method `testConformance` 하나를 data provider `cases()` 위에서 실행하고 case마다 이름이 `<feature>__<id>`인 data set을 두며 parity는 이를 symbol로 실행한다(kit K137). 생성된 throw는 인자 하나에 한 줄을 쓴다.
