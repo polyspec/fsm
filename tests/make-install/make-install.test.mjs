@@ -33,8 +33,8 @@ const LOCKS = [
 const PLAYWRIGHT = '1.64.0';
 const BROWSER = `var/deps/playwright-${PLAYWRIGHT}`;
 
-// The stamps that an installed dependency leaves, each newer than its lock. var/tools/bin/python3 is the wrapper that
-// install-tools writes (S-41), which the Python environment depends on.
+// The stamps that an installed dependency leaves, each newer than its lock. var/tools/mise/shims/python3 is the shim of the
+// Python that install-tools installs with mise (S-41, kit K127), which the Python environment depends on.
 const STAMPS = [
   'packages/fsm-npm/node_modules/.package-lock.json',
   'packages/fsm-db/node_modules/.package-lock.json',
@@ -97,8 +97,8 @@ function sandbox(t, { installed = false } = {}) {
   for (const file of LOCKS) utimesSync(path.join(dir, file), old, old);
   if (installed) {
     put(dir, Object.fromEntries(STAMPS.map(file => [file, '\n'])));
-    put(dir, { 'var/tools/bin/python3': '\n' });
-    utimesSync(path.join(dir, 'var/tools/bin/python3'), now - 1800, now - 1800);
+    put(dir, { 'var/tools/mise/shims/python3': '\n' });
+    utimesSync(path.join(dir, 'var/tools/mise/shims/python3'), now - 1800, now - 1800);
     for (const file of STAMPS) utimesSync(path.join(dir, file), now, now);
   }
   return dir;
@@ -176,9 +176,10 @@ test('gui-browser-test downloads the browser once, then needs no network', (t) =
 
 test('the python environment is created with the Python 3.14 of install-tools', (t) => {
   const out = dryRun(sandbox(t), 'test-python');
-  const interpreter = lineIndex(out, /install-tools\.mjs python/);
+  // install-tools takes no tool names: it installs every tool of mise.lock, the Python among them (kit K127).
+  const interpreter = lineIndex(out, /install-tools\.mjs\s*$/);
   const install = lineIndex(out, INSTALL.python);
-  assert.ok(interpreter >= 0 && interpreter < install, `no install-tools python before the python install:\n${out}`);
+  assert.ok(interpreter >= 0 && interpreter < install, `no install-tools before the python install:\n${out}`);
 });
 
 test('install builds every dependency and the toolchains', (t) => {

@@ -32,13 +32,12 @@ CHECK_TARGETS := kit-check owner-validate documents-check commits-check hooks-ch
 # the file newer than its lock, runs nothing and needs no network. A target that uses a package names its file as a prerequisite,
 # so make installs what that target needs before the target's recipe and nothing else. go and cargo leave no file of their own:
 # their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the pylock.toml of packages/fsm-python and on the
-# Python 3.14 that install-tools puts in var/tools/bin/python3 with the uv of var/tools/bin/uv (S-41, S-44-2).
+# Python 3.14 that install-tools installs with mise, whose shim is var/tools/mise/shims/python3 (S-41, S-44-2).
 # install builds every dependency, with the toolchains of install-tools. ONLINE marks each download, as it does in kit.mk.
 NPM_DEP := packages/fsm-npm/node_modules/.package-lock.json
 PHP_DEP := packages/fsm-php/vendor/composer/installed.json
 PHP_EXT_DEP := packages/fsm-php-ext/vendor/composer/installed.json
-UV_BIN := var/tools/bin/uv
-PYTHON_BIN := var/tools/bin/python3
+PYTHON_BIN := var/tools/mise/shims/python3
 PYTHON_DEP := packages/fsm-python/.venv/.installed
 PYTHON_LOCK := packages/fsm-python/pylock.toml
 GO_DEP := var/deps/go
@@ -59,14 +58,11 @@ $(PHP_EXT_DEP): packages/fsm-php-ext/composer.lock packages/fsm-php-ext/composer
 	$(ONLINE) $(MAKE) -C packages/fsm-php-ext install
 	touch $@
 
-# uv is the one of config/toolchain.json, which install-tools installs into var/tools; it installs the interpreter of the
-# pythonBuild of config/toolchain.json into var/tools (docs/plans/execution-checklist.md, S-41, S-44-2), and the python package
-# runs it as var/tools/bin/uv.
-$(UV_BIN):
-	$(ONLINE) $(MAKE) install-tools TOOLS=uv
-
-$(PYTHON_BIN): $(UV_BIN)
-	$(ONLINE) $(MAKE) install-tools TOOLS=python
+# install-tools installs every tool of mise.lock with mise, the uv and the Python of mise.toml among them, and their shims run
+# them (docs/plans/execution-checklist.md, S-41, S-44-2; kit K127): the python package runs var/tools/mise/shims/uv and makes
+# its venv from var/tools/mise/shims/python3.
+$(PYTHON_BIN):
+	$(ONLINE) $(MAKE) install-tools
 
 $(PYTHON_DEP): $(PYTHON_LOCK) $(PYTHON_BIN)
 	$(ONLINE) $(MAKE) -C packages/fsm-python install
@@ -274,7 +270,7 @@ test-rust: $(RUST_DEP)
 # database error does not (docs/spec/fsm.md, B-4; docs/plans/execution-checklist.md, S-31). It is a tool test with its own record.
 rust-persist-test: $(RUST_DEP)
 	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test persist_retry
-# python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/bin/python3
+# python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/mise/shims/python3
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
 python-tools-test:
