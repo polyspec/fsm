@@ -1,4 +1,5 @@
 <?php
+
 // The conformance checks of the php package (docs/plans/fsm-v1.md, C-4). ConformanceTest.php, generated from the core oracle,
 // holds one PHPUnit test test_<feature>__<id> per vector case and calls conformance() with its machine and case: it calls the
 // generated functions and cases of the machine module and asserts the expected value or the error code. The persist cases run the B-4 example (examples/persist.php) on the dialect
