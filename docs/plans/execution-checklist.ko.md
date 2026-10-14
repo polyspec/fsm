@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: fc8df760c361ff32c601752dff1af079ef93f486043195aa2116e7c4908d5944 -->
+<!-- source-sha256: 56786e80e1fc7c9297debe13fb214143ee6625bf0991bdbfaceb2311d85e2b06 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -97,3 +97,4 @@
 | S-44-2 | toolchain을 kit의 pin에 맞춘다(kit K79, K78): `.node-version` 26.11.1, 모든 package.json의 `engines.node` `>=26.11.1`; Composer `require.php` `>=8.5`와 `config.platform.php` `8.5`(lock 갱신); `requires-python` `>=3.14`(uv.lock과 pylock.toml 갱신); go.mod `go 1.27.2`, toolchain 줄 없음; Cargo `rust-version`과 `rust-toolchain.toml` 1.99.0; config/toolchain.json은 kit의 schema를 따른다(pythonBuild는 version만, uv와 alint 선언), packages/fsm-db의 orm typescript 6.0.3은 예외로 선언; uv는 PATH나 워크플로가 아니라 var/tools에서 온다 | kit의 check-toolchain이 pin과 다른 선언 2개와 manifest floor 12개를 보고하고, workflows와 python-tools 테스트가 워크플로와 PATH의 uv에서 실패 RED → GREEN | [o] |
 | S-44-3 | config/parity.json이 kit K75의 parity schema를 따른다(kit K79): `PYTHONPATH`가 없고(python conformance 테스트가 자기 `tests/`를 넣는다), go의 생성 `vectors_test.go`와 php-ext의 `*_test` stub과 header는 `support` 파일이며, compiler, DB, GUI, 루트 도구의 테스트는 `tools` root다 | kit의 parity-declarations-check가 `PYTHONPATH` env를 거부하고, 그것 없이 python conformance 테스트가 `vectors`를 import하지 못함 RED → schema finding이 사라지고 python 테스트가 290 case를 통과 GREEN | [o] |
 | S-44-4 | 공유 도구는 npm package `@polyspec/kit` 0.0.38입니다(kit K79): package.json이 release asset을 게시된 파일의 integrity로 pin하고, Makefile은 복사된 `scripts/kit/kit-bootstrap.mk`를 include하며, vendor된 `scripts/kit/*`, `tests/kit/*`, `.kit/kit.lock.json`, `kit.json`은 삭제되고, `kit.copies`의 파일은 kit-sync가 쓴 복사본입니다 | 전환된 tree에서 `make kit-check toolchain-check layout-check documents-check owner-validate`를 실행하고, 실패하는 각 check를 행으로 기록합니다 | [ ] |
+| S-44-5 | 폴더가 kit layout의 S5, S7, S9를 따른다(kit 0.0.38에서 kit K79가 red를 기록): `make layout-check`가 36개 finding을 보고하며 첫 줄은 `conformance: error: layout-root-folders: S5: the root holds only packages/, contracts/, docs/, scripts/, tests/, examples/, benchmarks/ and config/`이다 | `make layout-check`가 통과한다 | [ ] |
