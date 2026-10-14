@@ -14,10 +14,17 @@
     "packages/fsm-python/pyproject.toml"
   ],
   "pythonLocks": [
-    "packages/fsm-python/pylock.toml"
+    {
+      "lock": "packages/fsm-python/pylock.toml",
+      "source": {
+        "requirements": "packages/fsm-python/pyproject.toml",
+        "constraints": "packages/fsm-python/constraints.txt"
+      }
+    }
   ],
   "npmLocks": [
     "docs/package-lock.json",
+    "package-lock.json",
     "packages/fsm-db/package-lock.json",
     "packages/fsm-gui/package-lock.json",
     "packages/fsm-npm/package-lock.json"

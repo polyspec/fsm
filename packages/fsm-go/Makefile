@@ -3,6 +3,8 @@
 # generated files (DEST ?= .), so that gen-check can write them into var/gen-check/go and compare them with the working tree.
 # The test target runs go in this directory, where go.mod is, and names the paths of the kit runner from the checkout root.
 ROOT := ../..
+# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
+RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 MODULE := github.com/polyspec/fsm-go
@@ -24,4 +26,4 @@ gen:
 
 # test runs the conformance cases and the persist example with GOPROXY=off, so that the modules must already be downloaded.
 test:
-	GOPROXY=off node $(ROOT)/scripts/kit/run-tests.mjs go --cwd packages/fsm-go --results .results/go.json --inputs packages/fsm-go --inputs schema/persist.dbs -- ./tests
+	GOPROXY=off $(RUN_TESTS) go --cwd packages/fsm-go --results .results/go.json --inputs packages/fsm-go --inputs schema/persist.dbs -- ./tests

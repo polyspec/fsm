@@ -7,7 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { README_PAIRS, readmeFindings } from '../../scripts/check-readmes.mjs';
-import { tree } from '../kit/tree.mjs';
+import { tree } from '../support/tree.mjs';
 
 const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../scripts/check-readmes.mjs');
 

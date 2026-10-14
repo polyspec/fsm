@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const VITEPRESS = path.join(REPO, 'docs/node_modules/vitepress/bin/vitepress.js');
 const CONFIG = 'docs/.vitepress/config.mts';
-// A build of the whole site takes tens of seconds; the runner's per-test timeout (scripts/kit/run-tests.mjs) is the limit.
+// A build of the whole site takes tens of seconds; the per-test timeout of kit's run-tests is the limit.
 const TIMEOUT_MS = 300_000;
 const SKIPPED = new Set(['.git', 'node_modules', 'var', 'vendor', 'target', '.vitepress']);
 

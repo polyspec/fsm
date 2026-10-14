@@ -1,5 +1,5 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: c0ad96240ecf54180f4d38a73208beb6347a14a3fcd87be28bbda1a6d91c0f7a -->
+<!-- source-sha256: 39c5a6baadfd58fc0d061bd85a6c301cb3082cb4dd7b5ff40f4d6f2077dcfe93 -->
 # @polyspec/fsm-npm
 
 [English](README.md)
@@ -131,7 +131,7 @@ checkout에서 실행한다:
 
 ```sh
 make -C packages/fsm-npm install   # npm ci: the pinned orm release and the TypeScript compiler
-make -C packages/fsm-npm test      # tests/conformance.test.mjs through scripts/kit/run-tests.mjs
+make -C packages/fsm-npm test      # tests/conformance.test.mjs through kit's run-tests
 make test-npm                      # the same from the root
 ```
 

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: 7fcadbb2684be3d76c2e79fe0dad0f70c224d0d500f290c8b5523468df4bf59e -->
+<!-- source-sha256: e8c87c8a92ac2f1ed840d72dec42dbe66b8602acc79d0cb734b8449462b86c39 -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -117,6 +117,6 @@ vector는 기계의 모든 연산의 기대 결과다. core가 정의와 lock으
 
 ## 검사
 
-`make compiler-test`는 이 패키지의 테스트를 `scripts/kit/run-tests.mjs`로 실행한다. 테스트는 패키지를 임시 npm prefix에 offline으로
+`make compiler-test`는 이 패키지의 테스트를 kit의 test runner(`@polyspec/kit`의 `run-tests`)로 실행한다. 테스트는 패키지를 임시 npm prefix에 offline으로
 설치하고 그곳의 `fsm-gen` 명령을 실행하므로, 테스트되는 명령은 설치된 명령이다. `src/core`의 규칙을 바꾸면 모든 언어 패키지의 vector case가
 함께 검사한다.

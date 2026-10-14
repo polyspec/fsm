@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 // Checks that the generated files equal the files of the working tree (docs/plans/fsm-v1.md, C-5; `make gen-check`):
 //
-//   node scripts/gen-check.mjs
+//   node scripts/gen-check.mjs [--root <dir>]
 //
 // It regenerates into var/gen-check/: the vectors (fsm-gen vectors --out var/gen-check/conformance/vectors.json) and, for each
-// kind of contracts/layout.json, the generated files of its package (make -C packages/fsm-<kind> gen DEST=<var/gen-check/
-// <kind>>). It then compares the tracked and non-ignored files of the working tree (scripts/kit/tracked-files.mjs) with the
-// generated conformance/vectors.json and, per kind, with the files that the kind's `generated` globs match: the same set
-// of files with the same bytes. A kind without `generated` globs is a finding (rule `layout-config`). Each difference is one
-// line on standard error, `[gen-check] <rule> <path>: <message>`:
+// kind (an implementation of config/parity.json, the one list of the kinds), the generated files of its package (make -C
+// packages/fsm-<kind> gen DEST=<var/gen-check/<kind>>). It then compares the tracked and non-ignored files of the working tree
+// (trackedFiles of @polyspec/kit) with the generated conformance/vectors.json and, per kind, with the files that the kind's
+// globs of config/gen-check.json match: the same set of files with the same bytes. A kind without globs, or globs of a name
+// that is no kind, is a finding (rule `gen-config`). Each difference is one line on standard error,
+// `[gen-check] <rule> <path>: <message>`:
 //
 //   missing   generated, but not in the working tree
 //   extra     in the working tree, but not generated
@@ -19,11 +20,12 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { matchesAny } from './kit/glob.mjs';
-import { isMain } from './kit/paths.mjs';
-import { trackedFiles } from './kit/tracked-files.mjs';
+import { parseArgs } from 'node:util';
+import { trackedFiles } from '@polyspec/kit/tracked-files';
+import picomatch from 'picomatch';
 
-export const LAYOUT = 'contracts/layout.json';
+export const PARITY = 'config/parity.json';
+export const GENERATED = 'config/gen-check.json';
 export const OUT = 'var/gen-check';
 const VECTORS = 'conformance/vectors.json';
 const CLI = 'packages/fsm-compiler/src/cli/fsm-gen.mjs';
@@ -74,26 +76,27 @@ function compareArea(root, { base, dir, select }) {
   return found;
 }
 
-/** The findings of the checkout `root`: a layout without the generated globs of a kind, a generation failure, or every difference. */
+/** The findings of the checkout `root`: a kind without generated globs, globs of no kind, a generation failure, or every difference. */
 export function genCheckFindings(root) {
-  const layout = readJson(path.join(root, LAYOUT));
-  const kinds = Object.keys(layout.kinds).sort();
-  const withoutGlobs = kinds.filter(kind => !Array.isArray(layout.kinds[kind].generated));
-  if (withoutGlobs.length > 0) {
-    return withoutGlobs.map(kind => finding('layout-config', LAYOUT, `the kind ${kind} has no generated globs; name the files its generator writes`));
-  }
+  const kinds = readJson(path.join(root, PARITY)).implementations.map(implementation => implementation.name).sort();
+  const generated = readJson(path.join(root, GENERATED)).generated;
+  const config = [
+    ...kinds.filter(kind => !Array.isArray(generated[kind])).map(kind => finding('gen-config', GENERATED, `the kind ${kind} of ${PARITY} has no generated globs; name the files its generator writes`)),
+    ...Object.keys(generated).filter(name => !kinds.includes(name)).map(name => finding('gen-config', GENERATED, `${name} is no kind of ${PARITY}`)),
+  ];
+  if (config.length > 0) return config;
   const failed = generate(root, kinds);
   if (failed.length > 0) return failed;
   const areas = [{ base: path.posix.dirname(VECTORS), dir: path.join(root, OUT, path.posix.dirname(VECTORS)), select: rel => rel === path.posix.basename(VECTORS) }];
   for (const kind of kinds) {
-    const globs = layout.kinds[kind].generated;
-    areas.push({ base: `packages/fsm-${kind}`, dir: path.join(root, OUT, kind), select: rel => matchesAny(globs, rel) });
+    areas.push({ base: `packages/fsm-${kind}`, dir: path.join(root, OUT, kind), select: picomatch(generated[kind], { dot: true }) });
   }
   return areas.flatMap(area => compareArea(root, area));
 }
 
-if (isMain(import.meta.url)) {
-  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+if (import.meta.main) {
+  const { values } = parseArgs({ options: { root: { type: 'string' } } });
+  const root = path.resolve(values.root ?? path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
   const found = genCheckFindings(root);
   for (const entry of found) console.error(`[gen-check] ${entry.rule} ${entry.path}: ${entry.message}`);
   if (found.length > 0) {

@@ -1,15 +1,15 @@
 // Tests of the package dependencies of the root Makefile (docs/plans/execution-checklist.md, S-29; docs/plans/fsm-v1.md,
 // Verification): a target that needs a package dependency installs it first, once, and a later run with the dependency
-// present installs nothing. The tests run `make -n` on a copy of the Makefile, the kit targets, the layout and the package
-// Makefiles in a temporary directory, with the lock or manifest of each dependency and, per case, the installed stamps.
-// No dependency is installed and no network is used: make only prints the recipes.
+// present installs nothing. The tests run `make -n` on a copy of the Makefile, the kit targets of the installed
+// @polyspec/kit, config/parity.json (the kinds) and the package Makefiles in a temporary directory, with the lock or manifest
+// of each dependency and, per case, the installed stamps. No dependency is installed and no network is used: make only prints the recipes.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, utimesSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { put, tree } from '../kit/tree.mjs';
+import { put, tree } from '../support/tree.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -23,7 +23,7 @@ const LOCKS = [
   'packages/fsm-php/composer.json',
   'packages/fsm-php-ext/composer.lock',
   'packages/fsm-php-ext/composer.json',
-  'packages/fsm-python/uv.lock',
+  'packages/fsm-python/pylock.toml',
   'packages/fsm-python/pyproject.toml',
   'packages/fsm-go/go.sum',
   'packages/fsm-rust/Cargo.lock',
@@ -81,7 +81,7 @@ const ALL = Object.keys(INSTALL);
 /** A copy of the Makefile and of the files it reads, with empty locks; `installed` adds the stamps, each newer than its lock. */
 function sandbox(t, { installed = false } = {}) {
   const dir = tree(t, {});
-  for (const file of ['Makefile', 'scripts/kit/kit.mk', 'contracts/layout.json']) {
+  for (const file of ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json']) {
     mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
     copyFileSync(path.join(ROOT, file), path.join(dir, file));
   }
@@ -154,14 +154,14 @@ test('the composer vendor is keyed on composer.json too: its autoload is not in 
   }
 });
 
-test('the python environment is keyed on uv.lock: a newer lock installs it again, a newer manifest alone does not', (t) => {
+test('the python environment is keyed on pylock.toml: a newer lock installs it again, a newer manifest alone does not', (t) => {
   const dir = sandbox(t, { installed: true });
   const now = Date.now() / 1000;
   put(dir, { 'packages/fsm-python/pyproject.toml': '\n' });
   utimesSync(path.join(dir, 'packages/fsm-python/pyproject.toml'), now + 60, now + 60);
   assert.equal(lineIndex(dryRun(dir, 'test-python'), INSTALL.python), -1, 'pyproject.toml alone reinstalls the python environment');
-  utimesSync(path.join(dir, 'packages/fsm-python/uv.lock'), now + 120, now + 120);
-  assert.ok(lineIndex(dryRun(dir, 'test-python'), INSTALL.python) >= 0, 'a newer uv.lock does not reinstall the python environment');
+  utimesSync(path.join(dir, 'packages/fsm-python/pylock.toml'), now + 120, now + 120);
+  assert.ok(lineIndex(dryRun(dir, 'test-python'), INSTALL.python) >= 0, 'a newer pylock.toml does not reinstall the python environment');
 });
 
 test('gui-browser-test downloads the browser once, then needs no network', (t) => {

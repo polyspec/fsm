@@ -6,6 +6,8 @@
 # target names the conformance file only: the type check of tests/types.test.mjs has its own record (make npm-types), and the
 # conformance test of this kind must hold vector cases alone for kit's parity check.
 ROOT := ../..
+# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
+RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 
@@ -21,4 +23,4 @@ gen:
 	./node_modules/.bin/orm-gen gen --schema $(ROOT)/schema/persist.dbs --out $(DEST)/examples/model
 
 test:
-	node $(ROOT)/scripts/kit/run-tests.mjs node --results .results/npm.json --inputs packages/fsm-npm --inputs schema/persist.dbs -- packages/fsm-npm/tests/conformance.test.mjs
+	$(RUN_TESTS) node --results .results/npm.json --inputs packages/fsm-npm --inputs schema/persist.dbs -- packages/fsm-npm/tests/conformance.test.mjs

@@ -4,6 +4,8 @@
 # into var/gen-check/rust and compare them with the working tree. The test target runs cargo from the checkout root with the
 # manifest path, so the paths of the kit reporter are root-relative, as in the npm package.
 ROOT := ../..
+# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
+RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
 
@@ -18,4 +20,4 @@ gen:
 	$(FSM_GEN) vectors --project $(ROOT) --kind rust --out $(DEST)/tests/vectors.rs
 
 test:
-	node $(ROOT)/scripts/kit/run-tests.mjs cargo --results .results/rust.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance
+	$(RUN_TESTS) cargo --results .results/rust.json --inputs packages/fsm-rust --inputs schema/persist.dbs -- --manifest-path packages/fsm-rust/Cargo.toml --test conformance

@@ -1,17 +1,21 @@
 // Tests that schema/fsm.schema.json and the core validate of packages/fsm-compiler/src/core/validate.mjs agree: every
 // valid fixture passes both, and every structural error fixture is rejected by both with E_SCHEMA. The schema is checked with
-// the keywords of scripts/kit/schema-validate.mjs, the same validator kit uses for its own schemas.
+// ajv (draft 2020-12, strict mode, every error), the validator that kit uses for its schemas.
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { validate as validateSchema } from '../../../scripts/kit/schema-validate.mjs';
+import Ajv2020 from 'ajv/dist/2020.js';
 import { validate } from '../src/core/validate.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SCHEMA = JSON.parse(readFileSync(path.resolve(HERE, '../../../schema/fsm.schema.json'), 'utf8'));
 const FIXTURES = path.join(HERE, 'fixtures');
+const schemaCheck = new Ajv2020({ strict: true, allErrors: true }).compile(SCHEMA);
+
+/** The errors of `document` against the editor schema; none when it is valid. */
+const validateSchema = document => (schemaCheck(document) ? [] : schemaCheck.errors);
 
 /** The fixtures of `group` as `{ name, document }`, in name order. */
 function fixtures(group) {
@@ -42,14 +46,14 @@ test('the structural error fixtures are present, one per error', () => {
 
 for (const { name, document } of valid) {
   test(`schema and core accept the valid fixture ${name}`, () => {
-    assert.deepEqual(validateSchema(document, SCHEMA), []);
+    assert.deepEqual(validateSchema(document), []);
     assert.deepEqual(validate([definitionOf(document)]), []);
   });
 }
 
 for (const { name, document } of invalid) {
   test(`schema and core reject the structural error fixture ${name} with E_SCHEMA`, () => {
-    assert.notDeepEqual(validateSchema(document, SCHEMA), []);
+    assert.notDeepEqual(validateSchema(document), []);
     const findings = validate([definitionOf(document)]);
     assert.notEqual(findings.length, 0);
     assert.ok(findings.every(finding => finding.code === 'E_SCHEMA'), JSON.stringify(findings));

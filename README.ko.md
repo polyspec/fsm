@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 598cfd9bf12582794cfdbe19cc793ffbe3748d0cb1078a13f574ca348ffab238 -->
+<!-- source-sha256: 8d071b4b90b09b09b8738a046fa15d6d0432bbe94361d9d9195b5a86a60136ed -->
 # polyspec/fsm
 
 [English](README.md)
@@ -269,13 +269,15 @@ toolchain만 필요로 한다:
 ```sh
 git clone https://github.com/polyspec/fsm.git
 cd fsm
+make install-tools TOOLS=npm                       # once, online: the npm of packageManager (package.json)
+make install-packages                              # once, online: the root packages, @polyspec/kit among them
 make install                                       # once, online: the toolchains and every package dependency
 npm install -g ./packages/fsm-compiler             # fsm-gen: no dependencies
 make db-deps && npm install -g ./packages/fsm-db   # fsm-db: needs the orm packages
 make gui-build && npm install -g ./packages/fsm-gui # fsm-gui: builds the browser assets first
 ```
 
-`make install`은 `var/tools`의 toolchain(`pythonBuild`의 Python 3.14 포함)과 모든 패키지 의존성을 한 번 내려받는다. 나중의 실행은 이미 설치된 것을 찾고 아무것도
+처음 두 명령은 polyspec의 공용 도구인 package `@polyspec/kit`을 설치한다. Makefile은 그 make 타깃을 include한다(`scripts/kit/kit-bootstrap.mk`). 그 전에는 이 두 타깃만 실행된다. `make install`은 `var/tools`의 toolchain(`pythonBuild`의 Python 3.14 포함)과 모든 패키지 의존성을 한 번 내려받는다. 나중의 실행은 이미 설치된 것을 찾고 아무것도
 내려받지 않는다. json과 mermaid store에는 첫 `npm install -g` 명령만 있으면 된다. `make db-deps`는 `packages/fsm-db`의 orm 패키지를
 release tarball에서 설치하고, `make gui-build`는 GUI를 설치하고 browser asset을 빌드한다.
 
@@ -420,8 +422,8 @@ $ fsm-gen check --project ./broken
 
 ## 검사
 
-`make check`는 커밋된 트리에 대해 저장소의 전체 검사를 한 번 실행한다(`node scripts/kit/full-run.mjs run`, Makefile의 `CHECK_TARGETS`
-대상). 위의 모든 toolchain이 있어야 한다. 새 clone에서는 먼저 `make install`을 한 번 실행한다: toolchain은 `make install`에서만 오고, `make check`의 타깃은 필요한 패키지 의존성을 스스로 설치한다. 문서가 기대는 검사는 하나씩 실행할 수 있다:
+`make check`는 커밋된 트리에 대해 저장소의 전체 검사를 한 번 실행한다(kit의 `full-run.mjs run`, Makefile의 `CHECK_TARGETS`
+대상). 위의 모든 toolchain이 있어야 한다. 새 clone에서는 먼저 `make install-tools TOOLS=npm`, `make install-packages`, `make install`을 한 번 실행한다: toolchain은 `make install`에서만 오고, `make check`의 타깃은 필요한 패키지 의존성을 스스로 설치한다. 문서가 기대는 검사는 하나씩 실행할 수 있다:
 
 | 명령 | 검사 |
 |---|---|
@@ -436,7 +438,7 @@ $ fsm-gen check --project ./broken
 | `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | PostgreSQL과 MySQL에서의 DB store, CLI, command 테스트, npm의 영속화 동시성 증명, 각 kind의 persist case. `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`을 읽고(CLI 테스트의 빈 database에는 `FSM_TEST_PG_ADMIN_DSN`과 `FSM_TEST_MYSQL_ADMIN_DSN`도 읽으며), 없으면 exit 2로 멈추고 dialect를 건너뛰지 않는다(계획 C-6). SQLite에서도 돈다(`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
 | `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | 각 언어 패키지의 테스트 |
 
-CI(`.github/workflows/ci.yml`)는 main에 push될 때마다 `make install`과 `make check`를 실행하며, PostgreSQL과 MySQL 서비스를 띄운다. 문서 사이트는 `.github/workflows/pages.yml`이 https://polyspec.github.io/fsm/ 에 게시한다.
+CI(`.github/workflows/ci.yml`)는 main에 push될 때마다 kit을 설치하고(`make install-tools TOOLS=npm`, `make install-packages`) `make install`과 `make check`를 실행하며, PostgreSQL과 MySQL 서비스를 띄운다. 문서 사이트는 `.github/workflows/pages.yml`이 https://polyspec.github.io/fsm/ 에 게시한다.
 
 각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 case 이름 `<feature>__<id>`다(php와 python은 method `test_<feature>__<id>`). kit의 parity 검사(K33, `config/parity.json`)가 이 이름을 읽는다.
 `make gen-check`는 패키지의 생성 파일이 `fsm-gen`이 지금 쓰는 파일과 같은지 검사한다.

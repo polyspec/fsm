@@ -1,8 +1,7 @@
 {
   "schema": 1,
-  "comment": "Every Markdown document of the repository has a Korean twin; the vendored kit tests are not documents of this repository.",
+  "comment": "Every Markdown document of the repository has a Korean twin, the copies PRINCIPLES.md(.ko) of kit among them.",
   "include": ["**/*.md"],
-  "exclude": ["tests/kit/**"],
   "siteLinks": true,
   "changelogs": ["CHANGELOG.md"]
 }

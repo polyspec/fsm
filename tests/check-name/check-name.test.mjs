@@ -7,7 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { nameFindings } from '../../scripts/check-name.mjs';
-import { put, tree } from '../kit/tree.mjs';
+import { put, tree } from '../support/tree.mjs';
 
 const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../scripts/check-name.mjs');
 
@@ -53,10 +53,10 @@ test('an exit status and a test result status are allowed', (t) => {
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 
-test('the changelog keeps the text of old bullets, and the vendored kit is not scanned', (t) => {
+test('the changelog keeps the text of old bullets, and the copies of kit are not scanned', (t) => {
   const { result } = check(t, {
     'CHANGELOG.md': '- S-01: `status-gen` was named so.\n',
-    'scripts/kit/status-table.mjs': 'export const x = 1;\n',
+    'scripts/kit/kit-bootstrap.mk': '# the status of the bootstrap\n',
   });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });

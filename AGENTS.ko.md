@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: dd409622a6f638d2fdc79ebb6e9a58f5c3c9920653ed24b1d4bc7a93ccc8083d -->
+<!-- source-sha256: 3f7ec1366c7879ced9c47558e45e9ff03baa81f9877291b06897e33ce1008c00 -->
 # 개발
 
 [English](AGENTS.md)
@@ -21,11 +21,17 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
 
 - 영문 문서가 정본이다. 모든 문서는 같은 정보와 `source-sha256` 표시(`make documents-stamp`)를 가진 `.ko.md` 파일을 갖고,
   한글 문서는 기술 용어를 영어로 쓴다.
-- vendor 파일(`scripts/kit/`, `tests/kit/`)은 kit에서 바꾸고 `make kit-sync KIT_TAG=<tag>`로 복사하며, 여기서 편집하지 않는다.
+- 모든 polyspec 저장소의 작업 원칙은 kit의 사본인 [PRINCIPLES.ko.md](PRINCIPLES.ko.md)다. 이 파일은 fsm의 규칙만 적는다.
+- 공용 도구는 package `@polyspec/kit`이다. 루트 `package.json`의 devDependency이며 release asset URL과 integrity로 고정한다.
+  그 `kit.copies`의 파일(`scripts/kit/kit-bootstrap.mk`, `scripts/kit/bootstrap/`, release 워크플로, `PRINCIPLES.md`,
+  `config/layout.kit.yml`, lint 설정)은 `make kit-sync`가 설치된 package에서 쓰고 `make kit-check`가 비교하는 사본이며, kit에서
+  바꾸고 여기서 편집하지 않는다. fsm은 kit의 파일을 import하지 않는다. kit 도구는 make 타깃이나 `$(KIT)/<tool>.$(KIT_EXT)`로
+  실행하고, package가 export하는 것(`@polyspec/kit/tracked-files`)만 import하며, 일반적인 필요는 자기 `package.json`에 선언한
+  생태계 라이브러리(ajv, picomatch, `node:`)로 채운다. kit의 동작은 kit에서 테스트한다.
 - 모든 변경은 RED → 구현 → GREEN을 따른다. 체크리스트 항목은 관측 가능한 기준을 적는다.
 - 기능의 기본 테스트는 그 기능을 소유한 패키지(compiler, DB store, GUI)에 둔다. 언어 패키지에는 소비자 입장 테스트만 둔다.
-  루트에는 루트 도구의 테스트와 vendor `tests/kit/`만 둔다. 루트 도구 테스트의 fixture는 임시 디렉터리에 만들고 커밋하지 않는다.
-- 모든 테스트는 `scripts/kit/run-tests.mjs`로 실행한다. 이 runner는 케이스마다 시작, 진행, 결과, 경과 시간을 출력하고 케이스별
+  루트에는 루트 도구의 테스트와 그 공용 helper `tests/support/`만 둔다. 루트 도구 테스트의 fixture는 임시 디렉터리에 만들고 커밋하지 않는다.
+- 모든 테스트는 kit의 test runner(`$(KIT)/run-tests.$(KIT_EXT)`)로 실행한다. 이 runner는 케이스마다 시작, 진행, 결과, 경과 시간을 출력하고 케이스별
   timeout을 준다. 전체 timeout은 없으며, 테스트 프로세스는 10분을 넘지 않는다. 넘으면 이유와 함께 보고한다.
 - 항목 진행 중에는 바뀐 경로의 소유 검사(`config/owner-checks.json`)만 돌린다. 전체 스위트는 마지막 항목을 커밋한 뒤 `make check`로
   트리당 한 번 돌린다.

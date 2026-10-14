@@ -149,7 +149,6 @@ export default defineConfig({
     'var/**',
     '**/vendor/**',
     '**/target/**',
-    'tests/kit/**',
     'docs/.vitepress/**',
   ],
   rewrites: Object.fromEntries([...SITE_PAGES].filter(file => /(?:^|\/)README\.md$/.test(file)).map(file => [file, indexOf(file)])),

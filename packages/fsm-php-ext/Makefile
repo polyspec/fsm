@@ -7,6 +7,8 @@
 # The test target builds the extension in src/ (phpize, ./configure, make) and runs phpunit with the built module loaded; its
 # --results and --inputs paths are relative to the checkout root, as in the php package.
 ROOT := ../..
+# The test runner of kit, from the installed @polyspec/kit of the checkout root (make install-packages).
+RUN_TESTS := node $(ROOT)/node_modules/@polyspec/kit/dist/run-tests.mjs
 DEST ?= .
 PHP := $(ROOT)/packages/fsm-php
 FSM_GEN := node $(ROOT)/packages/fsm-compiler/src/cli/fsm-gen.mjs
@@ -34,7 +36,7 @@ build:
 
 # test builds the extension and runs the conformance cases and the persist example with the built module.
 test: build
-	node $(ROOT)/scripts/kit/run-tests.mjs phpunit --php-extension $(MODULE) --cwd packages/fsm-php-ext --results .results/php-ext.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs -- tests
+	$(RUN_TESTS) phpunit --php-extension $(MODULE) --cwd packages/fsm-php-ext --results .results/php-ext.json --inputs packages/fsm-php-ext --inputs schema/persist.dbs -- tests
 
 # clean removes the phpize output of src/ (the generated files and config.m4 stay). gen does not need it: it skips the git-ignored files.
 clean:

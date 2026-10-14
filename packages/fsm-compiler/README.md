@@ -120,6 +120,6 @@ per case, and kit's parity check (`make parity-check`) requires every case to ru
 
 ## Checks
 
-`make compiler-test` runs the tests of this package through `scripts/kit/run-tests.mjs`. The tests install the package offline
+`make compiler-test` runs the tests of this package through kit's test runner (`run-tests` of `@polyspec/kit`). The tests install the package offline
 into a temporary npm prefix and run the `fsm-gen` command from there, so the installed command is the one that is tested.
 A change of the rules in `src/core` is also checked by the vector cases of every language package.

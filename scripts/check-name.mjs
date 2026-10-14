@@ -15,7 +15,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { matchesAny } from './kit/glob.mjs';
+import kitPackage from '@polyspec/kit/package.json' with { type: 'json' };
+import picomatch from 'picomatch';
 
 const NAME = /status/i;
 
@@ -26,8 +27,8 @@ const NAME = /status/i;
  */
 export const ALLOWED = Object.freeze([
   {
-    files: ['scripts/kit/**', 'tests/kit/**', '.kit/kit.lock.json'],
-    reason: 'the vendored kit: its files change only in the kit repository (AGENTS.md, Rules), and its lock records their digests',
+    files: Object.keys(kitPackage.kit.copies),
+    reason: 'the copies of kit (kit.copies of the installed @polyspec/kit): they change only in the kit repository (AGENTS.md, Rules)',
   },
   {
     files: ['scripts/check-name.mjs', 'tests/check-name/**'],
@@ -74,6 +75,9 @@ export const ALLOWED = Object.freeze([
     reason: 'an exit status, an HTTP response status or a test result status (pass, fail, skip, timeout) of a process, a request or a test, not the library',
   },
 ]);
+
+/** Whether `file` matches one of `globs`; `*` and `**` match dot files too. */
+const matchesAny = (globs, file) => picomatch.isMatch(file, globs, { dot: true });
 
 /** The global form of an entry pattern, so that every span of a line is removed. */
 function globalOf(pattern) {
