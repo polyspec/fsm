@@ -3,14 +3,40 @@
   "entries": {
     "packages/compiler/src/cli/fsm-gen.mjs": "the command line of the compiler (bin fsm-gen), which the gen targets of the package Makefiles, make gen-check and the tests of make compiler-test run by path",
     "packages/compiler/tests/golden/npm/**/*.{js,mjs,d.ts}": "the golden files of the npm kind, which gen-command.test.mjs of make compiler-test compares by path with the output of fsm-gen",
-    "packages/js/src/*.d.ts": "the generated declarations of the npm kind, which tsc of make npm-types compiles tests/npm-types/consumer.ts against",
-    "tests/npm-types/consumer.ts": "the consumer file that tsc of make npm-types compiles against the generated declarations",
-    "packages/gui/src/main.mjs": "the server of the GUI (bin fsm-gui), which the tests of make gui-test and make gui-browser-test start as a process",
-    "packages/gui/client/main.ts": "the client entry of the GUI, which hyper-build-assets of make gui-build bundles",
-    "packages/gui/scripts/make-favicon.mjs": "the program that writes the committed public/favicon.ico, run by hand with node to change the icon",
-    "packages/gui/scripts/manual-check.mjs": "the driver of the GUI manual check of docs/verification/gui.md, run by hand with node",
-    "docs/.vitepress/config.mts": "the configuration of the documentation site, which vitepress of make docs-build reads",
-    "packages/db/src/models/models.ts": "the models that orm-gen generates (npm run gen of packages/db, compared by its tests); MANIFEST_TEXT and MANIFEST_HASH are the documented API of a generated module of orm and stay exported by orm's design",
-    "packages/js/examples/model/models.ts": "the models that orm-gen generates (make -C packages/js gen, compared by make gen-check); MANIFEST_TEXT and MANIFEST_HASH are the documented API of a generated module of orm and stay exported by orm's design"
+    "tests/npm-types/consumer.ts": "the consumer file that tsc of make npm-types compiles against the generated declarations"
+  },
+  "workspaces": {
+    "packages/db": {
+      "reason": "fsm-db, the DbStore of fsm: an npm project with its own package.json and lock, which make db-test runs",
+      "entries": {
+        "src/models/models.ts": "the models that orm-gen generates (npm run gen of packages/db, compared by its tests); MANIFEST_TEXT and MANIFEST_HASH are the documented API of a generated module of orm and stay exported by orm's design"
+      },
+      "ignoreDependencies": {
+        "@polyspec/ordered-json": "no JavaScript of the project imports it: the overrides of package.json pin it by \"$@polyspec/ordered-json\", which npm accepts only for a direct dependency, so that @polyspec/orm installs this release URL (npm 12 installs a URL dependency only when the root names it, --allow-remote=root)"
+      }
+    },
+    "packages/gui": {
+      "reason": "fsm-gui, the GUI of fsm: an npm project with its own package.json and lock, which make gui-build, gui-test and gui-browser-test run",
+      "entries": {
+        "client/main.ts": "the client entry of the GUI, which hyper-build-assets of make gui-build bundles"
+      },
+      "ignoreDependencies": {
+        "@polyspec/crudui-validator": "no JavaScript of the project imports it: the overrides of package.json pin it by \"$@polyspec/crudui-validator\", which npm accepts only for a direct dependency, so that @polyspec/crudui-generator-core installs this release URL (npm 12 installs a URL dependency only when the root names it, --allow-remote=root)",
+        "@polyspec/template-compiler": "no JavaScript of the project imports it: the overrides of package.json pin it by \"$@polyspec/template-compiler\", which npm accepts only for a direct dependency, so that @polyspec/hyper-build installs this release URL (npm 12 installs a URL dependency only when the root names it, --allow-remote=root)"
+      }
+    },
+    "packages/js": {
+      "reason": "the npm consumer test bed of fsm: an npm project with its own package.json and lock, which make test-npm, npm-types and npm-persist-test run",
+      "entries": {
+        "src/*.d.ts": "the generated declarations of the npm kind, which tsc of make npm-types compiles tests/npm-types/consumer.ts against",
+        "examples/model/models.ts": "the models that orm-gen generates (make -C packages/js gen, compared by make gen-check); MANIFEST_TEXT and MANIFEST_HASH are the documented API of a generated module of orm and stay exported by orm's design"
+      },
+      "ignoreDependencies": {
+        "@polyspec/ordered-json": "no JavaScript of the project imports it: the overrides of package.json pin it by \"$@polyspec/ordered-json\", which npm accepts only for a direct dependency, so that @polyspec/orm installs this release URL (npm 12 installs a URL dependency only when the root names it, --allow-remote=root)"
+      }
+    },
+    "docs": {
+      "reason": "the documentation site: an npm project with its own package.json and lock, whose vitepress make docs-build runs"
+    }
   }
 }
