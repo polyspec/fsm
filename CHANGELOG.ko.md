@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e4515b962d1f26c0cdc63894f21b7b2a2cced541d7ae2301859d4f5960b70df4 -->
+<!-- source-sha256: 34a235ef1d787c243fd7abd06104277bddcd5803614d1901b5261de1b59b8fa1 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-7: 공유 도구는 kit 0.0.42다. mise.lock은 linux-arm64와 macos-x64의 tool도 pin하고, bootstrap이 `var/tools/go.mod`를 써서 mise의 Go가 별도 module이 된다.
 - S-44-6: 공유 도구는 kit 0.0.40이며, 그 mise가 `mise.toml`의 toolchain을 `mise.lock`의 digest로 설치한다. python package는 mise shim의 uv와 Python을 실행한다. checkout Python의 test가 다시 parse된다. S-44-4에서 따옴표가 그것을 깨뜨렸다.
 - S-44-4: 공유 도구는 release asset과 integrity로 pin한 npm package `@polyspec/kit` 0.0.38이다. Makefile은 복사된 `scripts/kit/kit-bootstrap.mk`를 include하고, vendor한 `scripts/kit/`, `tests/kit/`, `.kit/kit.lock.json`, `kit.json`은 없어졌으며, `packages/fsm-db`의 오래된 TypeScript 예외를 지웠다. `make layout-check`는 S-44-5로 red가 기록되었다.
 - S-44-3: config/parity.json이 kit의 parity schema를 따른다: `PYTHONPATH`가 없고, go의 생성 vector와 php-ext의 stub과 header는 `support` 파일이며, compiler, DB, GUI, 루트 도구의 테스트는 `tools` root다.
