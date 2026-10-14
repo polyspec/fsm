@@ -134,7 +134,7 @@ The python package needs Python 3.14 in a virtual environment. From the checkout
 
 ```sh
 make install-tools TOOLS=python            # online: Python 3.14 of pythonBuild in config/toolchain.json, into var/tools (var/tools/bin/python3; no system path changes)
-make -C packages/python install    # online: .venv, made by the kit tool (make python-venv) from the install-tools Python 3.14 as a copy, filled from pylock.toml (kit's make python-lock: orm v0.0.14 and ordered-json v0.0.8 from their release wheels, every artifact by sha256)
+make -C packages/python install    # online: .venv, made by the kit tool (make python-venv) from the install-tools Python 3.14 as a copy, filled from pylock.toml (kit's make python-lock: orm v0.0.15 and ordered-json v0.0.8 from their release wheels, every artifact by sha256)
 make test-python                       # offline: the vector cases and the persist cases, run by the kit runner with --venv .venv (no PATH change)
 make python-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

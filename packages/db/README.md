@@ -17,7 +17,7 @@ published: it is used from this repository.
 
 ## Set up
 
-1. Install the packages from the repository root with `make db-deps`. It installs `@polyspec/orm` v0.0.14 and
+1. Install the packages from the repository root with `make db-deps`. It installs `@polyspec/orm` v0.0.15 and
    `@polyspec/ordered-json` v0.0.8 from their release tarballs, pinned in `package-lock.json`.
 2. Create `fsm.config.json` in the project root. The only accepted form for the database is:
 

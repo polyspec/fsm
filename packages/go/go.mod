@@ -2,12 +2,13 @@ module github.com/polyspec/fsm/packages/go
 
 go 1.27.2
 
-require github.com/polyspec/orm v0.0.14
+require github.com/polyspec/orm v0.0.15
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-sql-driver/mysql v1.10.1 // indirect
+	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect

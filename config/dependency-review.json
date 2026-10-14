@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mts) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-14T15:23:58.993Z",
+  "reviewed": "2026-10-14T15:33:22.971Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -24,7 +24,7 @@
     },
     {
       "lock": "packages/db/package-lock.json",
-      "sha256": "d9dceb9aeaeab711c35cc7c9e106133a651800097ca32a7f1d14113a7a55eafd",
+      "sha256": "b573ff1673ab80505154e6a4249b168ab35c3bbd281b05c245b774d536b1a1b6",
       "advisories": []
     },
     {
@@ -34,32 +34,32 @@
     },
     {
       "lock": "packages/js/package-lock.json",
-      "sha256": "dd5a6d21f5ea18c987f15dd724bc46b4a19da183a8057ec5818119e37c0804b8",
+      "sha256": "401076859a7c69a16f41adbefb1ff0bdd0277776ed776f6016da288e8cff04b1",
       "advisories": []
     },
     {
       "lock": "packages/php/composer.lock",
-      "sha256": "bcdb128f302518efb2edc3bbe44e4fc023e3aace6bbfb4448c60833e80945beb",
+      "sha256": "08c394156ba6d358240347785e60988a65df9edb507b957de09111de31a3716d",
       "advisories": []
     },
     {
       "lock": "packages/php-ext/composer.lock",
-      "sha256": "0346dc0ddbae8ce86f896a2311acca3b743b2a7181ee083e6b5c76b69ac66cce",
+      "sha256": "ceb310cc776d5c519fcc2bc79ddd85ef60044b7066e9d3ea8b0230d609b5f39e",
       "advisories": []
     },
     {
       "lock": "packages/python/pylock.toml",
-      "sha256": "2b362cb6c53a2f45bb66b8348229b76004e65171f8338b0965403b4ff030489f",
+      "sha256": "ceadd3d90b86ff32befb87a11a48a55d82721f1231d688ffb08d48bcaa52d194",
       "advisories": []
     },
     {
       "lock": "packages/go/go.sum",
-      "sha256": "01877093eefff5b8412e44faab52eb34025cc3152f56e6c8f57d2ccde6c6f796",
+      "sha256": "fac3b9b1cdbcfd6ab0dcebf446ab70b44e67d8e05f1c07146699859b6dde4c59",
       "advisories": []
     },
     {
       "lock": "packages/rust/Cargo.lock",
-      "sha256": "90388b702a1800dfed4a6741bd94a18383a5b644aec1d4be4ada675b23818e5b",
+      "sha256": "67cf57aa93757aecfcd6e40b281be2e50a67f4eb11fdaf660d27c5a5074106db",
       "advisories": []
     }
   ],
@@ -145,8 +145,8 @@
       "ecosystem": "composer",
       "manifest": "packages/php/composer.json",
       "package": "polyspec/orm",
-      "version": "0.0.14",
-      "latest": "0.0.14"
+      "version": "0.0.15",
+      "latest": "0.0.15"
     },
     {
       "ecosystem": "composer",
@@ -159,8 +159,8 @@
       "ecosystem": "composer",
       "manifest": "packages/php-ext/composer.json",
       "package": "polyspec/orm",
-      "version": "0.0.14",
-      "latest": "0.0.14"
+      "version": "0.0.15",
+      "latest": "0.0.15"
     },
     {
       "ecosystem": "composer",
@@ -182,6 +182,20 @@
       "package": "cryptography",
       "version": "50.0.2",
       "latest": "50.0.2"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/python/pylock.toml",
+      "package": "deprecation",
+      "version": "2.1.0",
+      "latest": "2.1.0"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/python/pylock.toml",
+      "package": "packaging",
+      "version": "26.3",
+      "latest": "26.3"
     },
     {
       "ecosystem": "pypi",
@@ -214,9 +228,16 @@
     {
       "ecosystem": "pypi",
       "manifest": "packages/python/pylock.toml",
-      "package": "pyyaml",
-      "version": "6.0.3",
-      "latest": "6.0.3"
+      "package": "rapidyaml",
+      "version": "0.15.2",
+      "latest": "0.15.2"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "packages/python/pylock.toml",
+      "package": "ruamel-yaml",
+      "version": "0.19.1",
+      "latest": "0.19.1"
     },
     {
       "ecosystem": "pypi",
@@ -236,8 +257,8 @@
       "ecosystem": "go",
       "manifest": "packages/go/go.mod",
       "package": "github.com/polyspec/orm",
-      "version": "v0.0.14",
-      "latest": "v0.0.14"
+      "version": "v0.0.15",
+      "latest": "v0.0.15"
     }
   ],
   "vcs": []

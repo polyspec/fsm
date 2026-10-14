@@ -11,7 +11,7 @@ import (
 	"github.com/polyspec/fsm/packages/go/examples"
 	"github.com/polyspec/fsm/packages/go/examples/model"
 	"github.com/polyspec/fsm/packages/go/src/fsm"
-	"github.com/polyspec/orm/packages/orm-go/orm"
+	"github.com/polyspec/orm/packages/go/orm"
 )
 
 // outcome is the result of one transition.

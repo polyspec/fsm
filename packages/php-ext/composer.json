@@ -9,7 +9,7 @@
     },
     "require": {
         "php": ">=8.5",
-        "polyspec/orm": "0.0.14"
+        "polyspec/orm": "0.0.15"
     },
     "require-dev": {
         "phpunit/phpunit": "13.4.2"

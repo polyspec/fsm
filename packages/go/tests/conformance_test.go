@@ -16,7 +16,7 @@ import (
 	"github.com/polyspec/fsm/packages/go/examples"
 	"github.com/polyspec/fsm/packages/go/examples/model"
 	"github.com/polyspec/fsm/packages/go/src/fsm"
-	"github.com/polyspec/orm/packages/orm-go/orm"
+	"github.com/polyspec/orm/packages/go/orm"
 )
 
 // machineVectors and vectorCase are the shape of the data of vectors_test.go. A case keeps the keys of the oracle: state, event,

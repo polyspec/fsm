@@ -4,9 +4,9 @@
   "assets": [
     {
       "name": "orm",
-      "version": "0.0.14",
+      "version": "0.0.15",
       "url": "https://github.com/polyspec/orm/releases/download/v{version}/polyspec-orm-php-{version}.zip",
-      "sha256": "01506a06a883d1f58fa7c977aff76d1802e0558b5ea1627ce900756c911961d3",
+      "sha256": "334a2384411a84568f3fe5f23f410babbeba86735f4ed630ef60b88863546158",
       "directory": "var/composer-artifacts"
     },
     {
