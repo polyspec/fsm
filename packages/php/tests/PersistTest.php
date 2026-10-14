@@ -1,4 +1,5 @@
 <?php
+
 // The persistence tests of the php package beyond the vector cases (docs/spec/fsm.md, B-4): two transitions of one row
 // that run at the same time, each in its own process on its own connection, give the outcome that the pattern promises,
 // and a deadlock runs the transaction again while another database error does not. Each method is named by its feature
