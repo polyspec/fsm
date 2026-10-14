@@ -31,21 +31,34 @@ function key(State $state): string
 }
 
 /**
- * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that is not an
- * int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same result.
+ * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that
+ * is not an int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same
+ * result.
  */
 function fromCode(mixed $value): State
 {
     if (!is_int($value)) {
-        throw new Error(Code::UnknownCode, 'ticket: a value of type ' . get_debug_type($value) . ' is not a state of ticket');
+        throw new Error(
+            Code::UnknownCode,
+            'ticket: a value of type ' . get_debug_type($value) . ' is not a state of ticket',
+        );
     }
     return match ($value) {
         1 => State::Open,
         3 => State::Review,
         5 => State::Closed,
-        2 => throw new Error(Code::ReservedCode, 'ticket: code 2 is reserved and is no state of ticket'),
-        4 => throw new Error(Code::ReservedCode, 'ticket: code 4 is reserved and is no state of ticket'),
-        default => throw new Error(Code::UnknownCode, 'ticket: ' . $value . ' is not a state of ticket'),
+        2 => throw new Error(
+            Code::ReservedCode,
+            'ticket: code 2 is reserved and is no state of ticket',
+        ),
+        4 => throw new Error(
+            Code::ReservedCode,
+            'ticket: code 4 is reserved and is no state of ticket',
+        ),
+        default => throw new Error(
+            Code::UnknownCode,
+            'ticket: ' . $value . ' is not a state of ticket',
+        ),
     };
 }
 
@@ -79,14 +92,32 @@ function target(State $expected, Event $event): State
     return match ($expected) {
         State::Open => match ($event) {
             Event::Submit => State::Review,
-            default => throw new Error(Code::InvalidTransition, 'ticket: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+            default => throw new Error(
+                Code::InvalidTransition,
+                'ticket: the event ' . $event->value . ' has no edge from ' . $expected->value,
+                $expected->value,
+                null,
+                $event->value,
+            ),
         },
         State::Review => match ($event) {
             Event::Approve => State::Closed,
             Event::Reject => State::Open,
-            default => throw new Error(Code::InvalidTransition, 'ticket: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+            default => throw new Error(
+                Code::InvalidTransition,
+                'ticket: the event ' . $event->value . ' has no edge from ' . $expected->value,
+                $expected->value,
+                null,
+                $event->value,
+            ),
         },
-        State::Closed => throw new Error(Code::InvalidTransition, 'ticket: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+        State::Closed => throw new Error(
+            Code::InvalidTransition,
+            'ticket: the event ' . $event->value . ' has no edge from ' . $expected->value,
+            $expected->value,
+            null,
+            $event->value,
+        ),
     };
 }
 
@@ -100,5 +131,11 @@ function apply(State $expected, Event $event, State $actual): Step
     if ($actual === $to) {
         return new Step($to, false);
     }
-    throw new Error(Code::Conflict, 'ticket: the stored state ' . $actual->value . ' is neither ' . $expected->value . ' nor ' . $to->value, $expected->value, $actual->value, $event->value);
+    throw new Error(
+        Code::Conflict,
+        'ticket: the stored state ' . $actual->value . ' is neither ' . $expected->value . ' nor ' . $to->value,
+        $expected->value,
+        $actual->value,
+        $event->value,
+    );
 }

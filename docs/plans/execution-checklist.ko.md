@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: d26d777f6d188ccc0bc22ef29acf38da8556a41bba13e1323ddddff6c982ddcb -->
+<!-- source-sha256: fc3d692cb2fb6a0645a850d3a66aa0472144048dd3723a98a4f780e637b07dbf -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -107,3 +107,4 @@
 | S-44-11 | rust backend는 edge가 없는 machine의 `target`을 오류 하나로 쓴다: 유일한 arm이 wildcard인 `match`는 clippy에서 실패한다(`match_single_binding`, `make lint-rust`). 생성된 packages/rust/src/standby.rs가 그렇다 | `make lint-rust`가 packages/rust/src/standby.rs:74에서 `this match could be replaced by its body itself`를 보고 RED → 그 finding이 사라지고 `make gen-check`가 통과하며 rust-backend.test와 `cargo test --test conformance`가 통과 GREEN | [o] |
 | S-44-12 | fsm의 PHP 파일은 `<?php`와 header block 사이에 빈 줄을 둔다(PSR-12, `make lint-php`의 `PSR12.Files.FileHeader.SpacingAfterTagBlock`): php와 php-ext backend는 fsm-gen header를 tag와 빈 줄 뒤 셋째 줄에 쓰고, write-generated.mjs는 거기서 읽으며, 손으로 쓴 test와 example도 같은 배치를 따른다 | gen-command, php-backend, php-ext-backend test가 빈 줄을 기대 RED → 통과하고 `make gen-check`가 통과하며 phpcs가 fsm의 파일에서 FileHeader finding을 보고하지 않고 php와 php-ext의 phpunit test가 통과 GREEN | [o] |
 | S-44-13 | 의존성을 다시 최신 릴리스로 올린다(`make dependency-review UPDATE=1`): packages/rust/Cargo.lock의 rustls 0.23.46이 rustls 0.23.45의 RUSTSEC-2026-0346~0349를 고치고, playwright는 1.64.1이며, review 기록은 kit 0.0.43의 package-lock.json과 맞는다 | `make dependency-policy-check`가 바뀐 package-lock.json을 보고하고 review가 rustls advisory 네 개와 playwright 1.64.0 < 1.64.1을 보고 RED → `make dependency-policy-check`가 통과하고 `cargo test --test conformance`와 `make gui-browser-test`가 통과 GREEN | [o] |
+| S-44-14 | fsm의 PHP가 phpcs(kit의 PSR-12, `make lint-php`)를 통과한다: 생성된 ConformanceTest.php는 camelCase method `testConformance` 하나를 data provider `cases()` 위에서 실행하고 case마다 이름이 `<feature>__<id>`인 data set 하나를 두며, php와 php-ext의 parity binding은 이를 `symbol`로 지명한다(kit K137). php backend는 `throw new Error(...)`를 인자 하나에 한 줄로 쓰고 docblock을 120자 안에서 줄바꿈하며, 손으로 쓴 ConformanceCase.php와 examples/persist.php도 줄을 120자 안에 둔다. examples/model/의 orm-gen 파일은 orm의 것이다 | phpcs가 fsm의 파일에서 PSR1.Methods.CamelCapsMethodName 680개와 Generic.Files.LineLength 87개를 보고 RED → fsm의 파일에서 하나도 보고하지 않고 `make gen-check`와 `make parity-declarations-check`가 통과하며 gen-command, php-backend, php-ext-backend test와 php, php-ext의 phpunit test가 통과 GREEN | [ ] |

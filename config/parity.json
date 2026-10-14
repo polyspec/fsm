@@ -36,8 +36,8 @@
       "bindings": [
         { "implementation": "go", "test": "packages/go/tests/conformance_test.go", "symbol": "TestConformance" },
         { "implementation": "npm", "test": "packages/js/tests/conformance.test.mjs" },
-        { "implementation": "php", "test": "packages/php/tests/ConformanceTest.php" },
-        { "implementation": "php-ext", "test": "packages/php-ext/tests/ConformanceTest.php" },
+        { "implementation": "php", "test": "packages/php/tests/ConformanceTest.php", "symbol": "Polyspec\\FsmTest\\Tests\\ConformanceTest::testConformance" },
+        { "implementation": "php-ext", "test": "packages/php-ext/tests/ConformanceTest.php", "symbol": "Polyspec\\FsmTest\\Tests\\ConformanceTest::testConformance" },
         { "implementation": "python", "test": "packages/python/tests/test_conformance.py" },
         { "implementation": "rust", "test": "packages/rust/tests/conformance/main.rs", "symbol": "vectors" }
       ] },

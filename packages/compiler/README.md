@@ -109,7 +109,7 @@ The vectors are the expected result of every operation of a machine, computed by
 - A case id is `<machine>_<suffix>`, where every key in the suffix is replaced by its declaration index: a state is `s<i>`, an
   event `e<j>` (both 0-based) and a reserved code `r<code>`. So `order_apply_s0_e0_s0` is `apply` from the first state (`draft`)
   with the first event (`next`) when the stored state is also the first state. Ids cannot collide, whatever the names are.
-- The case name is `<feature>__<id>`, the `name` of the case (php and python: the method `test_<feature>__<id>`).
+- The case name is `<feature>__<id>`, the `name` of the case (php: the data set `<feature>__<id>` of the method `testConformance`; python: the method `test_<feature>__<id>`).
 - The example `order` has 89 cases (in `contracts/conformance/vectors.json`, written by `fsm-gen vectors --out`). The counts by feature are
   `initial` 1, `code` 5, `key` 5, `from_code` 7, `is_final` 5, `events_from` 5, `target` 15, `apply` 43 and `persist` 3.
 

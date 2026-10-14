@@ -49,6 +49,17 @@ const moduleOf = (phpNamespace, machine) => `${phpNamespace}\\${pascal(machine)}
 /** The string literal of a PHP single-quoted string. */
 const literal = value => `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 
+/**
+ * The lines of `throw new Error(...)` with one argument per line, so a line stays within the 120 characters of PSR-12 (phpcs
+ * Generic.Files.LineLength). `head` is the text before `throw` on the first line, `indent` its indentation and `tail` the text
+ * after the closing parenthesis (`;` or `,`).
+ */
+const throwLines = (indent, head, args, tail) => [
+  `${indent}${head}throw new Error(`,
+  ...args.map(arg => `${indent}    ${arg},`),
+  `${indent})${tail}`,
+];
+
 /** The state enum of `ir`: each case is a state with its code as the value. */
 function stateFile(ir, ns) {
   const { machine, states } = ir;
@@ -99,7 +110,13 @@ function functionsFile(ir, ns, phpNamespace, reservedCodes) {
   const eventOf = key => `Event::${pascal(key)}`;
   const outgoing = state => events.filter(event => transitions.some(item => item.state === state.key && item.event === event.key));
   const toOf = (state, event) => transitions.find(item => item.state === state && item.event === event).to;
-  const invalid = `throw new Error(Code::InvalidTransition, ${literal(`${machine}: the event `)} . $event->value . ${literal(' has no edge from ')} . $expected->value, $expected->value, null, $event->value)`;
+  const invalidArgs = [
+    'Code::InvalidTransition',
+    `${literal(`${machine}: the event `)} . $event->value . ${literal(' has no edge from ')} . $expected->value`,
+    '$expected->value',
+    'null',
+    '$event->value',
+  ];
   const lines = [
     ...opening(machine, ns),
     `use ${phpNamespace}\\Fsm\\Code;`,
@@ -126,18 +143,19 @@ function functionsFile(ir, ns, phpNamespace, reservedCodes) {
     '}',
     '',
     '/**',
-    ' * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that is not an',
-    ' * int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same result.',
+    ' * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that',
+    ' * is not an int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same',
+    ' * result.',
     ' */',
     'function fromCode(mixed $value): State',
     '{',
     '    if (!is_int($value)) {',
-    `        throw new Error(Code::UnknownCode, ${literal(`${machine}: a value of type `)} . get_debug_type($value) . ${literal(` is not a state of ${machine}`)});`,
+    ...throwLines('        ', '', ['Code::UnknownCode', `${literal(`${machine}: a value of type `)} . get_debug_type($value) . ${literal(` is not a state of ${machine}`)}`], ';'),
     '    }',
     '    return match ($value) {',
     ...states.map(state => `        ${state.code} => ${stateOf(state.key)},`),
-    ...reserved.map(code => `        ${code} => throw new Error(Code::ReservedCode, ${literal(`${machine}: code ${code} is reserved and is no state of ${machine}`)}),`),
-    `        default => throw new Error(Code::UnknownCode, ${literal(`${machine}: `)} . $value . ${literal(` is not a state of ${machine}`)}),`,
+    ...reserved.flatMap(code => throwLines('        ', `${code} => `, ['Code::ReservedCode', literal(`${machine}: code ${code} is reserved and is no state of ${machine}`)], ',')),
+    ...throwLines('        ', 'default => ', ['Code::UnknownCode', `${literal(`${machine}: `)} . $value . ${literal(` is not a state of ${machine}`)}`], ','),
     '    };',
     '}',
     '',
@@ -168,15 +186,15 @@ function functionsFile(ir, ns, phpNamespace, reservedCodes) {
     'function target(State $expected, Event $event): State',
     '{',
     '    return match ($expected) {',
-    ...states.map(state => {
+    ...states.flatMap(state => {
       const edges = outgoing(state);
-      if (edges.length === 0) return `        ${stateOf(state.key)} => ${invalid},`;
+      if (edges.length === 0) return throwLines('        ', `${stateOf(state.key)} => `, invalidArgs, ',');
       return [
         `        ${stateOf(state.key)} => match ($event) {`,
         ...edges.map(edge => `            ${eventOf(edge.key)} => ${stateOf(toOf(state.key, edge.key))},`),
-        `            default => ${invalid},`,
+        ...throwLines('            ', 'default => ', invalidArgs, ','),
         '        },',
-      ].join('\n');
+      ];
     }),
     '    };',
     '}',
@@ -191,7 +209,13 @@ function functionsFile(ir, ns, phpNamespace, reservedCodes) {
     '    if ($actual === $to) {',
     '        return new Step($to, false);',
     '    }',
-    `    throw new Error(Code::Conflict, ${literal(`${machine}: the stored state `)} . $actual->value . ${literal(' is neither ')} . $expected->value . ${literal(' nor ')} . $to->value, $expected->value, $actual->value, $event->value);`,
+    ...throwLines('    ', '', [
+      'Code::Conflict',
+      `${literal(`${machine}: the stored state `)} . $actual->value . ${literal(' is neither ')} . $expected->value . ${literal(' nor ')} . $to->value`,
+      '$expected->value',
+      '$actual->value',
+      '$event->value',
+    ], ';'),
     '}',
   ];
   return text(lines);
@@ -218,8 +242,8 @@ function errorFile(ns) {
     ...opening(SHARED, ns),
     '/**',
     ' * The error of a machine function (docs/spec/fsm.md, B-4 and B-6). getCode() is the value of the Code case, such as',
-    ' * E_CONFLICT. The fields hold the arguments of apply or target that failed: the state codes and the event index; the others',
-    ' * are null.',
+    ' * E_CONFLICT. The fields hold the arguments of apply or target that failed: the state codes and the event index; the',
+    ' * others are null.',
     ' */',
     'final class Error extends \\Exception',
     '{',
@@ -315,25 +339,43 @@ export function files(irs, lock, { phpNamespace } = {}) {
 
 /**
  * The native test module tests/ConformanceTest.php of `vectorList`, the vectors of every machine in order, in the namespace
- * <ns>\Tests: the PHPUnit class ConformanceTest with one method test_<feature>__<id> per case (docs/plans/fsm-v1.md, C-4), the
- * test name that the parity check of kit reads. Each method passes its machine and case to conformance() of the hand-written
- * ConformanceCase.
+ * <ns>\Tests: the PHPUnit class ConformanceTest whose one method testConformance takes every case from the data provider
+ * cases(), one data set per case named by the case name <feature>__<id> (docs/plans/fsm-v1.md, C-4). The parity check of kit
+ * runs that method by its symbol and reads each data set as the case of its name (K137); one camelCase method keeps the
+ * file within PSR-1, whose method names a case name with underscores would break. Each data set is the machine and the case
+ * that the method passes to conformance() of the hand-written ConformanceCase.
  */
 export function vectorsFile(list, { phpNamespace } = {}) {
   const phpNs = checkedNamespace(phpNamespace);
-  const methods = forKind(list, KIND).flatMap(({ machine, cases: items }) => items.flatMap(item => [
-    '',
-    `    public function test_${item.name}(): void`,
-    '    {',
-    `        $this->conformance(${literal(machine)}, ${value(item, 2)});`,
-    '    }',
-  ]));
+  const sets = forKind(list, KIND).flatMap(({ machine, cases: items }) => items.map(item =>
+    `        yield ${literal(item.name)} => [${literal(machine)}, ${value(item, 2)}];`));
   return text([
     ...opening(SHARED, `${phpNs}\\Tests`),
-    '/** The vector cases of every machine, one test per case under its case name (docs/plans/fsm-v1.md, C-4). */',
+    'use PHPUnit\\Framework\\Attributes\\DataProvider;',
+    '',
+    '/** The vector cases of every machine, one data set per case under its case name (docs/plans/fsm-v1.md, C-4). */',
     'final class ConformanceTest extends ConformanceCase',
     '{',
-    ...methods.slice(1),
+    '    /**',
+    '     * The machine and the case of every vector case, keyed by the case name.',
+    '     *',
+    '     * @return iterable<string, array{string, array<string, mixed>}>',
+    '     */',
+    '    public static function cases(): iterable',
+    '    {',
+    ...sets,
+    '    }',
+    '',
+    '    /**',
+    '     * Runs one vector case of a machine through the checks of ConformanceCase.',
+    '     *',
+    '     * @param array<string, mixed> $case',
+    '     */',
+    "    #[DataProvider('cases')]",
+    '    public function testConformance(string $machine, array $case): void',
+    '    {',
+    '        $this->conformance($machine, $case);',
+    '    }',
     '}',
   ]);
 }

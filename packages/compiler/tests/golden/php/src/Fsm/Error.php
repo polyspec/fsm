@@ -7,8 +7,8 @@ namespace Polyspec\FsmTest\Fsm;
 
 /**
  * The error of a machine function (docs/spec/fsm.md, B-4 and B-6). getCode() is the value of the Code case, such as
- * E_CONFLICT. The fields hold the arguments of apply or target that failed: the state codes and the event index; the others
- * are null.
+ * E_CONFLICT. The fields hold the arguments of apply or target that failed: the state codes and the event index; the
+ * others are null.
  */
 final class Error extends \Exception
 {

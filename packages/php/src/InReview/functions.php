@@ -31,19 +31,26 @@ function key(State $state): string
 }
 
 /**
- * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that is not an
- * int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same result.
+ * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that
+ * is not an int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same
+ * result.
  */
 function fromCode(mixed $value): State
 {
     if (!is_int($value)) {
-        throw new Error(Code::UnknownCode, 'in_review: a value of type ' . get_debug_type($value) . ' is not a state of in_review');
+        throw new Error(
+            Code::UnknownCode,
+            'in_review: a value of type ' . get_debug_type($value) . ' is not a state of in_review',
+        );
     }
     return match ($value) {
         1 => State::ToDo,
         2 => State::InProgress,
         3 => State::DoneNow,
-        default => throw new Error(Code::UnknownCode, 'in_review: ' . $value . ' is not a state of in_review'),
+        default => throw new Error(
+            Code::UnknownCode,
+            'in_review: ' . $value . ' is not a state of in_review',
+        ),
     };
 }
 
@@ -77,14 +84,32 @@ function target(State $expected, Event $event): State
     return match ($expected) {
         State::ToDo => match ($event) {
             Event::StartWork => State::InProgress,
-            default => throw new Error(Code::InvalidTransition, 'in_review: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+            default => throw new Error(
+                Code::InvalidTransition,
+                'in_review: the event ' . $event->value . ' has no edge from ' . $expected->value,
+                $expected->value,
+                null,
+                $event->value,
+            ),
         },
         State::InProgress => match ($event) {
             Event::FinishWork => State::DoneNow,
             Event::ReopenWork => State::ToDo,
-            default => throw new Error(Code::InvalidTransition, 'in_review: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+            default => throw new Error(
+                Code::InvalidTransition,
+                'in_review: the event ' . $event->value . ' has no edge from ' . $expected->value,
+                $expected->value,
+                null,
+                $event->value,
+            ),
         },
-        State::DoneNow => throw new Error(Code::InvalidTransition, 'in_review: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+        State::DoneNow => throw new Error(
+            Code::InvalidTransition,
+            'in_review: the event ' . $event->value . ' has no edge from ' . $expected->value,
+            $expected->value,
+            null,
+            $event->value,
+        ),
     };
 }
 
@@ -98,5 +123,11 @@ function apply(State $expected, Event $event, State $actual): Step
     if ($actual === $to) {
         return new Step($to, false);
     }
-    throw new Error(Code::Conflict, 'in_review: the stored state ' . $actual->value . ' is neither ' . $expected->value . ' nor ' . $to->value, $expected->value, $actual->value, $event->value);
+    throw new Error(
+        Code::Conflict,
+        'in_review: the stored state ' . $actual->value . ' is neither ' . $expected->value . ' nor ' . $to->value,
+        $expected->value,
+        $actual->value,
+        $event->value,
+    );
 }

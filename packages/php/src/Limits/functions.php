@@ -30,18 +30,25 @@ function key(State $state): string
 }
 
 /**
- * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that is not an
- * int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same result.
+ * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that
+ * is not an int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same
+ * result.
  */
 function fromCode(mixed $value): State
 {
     if (!is_int($value)) {
-        throw new Error(Code::UnknownCode, 'limits: a value of type ' . get_debug_type($value) . ' is not a state of limits');
+        throw new Error(
+            Code::UnknownCode,
+            'limits: a value of type ' . get_debug_type($value) . ' is not a state of limits',
+        );
     }
     return match ($value) {
         1 => State::Floor,
         2147483647 => State::Ceiling,
-        default => throw new Error(Code::UnknownCode, 'limits: ' . $value . ' is not a state of limits'),
+        default => throw new Error(
+            Code::UnknownCode,
+            'limits: ' . $value . ' is not a state of limits',
+        ),
     };
 }
 
@@ -73,9 +80,21 @@ function target(State $expected, Event $event): State
     return match ($expected) {
         State::Floor => match ($event) {
             Event::Rise => State::Ceiling,
-            default => throw new Error(Code::InvalidTransition, 'limits: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+            default => throw new Error(
+                Code::InvalidTransition,
+                'limits: the event ' . $event->value . ' has no edge from ' . $expected->value,
+                $expected->value,
+                null,
+                $event->value,
+            ),
         },
-        State::Ceiling => throw new Error(Code::InvalidTransition, 'limits: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+        State::Ceiling => throw new Error(
+            Code::InvalidTransition,
+            'limits: the event ' . $event->value . ' has no edge from ' . $expected->value,
+            $expected->value,
+            null,
+            $event->value,
+        ),
     };
 }
 
@@ -89,5 +108,11 @@ function apply(State $expected, Event $event, State $actual): Step
     if ($actual === $to) {
         return new Step($to, false);
     }
-    throw new Error(Code::Conflict, 'limits: the stored state ' . $actual->value . ' is neither ' . $expected->value . ' nor ' . $to->value, $expected->value, $actual->value, $event->value);
+    throw new Error(
+        Code::Conflict,
+        'limits: the stored state ' . $actual->value . ' is neither ' . $expected->value . ' nor ' . $to->value,
+        $expected->value,
+        $actual->value,
+        $event->value,
+    );
 }

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: e4f58401b66dffea179a80cd28c00b349ea9c31a49dfabb18e4e3f6ac078d69f -->
+<!-- source-sha256: 7fb99b2a4f7c7d63a37361646c543e665a87b974b2e646695134cb14946ef463 -->
 # polyspec/fsm-php
 
 [English](README.md)
@@ -160,7 +160,7 @@ make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG
 make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `fsm-gen vectors --kind php`가 생성하는 `tests/ConformanceTest.php`는 vector case마다 PHPUnit test
-`test_<feature>__<id>` 하나를 가지며, 각 test는 손으로 쓴 `tests/ConformanceCase.php`의 검사를 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 루트의 `make gen-check`는
+실행 결과는 89개 case 중 89개 통과다. `fsm-gen vectors --kind php`가 생성하는 `tests/ConformanceTest.php`는 PHPUnit test
+`testConformance` 하나를 vector case마다 이름이 `<feature>__<id>`인 data set으로 실행하며, 각 data set은 손으로 쓴 `tests/ConformanceCase.php`의 검사를 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 루트의 `make gen-check`는
 생성 파일이 `fsm-gen`이 지금 쓰는 것과 같은지 검사한다. checkout의 PHP 릴리스는 8.5(`config/toolchain.json`)이며, `composer.json`의
 `config.platform.php`는 `composerPlatforms`(config/dependency-policy.json)의 정밀도로 쓴 kit의 PHP pin 8.5.0이고, `require.php`는 `>=8.5`다.

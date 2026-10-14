@@ -193,7 +193,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 - The counts that kit `test-progress.mjs` writes in `close()` gain `cases: [{id, status, elapsedMs}]`.
 - With `run-tests --results <file>`, the runner adds `{tool, inputs, elapsedMs}` and writes the file once through a temporary file + rename.
 - `inputs` = kit `inputsDigest(root, paths)`, built from the paths and sha256 of tracked and non-ignored new files under `paths` (the package directory and `contracts/schema/persist.dbs`).
-- A case name is `<featureId>__<vectorId>`, the `name` of the case in contracts/conformance/vectors.json. go runs it as the subtest `TestConformance/<name>`, npm as the node:test test `<name>`, rust as `vectors::<name>`, and php and python as the method `test_<name>`: the names that kit's parity check (K33, `config/parity.json`, S-42-1) reads.
+- A case name is `<featureId>__<vectorId>`, the `name` of the case in contracts/conformance/vectors.json. go runs it as the subtest `TestConformance/<name>`, npm as the node:test test `<name>`, rust as `vectors::<name>`, php as the data set `<name>` of the one method `testConformance` of ConformanceTest (K137; PSR-1 refuses a method name with underscores), and python as the method `test_<name>`: the names that kit's parity check (K33, `config/parity.json`, S-42-1) reads.
   - Both ids match `^[a-z][a-z0-9]*(_[a-z0-9]+)*$` and contain no `__`.
   - A vectorId starts with `<machine>_`.
   - Language tests use this name as is.

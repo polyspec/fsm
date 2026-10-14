@@ -33,13 +33,17 @@ function key(State $state): string
 }
 
 /**
- * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that is not an
- * int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same result.
+ * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that
+ * is not an int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same
+ * result.
  */
 function fromCode(mixed $value): State
 {
     if (!is_int($value)) {
-        throw new Error(Code::UnknownCode, 'order: a value of type ' . get_debug_type($value) . ' is not a state of order');
+        throw new Error(
+            Code::UnknownCode,
+            'order: a value of type ' . get_debug_type($value) . ' is not a state of order',
+        );
     }
     return match ($value) {
         1 => State::Draft,
@@ -47,7 +51,10 @@ function fromCode(mixed $value): State
         3 => State::Shipped,
         4 => State::Done,
         5 => State::Canceled,
-        default => throw new Error(Code::UnknownCode, 'order: ' . $value . ' is not a state of order'),
+        default => throw new Error(
+            Code::UnknownCode,
+            'order: ' . $value . ' is not a state of order',
+        ),
     };
 }
 
@@ -86,21 +93,51 @@ function target(State $expected, Event $event): State
         State::Draft => match ($event) {
             Event::Next => State::Paid,
             Event::Cancel => State::Canceled,
-            default => throw new Error(Code::InvalidTransition, 'order: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+            default => throw new Error(
+                Code::InvalidTransition,
+                'order: the event ' . $event->value . ' has no edge from ' . $expected->value,
+                $expected->value,
+                null,
+                $event->value,
+            ),
         },
         State::Paid => match ($event) {
             Event::Next => State::Shipped,
             Event::Prev => State::Draft,
             Event::Cancel => State::Canceled,
-            default => throw new Error(Code::InvalidTransition, 'order: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+            default => throw new Error(
+                Code::InvalidTransition,
+                'order: the event ' . $event->value . ' has no edge from ' . $expected->value,
+                $expected->value,
+                null,
+                $event->value,
+            ),
         },
         State::Shipped => match ($event) {
             Event::Next => State::Done,
             Event::Prev => State::Paid,
-            default => throw new Error(Code::InvalidTransition, 'order: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+            default => throw new Error(
+                Code::InvalidTransition,
+                'order: the event ' . $event->value . ' has no edge from ' . $expected->value,
+                $expected->value,
+                null,
+                $event->value,
+            ),
         },
-        State::Done => throw new Error(Code::InvalidTransition, 'order: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
-        State::Canceled => throw new Error(Code::InvalidTransition, 'order: the event ' . $event->value . ' has no edge from ' . $expected->value, $expected->value, null, $event->value),
+        State::Done => throw new Error(
+            Code::InvalidTransition,
+            'order: the event ' . $event->value . ' has no edge from ' . $expected->value,
+            $expected->value,
+            null,
+            $event->value,
+        ),
+        State::Canceled => throw new Error(
+            Code::InvalidTransition,
+            'order: the event ' . $event->value . ' has no edge from ' . $expected->value,
+            $expected->value,
+            null,
+            $event->value,
+        ),
     };
 }
 
@@ -114,5 +151,11 @@ function apply(State $expected, Event $event, State $actual): Step
     if ($actual === $to) {
         return new Step($to, false);
     }
-    throw new Error(Code::Conflict, 'order: the stored state ' . $actual->value . ' is neither ' . $expected->value . ' nor ' . $to->value, $expected->value, $actual->value, $event->value);
+    throw new Error(
+        Code::Conflict,
+        'order: the stored state ' . $actual->value . ' is neither ' . $expected->value . ' nor ' . $to->value,
+        $expected->value,
+        $actual->value,
+        $event->value,
+    );
 }

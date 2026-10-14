@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: b699dc9ddf66a59f012c863afea28f499ac6bca3a1ebc6c2d3f6f2d34a961f6b -->
+<!-- source-sha256: 188c88b6d5975e454bcad9e68801d67f0a6c1419eae50cdfa84fa0a48c7d51a6 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -441,5 +441,5 @@ $ fsm-gen check --project ./broken
 
 CI(`.github/workflows/ci.yml`)는 main에 push될 때마다 kit을 설치하고(`make install-tools TOOLS=npm`, `make install-packages`) `make install`과 `make check`를 실행하며, PostgreSQL과 MySQL 서비스를 띄운다. 문서 사이트는 `.github/workflows/pages.yml`이 https://polyspec.github.io/fsm/ 에 게시한다.
 
-각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 case 이름 `<feature>__<id>`다(php와 python은 method `test_<feature>__<id>`). kit의 parity 검사(K33, `config/parity.json`)가 이 이름을 읽는다.
+각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 case 이름 `<feature>__<id>`다(php는 method `testConformance` 하나의 data set `<feature>__<id>`, python은 method `test_<feature>__<id>`). kit의 parity 검사(K33, `config/parity.json`)가 이 이름을 읽는다.
 `make gen-check`는 패키지의 생성 파일이 `fsm-gen`이 지금 쓰는 파일과 같은지 검사한다.

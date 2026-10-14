@@ -1,18 +1,19 @@
 <?php
 
-// The conformance checks of the php package (docs/plans/fsm-v1.md, C-4). ConformanceTest.php, generated from the core oracle,
-// holds one PHPUnit test test_<feature>__<id> per vector case and calls conformance() with its machine and case: it calls the
-// generated functions and cases of the machine module and asserts the expected value or the error code. The persist cases run the B-4 example (examples/persist.php) on the dialect
-// of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1.md, C-6) and assert the stored state after the run. The names follow
-// docs/spec/fsm.md, B-6: a key is a case by its pascal notation.
+// The conformance checks of the php package (docs/plans/fsm-v1.md, C-4). ConformanceTest.php, generated from the core
+// oracle, runs its one test testConformance on every vector case, a data set named <feature>__<id>, and calls
+// conformance() with its machine and case: it calls the generated functions and cases of the machine module and asserts
+// the expected value or the error code. The persist cases run the B-4 example (examples/persist.php) on the dialect of
+// FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1.md, C-6) and assert the stored state after the run. The names
+// follow docs/spec/fsm.md, B-6: a key is a case by its pascal notation.
 //
-// The file uses the public API of the generated code only: the namespace of each machine and its functions and cases, the Error
-// class of the shared namespace, and the functions of the persist example. It names no path, so the package and the php
-// extension run the same file.
+// The file uses the public API of the generated code only: the namespace of each machine and its functions and cases,
+// the Error class of the shared namespace, and the functions of the persist example. It names no path, so the package
+// and the php extension run the same file.
 //
-// The file declares no strict_types, on purpose: its calls are in coercive mode, the mode of a caller that does not declare it. The
-// cases with an input of another type (input_type, docs/spec/fsm.md, B-6) are refused in this mode, where a coercion would give a
-// state, so the mode is the one that the fix is for.
+// The file declares no strict_types, on purpose: its calls are in coercive mode, the mode of a caller that does not
+// declare it. The cases with an input of another type (input_type, docs/spec/fsm.md, B-6) are refused in this mode,
+// where a coercion would give a state, so the mode is the one that the fix is for.
 
 namespace Polyspec\FsmTest\Tests;
 
@@ -22,10 +23,15 @@ use Polyspec\FsmTest\Fsm\Error;
 
 abstract class ConformanceCase extends TestCase
 {
-    /** The namespace of the generated code: one module per machine, <ns>\<Pascal machine key> (docs/spec/fsm.md, B-6). */
+    /**
+     * The namespace of the generated code: one module per machine, <ns>\<Pascal machine key> (docs/spec/fsm.md, B-6).
+     */
     private const ROOT = 'Polyspec\\FsmTest';
 
-    /** Runs the vector case $case of the machine $machine: the persist example for a persist case, else the check of its feature. */
+    /**
+     * Runs the vector case $case of the machine $machine: the persist example for a persist case, else the check of its
+     * feature.
+     */
     protected function conformance(string $machine, array $case): void
     {
         $module = self::ROOT . '\\' . self::pascal($machine);
@@ -55,7 +61,10 @@ abstract class ConformanceCase extends TestCase
         return $callable(...$arguments);
     }
 
-    /** Asserts that $call throws the fsm Error with the code and the fields of $expect (null where the field does not apply). */
+    /**
+     * Asserts that $call throws the fsm Error with the code and the fields of $expect (null where the field does not
+     * apply).
+     */
     private static function assertError(array $expect, \Closure $call): void
     {
         try {
@@ -78,7 +87,8 @@ abstract class ConformanceCase extends TestCase
                 self::assertSame(self::caseOf($module, 'State', $c['expect']['state']), self::call($module, 'initial'));
                 return;
             case 'code':
-                self::assertSame($c['expect'], self::call($module, 'code', self::caseOf($module, 'State', $c['state'])));
+                $state = self::caseOf($module, 'State', $c['state']);
+                self::assertSame($c['expect'], self::call($module, 'code', $state));
                 return;
             case 'key':
                 self::assertSame($c['expect'], self::call($module, 'key', self::call($module, 'fromCode', $c['code'])));
@@ -87,16 +97,19 @@ abstract class ConformanceCase extends TestCase
                 if (array_key_exists('error', $c['expect'])) {
                     self::assertError($c['expect'], fn() => self::call($module, 'fromCode', $c['input']));
                 } else {
-                    self::assertSame(self::caseOf($module, 'State', $c['expect']['state']), self::call($module, 'fromCode', $c['input']));
+                    $state = self::caseOf($module, 'State', $c['expect']['state']);
+                    self::assertSame($state, self::call($module, 'fromCode', $c['input']));
                 }
                 return;
             case 'is_final':
-                self::assertSame($c['expect'], self::call($module, 'isFinal', self::caseOf($module, 'State', $c['state'])));
+                $state = self::caseOf($module, 'State', $c['state']);
+                self::assertSame($c['expect'], self::call($module, 'isFinal', $state));
                 return;
             case 'events_from':
+                $events = self::call($module, 'eventsFrom', self::caseOf($module, 'State', $c['state']));
                 self::assertSame(
                     array_map(static fn(string $key): string => self::pascal($key), $c['expect']),
-                    array_map(static fn(\UnitEnum $event): string => $event->name, self::call($module, 'eventsFrom', self::caseOf($module, 'State', $c['state']))),
+                    array_map(static fn(\UnitEnum $event): string => $event->name, $events),
                 );
                 return;
             case 'target':
@@ -105,7 +118,8 @@ abstract class ConformanceCase extends TestCase
                 if (array_key_exists('error', $c['expect'])) {
                     self::assertError($c['expect'], fn() => self::call($module, 'target', $expected, $event));
                 } else {
-                    self::assertSame(self::caseOf($module, 'State', $c['expect']['state']), self::call($module, 'target', $expected, $event));
+                    $state = self::caseOf($module, 'State', $c['expect']['state']);
+                    self::assertSame($state, self::call($module, 'target', $expected, $event));
                 }
                 return;
             case 'apply':
@@ -126,9 +140,9 @@ abstract class ConformanceCase extends TestCase
     }
 
     /**
-     * The DSN and the name of the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6): sqlite, the default, is a new
-     * file of $directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A missing DSN fails the
-     * case, so no dialect is skipped.
+     * The DSN and the name of the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6): sqlite, the default,
+     * is a new file of $directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A
+     * missing DSN fails the case, so no dialect is skipped.
      *
      * @return array{string, string}
      */
@@ -153,8 +167,8 @@ abstract class ConformanceCase extends TestCase
     }
 
     /**
-     * Opens the database of one persist case on the dialect of persistDsn. The rows of the persist table are cleared, so a case
-     * reads only the row it seeds.
+     * Opens the database of one persist case on the dialect of persistDsn. The rows of the persist table are cleared,
+     * so a case reads only the row it seeds.
      */
     protected static function openPersistDatabase(string $directory): \Polyspec\Orm\Db
     {

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: dc5dbff8967a33c1854b8ca08b95e0af3674bdb208ba2c75811103834bac8426 -->
+<!-- source-sha256: 098b7c3715a19c189cc3905540461cadcd774917c4627081598347f175201942 -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -106,7 +106,7 @@ vector는 기계의 모든 연산의 기대 결과다. core가 정의와 lock으
 - case id는 `<machine>_<suffix>`이며, suffix의 모든 key는 선언 위치로 바뀐다. 상태는 `s<i>`, event는 `e<j>`(둘 다 0부터), reserved code는
   `r<code>`다. 그래서 `order_apply_s0_e0_s0`는 첫 상태(`draft`)에서 첫 event(`next`)를 적용하고 저장된 상태도 첫 상태일 때의 `apply`다.
   이름이 무엇이든 id는 겹치지 않는다.
-- case 이름은 case의 `name`인 `<feature>__<id>`다(php와 python은 method `test_<feature>__<id>`).
+- case 이름은 case의 `name`인 `<feature>__<id>`다(php는 method `testConformance`의 data set `<feature>__<id>`, python은 method `test_<feature>__<id>`).
 - `order` 예제는 89개 case다(`contracts/conformance/vectors.json` 안에 있으며, `fsm-gen vectors --out`이 쓴다). feature별 개수는 `initial` 1, `code` 5,
   `key` 5, `from_code` 7, `is_final` 5, `events_from` 5, `target` 15, `apply` 43, `persist` 3이다.
 
