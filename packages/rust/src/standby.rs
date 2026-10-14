@@ -71,9 +71,7 @@ fn invalid_transition(expected: State, event: Event) -> Error {
 
 /// The state that an event leads to from the expected state; E_INVALID_TRANSITION when the event has no edge from it.
 pub fn target(expected: State, event: Event) -> Result<State, Error> {
-    match (expected, event) {
-        _ => Err(invalid_transition(expected, event)),
-    }
+    Err(invalid_transition(expected, event))
 }
 
 /// Applies an event that the observed state expected leads to, when the stored state is actual (docs/spec/fsm.md, B-4).
