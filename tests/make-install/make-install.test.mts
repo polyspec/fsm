@@ -23,8 +23,9 @@ const LOCKS = [
   'packages/php/composer.json',
   'packages/php-ext/composer.lock',
   'packages/php-ext/composer.json',
-  // The zips of the Composer artifact repositories (S-44-8): both Composer packages are keyed on their pins too.
-  'config/composer-artifacts.txt',
+  // The release zips of the Composer artifact repository (S-44-8, S-44-8-1): both Composer packages are keyed on their pins
+  // in config/release-assets.json too.
+  'config/release-assets.json',
   'packages/python/pylock.toml',
   'packages/python/pyproject.toml',
   'packages/go/go.sum',
@@ -153,6 +154,19 @@ test('the composer vendor is keyed on composer.json too: its autoload is not in 
     assert.equal(lineIndex(dryRun(dir, `test-${kind}`), INSTALL[kind]), -1, `an installed ${kind} vendor installs again`);
     utimesSync(path.join(dir, `packages/${kind}/composer.json`), now + 60, now + 60);
     assert.ok(lineIndex(dryRun(dir, `test-${kind}`), INSTALL[kind]) >= 0, `a newer composer.json of ${kind} does not install its vendor again`);
+  }
+});
+
+test('the Composer packages fetch the release zips of config/release-assets.json before composer install (S-44-8-1)', (t) => {
+  for (const kind of ['php', 'php-ext']) {
+    const dir = sandbox(t, { installed: true });
+    const now = Date.now() / 1000;
+    utimesSync(path.join(dir, 'config/release-assets.json'), now + 60, now + 60);
+    const out = dryRun(dir, `test-${kind}`);
+    const fetch = lineIndex(out, /release-assets\.mjs fetch/);
+    const install = lineIndex(out, /composer install/);
+    assert.ok(lineIndex(out, INSTALL[kind]) >= 0, `a newer config/release-assets.json does not install the ${kind} vendor again:\n${out}`);
+    assert.ok(fetch >= 0 && fetch < install, `no make release-assets-fetch before the composer install of ${kind}:\n${out}`);
   }
 });
 

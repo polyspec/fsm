@@ -9,8 +9,6 @@
 /docs/.vitepress/dist/
 /docs/.vitepress/cache/
 /packages/*/vendor/
-# The release zips of the Composer artifact repository of each Composer package (Makefile, composer_artifacts).
-/packages/*/artifacts/
 /packages/*/target/
 /packages/python/**/__pycache__/
 /packages/python/.venv/

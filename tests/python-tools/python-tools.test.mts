@@ -28,7 +28,7 @@ const LOCKS = [
   'packages/php/composer.json',
   'packages/php-ext/composer.lock',
   'packages/php-ext/composer.json',
-  'config/composer-artifacts.txt',
+  'config/release-assets.json',
   'packages/python/pylock.toml',
   'packages/python/pyproject.toml',
   'packages/go/go.sum',

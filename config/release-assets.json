@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "comment": "The release zips of the PHP packages of orm and ordered-json, which publish to no registry: make release-assets-fetch downloads them into var/composer-artifacts, the Composer artifact repository of packages/php and packages/php-ext.",
+  "assets": [
+    {
+      "name": "orm",
+      "version": "0.0.14",
+      "url": "https://github.com/polyspec/orm/releases/download/v{version}/polyspec-orm-php-{version}.zip",
+      "sha256": "01506a06a883d1f58fa7c977aff76d1802e0558b5ea1627ce900756c911961d3",
+      "directory": "var/composer-artifacts"
+    },
+    {
+      "name": "ordered-json",
+      "version": "0.0.8",
+      "url": "https://github.com/polyspec/ordered-json/releases/download/v{version}/polyspec-ordered-json-php-{version}.zip",
+      "sha256": "a2874f46f681e66f6dd275cf905e38f65be7b9902b278083ddcd11e7b0923baf",
+      "directory": "var/composer-artifacts"
+    }
+  ]
+}

@@ -14,10 +14,11 @@ NAMESPACE := Polyspec\FsmTest
 
 .PHONY: install gen test
 
-# install downloads the release zips of orm and ordered-json into artifacts/, the artifact repository of composer.json, with
-# the composer-artifacts target of the root, then installs the dependencies of composer.lock; gen and test need them.
+# install downloads the release zips of orm and ordered-json into var/composer-artifacts of the root, the artifact repository
+# of composer.json, with make release-assets-fetch of kit, then installs the dependencies of composer.lock; gen and test
+# need them.
 install:
-	$(MAKE) -C $(ROOT) composer-artifacts DIR=packages/php/artifacts
+	$(MAKE) -C $(ROOT) release-assets-fetch
 	composer install --no-interaction --no-progress
 
 gen:
