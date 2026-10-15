@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6d5724dfa62b7270b31ddd7e3320f9af3140ea72bfdcd7742bd47a06e06f38e2 -->
+<!-- source-sha256: b16cd4368b793e8da85a19dcb7dc3f7cb38f913830fe97351c2e79e8377dbcb3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-19: 공유 도구가 kit 0.0.51이다. `make toolchain-lock`은 machine의 node로 시작하고, `config/knip-entries.json`은 script와 test가 실행하는 go, make, php를 선언한다.
 - S-44-15: `make lint-ts`가 통과하고 `make check`가 이를 실행한다. `config/knip-entries.json`은 packages/db, packages/gui, packages/js, docs를 knip workspace로 선언한다.
 - S-44-17: 공유 도구가 kit 0.0.45다. 그 knip은 고정된 runtime의 binary를 무시하고, `config/knip-entries.json`이 workspace로 선언한 중첩 npm project를 읽는다.
 - S-44-15: 모든 kind에서 orm이 v0.0.15다(npm과 fsm-db tarball, go module, rapidyaml과 ruamel.yaml을 쓰는 python wheel, cargo tag, purrphp/yaml을 쓰는 Composer zip). 그 생성된 TypeScript model은 쓰는 것만 import하고, 생성된 Rust model에는 allow attribute가 없다. Go import는 `github.com/polyspec/orm/packages/go/...`를 읽고, `config/knip-entries.json`은 orm이 설계상 MANIFEST_TEXT와 MANIFEST_HASH를 export하는 생성된 models.ts를 선언한다.
