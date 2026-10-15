@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: 6b6082adbd4b2a98bf009bc0ebb4015ff551940ef6a76db809088285ab137df0 -->
+<!-- source-sha256: ed3ebb9c07823441216ef8fc21e0e17f277c47470bb96123c356e74eb9b0c318 -->
 # fsm GUI
 
 [English](README.md).
@@ -23,7 +23,7 @@ make gui-build                      # installs the GUI's packages and builds bui
 npm install -g ./packages/gui   # puts the command fsm-gui on the PATH, linked to this clone
 ```
 
-`make gui-build`는 고정된 패키지(hyper v0.0.13, crudui v0.0.5, template v0.0.5, mermaid 12.2.0)를 받으려고 한 번 네트워크가
+`make gui-build`는 고정된 패키지(hyper v0.0.16, crudui v0.0.5, template v0.0.6, mermaid 12.2.0)를 받으려고 한 번 네트워크가
 필요하다. 서버는 `mise.toml`의 Node.js 26.12.0으로 실행한다. store가 database인 프로젝트는 `packages/db`의 orm 패키지도
 설치해야 한다: `make db-deps`(`make gui-build`가 먼저 실행한다).
 
@@ -157,5 +157,5 @@ json과 mermaid 프로젝트는 저장 뒤 `check`를 통과한다.
 | `scripts/manual-check.mjs` | GUI 수동 확인(`docs/verification/gui.md`)의 driver: 실행 중인 서버를 Chromium으로 밟고 녹화한다 |
 | `tests/browser/` | form의 브라우저 테스트(`make gui-browser-test`) |
 
-의존성 버전은 `package.json`과 `package-lock.json`에 고정하며 `config/dependency-policy.json`에 기록한다: hyper v0.0.13, crudui
-v0.0.5, template v0.0.5, mermaid. `@polyspec/*` 패키지 중 이들이 의존하는 것은 `overrides`에 같은 release URL을 준다.
+의존성 버전은 `package.json`과 `package-lock.json`에 고정하며 `config/dependency-policy.json`에 기록한다: hyper v0.0.16, crudui
+v0.0.5, template v0.0.6, mermaid. `@polyspec/*` 패키지 중 이들이 의존하는 것은 `overrides`에 같은 release URL을 준다.
