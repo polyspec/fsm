@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-20: `.php-version` declares PHP 8.5, the minor of `config/toolchain.json`, and every setup-php step of the workflows reads it.
 - S-44-19: the shared tools are kit 0.0.51: `make toolchain-lock` starts with the node of the machine, and `config/knip-entries.json` declares the go, make and php that the scripts and tests run.
 - S-44-15: `make lint-ts` passes and `make check` runs it: `config/knip-entries.json` declares packages/db, packages/gui, packages/js and docs as knip workspaces.
 - S-44-17: the shared tools are kit 0.0.45, whose knip ignores the binaries of the pinned runtimes and reads the nested npm projects that `config/knip-entries.json` declares as workspaces.
