@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { put, tree } from '../support/tree.mts';
 
@@ -36,7 +36,7 @@ const LOCKS = [
 ];
 
 /** A copy of the Makefile and of the files that it reads, without any installed dependency. */
-function sandbox(t) {
+function sandbox(t: TestContext): string {
   const dir = tree(t, {});
   for (const file of ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json']) {
     mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
@@ -60,19 +60,19 @@ function cleanEnv() {
 }
 
 /** The result of `make -n <goal>` in dir, with no inherited make flags. */
-function dryRun(dir, goal) {
+function dryRun(dir: string, goal: string) {
   return spawnSync('make', ['-n', goal], { cwd: dir, encoding: 'utf8', env: cleanEnv() });
 }
 
 /** The output of `make -n <goal>`, which must succeed. */
-function printed(dir, goal) {
+function printed(dir: string, goal: string): string {
   const result = dryRun(dir, goal);
   assert.equal(result.status, 0, `make -n ${goal} failed:\n${result.stdout}${result.stderr}`);
   return result.stdout;
 }
 
 /** The index of the first line of `output` that matches `pattern`, or -1. */
-function lineIndex(output, pattern) {
+function lineIndex(output: string, pattern: RegExp): number {
   return output.split('\n').findIndex(line => pattern.test(line));
 }
 
@@ -142,6 +142,6 @@ test('test-python runs the runner with --venv and no PATH entry for the venv', (
 });
 
 /** The Makefile text of the package directory relative to the checkout root. */
-function makefileOf(relative) {
+function makefileOf(relative: string): string {
   return readFileSync(path.join(ROOT, relative, 'Makefile'), 'utf8');
 }

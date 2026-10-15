@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 
@@ -19,8 +19,8 @@ const TIMEOUT_MS = 300_000;
 const SKIPPED = new Set(['.git', 'node_modules', 'var', 'vendor', 'target', '.vitepress']);
 
 /** The Markdown files below `base`, as posix paths relative to it, skipping the directories that hold no document. */
-function markdownFiles(base, relative = '') {
-  const found = [];
+function markdownFiles(base: string, relative = ''): string[] {
+  const found: string[] = [];
   for (const entry of readdirSync(path.join(base, relative), { withFileTypes: true })) {
     const rel = relative ? `${relative}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
@@ -34,12 +34,12 @@ function markdownFiles(base, relative = '') {
 // that names a circular chunk or dependency. A build with any such line fails the test (S-20-1): the warning is a defect of the
 // configuration, not output to accept.
 const WARNING = /^(?:\(!\)|warn\b|warning\b)|Circular (?:chunk|dependency)/i;
-export function warningLines(output) {
+export function warningLines(output: string): string[] {
   return stripVTControlCharacters(output).split('\n').filter(line => WARNING.test(line.trim()));
 }
 
 /** Runs the VitePress build of the site whose docs directory is `docs`, without VITEPRESS_BASE. */
-function build(docs) {
+function build(docs: string) {
   const env = { ...process.env };
   delete env.VITEPRESS_BASE;
   return spawnSync(process.execPath, [VITEPRESS, 'build', docs], { cwd: path.dirname(docs), encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 });
@@ -49,14 +49,18 @@ function build(docs) {
 const IMAGE = /!\[[^\]]*\]\(([^)\s]+)\)/g;
 
 /** The repository paths of the local images that the Markdown file `rel` shows. */
-function imagesOf(rel) {
+function imagesOf(rel: string): string[] {
   const text = readFileSync(path.join(REPO, rel), 'utf8');
-  return [...text.matchAll(IMAGE)].map(match => match[1]).filter(target => !/^[a-z]+:/i.test(target))
+  return [...text.matchAll(IMAGE)].map(match => {
+    const target = match[1];
+    if (target === undefined) throw new Error(`the image pattern matched ${match[0]} in ${rel} without its target`);
+    return target;
+  }).filter(target => !/^[a-z]+:/i.test(target))
     .map(target => path.posix.join(path.posix.dirname(rel), target));
 }
 
 /** A copy of the repository documents, their images and the site configuration in a temporary directory, with its own docs/. */
-function mirror(t) {
+function mirror(t: TestContext): string {
   const root = mkdtempSync(path.join(tmpdir(), 'fsm-docs-build-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const documents = markdownFiles(REPO);

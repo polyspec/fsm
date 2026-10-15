@@ -1,4 +1,5 @@
-# The tools of every run are the releases that the tracked declaration files name: Node.js in .node-version. Each language
+# The tools of every run are the releases that the tracked declaration files name: Node.js in mise.toml, which the bootstrap
+# installs into var/tools and recipes start by $(NODE) of kit.mk (kit K171). Each language
 # package item adds the declaration of its toolchain (config/toolchain.json).
 export PATH := $(CURDIR)/var/tools/bin:$(PATH)
 
@@ -81,14 +82,14 @@ $(RUST_DEP): packages/rust/Cargo.lock
 	touch $@
 
 $(DB_DEP): packages/db/package-lock.json
-	cd packages/db && $(ONLINE) npm ci --allow-remote=root --no-audit --no-fund
+	cd packages/db && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
 
 # The GUI installs after the db packages, because its tests run the db store (order only: a db install does not reinstall the GUI).
 $(GUI_DEP): packages/gui/package-lock.json | $(DB_DEP)
-	cd packages/gui && $(ONLINE) npm ci --allow-remote=root --no-audit --no-fund
+	cd packages/gui && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
 
 $(DOCS_DEP): docs/package-lock.json
-	cd docs && $(ONLINE) npm ci --allow-remote=root --no-audit --no-fund
+	cd docs && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
 
 # install is for a fresh clone and for CI, which runs `make install` once and then `make check`. It installs the toolchains of
 # install-tools into var/tools and every package dependency above; a later run downloads nothing.
@@ -97,14 +98,14 @@ install: install-tools $(PACKAGE_DEPS)
 # check runs the full suite once per committed tree, when no item of docs/plans/execution-checklist.md is [~] (kit's
 # full-run); it records its result in var/full-run.json.
 check:
-	node $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)
+	$(NODE) $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)
 
 # commit-msg-check is the check of the commit-msg hook (.githooks/commit-msg): kit's commit check on the message being committed,
 # whose file git passes to the hook as MESSAGE.
 .PHONY: commit-msg-check
 commit-msg-check:
 	@test -n "$(MESSAGE)" || { echo "commit-msg-check: MESSAGE is required: the message file that git passes to the commit-msg hook"; exit 2; }
-	node $(KIT)/check-commits.$(KIT_EXT) --message $(MESSAGE)
+	$(NODE) $(KIT)/check-commits.$(KIT_EXT) --message $(MESSAGE)
 
 # make-install-test runs the tests of the package dependencies (tests/make-install): a target that needs a dependency installs it
 # first, and a present dependency is not installed again (docs/plans/execution-checklist.md, S-29).
@@ -115,7 +116,7 @@ make-install-test:
 # the check job runs make install and make check with the services of plan C-6, and each version comes from the file that
 # declares it (docs/plans/fsm-v1.md, C-10; docs/plans/execution-checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
-	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs .node-version --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1.md --inputs tests/workflows -- tests/workflows/workflows.test.mts
+	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs mise.toml --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1.md --inputs tests/workflows -- tests/workflows/workflows.test.mts
 
 # name-test runs the tests of scripts/check-name.mts; name-check fails while a tracked file or path names the library by its old
 # outside the allowlist of the checker (docs/plans/execution-checklist.md, S-18; the library is named fsm).
@@ -123,7 +124,7 @@ name-test:
 	$(RUN_TESTS) node --results .results/name-test.json --inputs scripts/check-name.mts --inputs tests/check-name -- tests/check-name
 
 name-check:
-	node scripts/check-name.mts
+	$(NODE) scripts/check-name.mts
 
 # readme-test runs the tests of scripts/check-readmes.mts; readme-check requires every declared README pair to have its required
 # sections and a Korean twin with the same headings (docs/plans/fsm-v1.md, C-9; docs/plans/execution-checklist.md, S-19).
@@ -131,7 +132,7 @@ readme-test:
 	$(RUN_TESTS) node --results .results/readme-test.json --inputs scripts/check-readmes.mts --inputs tests/check-readmes -- tests/check-readmes
 
 readme-check:
-	node scripts/check-readmes.mts
+	$(NODE) scripts/check-readmes.mts
 
 # docs-deps installs the packages of the documentation site: the exact vitepress release of docs/package.json, locked in
 # docs/package-lock.json (docs/plans/fsm-v1.md, C-8).
@@ -140,7 +141,7 @@ docs-deps: $(DOCS_DEP)
 # docs-build builds the documentation site from the repository documents in place, into docs/.vitepress/dist; a dead link fails
 # the build (docs/.vitepress/config.mts, docs/plans/fsm-v1.md, C-8).
 docs-build: $(DOCS_DEP)
-	node docs/node_modules/vitepress/bin/vitepress.js build docs
+	$(NODE) docs/node_modules/vitepress/bin/vitepress.js build docs
 
 # docs-build-test runs the tests of the site: a dead link fails the build, and the real build produces its pages and the GitHub
 # rewrite of a link to a repository file (tests/docs-build, docs/plans/fsm-v1.md, C-8). Its record names the inputs it reads.
@@ -158,7 +159,7 @@ gen-check-test:
 	$(RUN_TESTS) node --results .results/gen-check-test.json --inputs scripts/gen-check.mts --inputs tests/gen-check -- tests/gen-check
 
 gen-check: $(NPM_DEP) $(GO_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP)
-	node scripts/gen-check.mts
+	$(NODE) scripts/gen-check.mts
 
 # db-test-postgres and db-test-mysql run the DB store tests on the server dialects that the documents name (docs/plans/fsm-v1.md, C-6):
 # db-store.test.mjs and store-contract-all.test.mjs, which open the database of FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN through the dialect

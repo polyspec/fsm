@@ -31,8 +31,41 @@ const VECTORS = 'contracts/conformance/vectors.json';
 const PROJECT = 'contracts';
 const CLI = 'packages/compiler/src/cli/fsm-gen.mjs';
 
-const finding = (rule, file, message) => ({ rule, path: file, message });
-const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
+/** One difference or failure: its rule, the path that it names and its message. */
+export interface Finding { rule: string; path: string; message: string }
+/** A kind of config/parity.json: its name and the roots of its implementation, the first of which is its package. */
+interface Implementation { name: string; roots: string[] }
+
+const finding = (rule: string, file: string, message: string): Finding => ({ rule, path: file, message });
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+const isStrings = (value: unknown): value is string[] => Array.isArray(value) && value.every(item => typeof item === 'string');
+
+/** The JSON object of `file`; throws when the file holds another value. */
+function readObject(file: string): Record<string, unknown> {
+  const value: unknown = JSON.parse(readFileSync(file, 'utf8'));
+  if (!isRecord(value)) throw new Error(`${file} must hold a JSON object`);
+  return value;
+}
+
+/** The implementations of config/parity.json, each with its name and roots; throws for another shape. */
+function readImplementations(file: string): Implementation[] {
+  const { implementations } = readObject(file);
+  if (!Array.isArray(implementations)) throw new Error(`${file}: implementations must be a list`);
+  return implementations.map((entry: unknown, index) => {
+    if (!isRecord(entry) || typeof entry.name !== 'string' || !isStrings(entry.roots)) {
+      throw new Error(`${file}: implementations[${index}] must have a string name and a list of string roots`);
+    }
+    return { name: entry.name, roots: entry.roots };
+  });
+}
+
+/** The generated globs of config/gen-check.json by kind name; a value that is no list stays as it is, a finding of the caller. */
+function readGenerated(file: string): Record<string, unknown> {
+  const { generated } = readObject(file);
+  if (!isRecord(generated)) throw new Error(`${file}: generated must be an object`);
+  return generated;
+}
 
 /** The files below `dir` as paths relative to it with `/` separators; none when the directory does not exist. */
 function filesUnder(dir: string, prefix = ''): string[] {
@@ -45,7 +78,7 @@ function filesUnder(dir: string, prefix = ''): string[] {
 }
 
 /** Runs the generators into a fresh var/gen-check; the findings of the first one that fails, or none. */
-function generate(root, packages) {
+function generate(root: string, packages: Map<string, string>): Finding[] {
   rmSync(path.join(root, OUT), { recursive: true, force: true });
   const out = path.join(root, OUT, VECTORS);
   const vectors = spawnSync(process.execPath, [path.join(root, CLI), 'vectors', '--project', path.join(root, PROJECT), '--out', out], { encoding: 'utf8' });
@@ -62,17 +95,23 @@ function generate(root, packages) {
 const byCodeUnits = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 /** The findings of one compared area: `base` is the directory of the tree, `dir` the generated directory, `select` the files. */
+/** The value of a map entry that the caller knows to be there; throws with the path that it expected. */
+function present(value: string | undefined, file: string): string {
+  if (value === undefined) throw new Error(`no file for ${file}`);
+  return value;
+}
+
 function compareArea(root: string, { base, dir, select }: { base: string; dir: string; select: (rel: string) => boolean }) {
   const tree = new Map<string, string>(trackedFiles(root)
     .filter(file => file.startsWith(`${base}/`) && select(file.slice(base.length + 1)))
     .map(file => [file.slice(base.length + 1), path.join(root, file)]));
   const generated = new Map<string, string>(filesUnder(dir).filter(select).map(rel => [rel, path.join(dir, rel)]));
-  const found = [];
+  const found: Finding[] = [];
   for (const rel of [...new Set([...tree.keys(), ...generated.keys()])].sort(byCodeUnits)) {
     const file = `${base}/${rel}`;
     if (!generated.has(rel)) found.push(finding('extra', file, 'is in the working tree, but the generator does not write it'));
     else if (!tree.has(rel)) found.push(finding('missing', file, 'is written by the generator, but it is not in the working tree'));
-    else if (!readFileSync(tree.get(rel)).equals(readFileSync(generated.get(rel)))) {
+    else if (!readFileSync(present(tree.get(rel), file)).equals(readFileSync(present(generated.get(rel), file)))) {
       found.push(finding('differs', file, 'has other bytes than the generated file'));
     }
   }
@@ -80,12 +119,16 @@ function compareArea(root: string, { base, dir, select }: { base: string; dir: s
 }
 
 /** The findings of the checkout `root`: a kind without generated globs, globs of no kind, a generation failure, or every difference. */
-export function genCheckFindings(root) {
-  const implementations = readJson(path.join(root, PARITY)).implementations;
-  const kinds = implementations.map(implementation => implementation.name).sort();
+export function genCheckFindings(root: string): Finding[] {
+  const implementations = readImplementations(path.join(root, PARITY));
+  const kinds = implementations.map(implementation => implementation.name).sort(byCodeUnits);
   // The package of a kind is the first root of its implementation in config/parity.json.
-  const packages = new Map(kinds.map(kind => [kind, implementations.find(implementation => implementation.name === kind).roots[0]]));
-  const generated = readJson(path.join(root, GENERATED)).generated;
+  const packages = new Map<string, string>(implementations.map(({ name, roots }) => {
+    const [first] = roots;
+    if (first === undefined) throw new Error(`${PARITY}: the implementation ${name} has no root`);
+    return [name, first];
+  }));
+  const generated = readGenerated(path.join(root, GENERATED));
   const config = [
     ...kinds.filter(kind => !Array.isArray(generated[kind])).map(kind => finding('gen-config', GENERATED, `the kind ${kind} of ${PARITY} has no generated globs; name the files its generator writes`)),
     ...Object.keys(generated).filter(name => !kinds.includes(name)).map(name => finding('gen-config', GENERATED, `${name} is no kind of ${PARITY}`)),
@@ -93,9 +136,13 @@ export function genCheckFindings(root) {
   if (config.length > 0) return config;
   const failed = generate(root, packages);
   if (failed.length > 0) return failed;
-  const areas = [{ base: path.posix.dirname(VECTORS), dir: path.join(root, OUT, path.posix.dirname(VECTORS)), select: rel => rel === path.posix.basename(VECTORS) }];
+  const areas: { base: string; dir: string; select: (rel: string) => boolean }[] = [
+    { base: path.posix.dirname(VECTORS), dir: path.join(root, OUT, path.posix.dirname(VECTORS)), select: (rel: string) => rel === path.posix.basename(VECTORS) },
+  ];
   for (const kind of kinds) {
-    areas.push({ base: packages.get(kind), dir: path.join(root, OUT, kind), select: picomatch(generated[kind], { dot: true }) });
+    const globs = generated[kind];
+    if (!isStrings(globs)) throw new Error(`${GENERATED}: the generated globs of ${kind} must be a list of strings`);
+    areas.push({ base: present(packages.get(kind), kind), dir: path.join(root, OUT, kind), select: picomatch(globs, { dot: true }) });
   }
   return areas.flatMap(area => compareArea(root, area));
 }

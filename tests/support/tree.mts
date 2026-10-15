@@ -4,9 +4,13 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import type { TestContext } from 'node:test';
+
+/** The files of a tree: the text of each path, or null to remove the file. */
+export type Files = Readonly<Record<string, string | null>>;
 
 /** A temporary Git repository holding `files` ({ path: text }), removed with `t.after`; automatic maintenance is off. */
-export function tree(t, files = {}) {
+export function tree(t: TestContext, files: Files = {}): string {
   const root = mkdtempSync(path.join(tmpdir(), 'fsm-tree-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   for (const args of [['init', '--quiet', root], ['-C', root, 'config', 'maintenance.auto', 'false'], ['-C', root, 'config', 'gc.auto', '0']]) {
@@ -18,7 +22,7 @@ export function tree(t, files = {}) {
 }
 
 /** Writes `files` ({ path: text, or null to remove }) below `root`. */
-export function put(root, files) {
+export function put(root: string, files: Files): void {
   for (const [file, text] of Object.entries(files)) {
     const target = path.join(root, file);
     if (text === null) { rmSync(target, { force: true }); continue; }

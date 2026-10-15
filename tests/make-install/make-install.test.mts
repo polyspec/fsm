@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, utimesSync } from 'node:fs';
 import path from 'node:path';
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { put, tree } from '../support/tree.mts';
 
@@ -51,17 +51,24 @@ const STAMPS = [
 ];
 
 // The install line that make prints for each dependency (its recipe as make -n shows it).
-const INSTALL = {
-  npm: /-C packages\/js install/,
-  db: /cd packages\/db && .*npm ci/,
-  gui: /cd packages\/gui && .*npm ci/,
-  docs: /cd docs && .*npm ci/,
-  php: /-C packages\/php install/,
-  'php-ext': /-C packages\/php-ext install/,
-  python: /-C packages\/python install/,
-  go: /-C packages\/go install/,
-  rust: /-C packages\/rust install/,
-};
+const INSTALL: ReadonlyMap<string, RegExp> = new Map([
+  ['npm', /-C packages\/js install/],
+  ['db', /cd packages\/db && .*npm ci/],
+  ['gui', /cd packages\/gui && .*npm ci/],
+  ['docs', /cd docs && .*npm ci/],
+  ['php', /-C packages\/php install/],
+  ['php-ext', /-C packages\/php-ext install/],
+  ['python', /-C packages\/python install/],
+  ['go', /-C packages\/go install/],
+  ['rust', /-C packages\/rust install/],
+]);
+
+/** The install line of the dependency `name`, which INSTALL must declare. */
+function installLine(name: string): RegExp {
+  const pattern = INSTALL.get(name);
+  if (pattern === undefined) throw new Error(`INSTALL declares no install line for the dependency ${name}`);
+  return pattern;
+}
 
 // The recipe line of each target that uses dependencies, and the dependencies it needs.
 const TARGETS = [
@@ -79,10 +86,10 @@ const TARGETS = [
   { target: 'docs-build-test', line: /docs-build-test\.json/, needs: ['docs'] },
 ];
 
-const ALL = Object.keys(INSTALL);
+const ALL = [...INSTALL.keys()];
 
 /** A copy of the Makefile and of the files it reads, with empty locks; `installed` adds the stamps, each newer than its lock. */
-function sandbox(t, { installed = false } = {}) {
+function sandbox(t: TestContext, { installed = false }: { installed?: boolean } = {}): string {
   const dir = tree(t, {});
   for (const file of ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json']) {
     mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
@@ -108,7 +115,7 @@ function sandbox(t, { installed = false } = {}) {
 }
 
 /** The output of `make -n <goal>` in dir, with no inherited make flags. Every recipe line is printed and no recipe runs. */
-function dryRun(dir, goal) {
+function dryRun(dir: string, goal: string): string {
   const env = { ...process.env };
   delete env.MAKEFLAGS;
   delete env.MAKELEVEL;
@@ -119,13 +126,20 @@ function dryRun(dir, goal) {
 }
 
 /** The index of the first line of `output` that matches `pattern`, or -1. */
-function lineIndex(output, pattern) {
+function lineIndex(output: string, pattern: RegExp): number {
   return output.split('\n').findIndex(line => pattern.test(line));
+}
+
+/** The targets of the full-run line of `make -n check`, which must print it. */
+function checkTargets(stdout: string): string[] {
+  const line = stdout.split('\n').find((candidate) => candidate.includes('full-run.mjs run'));
+  if (line === undefined) throw new Error(`make -n check printed no full-run line:\n${stdout}`);
+  return line.split(/\s+/);
 }
 
 test('npm-types installs the npm dependencies before its test', (t) => {
   const out = dryRun(sandbox(t), 'npm-types');
-  const install = lineIndex(out, INSTALL.npm);
+  const install = lineIndex(out, installLine('npm'));
   const run = lineIndex(out, /npm-types\.json/);
   assert.ok(install >= 0, `no install of the npm dependencies:\n${out}`);
   assert.ok(install < run, `the install comes after the test:\n${out}`);
@@ -135,7 +149,7 @@ test('gen-check installs the dependencies that generate the packages before it r
   const out = dryRun(sandbox(t), 'gen-check');
   const run = lineIndex(out, /scripts\/gen-check\.mts/);
   for (const kind of ['npm', 'go', 'php', 'php-ext', 'python']) {
-    const install = lineIndex(out, INSTALL[kind]);
+    const install = lineIndex(out, installLine(kind));
     assert.ok(install >= 0 && install < run, `no install of ${kind} before gen-check:\n${out}`);
   }
 });
@@ -143,7 +157,7 @@ test('gen-check installs the dependencies that generate the packages before it r
 test('packages-test installs the dependencies of every kind', (t) => {
   const out = dryRun(sandbox(t), 'packages-test');
   for (const kind of ['npm', 'go', 'php', 'php-ext', 'python', 'rust']) {
-    assert.ok(lineIndex(out, INSTALL[kind]) >= 0, `no install of ${kind} in packages-test:\n${out}`);
+    assert.ok(lineIndex(out, installLine(kind)) >= 0, `no install of ${kind} in packages-test:\n${out}`);
   }
 });
 
@@ -151,9 +165,9 @@ test('the composer vendor is keyed on composer.json too: its autoload is not in 
   for (const kind of ['php', 'php-ext']) {
     const dir = sandbox(t, { installed: true });
     const now = Date.now() / 1000;
-    assert.equal(lineIndex(dryRun(dir, `test-${kind}`), INSTALL[kind]), -1, `an installed ${kind} vendor installs again`);
+    assert.equal(lineIndex(dryRun(dir, `test-${kind}`), installLine(kind)), -1, `an installed ${kind} vendor installs again`);
     utimesSync(path.join(dir, `packages/${kind}/composer.json`), now + 60, now + 60);
-    assert.ok(lineIndex(dryRun(dir, `test-${kind}`), INSTALL[kind]) >= 0, `a newer composer.json of ${kind} does not install its vendor again`);
+    assert.ok(lineIndex(dryRun(dir, `test-${kind}`), installLine(kind)) >= 0, `a newer composer.json of ${kind} does not install its vendor again`);
   }
 });
 
@@ -165,7 +179,7 @@ test('the Composer packages fetch the release zips of config/release-assets.json
     const out = dryRun(dir, `test-${kind}`);
     const fetch = lineIndex(out, /release-assets\.mjs fetch/);
     const install = lineIndex(out, /composer install/);
-    assert.ok(lineIndex(out, INSTALL[kind]) >= 0, `a newer config/release-assets.json does not install the ${kind} vendor again:\n${out}`);
+    assert.ok(lineIndex(out, installLine(kind)) >= 0, `a newer config/release-assets.json does not install the ${kind} vendor again:\n${out}`);
     assert.ok(fetch >= 0 && fetch < install, `no make release-assets-fetch before the composer install of ${kind}:\n${out}`);
   }
 });
@@ -175,9 +189,9 @@ test('the python environment is keyed on pylock.toml: a newer lock installs it a
   const now = Date.now() / 1000;
   put(dir, { 'packages/python/pyproject.toml': '\n' });
   utimesSync(path.join(dir, 'packages/python/pyproject.toml'), now + 60, now + 60);
-  assert.equal(lineIndex(dryRun(dir, 'test-python'), INSTALL.python), -1, 'pyproject.toml alone reinstalls the python environment');
+  assert.equal(lineIndex(dryRun(dir, 'test-python'), installLine('python')), -1, 'pyproject.toml alone reinstalls the python environment');
   utimesSync(path.join(dir, 'packages/python/pylock.toml'), now + 120, now + 120);
-  assert.ok(lineIndex(dryRun(dir, 'test-python'), INSTALL.python) >= 0, 'a newer pylock.toml does not reinstall the python environment');
+  assert.ok(lineIndex(dryRun(dir, 'test-python'), installLine('python')) >= 0, 'a newer pylock.toml does not reinstall the python environment');
 });
 
 test('gui-browser-test downloads the browser once, then needs no network', (t) => {
@@ -194,13 +208,13 @@ test('the python environment is created with the Python 3.14 of install-tools', 
   const out = dryRun(sandbox(t), 'test-python');
   // install-tools takes no tool names: it installs every tool of mise.lock, the Python among them (kit K127).
   const interpreter = lineIndex(out, /install-tools\.mjs\s*$/);
-  const install = lineIndex(out, INSTALL.python);
+  const install = lineIndex(out, installLine('python'));
   assert.ok(interpreter >= 0 && interpreter < install, `no install-tools before the python install:\n${out}`);
 });
 
 test('install builds every dependency and the toolchains', (t) => {
   const out = dryRun(sandbox(t), 'install');
-  for (const name of ALL) assert.ok(lineIndex(out, INSTALL[name]) >= 0, `install does not install ${name}:\n${out}`);
+  for (const name of ALL) assert.ok(lineIndex(out, installLine(name)) >= 0, `install does not install ${name}:\n${out}`);
   assert.ok(lineIndex(out, /install-tools\.mjs/) >= 0, `install does not install the toolchains:\n${out}`);
 });
 
@@ -208,12 +222,12 @@ test('the targets with a dependency present run no install', (t) => {
   const dir = sandbox(t, { installed: true });
   for (const name of ALL) {
     const out = dryRun(dir, 'install');
-    assert.equal(lineIndex(out, INSTALL[name]), -1, `${name} is installed again:\n${out}`);
+    assert.equal(lineIndex(out, installLine(name)), -1, `${name} is installed again:\n${out}`);
   }
   for (const { target, line, needs } of TARGETS) {
     const out = dryRun(dir, target);
     assert.ok(lineIndex(out, line) >= 0, `${target} does not run its recipe:\n${out}`);
-    for (const name of needs) assert.equal(lineIndex(out, INSTALL[name]), -1, `${target} installs ${name} again:\n${out}`);
+    for (const name of needs) assert.equal(lineIndex(out, installLine(name)), -1, `${target} installs ${name} again:\n${out}`);
   }
 });
 
@@ -224,7 +238,7 @@ test('each target installs its dependencies before its recipe', (t) => {
     const run = lineIndex(out, line);
     assert.ok(run >= 0, `${target} does not run its recipe:\n${out}`);
     for (const name of needs) {
-      const install = lineIndex(out, INSTALL[name]);
+      const install = lineIndex(out, installLine(name));
       assert.ok(install >= 0 && install < run, `${target} does not install ${name} before its recipe:\n${out}`);
     }
   }
@@ -246,7 +260,7 @@ test('make -n check prints no make warning: no target of the repository replaces
 test('make check runs the parity check of kit (S-35-3, S-42-1)', () => {
   const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
-  const targets = result.stdout.split('\n').find((line) => line.includes('full-run.mjs run')).split(/\s+/);
+  const targets = checkTargets(result.stdout);
   for (const target of ['parity-declarations-check', 'parity-check']) assert.ok(targets.includes(target), `CHECK_TARGETS does not run ${target}`);
 });
 
@@ -255,6 +269,6 @@ test('make check runs the parity check of kit (S-35-3, S-42-1)', () => {
 test('make check runs make lint-ts (S-44-15)', () => {
   const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
-  const targets = result.stdout.split('\n').find((line) => line.includes('full-run.mjs run')).split(/\s+/);
+  const targets = checkTargets(result.stdout);
   assert.ok(targets.includes('lint-ts'), 'CHECK_TARGETS does not run lint-ts');
 });

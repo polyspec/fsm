@@ -73,7 +73,9 @@ function routeOf(file: string): string {
 /** The markdown-it rule: a link to a repository file or directory that is not a site page points to the public repository. */
 function repositoryLinks(md: MarkdownIt): void {
   md.core.ruler.push('fsm-repository-links', (state) => {
-    const from = (state.env as { relativePath?: string }).relativePath;
+    // markdown-it types the env of a rule as any; VitePress puts the relativePath of the rendered page in it.
+    const env: unknown = state.env;
+    const from = typeof env === 'object' && env !== null && 'relativePath' in env && typeof env.relativePath === 'string' ? env.relativePath : undefined;
     if (!from) return;
     for (const token of state.tokens) {
       for (const child of token.children ?? []) {

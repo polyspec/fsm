@@ -6,25 +6,47 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { README_PAIRS, readmeFindings } from '../../scripts/check-readmes.mts';
+import { README_PAIRS, type ReadmeFinding, type ReadmePair, readmeFindings } from '../../scripts/check-readmes.mts';
 import { tree } from '../support/tree.mts';
 
 const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../scripts/check-readmes.mts');
 
 /** The English text of a README with the required sections of its kind, each followed by a paragraph. */
-function english(pair, sections = pair.sections) {
+function english(pair: ReadmePair, sections: readonly string[] = pair.sections): string {
   return `# ${pair.en}\n\n${sections.map(section => `## ${section}\n\nText of ${section}.\n`).join('\n')}`;
 }
 
 /** A Korean twin with the same heading structure as the English text: the heading texts are replaced. */
-function korean(text) {
+function korean(text: string): string {
   let index = 0;
-  return text.replace(/^(#{1,6}) .+$/gm, (_, hashes) => `${hashes} 제목 ${index++}`);
+  return text.replace(/^(#{1,6}) .+$/gm, (_heading: string, hashes: string) => `${hashes} 제목 ${index++}`);
+}
+
+/** The README pair whose English file is `en`. */
+function pairOf(en: string): ReadmePair {
+  const pair = README_PAIRS.find(p => p.en === en);
+  if (pair === undefined) throw new Error(`no README pair declares ${en}`);
+  return pair;
+}
+
+/** The text of `file` in `files`. */
+function textOf(files: Record<string, string>, file: string): string {
+  const text = files[file];
+  if (text === undefined) throw new Error(`the files hold no ${file}`);
+  return text;
+}
+
+/** The only finding of `findings`. */
+function only(findings: ReadmeFinding[]): ReadmeFinding {
+  const [finding] = findings;
+  assert.equal(findings.length, 1, JSON.stringify(findings));
+  if (finding === undefined) throw new Error('there is no finding');
+  return finding;
 }
 
 /** Every declared pair, complete. Returns the files by path. */
-function complete() {
-  const files = {};
+function complete(): Record<string, string> {
+  const files: Record<string, string> = {};
   for (const pair of README_PAIRS) {
     const text = english(pair);
     files[pair.en] = text;
@@ -40,9 +62,9 @@ test('a checkout with every declared README complete has no finding', (t) => {
 
 test('a README without a required section is a finding that names the section', (t) => {
   const files = complete();
-  const pair = README_PAIRS.find(p => p.en === 'packages/gui/README.md');
+  const pair = pairOf('packages/gui/README.md');
   files[pair.en] = english(pair, pair.sections.filter(section => section !== 'Rules'));
-  files[pair.ko] = korean(files[pair.en]);
+  files[pair.ko] = korean(textOf(files, pair.en));
   const root = tree(t, files);
   assert.deepEqual(readmeFindings(root), [
     { file: 'packages/gui/README.md', message: 'missing section ## Rules' },
@@ -51,12 +73,11 @@ test('a README without a required section is a finding that names the section', 
 
 test('a Korean twin with a different number of headings is a finding', (t) => {
   const files = complete();
-  files['README.ko.md'] = `${files['README.ko.md']}\n### 추가\n`;
+  files['README.ko.md'] = `${textOf(files, 'README.ko.md')}\n### 추가\n`;
   const root = tree(t, files);
-  const findings = readmeFindings(root);
-  assert.equal(findings.length, 1, JSON.stringify(findings));
-  assert.equal(findings[0].file, 'README.ko.md');
-  assert.match(findings[0].message, /has 1 heading\(s\) of level 3, the English README has 0/);
+  const finding = only(readmeFindings(root));
+  assert.equal(finding.file, 'README.ko.md');
+  assert.match(finding.message, /has 1 heading\(s\) of level 3, the English README has 0/);
 });
 
 test('a missing Korean twin is a finding', (t) => {
@@ -79,10 +100,10 @@ test('a missing English README is a finding', (t) => {
 
 test('a heading inside a fenced code block is not a section', (t) => {
   const files = complete();
-  const pair = README_PAIRS.find(p => p.en === 'packages/js/README.md');
+  const pair = pairOf('packages/js/README.md');
   const sections = pair.sections.filter(section => section !== 'Errors');
   files[pair.en] = `${english(pair, sections)}\n\`\`\`sh\n## Errors\n\`\`\`\n`;
-  files[pair.ko] = korean(files[pair.en]);
+  files[pair.ko] = korean(textOf(files, pair.en));
   const root = tree(t, files);
   assert.deepEqual(readmeFindings(root), [
     { file: 'packages/js/README.md', message: 'missing section ## Errors' },

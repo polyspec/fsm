@@ -4,15 +4,15 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { nameFindings } from '../../scripts/check-name.mts';
-import { put, tree } from '../support/tree.mts';
+import { type Files, put, tree } from '../support/tree.mts';
 
 const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../scripts/check-name.mts');
 
 /** A checkout with `files` tracked (git add), and the findings of scripts/check-name.mts in it. */
-function check(t, files) {
+function check(t: TestContext, files: Files) {
   const root = tree(t, files);
   spawnSync('git', ['add', '-A'], { cwd: root });
   return { root, result: spawnSync(process.execPath, [SCRIPT, '--root', root], { encoding: 'utf8' }) };
