@@ -193,8 +193,8 @@ test('the node, go, php and rust versions come from the files that declare them'
   assert.equal(field(goMod, 'Go', 'go mod edit -json'), miseTool('go'), `the go directive of ${goRoot}/go.mod is the go of mise.toml`);
   assert.equal(field(goMod, 'Toolchain', 'go mod edit -json'), undefined, `${goRoot}/go.mod has no toolchain line (S-44-2)`);
 
-  assert.equal(PHP.length, 1, 'config/toolchain.json must declare one PHP minor for the check job');
-  assert.match(CHECK_JOB, new RegExp(`\\n {10}php-version: '${text(PHP[0], 'the PHP minor of config/toolchain.json').replace(/\./g, '\\.')}'\\n`));
+  // The PHP of the check job is that of .php-version, which the next test compares with config/toolchain.json (S-44-20).
+  assert.match(step(stepsOf(CHECK_JOB), 'shivammathur/setup-php'), /\n {10}php-version-file: \.php-version\n/);
   assert.match(CHECK_JOB, /\n {10}extensions: .*pdo_pgsql.*pdo_mysql|\n {10}extensions: .*pdo_mysql.*pdo_pgsql/);
 
   const rustChannel = /^channel = "(\d+\.\d+\.\d+)"$/m.exec(read('rust-toolchain.toml'))?.[1];
@@ -205,6 +205,22 @@ test('the node, go, php and rust versions come from the files that declare them'
   assert.ok(stepsOf(CHECK_JOB).some(entry => /\n\s+run: make install$/m.test(entry)), 'the check job runs no make install');
   assert.match(read('rust-toolchain.toml'), /^profile = "minimal"$/m);
   assert.match(read('rust-toolchain.toml'), /^components = \["clippy"\]$/m, 'rust-toolchain.toml names clippy, which kit\'s lint-rust runs');
+});
+
+// .php-version declares the PHP of the checkout for setup-php: the release workflow of kit sets up PHP only when the file
+// exists, and kit-check requires it of a repository that uses PHP (kit K193). Every setup-php step of fsm's own workflows
+// reads the same file, so the PHP of CI is one declaration that this test ties to config/toolchain.json (S-44-20).
+test('.php-version holds the PHP minor of config/toolchain.json, and every setup-php step of the workflows reads it', () => {
+  assert.equal(PHP.length, 1, 'config/toolchain.json must declare one PHP minor, the minimum that .php-version holds');
+  assert.equal(read('.php-version'), `${text(PHP[0], 'the PHP minor of config/toolchain.json')}\n`);
+  const setups = WORKFLOWS.flatMap(file => [...jobsOf(read(file))].flatMap(([name, body]) => stepsOf(body)
+    .filter(entry => entry.includes('shivammathur/setup-php'))
+    .map(entry => ({ where: `${file}, job ${name}`, entry }))));
+  assert.ok(setups.length > 0, 'no workflow of fsm sets up PHP');
+  for (const { where, entry } of setups) {
+    assert.match(entry, /\n {10}php-version-file: \.php-version\n/, `${where}: setup-php does not read .php-version`);
+    assert.doesNotMatch(entry, /\n {10}php-version: /, `${where}: setup-php names a PHP of its own`);
+  }
 });
 
 test('uv comes from mise.toml through make install, and the workflow installs no uv of its own (S-44-2, S-44-6)', () => {
