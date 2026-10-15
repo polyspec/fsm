@@ -15,8 +15,8 @@
     "gen": "orm-gen gen --set schema/dbspec-set.json --out src/models --scan src"
   },
   "dependencies": {
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.8/polyspec-ordered-json-npm-0.0.8.tgz",
-    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.15/polyspec-orm-npm-0.0.15.tgz"
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.9/polyspec-ordered-json-npm-0.0.9.tgz",
+    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.18/polyspec-orm-npm-0.0.18.tgz"
   },
   "overrides": {
     "@polyspec/ordered-json": "$@polyspec/ordered-json"

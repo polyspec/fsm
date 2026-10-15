@@ -11,7 +11,7 @@ description = "python consumer test bed of fsm: the generated state machines, th
 license = "MIT"
 requires-python = ">=3.14"
 dependencies = [
-    "polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.15/polyspec_orm-0.0.15-py3-none-any.whl",
+    "polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.18/polyspec_orm-0.0.18-py3-none-any.whl",
 ]
 
 [tool.setuptools]

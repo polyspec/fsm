@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: 9827f18f660695a9727eeb3160bfccb94f361f42367ba982c88d2153b72ca877 -->
+<!-- source-sha256: ce163addae75007cf44d63c48abd2b58b0aef1370ed3ed9cf7307f05bc8c3890 -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -17,8 +17,8 @@ fsm의 DB store와 그 명령줄 `fsm-db`다. fsm 프로젝트는 정의와 lock
 
 ## 준비
 
-1. 저장소 루트에서 `make db-deps`로 패키지를 설치한다. release tarball에서 `@polyspec/orm` v0.0.15와
-   `@polyspec/ordered-json` v0.0.8을 설치하며, 버전은 `package-lock.json`에 고정되어 있다.
+1. 저장소 루트에서 `make db-deps`로 패키지를 설치한다. release tarball에서 `@polyspec/orm` v0.0.18과
+   `@polyspec/ordered-json` v0.0.9를 설치하며, 버전은 `package-lock.json`에 고정되어 있다.
 2. 프로젝트 루트에 `fsm.config.json`을 만든다. database에 쓸 수 있는 형식은 이것뿐이다:
 
    ```json

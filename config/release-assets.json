@@ -4,16 +4,16 @@
   "assets": [
     {
       "name": "orm",
-      "version": "0.0.15",
+      "version": "0.0.18",
       "url": "https://github.com/polyspec/orm/releases/download/v{version}/polyspec-orm-php-{version}.zip",
-      "sha256": "334a2384411a84568f3fe5f23f410babbeba86735f4ed630ef60b88863546158",
+      "sha256": "c21a922184085c199607e077d6359c5f70b6fd87c5d3f3ee51f12fd0218e1e58",
       "directory": "var/composer-artifacts"
     },
     {
       "name": "ordered-json",
-      "version": "0.0.8",
+      "version": "0.0.9",
       "url": "https://github.com/polyspec/ordered-json/releases/download/v{version}/polyspec-ordered-json-php-{version}.zip",
-      "sha256": "a2874f46f681e66f6dd275cf905e38f65be7b9902b278083ddcd11e7b0923baf",
+      "sha256": "b094115eaa864b8be01f02074ab3d6e5cac0d7f4d1206c774ab4a608abbb4f5c",
       "directory": "var/composer-artifacts"
     }
   ]
