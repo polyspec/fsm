@@ -12,7 +12,7 @@ import mermaid from 'mermaid';
 import { createApplication, Hyper } from '@polyspec/hyper-client';
 import { connectForm, createForm, patchContent, type FormConnection, type FormTemplate } from '@polyspec/crudui-generator-core';
 import { renderForm } from '@polyspec/crudui-generator-html';
-import type { Template } from '@polyspec/template/render';
+import { decodeTemplate } from '@polyspec/template/render';
 import manifest from '../app/app.json';
 import index from '@polyspec/hyper-client/templates-index';
 import { codesOfAddedRows } from './new-codes';
@@ -33,7 +33,8 @@ declare global {
 const app = createApplication(manifest, index, async (url) => {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`template ${url}: status ${response.status}`);
-  return (await response.json()) as Template;
+  // The template AST is checked against the schema of the template package, which names the invalid node.
+  return decodeTemplate(await response.json());
 });
 const hyper = new Hyper(app, htmx, { basePath: '' });
 window.hyper = hyper;
