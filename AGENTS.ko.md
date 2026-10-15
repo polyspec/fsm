@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 1d79eded1845891af44edd3cbb24d8015ea9a9987679872313359a200af1ae4b -->
+<!-- source-sha256: dc4674bfbada56d4efab12b9d26dcbbd2e9b1758f51722d5afc0448212371d00 -->
 # 개발
 
 [English](AGENTS.md)
@@ -28,6 +28,8 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   바꾸고 여기서 편집하지 않는다. fsm은 kit의 파일을 import하지 않는다. kit 도구는 make 타깃이나 `$(KIT)/<tool>.$(KIT_EXT)`로
   실행하고, package가 export하는 것(`@polyspec/kit/tracked-files`)만 import하며, 일반적인 필요는 자기 `package.json`에 선언한
   생태계 라이브러리(ajv, picomatch, `node:`)로 채운다. kit의 동작은 kit에서 테스트한다.
+- polyspec 버전이 0.0.x인 동안 개발 checkout은 kit `docs/plans/local-links.md`가 설명하는 대로 설치된 polyspec package를
+  그 source에 link한다. link는 commit하지 않는다.
 - 모든 변경은 RED → 구현 → GREEN을 따른다. 체크리스트 항목은 관측 가능한 기준을 적는다.
 - 기능의 기본 테스트는 그 기능을 소유한 패키지(compiler, DB store, GUI)에 둔다. 언어 패키지에는 소비자 입장 테스트만 둔다.
   루트에는 루트 도구의 테스트와 그 공용 helper `tests/support/`만 둔다. 루트 도구 테스트의 fixture는 임시 디렉터리에 만들고 커밋하지 않는다.

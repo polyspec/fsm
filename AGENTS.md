@@ -30,6 +30,8 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1.md`; the definitio
   of kit: it runs a kit tool through its make target or `$(KIT)/<tool>.$(KIT_EXT)`, imports only what the package exports
   (`@polyspec/kit/tracked-files`), and takes a generic need from its ecosystem library (ajv, picomatch, `node:`) declared in
   its own `package.json`. Behavior of kit is tested in kit.
+- While polyspec versions are 0.0.x, development checkouts link installed polyspec packages to their source as kit
+  `docs/plans/local-links.md` describes; links are never committed.
 - Every change follows RED → implementation → GREEN. A checklist item states its observable criterion.
 - The base test of a feature lives in the package that owns it (compiler, DB store, GUI). Language packages hold only
   consumer-side tests. The root holds only the tests of its own tools and their shared helper `tests/support/`. Fixtures of the
