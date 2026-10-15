@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b16cd4368b793e8da85a19dcb7dc3f7cb38f913830fe97351c2e79e8377dbcb3 -->
+<!-- source-sha256: 4a9c9b6af4ce1f04e00c0ac43e844da63d71ba2d7d1edfcaf5a5409442fcb2ec -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-20: `.php-version`이 `config/toolchain.json`의 minor인 PHP 8.5를 선언하며, workflow의 모든 setup-php 단계가 이를 읽는다.
 - S-44-19: 공유 도구가 kit 0.0.51이다. `make toolchain-lock`은 machine의 node로 시작하고, `config/knip-entries.json`은 script와 test가 실행하는 go, make, php를 선언한다.
 - S-44-15: `make lint-ts`가 통과하고 `make check`가 이를 실행한다. `config/knip-entries.json`은 packages/db, packages/gui, packages/js, docs를 knip workspace로 선언한다.
 - S-44-17: 공유 도구가 kit 0.0.45다. 그 knip은 고정된 runtime의 binary를 무시하고, `config/knip-entries.json`이 workspace로 선언한 중첩 npm project를 읽는다.
