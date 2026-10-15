@@ -38,5 +38,10 @@
     "docs": {
       "reason": "the documentation site: an npm project with its own package.json and lock, whose vitepress make docs-build runs"
     }
+  },
+  "binaries": {
+    "go": "packages/compiler/tests/go-backend.test.mjs (make compiler-test) runs go vet on the generated Go package, and tests/workflows/workflows.test.mts reads the go directive of each go.mod with go mod edit -json.",
+    "make": "scripts/gen-check.mts (make gen-check) runs the gen target of each package Makefile, and the tests of the recipes (tests/make-install, tests/python-tools) run make -n on the Makefiles of the repository.",
+    "php": "packages/compiler/tests/php-backend.test.mjs and php-ext-backend.test.mjs (make compiler-test) lint the generated PHP with php -l and run it, the extension with php -d extension."
   }
 }
