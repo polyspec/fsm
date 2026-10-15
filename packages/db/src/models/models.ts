@@ -70,10 +70,17 @@ export function connect(dsn: string, options: ConnectOptions = {}): Promise<Db> 
 
 const model = registerModel(MANIFEST_TEXT, MANIFEST_HASH);
 
+/** The entity `name` of the model set, which registerModel built from the manifest. */
+function modelEntity(name: string): EntityDef['entity'] {
+  const found = model.entities.get(name);
+  if (found === undefined) throw new Error(`the model set has no entity ${name}`);
+  return found;
+}
+
 /** A machine model or row. */
 export class Machine extends Model {
-  public static readonly entity: EntityDef = { model, entity: model.entities.get('machine')!, create: core => new Machine(core) };
-  public getName(): string { return this[CORE].column('name') as string; }
+  public static readonly entity: EntityDef = { model, entity: modelEntity('machine'), create: core => new Machine(core) };
+  public getName(): string { const value = this[CORE].column('name'); if (typeof value === 'string') return value; throw new TypeError('machine.name holds a value of type ' + typeof value + ', not string'); }
   public setName(value: string): this { this[CORE].setValue('name', value); return this; }
   public addColumnName(): this { this[CORE].addColumn('name'); return this; }
   public removeColumnName(): this { this[CORE].removeColumn('name'); return this; }
@@ -87,8 +94,8 @@ export class Machine extends Model {
 
 /** A state model or row. */
 export class State extends Model {
-  public static readonly entity: EntityDef = { model, entity: model.entities.get('state')!, create: core => new State(core) };
-  public getMachine(): string { return this[CORE].column('machine') as string; }
+  public static readonly entity: EntityDef = { model, entity: modelEntity('state'), create: core => new State(core) };
+  public getMachine(): string { const value = this[CORE].column('machine'); if (typeof value === 'string') return value; throw new TypeError('state.machine holds a value of type ' + typeof value + ', not string'); }
   public setMachine(value: string): this { this[CORE].setValue('machine', value); return this; }
   public addColumnMachine(): this { this[CORE].addColumn('machine'); return this; }
   public removeColumnMachine(): this { this[CORE].removeColumn('machine'); return this; }
@@ -96,7 +103,7 @@ export class State extends Model {
   public keyNameMachine(): this { this[CORE].keyName = 'machine'; return this; }
   public orderByMachineAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', false, fn); return this; }
   public orderByMachineDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', true, fn); return this; }
-  public getKey(): string { return this[CORE].column('key') as string; }
+  public getKey(): string { const value = this[CORE].column('key'); if (typeof value === 'string') return value; throw new TypeError('state.key holds a value of type ' + typeof value + ', not string'); }
   public setKey(value: string): this { this[CORE].setValue('key', value); return this; }
   public addColumnKey(): this { this[CORE].addColumn('key'); return this; }
   public removeColumnKey(): this { this[CORE].removeColumn('key'); return this; }
@@ -104,7 +111,7 @@ export class State extends Model {
   public keyNameKey(): this { this[CORE].keyName = 'key'; return this; }
   public orderByKeyAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('key', false, fn); return this; }
   public orderByKeyDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('key', true, fn); return this; }
-  public getCode(): number { return this[CORE].column('code') as number; }
+  public getCode(): number { const value = this[CORE].column('code'); if (typeof value === 'number') return value; throw new TypeError('state.code holds a value of type ' + typeof value + ', not number'); }
   public setCode(value: number): this { this[CORE].setValue('code', value); return this; }
   public addColumnCode(): this { this[CORE].addColumn('code'); return this; }
   public removeColumnCode(): this { this[CORE].removeColumn('code'); return this; }
@@ -116,7 +123,7 @@ export class State extends Model {
   public minusCode(n: number): this { this[CORE].putSet({ column: 'code', value: n, minus: true }); return this; }
   public sumCode(): this { this[CORE].aggregate('sum', 'code'); return this; }
   public avgCode(): this { this[CORE].aggregate('avg', 'code'); return this; }
-  public getPosition(): number { return this[CORE].column('position') as number; }
+  public getPosition(): number { const value = this[CORE].column('position'); if (typeof value === 'number') return value; throw new TypeError('state.position holds a value of type ' + typeof value + ', not number'); }
   public setPosition(value: number): this { this[CORE].setValue('position', value); return this; }
   public addColumnPosition(): this { this[CORE].addColumn('position'); return this; }
   public removeColumnPosition(): this { this[CORE].removeColumn('position'); return this; }
@@ -128,7 +135,7 @@ export class State extends Model {
   public minusPosition(n: number): this { this[CORE].putSet({ column: 'position', value: n, minus: true }); return this; }
   public sumPosition(): this { this[CORE].aggregate('sum', 'position'); return this; }
   public avgPosition(): this { this[CORE].aggregate('avg', 'position'); return this; }
-  public getInitial(): boolean { return this[CORE].column('initial') as boolean; }
+  public getInitial(): boolean { const value = this[CORE].column('initial'); if (typeof value === 'boolean') return value; throw new TypeError('state.initial holds a value of type ' + typeof value + ', not boolean'); }
   public setInitial(value: boolean): this { this[CORE].setValue('initial', value); return this; }
   public addColumnInitial(): this { this[CORE].addColumn('initial'); return this; }
   public removeColumnInitial(): this { this[CORE].removeColumn('initial'); return this; }
@@ -136,7 +143,7 @@ export class State extends Model {
   public keyNameInitial(): this { this[CORE].keyName = 'initial'; return this; }
   public orderByInitialAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('initial', false, fn); return this; }
   public orderByInitialDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('initial', true, fn); return this; }
-  public getFinal(): boolean { return this[CORE].column('final') as boolean; }
+  public getFinal(): boolean { const value = this[CORE].column('final'); if (typeof value === 'boolean') return value; throw new TypeError('state.final holds a value of type ' + typeof value + ', not boolean'); }
   public setFinal(value: boolean): this { this[CORE].setValue('final', value); return this; }
   public addColumnFinal(): this { this[CORE].addColumn('final'); return this; }
   public removeColumnFinal(): this { this[CORE].removeColumn('final'); return this; }
@@ -155,8 +162,8 @@ export class State extends Model {
 
 /** A event model or row. */
 export class Event extends Model {
-  public static readonly entity: EntityDef = { model, entity: model.entities.get('event')!, create: core => new Event(core) };
-  public getMachine(): string { return this[CORE].column('machine') as string; }
+  public static readonly entity: EntityDef = { model, entity: modelEntity('event'), create: core => new Event(core) };
+  public getMachine(): string { const value = this[CORE].column('machine'); if (typeof value === 'string') return value; throw new TypeError('event.machine holds a value of type ' + typeof value + ', not string'); }
   public setMachine(value: string): this { this[CORE].setValue('machine', value); return this; }
   public addColumnMachine(): this { this[CORE].addColumn('machine'); return this; }
   public removeColumnMachine(): this { this[CORE].removeColumn('machine'); return this; }
@@ -164,7 +171,7 @@ export class Event extends Model {
   public keyNameMachine(): this { this[CORE].keyName = 'machine'; return this; }
   public orderByMachineAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', false, fn); return this; }
   public orderByMachineDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', true, fn); return this; }
-  public getKey(): string { return this[CORE].column('key') as string; }
+  public getKey(): string { const value = this[CORE].column('key'); if (typeof value === 'string') return value; throw new TypeError('event.key holds a value of type ' + typeof value + ', not string'); }
   public setKey(value: string): this { this[CORE].setValue('key', value); return this; }
   public addColumnKey(): this { this[CORE].addColumn('key'); return this; }
   public removeColumnKey(): this { this[CORE].removeColumn('key'); return this; }
@@ -172,7 +179,7 @@ export class Event extends Model {
   public keyNameKey(): this { this[CORE].keyName = 'key'; return this; }
   public orderByKeyAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('key', false, fn); return this; }
   public orderByKeyDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('key', true, fn); return this; }
-  public getPosition(): number { return this[CORE].column('position') as number; }
+  public getPosition(): number { const value = this[CORE].column('position'); if (typeof value === 'number') return value; throw new TypeError('event.position holds a value of type ' + typeof value + ', not number'); }
   public setPosition(value: number): this { this[CORE].setValue('position', value); return this; }
   public addColumnPosition(): this { this[CORE].addColumn('position'); return this; }
   public removeColumnPosition(): this { this[CORE].removeColumn('position'); return this; }
@@ -191,8 +198,8 @@ export class Event extends Model {
 
 /** A edge model or row. */
 export class Edge extends Model {
-  public static readonly entity: EntityDef = { model, entity: model.entities.get('edge')!, create: core => new Edge(core) };
-  public getMachine(): string { return this[CORE].column('machine') as string; }
+  public static readonly entity: EntityDef = { model, entity: modelEntity('edge'), create: core => new Edge(core) };
+  public getMachine(): string { const value = this[CORE].column('machine'); if (typeof value === 'string') return value; throw new TypeError('edge.machine holds a value of type ' + typeof value + ', not string'); }
   public setMachine(value: string): this { this[CORE].setValue('machine', value); return this; }
   public addColumnMachine(): this { this[CORE].addColumn('machine'); return this; }
   public removeColumnMachine(): this { this[CORE].removeColumn('machine'); return this; }
@@ -200,7 +207,7 @@ export class Edge extends Model {
   public keyNameMachine(): this { this[CORE].keyName = 'machine'; return this; }
   public orderByMachineAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', false, fn); return this; }
   public orderByMachineDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', true, fn); return this; }
-  public getEvent(): string { return this[CORE].column('event') as string; }
+  public getEvent(): string { const value = this[CORE].column('event'); if (typeof value === 'string') return value; throw new TypeError('edge.event holds a value of type ' + typeof value + ', not string'); }
   public setEvent(value: string): this { this[CORE].setValue('event', value); return this; }
   public addColumnEvent(): this { this[CORE].addColumn('event'); return this; }
   public removeColumnEvent(): this { this[CORE].removeColumn('event'); return this; }
@@ -208,7 +215,7 @@ export class Edge extends Model {
   public keyNameEvent(): this { this[CORE].keyName = 'event'; return this; }
   public orderByEventAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('event', false, fn); return this; }
   public orderByEventDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('event', true, fn); return this; }
-  public getFrom(): string { return this[CORE].column('from') as string; }
+  public getFrom(): string { const value = this[CORE].column('from'); if (typeof value === 'string') return value; throw new TypeError('edge.from holds a value of type ' + typeof value + ', not string'); }
   public setFrom(value: string): this { this[CORE].setValue('from', value); return this; }
   public addColumnFrom(): this { this[CORE].addColumn('from'); return this; }
   public removeColumnFrom(): this { this[CORE].removeColumn('from'); return this; }
@@ -216,7 +223,7 @@ export class Edge extends Model {
   public keyNameFrom(): this { this[CORE].keyName = 'from'; return this; }
   public orderByFromAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('from', false, fn); return this; }
   public orderByFromDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('from', true, fn); return this; }
-  public getTo(): string { return this[CORE].column('to') as string; }
+  public getTo(): string { const value = this[CORE].column('to'); if (typeof value === 'string') return value; throw new TypeError('edge.to holds a value of type ' + typeof value + ', not string'); }
   public setTo(value: string): this { this[CORE].setValue('to', value); return this; }
   public addColumnTo(): this { this[CORE].addColumn('to'); return this; }
   public removeColumnTo(): this { this[CORE].removeColumn('to'); return this; }
@@ -224,7 +231,7 @@ export class Edge extends Model {
   public keyNameTo(): this { this[CORE].keyName = 'to'; return this; }
   public orderByToAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('to', false, fn); return this; }
   public orderByToDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('to', true, fn); return this; }
-  public getPosition(): number { return this[CORE].column('position') as number; }
+  public getPosition(): number { const value = this[CORE].column('position'); if (typeof value === 'number') return value; throw new TypeError('edge.position holds a value of type ' + typeof value + ', not number'); }
   public setPosition(value: number): this { this[CORE].setValue('position', value); return this; }
   public addColumnPosition(): this { this[CORE].addColumn('position'); return this; }
   public removeColumnPosition(): this { this[CORE].removeColumn('position'); return this; }
@@ -248,8 +255,8 @@ export class Edge extends Model {
 
 /** A lock_code model or row. */
 export class LockCode extends Model {
-  public static readonly entity: EntityDef = { model, entity: model.entities.get('lock_code')!, create: core => new LockCode(core) };
-  public getMachine(): string { return this[CORE].column('machine') as string; }
+  public static readonly entity: EntityDef = { model, entity: modelEntity('lock_code'), create: core => new LockCode(core) };
+  public getMachine(): string { const value = this[CORE].column('machine'); if (typeof value === 'string') return value; throw new TypeError('lock_code.machine holds a value of type ' + typeof value + ', not string'); }
   public setMachine(value: string): this { this[CORE].setValue('machine', value); return this; }
   public addColumnMachine(): this { this[CORE].addColumn('machine'); return this; }
   public removeColumnMachine(): this { this[CORE].removeColumn('machine'); return this; }
@@ -257,7 +264,7 @@ export class LockCode extends Model {
   public keyNameMachine(): this { this[CORE].keyName = 'machine'; return this; }
   public orderByMachineAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', false, fn); return this; }
   public orderByMachineDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', true, fn); return this; }
-  public getCode(): number { return this[CORE].column('code') as number; }
+  public getCode(): number { const value = this[CORE].column('code'); if (typeof value === 'number') return value; throw new TypeError('lock_code.code holds a value of type ' + typeof value + ', not number'); }
   public setCode(value: number): this { this[CORE].setValue('code', value); return this; }
   public addColumnCode(): this { this[CORE].addColumn('code'); return this; }
   public removeColumnCode(): this { this[CORE].removeColumn('code'); return this; }
@@ -269,7 +276,7 @@ export class LockCode extends Model {
   public minusCode(n: number): this { this[CORE].putSet({ column: 'code', value: n, minus: true }); return this; }
   public sumCode(): this { this[CORE].aggregate('sum', 'code'); return this; }
   public avgCode(): this { this[CORE].aggregate('avg', 'code'); return this; }
-  public getKey(): string { return this[CORE].column('key') as string; }
+  public getKey(): string { const value = this[CORE].column('key'); if (typeof value === 'string') return value; throw new TypeError('lock_code.key holds a value of type ' + typeof value + ', not string'); }
   public setKey(value: string): this { this[CORE].setValue('key', value); return this; }
   public addColumnKey(): this { this[CORE].addColumn('key'); return this; }
   public removeColumnKey(): this { this[CORE].removeColumn('key'); return this; }
@@ -284,8 +291,8 @@ export class LockCode extends Model {
 
 /** A lock_reserved model or row. */
 export class LockReserved extends Model {
-  public static readonly entity: EntityDef = { model, entity: model.entities.get('lock_reserved')!, create: core => new LockReserved(core) };
-  public getMachine(): string { return this[CORE].column('machine') as string; }
+  public static readonly entity: EntityDef = { model, entity: modelEntity('lock_reserved'), create: core => new LockReserved(core) };
+  public getMachine(): string { const value = this[CORE].column('machine'); if (typeof value === 'string') return value; throw new TypeError('lock_reserved.machine holds a value of type ' + typeof value + ', not string'); }
   public setMachine(value: string): this { this[CORE].setValue('machine', value); return this; }
   public addColumnMachine(): this { this[CORE].addColumn('machine'); return this; }
   public removeColumnMachine(): this { this[CORE].removeColumn('machine'); return this; }
@@ -293,7 +300,7 @@ export class LockReserved extends Model {
   public keyNameMachine(): this { this[CORE].keyName = 'machine'; return this; }
   public orderByMachineAsc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', false, fn); return this; }
   public orderByMachineDesc(...fn: ColumnFunction[]): this { this[CORE].orderBy('machine', true, fn); return this; }
-  public getCode(): number { return this[CORE].column('code') as number; }
+  public getCode(): number { const value = this[CORE].column('code'); if (typeof value === 'number') return value; throw new TypeError('lock_reserved.code holds a value of type ' + typeof value + ', not number'); }
   public setCode(value: number): this { this[CORE].setValue('code', value); return this; }
   public addColumnCode(): this { this[CORE].addColumn('code'); return this; }
   public removeColumnCode(): this { this[CORE].removeColumn('code'); return this; }

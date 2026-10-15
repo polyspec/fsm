@@ -23,10 +23,17 @@ export function connect(dsn: string, options: ConnectOptions = {}): Promise<Db> 
 
 const model = registerModel(MANIFEST_TEXT, MANIFEST_HASH);
 
+/** The entity `name` of the model set, which registerModel built from the manifest. */
+function modelEntity(name: string): EntityDef['entity'] {
+  const found = model.entities.get(name);
+  if (found === undefined) throw new Error(`the model set has no entity ${name}`);
+  return found;
+}
+
 /** A item model or row. */
 export class Item extends Model {
-  public static readonly entity: EntityDef = { model, entity: model.entities.get('item')!, create: core => new Item(core) };
-  public getId(): number { return this[CORE].column('id') as number; }
+  public static readonly entity: EntityDef = { model, entity: modelEntity('item'), create: core => new Item(core) };
+  public getId(): number { const value = this[CORE].column('id'); if (typeof value === 'number') return value; throw new TypeError('item.id holds a value of type ' + typeof value + ', not number'); }
   public setId(value: number): this { this[CORE].setValue('id', value); return this; }
   public addColumnId(): this { this[CORE].addColumn('id'); return this; }
   public removeColumnId(): this { this[CORE].removeColumn('id'); return this; }
@@ -38,7 +45,7 @@ export class Item extends Model {
   public minusId(n: number): this { this[CORE].putSet({ column: 'id', value: n, minus: true }); return this; }
   public sumId(): this { this[CORE].aggregate('sum', 'id'); return this; }
   public avgId(): this { this[CORE].aggregate('avg', 'id'); return this; }
-  public getStatus(): number { return this[CORE].column('status') as number; }
+  public getStatus(): number { const value = this[CORE].column('status'); if (typeof value === 'number') return value; throw new TypeError('item.status holds a value of type ' + typeof value + ', not number'); }
   public setStatus(value: number): this { this[CORE].setValue('status', value); return this; }
   public addColumnStatus(): this { this[CORE].addColumn('status'); return this; }
   public removeColumnStatus(): this { this[CORE].removeColumn('status'); return this; }
