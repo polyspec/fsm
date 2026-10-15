@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: 64849f0f8804f5de041ae2a05ddc536245450b9bfb9b91cf848c81cadbb56551 -->
+<!-- source-sha256: 9891cae27d531df3d932bc4d06d53c97a8428c1ac3f88d70abace35c461b3732 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -116,4 +116,4 @@
 | S-44-20 | `.php-version`이 checkout의 PHP로 `config/toolchain.json`의 `php` minor(8.5)를 선언한다. kit의 release workflow는 이 파일이 있을 때만 PHP를 설정하며, kit 0.0.52의 kit-check는 PHP를 쓰는 저장소에 이 파일을 요구한다(kit K193). ci.yml의 setup-php 단계는 PHP를 직접 적지 않고 `php-version-file: .php-version`을 읽으며, `config/owner-checks.json`은 이 파일을 toolchain-check와 workflows-test에 맡긴다 | 파일과 모든 setup-php 단계에 대한 workflows test RED → `make workflows-test owner-validate kit-check toolchain-check layout-check` 통과 GREEN | [o] |
 | S-44-21 | kit 0.0.52로 옮긴다(kit K191, K193). 게시된 파일의 integrity로 pin하고, kit의 복사본을 sync한다(`release.yml`은 release 단계 전에 `make kit-check`를 실행한다). kit-check는 PHP를 쓰는 저장소에 S-44-20이 선언한 `.php-version`을 요구한다. owner-check는 import로 test를 고를 수 있으나 fsm은 이를 설정하지 않는다 | `.php-version` 없이 `make kit-check`가 그 부재를 보고 RED → 파일이 있을 때 `make kit-check toolchain-check layout-check owner-validate documents-check dependency-policy-check` 통과 GREEN | [o] |
 | S-44-22 | kit 0.0.53으로 옮긴다(kit K195). 게시된 파일의 integrity로 pin한다. `make kit-sync`는 복사본을 바꾸지 않으며, kit의 release proof는 release가 각 sibling wheel의 asset을 나열하는지 검사하는데, wheel이 없는 fsm은 이를 게시하지 않는다 | `make dependency-policy-check`가 package-lock.json이 검토 뒤에 바뀌었다고 보고 RED → `make dependency-review RECORD=1` 뒤 `make kit-check toolchain-check layout-check owner-validate documents-check dependency-policy-check` 통과 GREEN | [o] |
-| S-44-23 | AGENTS.md가 kit의 local link를 가리킨다(kit K198). polyspec 버전이 0.0.x인 동안 개발 checkout은 kit `docs/plans/local-links.md`가 설명하는 대로 설치된 polyspec package를 그 source에 link하며, link는 commit하지 않는다 | AGENTS.md와 AGENTS.ko.md에 kit `docs/plans/local-links.md`를 가리키는 문장이 없음 RED → 두 파일이 그 문장을 담고 `make documents-check` 통과 GREEN | [ ] |
+| S-44-23 | AGENTS.md가 kit의 local link를 가리킨다(kit K198). polyspec 버전이 0.0.x인 동안 개발 checkout은 kit `docs/plans/local-links.md`가 설명하는 대로 설치된 polyspec package를 그 source에 link하며, link는 commit하지 않는다 | AGENTS.md와 AGENTS.ko.md에 kit `docs/plans/local-links.md`를 가리키는 문장이 없음 RED → 두 파일이 그 문장을 담고 `make documents-check` 통과 GREEN | [o] |
