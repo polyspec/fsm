@@ -116,7 +116,7 @@ make-install-test:
 # the check job runs make install and make check with the services of plan C-6, and each version comes from the file that
 # declares it (docs/plans/fsm-v1.md, C-10; docs/plans/execution-checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
-	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs mise.toml --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1.md --inputs tests/workflows -- tests/workflows/workflows.test.mts
+	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1.md --inputs tests/workflows -- tests/workflows/workflows.test.mts
 
 # name-test runs the tests of scripts/check-name.mts; name-check fails while a tracked file or path names the library by its old
 # outside the allowlist of the checker (docs/plans/execution-checklist.md, S-18; the library is named fsm).

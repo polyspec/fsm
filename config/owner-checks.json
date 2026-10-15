@@ -232,7 +232,8 @@
         ".gitignore",
         "mise.toml",
         "mise.lock",
-        "rust-toolchain.toml"
+        "rust-toolchain.toml",
+        ".php-version"
       ],
       "targets": [
         "kit-check",
@@ -358,7 +359,8 @@
     {
       "paths": [
         ".github/workflows/**",
-        "tests/workflows/**"
+        "tests/workflows/**",
+        ".php-version"
       ],
       "targets": [
         "workflows-test"
