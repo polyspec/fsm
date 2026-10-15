@@ -7,9 +7,9 @@
 // and the errors of the page), then syncs the controls, as the crudui contract of connectForm requires (form-runtime.md).
 // The same embedded state carries the next code of the machine, and every state row added in the browser takes it, then the codes
 // after it (new-codes.ts).
-import htmx from 'htmx.org/dist/htmx.esm.js';
+import htmx from 'htmx.org';
 import mermaid from 'mermaid';
-import { createApplication, Hyper, type HtmxApi, type Manifest, type TemplateIndex } from '@polyspec/hyper-client';
+import { createApplication, Hyper, type HtmxApi } from '@polyspec/hyper-client';
 import { connectForm, createForm, patchContent, type FormConnection, type FormTemplate } from '@polyspec/crudui-generator-core';
 import { renderForm } from '@polyspec/crudui-generator-html';
 import type { Template } from '@polyspec/template/render';
@@ -23,13 +23,20 @@ mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' });
 
 type RenderOptions = Parameters<typeof renderForm>[1];
 
-const app = createApplication(manifest as Manifest, index as TemplateIndex, async (url) => {
+// The page exposes its hyper client as window.hyper, which the browser tests read.
+declare global {
+  interface Window {
+    hyper: Hyper;
+  }
+}
+
+const app = createApplication(manifest, index, async (url) => {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`template ${url}: status ${response.status}`);
   return (await response.json()) as Template;
 });
 const hyper = new Hyper(app, htmx as unknown as HtmxApi, { basePath: '' });
-(window as unknown as { hyper: Hyper }).hyper = hyper;
+window.hyper = hyper;
 
 htmx.registerExtension('hyper', hyper.extension());
 
@@ -58,11 +65,13 @@ function codeInputOf(persistedInput: HTMLInputElement): HTMLInputElement {
 
 /** Writes the codes of the state rows of the form: stored rows keep theirs, and each added row takes the next code. */
 function fillAddedCodes(form: HTMLElement, next: number): void {
-  const persisted = [...form.querySelectorAll<HTMLInputElement>('input[name^="form[states]["][name$="[persisted]"]')];
-  const codes = persisted.map(codeInputOf);
-  const values = codesOfAddedRows(persisted.map((input, index) => ({ persisted: input.value, code: codes[index].value })), next);
-  codes.forEach((input, index) => {
-    input.value = values[index];
+  const rows = [...form.querySelectorAll<HTMLInputElement>('input[name^="form[states]["][name$="[persisted]"]')]
+    .map(persisted => ({ persisted, code: codeInputOf(persisted) }));
+  const values = codesOfAddedRows(rows.map(({ persisted, code }) => ({ persisted: persisted.value, code: code.value })), next);
+  rows.forEach(({ code }, index) => {
+    const value = values[index];
+    if (value === undefined) throw new Error(`codesOfAddedRows gave no code for the state row ${index}`);
+    code.value = value;
   });
 }
 

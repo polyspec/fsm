@@ -37,7 +37,7 @@
         "config/**",
         "Makefile",
         ".gitignore",
-        ".node-version"
+        "mise.toml"
       ],
       "targets": [
         "kit-check",
@@ -230,7 +230,8 @@
         "config/**",
         "Makefile",
         ".gitignore",
-        ".node-version",
+        "mise.toml",
+        "mise.lock",
         "rust-toolchain.toml"
       ],
       "targets": [

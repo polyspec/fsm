@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 188c88b6d5975e454bcad9e68801d67f0a6c1419eae50cdfa84fa0a48c7d51a6 -->
+<!-- source-sha256: 3aa5b056adfe813b2fdc694d0794f43626f9829ec8014a84f43f0ed91161dee6 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -252,12 +252,12 @@ table인 `schema/persist.dbs`와 fsm-gen vectors가 쓰는 vector case의 기대
 
 ## 요구사항과 설정
 
-도구는 Node.js에서 실행된다. 고정된 release는 `.node-version`(26.11.1)에 있으며, npm은 함께 온다. 생성된 코드는 자기 언어의
+도구는 Node.js에서 실행된다. 고정된 release는 `mise.toml`의 `node`(26.12.0)이며 `make install-tools TOOLS=npm`이 checkout에 설치하고, npm은 함께 온다. 생성된 코드는 자기 언어의
 toolchain만 필요로 한다:
 
 | 대상 | 필요한 것 |
 |---|---|
-| fsm-gen, fsm-db, fsm-gui와 생성된 npm 코드 | Node.js 26.11.1(`.node-version`)과 npm |
+| fsm-gen, fsm-db, fsm-gui와 생성된 npm 코드 | Node.js 26.12.0(`mise.toml`)과 npm |
 | 생성된 go 코드 | Go 1.27.2(module에 `go 1.27.2`) |
 | 생성된 php 코드 | PHP 8.4 이상(orm client가 8.4를 요구한다). checkout은 PHP 8.5와 Composer 2.10.3으로 테스트한다(`config/toolchain.json`) |
 | 생성된 php-ext 코드 | php의 요구 사항, 그리고 `phpize`, `autoconf`, C 컴파일러 |

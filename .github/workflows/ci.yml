@@ -1,8 +1,8 @@
 # Continuous integration (docs/plans/fsm-v1.md, C-10 and Verification; docs/plans/execution-checklist.md, S-21). One job runs
 # `make install` and then `make check`, the full suite of the repository, with the PostgreSQL and MySQL services of plan C-6.
-# The versions come from the files that declare them: Node.js from .node-version, PHP from config/toolchain.json, Rust from
-# rust-toolchain.toml, and Go, Python and uv from mise.toml, which make install installs with mise at the digests of mise.lock
-# (install-tools, S-44-6). The workflow runs on every push to main and on a manual run (workflow_dispatch). A newer push does
+# The versions come from the files that declare them: PHP from config/toolchain.json, Rust from rust-toolchain.toml, and
+# Node.js, Go, Python and uv from mise.toml, which mise installs at the digests of mise.lock: Node.js with make install-tools
+# TOOLS=npm, which the node of setup-node only starts (kit K171), and the others with make install (install-tools, S-44-6). The workflow runs on every push to main and on a manual run (workflow_dispatch). A newer push does
 # not cancel the run of an earlier one.
 name: CI
 
@@ -53,11 +53,12 @@ jobs:
       FSM_TEST_PG_ADMIN_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
       FSM_TEST_MYSQL_ADMIN_DSN: mysql://root:root@127.0.0.1:3306/mysql
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version-file: .node-version
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+          node-version-file: mise.toml
+          package-manager-cache: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.5'
           extensions: pdo_pgsql, pdo_mysql

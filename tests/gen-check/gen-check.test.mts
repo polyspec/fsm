@@ -6,14 +6,14 @@ import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const VECTOR = 'contracts/conformance/vectors.json';
 
 /** Writes `text` to `file` below `root`, creating its directories. */
-function write(root, file, text) {
+function write(root: string, file: string, text: string): void {
   mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
   writeFileSync(path.join(root, file), text);
 }
@@ -23,7 +23,7 @@ function write(root, file, text) {
  * config/parity.json), the generated globs of config/gen-check.json and files ({ path: text }), every file tracked; removed
  * with `t.after`. The real kinds are checked by `make gen-check`; these cases use their own.
  */
-function fixture(t, kinds, generated, files) {
+function fixture(t: TestContext, kinds: string[], generated: Record<string, string[]>, files: Record<string, string>): string {
   const root = mkdtempSync(path.join(tmpdir(), 'gen-check-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   cpSync(path.join(ROOT, 'packages/compiler/src'), path.join(root, 'packages/compiler/src'), { recursive: true });
@@ -39,11 +39,11 @@ function fixture(t, kinds, generated, files) {
 }
 
 /** A checkout of this repository with no kinds, so that its vector file is the only generated file. */
-const checkout = t => fixture(t, [], {}, {});
+const checkout = (t: TestContext): string => fixture(t, [], {}, {});
 
 /** A kind `fake` whose package generates gen/a.txt, with the generated glob `gen/**`, which the fixed patterns never covered. */
-const FAKE_GENERATED = { fake: ['gen/**'] };
-const FAKE_FILES = {
+const FAKE_GENERATED: Record<string, string[]> = { fake: ['gen/**'] };
+const FAKE_FILES: Record<string, string> = {
   // gen is phony: the directory gen/ would otherwise make the target up to date.
   'packages/fake/Makefile': '.PHONY: gen\ngen:\n\tmkdir -p $(DEST)/gen\n\tprintf \'a\\n\' > $(DEST)/gen/a.txt\n',
   'packages/fake/gen/a.txt': 'a\n',
@@ -51,7 +51,7 @@ const FAKE_FILES = {
 };
 
 /** Runs scripts/gen-check.mts of this checkout on `root` and returns its status and stderr. */
-function genCheck(root) {
+function genCheck(root: string) {
   const result = spawnSync(process.execPath, [path.join(ROOT, 'scripts/gen-check.mts'), '--root', root], { cwd: root, encoding: 'utf8' });
   return { status: result.status, stderr: result.stderr };
 }

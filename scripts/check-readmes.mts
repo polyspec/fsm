@@ -13,7 +13,27 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
-const LANGUAGE_SECTIONS = Object.freeze([
+/** A README pair: its kind, the English file, its Korean twin and the `##` sections the English file must hold. */
+export interface ReadmePair {
+  readonly kind: string;
+  readonly en: string;
+  readonly ko: string;
+  readonly sections: readonly string[];
+}
+
+/** A heading of a Markdown text. */
+interface Heading {
+  level: number;
+  text: string;
+}
+
+/** A problem of a README: the file and the message. */
+export interface ReadmeFinding {
+  file: string;
+  message: string;
+}
+
+const LANGUAGE_SECTIONS: readonly string[] = Object.freeze([
   'Generate into your project',
   'Generated files',
   'API',
@@ -26,7 +46,7 @@ const LANGUAGE_SECTIONS = Object.freeze([
  * The README pairs of the repository. `en` is the canonical file, `ko` its twin, `sections` the English `##` headings the
  * English file must hold. Each pair is one kind: root, compiler, db, gui or language.
  */
-export const README_PAIRS = Object.freeze([
+export const README_PAIRS: readonly ReadmePair[] = Object.freeze([
   {
     kind: 'root',
     en: 'README.md',
@@ -80,8 +100,8 @@ export const README_PAIRS = Object.freeze([
 ]);
 
 /** The headings of a Markdown text as { level, text }, outside fenced code blocks. */
-export function headings(text) {
-  const result = [];
+export function headings(text: string): Heading[] {
+  const result: Heading[] = [];
   let fenced = false;
   for (const line of text.split('\n')) {
     if (/^\s*```/.test(line)) {
@@ -90,21 +110,24 @@ export function headings(text) {
     }
     if (fenced) continue;
     const match = /^(#{1,6}) (.+?)\s*$/.exec(line);
-    if (match !== null) result.push({ level: match[1].length, text: match[2] });
+    if (match === null) continue;
+    const [, marks, heading] = match;
+    if (marks === undefined || heading === undefined) throw new Error(`the heading pattern matched without its groups: ${line}`);
+    result.push({ level: marks.length, text: heading });
   }
   return result;
 }
 
 /** The number of headings of each level, as a map of level to count. */
-function countByLevel(list) {
-  const counts = new Map();
+function countByLevel(list: readonly Heading[]): Map<number, number> {
+  const counts = new Map<number, number>();
   for (const { level } of list) counts.set(level, (counts.get(level) ?? 0) + 1);
   return counts;
 }
 
 /** The findings of one pair under `root`: { file, message } for each problem. */
-function pairFindings(root, pair) {
-  const findings = [];
+function pairFindings(root: string, pair: ReadmePair): ReadmeFinding[] {
+  const findings: ReadmeFinding[] = [];
   if (!existsSync(path.join(root, pair.en))) return [{ file: pair.en, message: 'the README is missing' }];
   if (!existsSync(path.join(root, pair.ko))) return [{ file: pair.ko, message: 'the Korean twin is missing' }];
   const english = headings(readFileSync(path.join(root, pair.en), 'utf8'));
@@ -130,15 +153,16 @@ function pairFindings(root, pair) {
 }
 
 /** The findings of every declared README pair under `root`. */
-export function readmeFindings(root) {
+export function readmeFindings(root: string): ReadmeFinding[] {
   return README_PAIRS.flatMap(pair => pairFindings(root, pair));
 }
 
-function main(argv) {
-  let options;
+function main(argv: string[]): number {
+  let options: { root?: string | undefined };
   try {
     options = parseArgs({ args: argv, options: { root: { type: 'string' } }, strict: true }).values;
   } catch (error) {
+    if (!(error instanceof Error)) throw error;
     process.stderr.write(`usage: check-readmes.mts [--root <dir>] (${error.message})\n`);
     return 2;
   }

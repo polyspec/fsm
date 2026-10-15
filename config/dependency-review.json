@@ -1,16 +1,16 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mts) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-14T16:09:22.335Z",
+  "reviewed": "2026-10-15T00:33:53.704Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
-      "sha256": "2d9357c7bf510f138850ee1bfbbd446927eb493132f2fbf35761a72a795278a7",
+      "sha256": "e9f12f45b2ef4b070ec5fb643576eedc0754847222f68946d182cf2cfff9a375",
       "advisories": []
     },
     {
       "lock": "package-lock.json",
-      "sha256": "4da2fa5968848a119a9b3c8109c2e43d27a66f1377cc3f2b31edb2a856a1666e",
+      "sha256": "b091dde09cb83b0f2bc8f119883335f889cafbf7c796e91219ce6fd6a05552a3",
       "advisories": [
         {
           "package": "sprintf-js",
@@ -24,17 +24,17 @@
     },
     {
       "lock": "packages/db/package-lock.json",
-      "sha256": "b573ff1673ab80505154e6a4249b168ab35c3bbd281b05c245b774d536b1a1b6",
+      "sha256": "bde38a5cdc49e56cf134fe409e6e3abab4c57dcf3ea2542356a462f10f1d0869",
       "advisories": []
     },
     {
       "lock": "packages/gui/package-lock.json",
-      "sha256": "765e4d0fdb42be2c75dda7a470a4aeb0b863603c0abb6ec8a3ebe04f597c6f61",
+      "sha256": "ab0f33626086a1ea1936cea53d020203d2eda766f2b3377c92645964c631c242",
       "advisories": []
     },
     {
       "lock": "packages/js/package-lock.json",
-      "sha256": "401076859a7c69a16f41adbefb1ff0bdd0277776ed776f6016da288e8cff04b1",
+      "sha256": "3272bab58f69a2f0d19759360df29ed4f5ecb9c3effe6f76354a2fb070f8636b",
       "advisories": []
     },
     {
@@ -70,6 +70,20 @@
       "package": "vitepress",
       "version": "1.6.4",
       "latest": "1.6.4"
+    },
+    {
+      "ecosystem": "npm",
+      "manifest": "package.json",
+      "package": "@types/node",
+      "version": "26.6.5",
+      "latest": "26.6.5"
+    },
+    {
+      "ecosystem": "npm",
+      "manifest": "package.json",
+      "package": "@types/picomatch",
+      "version": "4.0.3",
+      "latest": "4.0.3"
     },
     {
       "ecosystem": "npm",
@@ -258,7 +272,7 @@
       "manifest": "packages/go/go.mod",
       "package": "github.com/polyspec/orm",
       "version": "v0.0.15",
-      "latest": "v0.0.15"
+      "latest": "v0.0.17"
     }
   ],
   "vcs": []

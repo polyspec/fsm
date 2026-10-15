@@ -36,4 +36,4 @@ export const notAState: order.State = 6;
 order.apply(draft, 'next', draft);
 
 // @ts-expect-error Step has the fields to and changed only
-export const noSuchField: number = step.event;
+void step.event;

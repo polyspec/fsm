@@ -20,12 +20,26 @@ import picomatch from 'picomatch';
 
 const NAME = /status/i;
 
+/** An entry of ALLOWED: the files it applies to, the spans it allows (the whole file without `match`) and its reason. */
+interface Allowed {
+  readonly files: readonly string[];
+  readonly match?: RegExp;
+  readonly reason: string;
+}
+
+/** One occurrence of the old name: the file, its line (0 for the path itself) and the text. */
+export interface NameFinding {
+  file: string;
+  line: number;
+  text: string;
+}
+
 /**
  * The allowed occurrences. An entry applies to the files its `files` globs match. Without `match` it allows the whole file;
  * with `match` it allows the spans that the pattern matches in each line (a pattern that matches a whole line allows the
  * whole line). Every entry has a reason; the phrases are exact, so a word next to an allowed phrase stays a finding.
  */
-export const ALLOWED = Object.freeze([
+export const ALLOWED: readonly Allowed[] = Object.freeze([
   {
     files: Object.keys(kitPackage.kit.copies),
     reason: 'the copies of kit (kit.copies of the installed @polyspec/kit): they change only in the kit repository (AGENTS.md, Rules)',
@@ -77,19 +91,21 @@ export const ALLOWED = Object.freeze([
 ]);
 
 /** Whether `file` matches one of `globs`; `*` and `**` match dot files too. */
-const matchesAny = (globs, file) => picomatch.isMatch(file, globs, { dot: true });
+const matchesAny = (globs: readonly string[], file: string): boolean => picomatch.isMatch(file, [...globs], { dot: true });
 
 /** The global form of an entry pattern, so that every span of a line is removed. */
-function globalOf(pattern) {
+function globalOf(pattern: RegExp): RegExp {
   return new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
 }
 
 /** The findings of `text`: the lines of `file` that still hold the word after its allowed spans are removed. */
-function scanText(file, text) {
-  const findings = [];
-  const entries = ALLOWED.filter(entry => matchesAny(entry.files, file));
-  if (entries.some(entry => entry.match === undefined)) return findings;
-  const patterns = entries.map(entry => globalOf(entry.match));
+function scanText(file: string, text: string): NameFinding[] {
+  const findings: NameFinding[] = [];
+  const patterns: RegExp[] = [];
+  for (const entry of ALLOWED.filter(allowed => matchesAny(allowed.files, file))) {
+    if (entry.match === undefined) return findings;
+    patterns.push(globalOf(entry.match));
+  }
   text.split('\n').forEach((line, index) => {
     if (!NAME.test(line)) return;
     let rest = line;
@@ -100,15 +116,15 @@ function scanText(file, text) {
 }
 
 /** The tracked files of the checkout under `root`, as paths with `/` separators. */
-function trackedPaths(root) {
+function trackedPaths(root: string): string[] {
   const result = spawnSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' });
   if (result.status !== 0) throw new Error(`git ls-files failed in ${root}: ${result.stderr}`);
   return result.stdout.split('\0').filter(Boolean).sort();
 }
 
 /** The findings of every tracked file and path under `root`. */
-export function nameFindings(root) {
-  const findings = [];
+export function nameFindings(root: string): NameFinding[] {
+  const findings: NameFinding[] = [];
   for (const file of trackedPaths(root)) {
     if (NAME.test(file) && !ALLOWED.some(entry => entry.match === undefined && matchesAny(entry.files, file))) {
       findings.push({ file, line: 0, text: 'the path names the library by its old name' });
@@ -120,11 +136,12 @@ export function nameFindings(root) {
   return findings;
 }
 
-function main(argv) {
-  let options;
+function main(argv: string[]): number {
+  let options: { root?: string | undefined };
   try {
     options = parseArgs({ args: argv, options: { root: { type: 'string' } }, strict: true }).values;
   } catch (error) {
+    if (!(error instanceof Error)) throw error;
     process.stderr.write(`usage: check-name.mts [--root <dir>] (${error.message})\n`);
     return 2;
   }

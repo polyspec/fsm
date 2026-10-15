@@ -24,7 +24,7 @@ npm install -g ./packages/gui   # puts the command fsm-gui on the PATH, linked t
 ```
 
 `make gui-build` needs the network once, for the pinned packages (hyper v0.0.13, crudui v0.0.5, the template v0.0.5 and
-mermaid 12.2.0). Node.js 26.11.1 from `.node-version` runs the server. For a project whose store is the database, the orm
+mermaid 12.2.0). Node.js 26.12.0 of `mise.toml` runs the server. For a project whose store is the database, the orm
 packages of `packages/db` must be installed too: `make db-deps` (`make gui-build` runs it first).
 
 ## Running

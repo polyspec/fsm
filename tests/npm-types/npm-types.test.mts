@@ -19,7 +19,7 @@ const CONSUMER = path.join(HERE, 'consumer.ts');
 
 test('the generated declarations type-check the consumer in strict mode', () => {
   assert.ok(existsSync(TSC), `${TSC} does not exist; run make -C packages/js install`);
-  const result = spawnSync(process.execPath, [TSC, '--noEmit', '--strict', '--module', 'nodenext', '--target', 'es2022', '--pretty', 'false', CONSUMER], { encoding: 'utf8' });
+  const result = spawnSync(process.execPath, [TSC, '--ignoreConfig', '--noEmit', '--strict', '--module', 'nodenext', '--target', 'es2022', '--pretty', 'false', CONSUMER], { encoding: 'utf8' });
   assert.equal(result.error, undefined, `tsc could not run: ${result.error?.message}`);
   assert.equal(result.status, 0, `tsc reported findings:\n${result.stdout}${result.stderr}`);
 });

@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: 7d8bebf528764f75980b5a7ac6d03bac9ad8b439b3d5a79ec9dd60c4725cc3a9 -->
+<!-- source-sha256: 6b6082adbd4b2a98bf009bc0ebb4015ff551940ef6a76db809088285ab137df0 -->
 # fsm GUI
 
 [English](README.md).
@@ -24,7 +24,7 @@ npm install -g ./packages/gui   # puts the command fsm-gui on the PATH, linked t
 ```
 
 `make gui-build`는 고정된 패키지(hyper v0.0.13, crudui v0.0.5, template v0.0.5, mermaid 12.2.0)를 받으려고 한 번 네트워크가
-필요하다. 서버는 `.node-version`의 Node.js 26.11.1로 실행한다. store가 database인 프로젝트는 `packages/db`의 orm 패키지도
+필요하다. 서버는 `mise.toml`의 Node.js 26.12.0으로 실행한다. store가 database인 프로젝트는 `packages/db`의 orm 패키지도
 설치해야 한다: `make db-deps`(`make gui-build`가 먼저 실행한다).
 
 ## 실행
