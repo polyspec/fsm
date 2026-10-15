@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4a9c9b6af4ce1f04e00c0ac43e844da63d71ba2d7d1edfcaf5a5409442fcb2ec -->
+<!-- source-sha256: fbb4ea40fc551995823a25ea67ee3fa04a19edc60cf8b940b4f1b783bd490d7b -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-44-21: 공유 도구가 kit 0.0.52다. 그 kit-check는 fsm의 `.php-version`을 요구하며, 그 release workflow는 release 단계 전에 kit-check를 실행한다.
 - S-44-20: `.php-version`이 `config/toolchain.json`의 minor인 PHP 8.5를 선언하며, workflow의 모든 setup-php 단계가 이를 읽는다.
 - S-44-19: 공유 도구가 kit 0.0.51이다. `make toolchain-lock`은 machine의 node로 시작하고, `config/knip-entries.json`은 script와 test가 실행하는 go, make, php를 선언한다.
 - S-44-15: `make lint-ts`가 통과하고 `make check`가 이를 실행한다. `config/knip-entries.json`은 packages/db, packages/gui, packages/js, docs를 knip workspace로 선언한다.
