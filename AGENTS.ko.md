@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 1d79eded1845891af44edd3cbb24d8015ea9a9987679872313359a200af1ae4b -->
+<!-- source-sha256: 56ea3629cb37e888b7be30fc4c6990e21706b2a7f3e21bf47dd85549baeda1e0 -->
 # 개발
 
 [English](AGENTS.md)
@@ -44,6 +44,10 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   우리가 만드는 것을 다스린다.
 - 이 저장소가 만드는 것(추적 파일, 설정, 스크립트, 생성 출력)에는 symbolic link와 상대 경로를 두지 않는다. 경로는 선언적으로(추적
   파일에 이름을 적어) 또는 탐색으로(명시된 탐색 규칙에 따라) 정한다.
+
+## 생성 파일
+
+생성 파일은 Git에 추적하지 않습니다. 여기에는 의존성 설치(`node_modules/`, `vendor/`, 가상 환경), 빌드 산출물(`dist/`, `target/`, `*.tsbuildinfo`), 캐시(`.cache/`, `__pycache__/`, `.pytest_cache/`), 테스트 실행 산출물(`test-results/`, `playwright-report/`, PHPUnit 캐시), 도구 다운로드(`var/`)가 포함됩니다. 예외는 저장소가 의도적으로 필요로 하는 파일뿐이며 이것만 추적합니다: lock 파일(`package-lock.json`, `composer.lock`, `Cargo.lock`, uv lock, `mise.lock`), 이 문서가 밝히는 커밋된 생성 문서, 테스트 fixture. 각 `.gitignore`가 이 경로를 덮으며, 새 생성기는 같은 commit에서 ignore 항목을 추가합니다.
 
 ## 체크리스트
 

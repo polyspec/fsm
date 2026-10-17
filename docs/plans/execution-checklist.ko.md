@@ -1,5 +1,5 @@
 <!-- doc-id: execution-checklist -->
-<!-- source-sha256: f37aba6476577b250cb08706ff2899590d11f4e69e7339698ed62f1d834f3a0f -->
+<!-- source-sha256: a52496bc39f649b43220b493a57a03f141c225477658faa4bae3e47334a367ce -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -116,3 +116,4 @@
 | S-44-20 | `.php-version`이 checkout의 PHP로 `config/toolchain.json`의 `php` minor(8.5)를 선언한다. kit의 release workflow는 이 파일이 있을 때만 PHP를 설정하며, kit 0.0.52의 kit-check는 PHP를 쓰는 저장소에 이 파일을 요구한다(kit K193). ci.yml의 setup-php 단계는 PHP를 직접 적지 않고 `php-version-file: .php-version`을 읽으며, `config/owner-checks.json`은 이 파일을 toolchain-check와 workflows-test에 맡긴다 | 파일과 모든 setup-php 단계에 대한 workflows test RED → `make workflows-test owner-validate kit-check toolchain-check layout-check` 통과 GREEN | [o] |
 | S-44-21 | kit 0.0.52로 옮긴다(kit K191, K193). 게시된 파일의 integrity로 pin하고, kit의 복사본을 sync한다(`release.yml`은 release 단계 전에 `make kit-check`를 실행한다). kit-check는 PHP를 쓰는 저장소에 S-44-20이 선언한 `.php-version`을 요구한다. owner-check는 import로 test를 고를 수 있으나 fsm은 이를 설정하지 않는다 | `.php-version` 없이 `make kit-check`가 그 부재를 보고 RED → 파일이 있을 때 `make kit-check toolchain-check layout-check owner-validate documents-check dependency-policy-check` 통과 GREEN | [o] |
 | S-44-22 | kit 0.0.53으로 옮긴다(kit K195). 게시된 파일의 integrity로 pin한다. `make kit-sync`는 복사본을 바꾸지 않으며, kit의 release proof는 release가 각 sibling wheel의 asset을 나열하는지 검사하는데, wheel이 없는 fsm은 이를 게시하지 않는다 | `make dependency-policy-check`가 package-lock.json이 검토 뒤에 바뀌었다고 보고 RED → `make dependency-review RECORD=1` 뒤 `make kit-check toolchain-check layout-check owner-validate documents-check dependency-policy-check` 통과 GREEN | [o] |
+| S-44-23 | AGENTS에 생성 파일(의존성 설치물, 빌드 결과물, 캐시, 테스트 산출물, 도구 다운로드)은 추적하지 않는다는 규칙과 의도적 예외를 적고, `.gitignore`가 dist, dist.next와 캐시를 덮는다(사용자 규칙 2026-10-18). | `git ls-files`는 전후 모두 생성 파일을 나열하지 않는다; AGENTS 규칙 없음 RED → 있음, `make documents-check` 통과 GREEN | [o] |

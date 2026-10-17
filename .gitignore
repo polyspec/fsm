@@ -40,3 +40,24 @@
 /packages/php-ext/src/libtool
 /packages/php-ext/src/modules/
 /packages/php-ext/src/run-tests.php
+
+# Generated files of the install, build, cache and test runs (AGENTS.md, Generated files)
+vendor/
+target/
+dist/
+dist.next/
+dist.old/
+*.tsbuildinfo
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.cache/
+.phpunit.cache/
+.phpunit.result.cache
+test-results/
+playwright-report/
+coverage/
