@@ -35,7 +35,7 @@
         { "implementation": "npm", "test": "packages/js/tests/conformance.test.mjs" },
         { "implementation": "php", "test": "packages/php/tests/ConformanceTest.php", "symbol": "Polyspec\\FsmTest\\Tests\\ConformanceTest::testConformance" },
         { "implementation": "php-ext", "test": "packages/php-ext/tests/ConformanceTest.php", "symbol": "Polyspec\\FsmTest\\Tests\\ConformanceTest::testConformance" },
-        { "implementation": "python", "test": "packages/python/tests/test_conformance.py" },
+        { "implementation": "python", "test": "packages/python/tests/test_conformance.py", "command": ["packages/python/.venv/bin/python", "-m", "unittest", "discover", "-v", "-s", "tests", "-t", "tests", "-p", "test_conformance.py"] },
         { "implementation": "rust", "test": "packages/rust/tests/conformance/main.rs", "symbol": "vectors" }
       ] },
     { "id": "persist_concurrent_same_event", "kind": "feature", "requirements": ["FSM-B4-1"],
@@ -44,7 +44,7 @@
         { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_concurrent_same_event" },
         { "implementation": "php", "test": "packages/php/tests/PersistTest.php", "id": "testPersistConcurrentSameEvent" },
         { "implementation": "php-ext", "test": "packages/php-ext/tests/PersistTest.php", "id": "testPersistConcurrentSameEvent" },
-        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_concurrent_same_event" },
+        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "command": ["packages/python/.venv/bin/python", "-m", "unittest", "discover", "-v", "-s", "tests", "-t", "tests", "-p", "test_persist.py"], "id": "test_persist_concurrent_same_event" },
         { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_concurrent_same_event" }
       ] },
     { "id": "persist_concurrent_conflict", "kind": "feature", "requirements": ["FSM-B4-2"],
@@ -53,7 +53,7 @@
         { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_concurrent_conflict" },
         { "implementation": "php", "test": "packages/php/tests/PersistTest.php", "id": "testPersistConcurrentConflict" },
         { "implementation": "php-ext", "test": "packages/php-ext/tests/PersistTest.php", "id": "testPersistConcurrentConflict" },
-        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_concurrent_conflict" },
+        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "command": ["packages/python/.venv/bin/python", "-m", "unittest", "discover", "-v", "-s", "tests", "-t", "tests", "-p", "test_persist.py"], "id": "test_persist_concurrent_conflict" },
         { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_concurrent_conflict" }
       ] },
     { "id": "persist_retry_on_deadlock", "kind": "feature", "requirements": ["FSM-B4-3"],
@@ -62,7 +62,7 @@
         { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_retry_on_deadlock" },
         { "implementation": "php", "test": "packages/php/tests/PersistTest.php", "id": "testPersistRetryOnDeadlock" },
         { "implementation": "php-ext", "test": "packages/php-ext/tests/PersistTest.php", "id": "testPersistRetryOnDeadlock" },
-        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_retry_on_deadlock" },
+        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "command": ["packages/python/.venv/bin/python", "-m", "unittest", "discover", "-v", "-s", "tests", "-t", "tests", "-p", "test_persist.py"], "id": "test_persist_retry_on_deadlock" },
         { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_retry_on_deadlock" }
       ] },
     { "id": "persist_no_retry_on_other_error", "kind": "feature", "requirements": ["FSM-B4-4"],
@@ -71,7 +71,7 @@
         { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_no_retry_on_other_error" },
         { "implementation": "php", "test": "packages/php/tests/PersistTest.php", "id": "testPersistNoRetryOnOtherError" },
         { "implementation": "php-ext", "test": "packages/php-ext/tests/PersistTest.php", "id": "testPersistNoRetryOnOtherError" },
-        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_no_retry_on_other_error" },
+        { "implementation": "python", "test": "packages/python/tests/test_persist.py", "command": ["packages/python/.venv/bin/python", "-m", "unittest", "discover", "-v", "-s", "tests", "-t", "tests", "-p", "test_persist.py"], "id": "test_persist_no_retry_on_other_error" },
         { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_no_retry_on_other_error" }
       ] }
   ]
