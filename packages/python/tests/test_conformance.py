@@ -44,9 +44,9 @@ def failed(expect):
 
 
 def state_arg(machine, case, key_field, value_field):
-    """The state argument of a case: its integer when the case gives one (an invalid state value), its member otherwise."""
+    """The state argument of a case: a raw code goes through from_code first (docs/spec/fsm.md, B-6), its member otherwise."""
     if value_field in case:
-        return case[value_field]
+        return machine.from_code(case[value_field])
     return state_of(machine, case[key_field])
 
 
@@ -78,9 +78,9 @@ def check(test, machine, case):
             test.assertEqual(machine.code(state_of(machine, case["state"])), expect)
     elif feature == "key":
         if failed(expect):
-            assert_error(test, lambda: machine.key(case["code"]), expect)
+            assert_error(test, lambda: machine.key(machine.from_code(case["code"])), expect)
         else:
-            test.assertEqual(machine.key(case["code"]), expect)
+            test.assertEqual(machine.key(machine.from_code(case["code"])), expect)
     elif feature == "from_code":
         if failed(expect):
             assert_error(test, lambda: machine.from_code(case["input"]), expect)
@@ -112,13 +112,17 @@ def check(test, machine, case):
                 machine.target(state, event), state_of(machine, expect["state"])
             )
     elif feature == "apply":
-        expected = state_arg(machine, case, "expected", "expected_value")
         event = event_of(machine, case["event"])
-        actual = state_arg(machine, case, "actual", "actual_value")
+
+        def call():
+            expected = state_arg(machine, case, "expected", "expected_value")
+            actual = state_arg(machine, case, "actual", "actual_value")
+            return machine.apply(expected, event, actual)
+
         if failed(expect):
-            assert_error(test, lambda: machine.apply(expected, event, actual), expect)
+            assert_error(test, call, expect)
         else:
-            step = machine.apply(expected, event, actual)
+            step = call()
             test.assertEqual(
                 step,
                 machine.Step(

@@ -88,8 +88,8 @@ def key(state: State) -> str:
             raise _unknown_state(state)
 
 
-def from_code(value: int) -> State:
-    """The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value."""
+def from_code(value: object) -> State:
+    """The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value, and for a value that is not an int, whatever its type (docs/spec/fsm.md, B-6)."""
     if type(value) is not int:
         raise _unknown_state(value)
     match value:
