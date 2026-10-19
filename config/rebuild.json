@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "comment": "The class of each tool of fsm that is checked by make rebuild-check (S1). A tool of an ecosystem that fsm uses as it is is not listed here. The decoder of the render options of the edit form is kit's own implementation until crudui 0.0.8 is released; its rebuild record says why none fits.",
+  "paths": ["packages/gui/client/form-state.ts"],
+  "tools": {
+    "packages/gui/client/form-state.ts": {
+      "kind": "record",
+      "record": "docs/rebuild/crudui-render-options.md"
+    }
+  }
+}

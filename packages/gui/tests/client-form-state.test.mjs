@@ -4,8 +4,8 @@
 // writes, so the test decodes what the page carries.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { FormRenderOptionsError, FormTemplateError } from '@polyspec/crudui-generator-core';
-import { decodeFormState } from '../client/form-state.ts';
+import { FormTemplateError } from '@polyspec/crudui-generator-core';
+import { decodeFormState, FormRenderOptionsError } from '../client/form-state.ts';
 import { editState } from '../src/forms.mjs';
 
 const OPTIONS = { csrf: 'token', formErrors: ['a finding of the form'], errors: [{ path: 'form.states', message: 'a finding of the states' }] };
