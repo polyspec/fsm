@@ -190,6 +190,12 @@ The unit of idempotency is **(expected, event)**. The caller remembers the state
 
 - Dialects (S-37): every kind tests the pattern on SQLite. npm also runs its concurrency and persist cases on PostgreSQL and MySQL (`make npm-persist-test-postgres`, `make npm-persist-test-mysql`; plan C-4), and go, rust, php, php-ext and python run their persist cases on PostgreSQL and MySQL (`make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql`; plan C-4). Without `forUpdate()` both transitions of one (expected, event) report Changed on both servers, so these tests prove the lock.
 
+- **FSM-B4-1** Two transitions of one `(expected, event)` on one row that run at the same time: one changes the row, the other reports `Unchanged(to)`, and the row holds `to` once.
+- **FSM-B4-2** Two transitions of one row that run at the same time from one `expected` with different events: one changes the row, the other fails with `E_CONFLICT`, and the row holds the state of the change.
+- **FSM-B4-3** A deadlock inside the persist transaction runs the transaction again, and the second run commits.
+- **FSM-B4-4** A database error that is not a deadlock is returned after one run of the transaction, with no second run.
+- **FSM-B4-5** `apply(expected, event, actual)` gives the result of the table above in every apply case of the vector file.
+
 ## B-5. Validation rules (one error code = one RED case, no warnings)
 - Findings: core `validate(definitions)` returns every finding as `{code, machine, path, message}`. `path` is the JSON path within the machine object (`$.states[1].code`) and `machine` its key, or null when the definition has no string key. Findings follow document order within a machine and input order across machines; a machine with an `E_SCHEMA` finding gets no other finding. The GUI maps `path` to a form field and shows a finding without a field as a form error.
 - Structure

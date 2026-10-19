@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 241d84f3af9f2782ac3c852cd128edcec5f6138efdf9497045a561c72872e0e6 -->
+<!-- source-sha256: 938c0af08a87ef5d61b90e3c25a1f76a3fb5a8b45e78fafa716245d5bc47a5f8 -->
 # fsm 정의
 
 [English](fsm.md)
@@ -190,6 +190,12 @@ stateDiagram-v2
 - orm이 술어가 status column을 이름 짓고 영향 행 수를 호출자에게 돌려주는 update를 공개하면 이 규칙을 다시 본다. 그때 조건부 문 하나가 잠금을 대신하며, 이 절은 같은 항목에서 바뀐다.
 
 - dialect(S-37): 모든 kind는 패턴을 SQLite에서 테스트한다. npm은 동시성과 persist case를 PostgreSQL과 MySQL에서도 실행한다(`make npm-persist-test-postgres`, `make npm-persist-test-mysql`, 계획 C-4). go, rust, php, php-ext, python은 persist case를 PostgreSQL과 MySQL에서 실행한다(`make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql`, 계획 C-4). `forUpdate()`가 없으면 같은 (expected, event)의 두 전이가 두 서버 모두에서 Changed를 보고하므로, 이 테스트가 잠금을 증명한다.
+
+- **FSM-B4-1** 같은 행의 하나의 `(expected, event)` 전이 두 개가 동시에 실행되면: 하나는 행을 바꾸고, 다른 하나는 `Unchanged(to)`를 보고하며, 행은 `to`를 한 번 가진다.
+- **FSM-B4-2** 같은 `expected`에서 서로 다른 event를 가진 같은 행의 전이 두 개가 동시에 실행되면: 하나는 행을 바꾸고, 다른 하나는 `E_CONFLICT`로 실패하며, 행은 바뀐 쪽의 상태를 가진다.
+- **FSM-B4-3** persist transaction 안의 deadlock은 transaction을 다시 실행하고, 두 번째 실행이 커밋한다.
+- **FSM-B4-4** deadlock이 아닌 데이터베이스 오류는 transaction을 한 번 실행한 뒤 다시 실행하지 않고 반환한다.
+- **FSM-B4-5** `apply(expected, event, actual)`은 벡터 파일의 모든 apply case에서 위 표의 결과를 낸다.
 
 ## B-5. 검증 규칙 (오류 코드 1개 = RED 케이스 1개, warning 없음)
 - finding: core `validate(definitions)`는 모든 finding을 `{code, machine, path, message}`로 돌려준다. `path`는 머신 객체 안의 JSON 경로(`$.states[1].code`), `machine`은 그 key이며, 정의에 문자열 key가 없으면 null이다. finding은 머신 안에서는 문서 순서, 머신 사이에서는 입력 순서를 따른다. `E_SCHEMA` finding이 있는 머신은 다른 finding을 받지 않는다. GUI는 `path`를 폼 필드에 연결하고, 필드가 없는 finding은 폼 오류로 보인다.
