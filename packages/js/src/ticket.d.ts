@@ -28,7 +28,7 @@ export declare function code(state: State): number;
 /** The key of a state. */
 export declare function key(state: State): 'open' | 'review' | 'closed';
 /** The state of a code. */
-export declare function fromCode(value: number): State;
+export declare function fromCode(value: unknown): State;
 /** Whether a state is final. */
 export declare function isFinal(state: State): boolean;
 /** The events that have an edge from a state, in declaration order. */

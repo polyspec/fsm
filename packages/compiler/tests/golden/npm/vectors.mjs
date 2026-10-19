@@ -269,9 +269,45 @@ export const vectors = [
       },
       {
         "feature": "from_code",
+        "id": "order_from_code_string",
+        "name": "from_code__order_from_code_string",
+        "input": "1",
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "order_from_code_bool",
+        "name": "from_code__order_from_code_bool",
+        "input": true,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
+        "id": "order_from_code_float",
+        "name": "from_code__order_from_code_float",
+        "input": 1.5,
+        "expect": {
+          "error": "E_UNKNOWN_CODE",
+          "expected": null,
+          "actual": null,
+          "event": null
+        }
+      },
+      {
+        "feature": "from_code",
         "id": "order_from_code_fraction",
         "name": "from_code__order_from_code_fraction",
-        "input": 1.5,
+        "input": 1.25,
         "expect": {
           "error": "E_UNKNOWN_CODE",
           "expected": null,

@@ -50,8 +50,10 @@ export function key(state) {
   }
 }
 
-/** The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value. */
+/** The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value, and for a value that is not an
+ * integer, whatever its type (docs/spec/fsm.md, B-6). */
 export function fromCode(value) {
+  if (!Number.isSafeInteger(value)) throw new Error(Code.UnknownCode, 'ticket: ' + String(value) + ' is not a code of ticket: a code is an integer');
   switch (value) {
     case 1: return State.Open;
     case 3: return State.Review;

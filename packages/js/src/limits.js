@@ -45,8 +45,10 @@ export function key(state) {
   }
 }
 
-/** The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value. */
+/** The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value, and for a value that is not an
+ * integer, whatever its type (docs/spec/fsm.md, B-6). */
 export function fromCode(value) {
+  if (!Number.isSafeInteger(value)) throw new Error(Code.UnknownCode, 'limits: ' + String(value) + ' is not a code of limits: a code is an integer');
   switch (value) {
     case 1: return State.Floor;
     case 2147483647: return State.Ceiling;

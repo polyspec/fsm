@@ -4,7 +4,7 @@
 // apply is null in the vector and undefined in the error). The persist cases run the B-4 example (examples/persist.mjs) on the
 // dialect of FSM_TEST_DIALECT (sqlite by default, through the dialect helper of the fsm-db tests) and assert the stored value
 // after the run. The names are the notation of docs/spec/fsm.md, B-6: a key becomes a member by pascal
-// case. A state argument is a key, or an integer where the case gives one (an invalid state value).
+// case. A state argument is a key, or the raw code of the case, which goes through fromCode first (docs/spec/fsm.md, B-6).
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -28,7 +28,7 @@ function stateOf(machine, key) {
 }
 
 /** The state argument of a case: its integer when the case gives one (`value`), its key otherwise. */
-const stateArg = (machine, key, value) => (value !== undefined ? value : stateOf(machine, key));
+const stateArg = (machine, key, value) => (value !== undefined ? machine.fromCode(value) : stateOf(machine, key));
 
 /** The event value of a key of the machine module `machine`. */
 function eventOf(machine, key) {
@@ -104,8 +104,8 @@ async function check(machine, c) {
       else assert.equal(machine.code(stateOf(machine, c.state)), c.expect);
       return;
     case 'key':
-      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.key(c.code)), c.expect);
-      else assert.equal(machine.key(c.code), c.expect);
+      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.key(machine.fromCode(c.code))), c.expect);
+      else assert.equal(machine.key(machine.fromCode(c.code)), c.expect);
       return;
     case 'from_code':
       if (c.expect.error !== undefined) assertFields(errorOf(() => machine.fromCode(c.input)), c.expect);
@@ -123,11 +123,10 @@ async function check(machine, c) {
       else assert.equal(machine.target(stateOf(machine, c.state), eventOf(machine, c.event)), stateOf(machine, c.expect.state));
       return;
     case 'apply': {
-      const expected = stateArg(machine, c.expected, c.expected_value);
       const event = eventOf(machine, c.event);
-      const actual = stateArg(machine, c.actual, c.actual_value);
-      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.apply(expected, event, actual)), c.expect);
-      else assert.deepEqual(machine.apply(expected, event, actual), { to: stateOf(machine, c.expect.to), changed: c.expect.changed });
+      const call = () => machine.apply(stateArg(machine, c.expected, c.expected_value), event, stateArg(machine, c.actual, c.actual_value));
+      if (c.expect.error !== undefined) assertFields(errorOf(call), c.expect);
+      else assert.deepEqual(call(), { to: stateOf(machine, c.expect.to), changed: c.expect.changed });
       return;
     }
     default:

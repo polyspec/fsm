@@ -117,8 +117,10 @@ function machineJs(ir, lock) {
     '  }',
     '}',
     '',
-    '/** The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value. */',
+    '/** The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value, and for a value that is not an',
+    ' * integer, whatever its type (docs/spec/fsm.md, B-6). */',
     'export function fromCode(value) {',
+    `  if (!Number.isSafeInteger(value)) throw new Error(Code.UnknownCode, '${machine}: ' + String(value) + ' is not a code of ${machine}: a code is an integer');`,
     '  switch (value) {',
     ...states.map(state => `    case ${state.code}: return ${stateOf(state.key)};`),
     ...reserved.map(item => `    case ${item}: throw new Error(Code.ReservedCode, '${machine}: code ${item} is reserved and is no state of ${machine}');`),
@@ -208,7 +210,7 @@ function machineDts(ir) {
     '/** The key of a state. */',
     `export declare function key(state: State): ${union(states.map(state => `'${state.key}'`))};`,
     '/** The state of a code. */',
-    'export declare function fromCode(value: number): State;',
+    'export declare function fromCode(value: unknown): State;',
     '/** Whether a state is final. */',
     'export declare function isFinal(state: State): boolean;',
     '/** The events that have an edge from a state, in declaration order. */',
@@ -256,9 +258,12 @@ export function vectorsFile(list) {
   const vectorList = forKind(list, KIND).map(({ machine, cases }) => ({
     machine,
     cases: cases.map(({ input_type: inputType, ...entry }) => {
-      // A typed input is given to npm only as a float: npm's number holds no string and no bool (TYPED_KINDS, docs/spec/fsm.md, B-6).
-      if (inputType !== undefined && inputType !== 'float') throw new Error(`npm: the input type ${JSON.stringify(inputType)} of ${entry.id} is not a number`);
-      return typeof entry.input === 'string' ? { ...entry, input: Number(entry.input) } : entry;
+      // The decoded input: an integer or a float is a number, a string stays a string and a bool is a boolean (docs/spec/fsm.md, B-6).
+      if (entry.input === undefined) return entry;
+      if (inputType === undefined || inputType === 'float') return { ...entry, input: Number(entry.input) };
+      if (inputType === 'string') return entry;
+      if (inputType === 'bool') return { ...entry, input: entry.input === 'true' };
+      throw new Error(`npm: the input type ${JSON.stringify(inputType)} of ${entry.id} is not known`);
     }),
   }));
   return text([header(SHARED), '', `export const vectors = ${JSON.stringify(vectorList, null, 2)};`]);
