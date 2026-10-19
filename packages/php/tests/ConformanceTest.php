@@ -3326,6 +3326,7 @@ final class ConformanceTest extends ConformanceCase
      * @param array<string, mixed> $case
      */
     #[DataProvider('cases')]
+    // FSM-B4-5: every apply case of the vector file gives the result of the B-4 table (docs/spec/fsm.md).
     public function testConformance(string $machine, array $case): void
     {
         $this->conformance($machine, $case);
