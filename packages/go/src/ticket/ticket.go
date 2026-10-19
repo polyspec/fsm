@@ -78,9 +78,19 @@ func Key(state State) (string, error) {
 	}
 }
 
-// FromCode returns the state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value.
-func FromCode(value int64) (State, error) {
-	switch value {
+// FromCode returns the state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value, and for a
+// value that is not an integer, whatever its type (docs/spec/fsm.md, B-6).
+func FromCode(value any) (State, error) {
+	var code int64
+	switch v := value.(type) {
+	case int:
+		code = int64(v)
+	case int64:
+		code = v
+	default:
+		return 0, &fsm.Error{Code: fsm.CodeUnknownCode, Message: fmt.Sprintf("ticket: %v (%T) is not a code of ticket: a code is an integer", value, value)}
+	}
+	switch code {
 	case 1:
 		return StateOpen, nil
 	case 3:
@@ -92,7 +102,7 @@ func FromCode(value int64) (State, error) {
 	case 4:
 		return 0, &fsm.Error{Code: fsm.CodeReservedCode, Message: "ticket: code 4 is reserved and is no state of ticket"}
 	default:
-		return 0, unknownState(value)
+		return 0, unknownState(code)
 	}
 }
 

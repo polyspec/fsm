@@ -43,6 +43,10 @@ var vectors = []machineVectors{
 			{feature: "from_code", id: "order_from_code_negative", name: "from_code__order_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "order_from_code_int32_overflow", name: "from_code__order_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "order_from_code_int64_max", name: "from_code__order_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_string", name: "from_code__order_from_code_string", input: "1", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_bool", name: "from_code__order_from_code_bool", input: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_float", name: "from_code__order_from_code_float", input: 1.5, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_fraction", name: "from_code__order_from_code_fraction", input: 1.25, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "code", id: "order_code_v0", name: "code__order_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "is_final", id: "order_is_final_v0", name: "is_final__order_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "key", id: "order_key_v0", name: "key__order_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
@@ -145,14 +149,10 @@ func (m orderMachine) initial() (string, error) {
 	return order.Key(order.Initial())
 }
 
-// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+// state returns the state of a key, or, for a raw code, the state that from_code gives it: an invalid code is rejected there.
 func (m orderMachine) state(arg stateArg) (order.State, error) {
 	if arg.isValue {
-		value, err := int32Of(arg.value)
-		if err != nil {
-			return 0, err
-		}
-		return order.State(value), nil
+		return order.FromCode(arg.value)
 	}
 	return lookup(orderStates, "state", arg.key)
 }
@@ -166,14 +166,14 @@ func (m orderMachine) code(state stateArg) (int32, error) {
 }
 
 func (m orderMachine) key(code int64) (string, error) {
-	value, err := int32Of(code)
+	value, err := order.FromCode(code)
 	if err != nil {
 		return "", err
 	}
-	return order.Key(order.State(value))
+	return order.Key(value)
 }
 
-func (m orderMachine) fromCode(code int64) (string, error) {
+func (m orderMachine) fromCode(code any) (string, error) {
 	value, err := order.FromCode(code)
 	if err != nil {
 		return "", err

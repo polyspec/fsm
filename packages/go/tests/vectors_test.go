@@ -37,6 +37,10 @@ var vectors = []machineVectors{
 			{feature: "from_code", id: "in_review_from_code_negative", name: "from_code__in_review_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "in_review_from_code_int32_overflow", name: "from_code__in_review_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "in_review_from_code_int64_max", name: "from_code__in_review_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "in_review_from_code_string", name: "from_code__in_review_from_code_string", input: "1", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "in_review_from_code_bool", name: "from_code__in_review_from_code_bool", input: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "in_review_from_code_float", name: "from_code__in_review_from_code_float", input: 1.5, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "in_review_from_code_fraction", name: "from_code__in_review_from_code_fraction", input: 1.25, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "code", id: "in_review_code_v0", name: "code__in_review_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "is_final", id: "in_review_is_final_v0", name: "is_final__in_review_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "key", id: "in_review_key_v0", name: "key__in_review_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
@@ -95,6 +99,10 @@ var vectors = []machineVectors{
 			{feature: "from_code", id: "limits_from_code_negative", name: "from_code__limits_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "limits_from_code_int32_overflow", name: "from_code__limits_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "limits_from_code_int64_max", name: "from_code__limits_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "limits_from_code_string", name: "from_code__limits_from_code_string", input: "1", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "limits_from_code_bool", name: "from_code__limits_from_code_bool", input: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "limits_from_code_float", name: "from_code__limits_from_code_float", input: 1.5, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "limits_from_code_fraction", name: "from_code__limits_from_code_fraction", input: 1.25, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "code", id: "limits_code_v0", name: "code__limits_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "is_final", id: "limits_is_final_v0", name: "is_final__limits_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "key", id: "limits_key_v0", name: "key__limits_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
@@ -148,6 +156,10 @@ var vectors = []machineVectors{
 			{feature: "from_code", id: "order_from_code_negative", name: "from_code__order_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "order_from_code_int32_overflow", name: "from_code__order_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "order_from_code_int64_max", name: "from_code__order_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_string", name: "from_code__order_from_code_string", input: "1", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_bool", name: "from_code__order_from_code_bool", input: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_float", name: "from_code__order_from_code_float", input: 1.5, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "order_from_code_fraction", name: "from_code__order_from_code_fraction", input: 1.25, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "code", id: "order_code_v0", name: "code__order_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "is_final", id: "order_is_final_v0", name: "is_final__order_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "key", id: "order_key_v0", name: "key__order_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
@@ -235,6 +247,10 @@ var vectors = []machineVectors{
 			{feature: "from_code", id: "standby_from_code_negative", name: "from_code__standby_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "standby_from_code_int32_overflow", name: "from_code__standby_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "standby_from_code_int64_max", name: "from_code__standby_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "standby_from_code_string", name: "from_code__standby_from_code_string", input: "1", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "standby_from_code_bool", name: "from_code__standby_from_code_bool", input: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "standby_from_code_float", name: "from_code__standby_from_code_float", input: 1.5, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "standby_from_code_fraction", name: "from_code__standby_from_code_fraction", input: 1.25, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "code", id: "standby_code_v0", name: "code__standby_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "is_final", id: "standby_is_final_v0", name: "is_final__standby_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "key", id: "standby_key_v0", name: "key__standby_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
@@ -269,6 +285,10 @@ var vectors = []machineVectors{
 			{feature: "from_code", id: "ticket_from_code_negative", name: "from_code__ticket_from_code_negative", input: -1, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "ticket_from_code_int32_overflow", name: "from_code__ticket_from_code_int32_overflow", input: 2147483648, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "from_code", id: "ticket_from_code_int64_max", name: "from_code__ticket_from_code_int64_max", input: 9223372036854775807, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_string", name: "from_code__ticket_from_code_string", input: "1", want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_bool", name: "from_code__ticket_from_code_bool", input: true, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_float", name: "from_code__ticket_from_code_float", input: 1.5, want: expectation{error: "E_UNKNOWN_CODE"}},
+			{feature: "from_code", id: "ticket_from_code_fraction", name: "from_code__ticket_from_code_fraction", input: 1.25, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "code", id: "ticket_code_v0", name: "code__ticket_code_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "is_final", id: "ticket_is_final_v0", name: "is_final__ticket_is_final_v0", value: 0, hasValue: true, want: expectation{error: "E_UNKNOWN_CODE"}},
 			{feature: "key", id: "ticket_key_v0", name: "key__ticket_key_v0", code: 0, want: expectation{error: "E_UNKNOWN_CODE"}},
@@ -339,14 +359,10 @@ func (m in_reviewMachine) initial() (string, error) {
 	return in_review.Key(in_review.Initial())
 }
 
-// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+// state returns the state of a key, or, for a raw code, the state that from_code gives it: an invalid code is rejected there.
 func (m in_reviewMachine) state(arg stateArg) (in_review.State, error) {
 	if arg.isValue {
-		value, err := int32Of(arg.value)
-		if err != nil {
-			return 0, err
-		}
-		return in_review.State(value), nil
+		return in_review.FromCode(arg.value)
 	}
 	return lookup(in_reviewStates, "state", arg.key)
 }
@@ -360,14 +376,14 @@ func (m in_reviewMachine) code(state stateArg) (int32, error) {
 }
 
 func (m in_reviewMachine) key(code int64) (string, error) {
-	value, err := int32Of(code)
+	value, err := in_review.FromCode(code)
 	if err != nil {
 		return "", err
 	}
-	return in_review.Key(in_review.State(value))
+	return in_review.Key(value)
 }
 
-func (m in_reviewMachine) fromCode(code int64) (string, error) {
+func (m in_reviewMachine) fromCode(code any) (string, error) {
 	value, err := in_review.FromCode(code)
 	if err != nil {
 		return "", err
@@ -480,14 +496,10 @@ func (m limitsMachine) initial() (string, error) {
 	return limits.Key(limits.Initial())
 }
 
-// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+// state returns the state of a key, or, for a raw code, the state that from_code gives it: an invalid code is rejected there.
 func (m limitsMachine) state(arg stateArg) (limits.State, error) {
 	if arg.isValue {
-		value, err := int32Of(arg.value)
-		if err != nil {
-			return 0, err
-		}
-		return limits.State(value), nil
+		return limits.FromCode(arg.value)
 	}
 	return lookup(limitsStates, "state", arg.key)
 }
@@ -501,14 +513,14 @@ func (m limitsMachine) code(state stateArg) (int32, error) {
 }
 
 func (m limitsMachine) key(code int64) (string, error) {
-	value, err := int32Of(code)
+	value, err := limits.FromCode(code)
 	if err != nil {
 		return "", err
 	}
-	return limits.Key(limits.State(value))
+	return limits.Key(value)
 }
 
-func (m limitsMachine) fromCode(code int64) (string, error) {
+func (m limitsMachine) fromCode(code any) (string, error) {
 	value, err := limits.FromCode(code)
 	if err != nil {
 		return "", err
@@ -626,14 +638,10 @@ func (m orderMachine) initial() (string, error) {
 	return order.Key(order.Initial())
 }
 
-// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+// state returns the state of a key, or, for a raw code, the state that from_code gives it: an invalid code is rejected there.
 func (m orderMachine) state(arg stateArg) (order.State, error) {
 	if arg.isValue {
-		value, err := int32Of(arg.value)
-		if err != nil {
-			return 0, err
-		}
-		return order.State(value), nil
+		return order.FromCode(arg.value)
 	}
 	return lookup(orderStates, "state", arg.key)
 }
@@ -647,14 +655,14 @@ func (m orderMachine) code(state stateArg) (int32, error) {
 }
 
 func (m orderMachine) key(code int64) (string, error) {
-	value, err := int32Of(code)
+	value, err := order.FromCode(code)
 	if err != nil {
 		return "", err
 	}
-	return order.Key(order.State(value))
+	return order.Key(value)
 }
 
-func (m orderMachine) fromCode(code int64) (string, error) {
+func (m orderMachine) fromCode(code any) (string, error) {
 	value, err := order.FromCode(code)
 	if err != nil {
 		return "", err
@@ -764,14 +772,10 @@ func (m standbyMachine) initial() (string, error) {
 	return standby.Key(standby.Initial())
 }
 
-// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+// state returns the state of a key, or, for a raw code, the state that from_code gives it: an invalid code is rejected there.
 func (m standbyMachine) state(arg stateArg) (standby.State, error) {
 	if arg.isValue {
-		value, err := int32Of(arg.value)
-		if err != nil {
-			return 0, err
-		}
-		return standby.State(value), nil
+		return standby.FromCode(arg.value)
 	}
 	return lookup(standbyStates, "state", arg.key)
 }
@@ -785,14 +789,14 @@ func (m standbyMachine) code(state stateArg) (int32, error) {
 }
 
 func (m standbyMachine) key(code int64) (string, error) {
-	value, err := int32Of(code)
+	value, err := standby.FromCode(code)
 	if err != nil {
 		return "", err
 	}
-	return standby.Key(standby.State(value))
+	return standby.Key(value)
 }
 
-func (m standbyMachine) fromCode(code int64) (string, error) {
+func (m standbyMachine) fromCode(code any) (string, error) {
 	value, err := standby.FromCode(code)
 	if err != nil {
 		return "", err
@@ -908,14 +912,10 @@ func (m ticketMachine) initial() (string, error) {
 	return ticket.Key(ticket.Initial())
 }
 
-// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).
+// state returns the state of a key, or, for a raw code, the state that from_code gives it: an invalid code is rejected there.
 func (m ticketMachine) state(arg stateArg) (ticket.State, error) {
 	if arg.isValue {
-		value, err := int32Of(arg.value)
-		if err != nil {
-			return 0, err
-		}
-		return ticket.State(value), nil
+		return ticket.FromCode(arg.value)
 	}
 	return lookup(ticketStates, "state", arg.key)
 }
@@ -929,14 +929,14 @@ func (m ticketMachine) code(state stateArg) (int32, error) {
 }
 
 func (m ticketMachine) key(code int64) (string, error) {
-	value, err := int32Of(code)
+	value, err := ticket.FromCode(code)
 	if err != nil {
 		return "", err
 	}
-	return ticket.Key(ticket.State(value))
+	return ticket.Key(value)
 }
 
-func (m ticketMachine) fromCode(code int64) (string, error) {
+func (m ticketMachine) fromCode(code any) (string, error) {
 	value, err := ticket.FromCode(code)
 	if err != nil {
 		return "", err

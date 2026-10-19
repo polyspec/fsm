@@ -44,7 +44,7 @@ type vectorCase struct {
 	expectedIsValue bool
 	actualValue     int64
 	actualIsValue   bool
-	input           int64
+	input           any
 	code            int64
 	want            expectation
 }
@@ -84,7 +84,7 @@ type machineUnderTest interface {
 	initial() (string, error)
 	code(state stateArg) (int32, error)
 	key(code int64) (string, error)
-	fromCode(code int64) (string, error)
+	fromCode(code any) (string, error)
 	isFinal(state stateArg) (bool, error)
 	eventsFrom(state string) ([]string, error)
 	target(expected, event string) (string, error)
@@ -205,7 +205,7 @@ func runCase(t *testing.T, m machineUnderTest, c vectorCase) {
 		}
 		assertNoError(t, err)
 		if got != c.want.state {
-			t.Fatalf("FromCode(%d) = %q, want %q", c.input, got, c.want.state)
+			t.Fatalf("FromCode(%v) = %q, want %q", c.input, got, c.want.state)
 		}
 	case "is_final":
 		got, err := m.isFinal(argOf(c.state, c.value, c.hasValue))

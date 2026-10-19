@@ -141,13 +141,23 @@ function machineGo(ir, lock, { module }) {
     '\t}',
     '}',
     '',
-    '// FromCode returns the state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value.',
-    'func FromCode(value int64) (State, error) {',
-    '\tswitch value {',
+    '// FromCode returns the state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value, and for a',
+    '// value that is not an integer, whatever its type (docs/spec/fsm.md, B-6).',
+    'func FromCode(value any) (State, error) {',
+    '\tvar code int64',
+    '\tswitch v := value.(type) {',
+    '\tcase int:',
+    '\t\tcode = int64(v)',
+    '\tcase int64:',
+    '\t\tcode = v',
+    '\tdefault:',
+    `\t\treturn 0, &fsm.Error{Code: fsm.CodeUnknownCode, Message: fmt.Sprintf("${machine}: %v (%T) is not a code of ${machine}: a code is an integer", value, value)}`,
+    '\t}',
+    '\tswitch code {',
     ...states.map(state => `\tcase ${state.code}:\n\t\treturn ${stateOf(state.key)}, nil`),
     ...reserved.map(item => `\tcase ${item}:\n\t\treturn 0, &fsm.Error{Code: fsm.CodeReservedCode, Message: "${machine}: code ${item} is reserved and is no state of ${machine}"}`),
     '\tdefault:',
-    '\t\treturn 0, unknownState(value)',
+    '\t\treturn 0, unknownState(code)',
     '\t}',
     '}',
     '',
@@ -246,7 +256,15 @@ function caseLiteral(entry) {
       fields.push(`${DATA_FIELDS[name]}: ${integerLiteral(value, entry.id)}`, `${flag}: true`);
       continue;
     }
-    if (name === 'input' || name === 'code') {
+    if (name === 'input_type') continue;
+    if (name === 'input') {
+      // The input is the decoded JSON value of from_code: an integer, or the string, bool or float that input_type names.
+      const literal = entry.input_type === undefined ? integerLiteral(value, entry.id)
+        : entry.input_type === 'string' ? quoted(value) : value;
+      fields.push(`input: ${literal}`);
+      continue;
+    }
+    if (name === 'code') {
       fields.push(`${DATA_FIELDS[name]}: ${integerLiteral(value, entry.id)}`);
       continue;
     }
@@ -316,14 +334,10 @@ function adapterOf(machine, cases) {
     `\treturn ${machine}.Key(${machine}.Initial())`,
     '}',
     '',
-    `// state returns the state of a key, or the state that an integer names when the state type holds it (an invalid value included).`,
+    `// state returns the state of a key, or, for a raw code, the state that from_code gives it: an invalid code is rejected there.`,
     `func (m ${type}) state(arg stateArg) (${machine}.State, error) {`,
     '\tif arg.isValue {',
-    '\t\tvalue, err := int32Of(arg.value)',
-    '\t\tif err != nil {',
-    '\t\t\treturn 0, err',
-    '\t\t}',
-    `\t\treturn ${machine}.State(value), nil`,
+    `\t\treturn ${machine}.FromCode(arg.value)`,
     '\t}',
     `\treturn lookup(${statesTable}, "state", arg.key)`,
     '}',
@@ -337,14 +351,14 @@ function adapterOf(machine, cases) {
     '}',
     '',
     `func (m ${type}) key(code int64) (string, error) {`,
-    '\tvalue, err := int32Of(code)',
+    `\tvalue, err := ${machine}.FromCode(code)`,
     '\tif err != nil {',
     '\t\treturn "", err',
     '\t}',
-    `\treturn ${machine}.Key(${machine}.State(value))`,
+    `\treturn ${machine}.Key(value)`,
     '}',
     '',
-    `func (m ${type}) fromCode(code int64) (string, error) {`,
+    `func (m ${type}) fromCode(code any) (string, error) {`,
     `\tvalue, err := ${machine}.FromCode(code)`,
     '\tif err != nil {',
     '\t\treturn "", err',
