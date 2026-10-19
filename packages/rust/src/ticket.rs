@@ -46,15 +46,19 @@ pub fn key(state: State) -> &'static str {
     }
 }
 
-/// The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value.
-pub fn from_code(value: i64) -> Result<State, Error> {
-    match value {
+/// The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value, and for a value that is not an
+/// integer, whatever its JSON type (docs/spec/fsm.md, B-6).
+pub fn from_code(value: serde_json::Value) -> Result<State, Error> {
+    let Some(code) = value.as_i64() else {
+        return Err(Error::new(Code::UnknownCode, format!("ticket: {value} is not a code of ticket: a code is an integer")));
+    };
+    match code {
         1 => Ok(State::Open),
         3 => Ok(State::Review),
         5 => Ok(State::Closed),
         2 => Err(Error::new(Code::ReservedCode, "ticket: code 2 is reserved and is no state of ticket")),
         4 => Err(Error::new(Code::ReservedCode, "ticket: code 4 is reserved and is no state of ticket")),
-        _ => Err(Error::new(Code::UnknownCode, format!("ticket: {value} is not a state of ticket"))),
+        _ => Err(Error::new(Code::UnknownCode, format!("ticket: {code} is not a state of ticket"))),
     }
 }
 

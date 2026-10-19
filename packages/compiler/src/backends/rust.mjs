@@ -138,12 +138,16 @@ function machineRs(ir, lock) {
     '    }',
     '}',
     '',
-    '/// The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value.',
-    'pub fn from_code(value: i64) -> Result<State, Error> {',
-    '    match value {',
+    '/// The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value, and for a value that is not an',
+    '/// integer, whatever its JSON type (docs/spec/fsm.md, B-6).',
+    'pub fn from_code(value: serde_json::Value) -> Result<State, Error> {',
+    '    let Some(code) = value.as_i64() else {',
+    `        return Err(Error::new(Code::UnknownCode, format!("${machine}: {value} is not a code of ${machine}: a code is an integer")));`,
+    '    };',
+    '    match code {',
     ...states.map(state => `        ${state.code} => Ok(${stateOf(state.key)}),`),
     ...reserved.map(item => `        ${item} => Err(Error::new(Code::ReservedCode, "${machine}: code ${item} is reserved and is no state of ${machine}")),`),
-    `        _ => Err(Error::new(Code::UnknownCode, format!("${machine}: {value} is not a state of ${machine}"))),`,
+    `        _ => Err(Error::new(Code::UnknownCode, format!("${machine}: {code} is not a state of ${machine}"))),`,
     '    }',
     '}',
     '',
@@ -256,19 +260,31 @@ function bodyOf(machine, c) {
   const event = key => eventExpr(machine, key);
   // The raw code of a state, for the persist cases: the code function of the machine on the state.
   const code = key => `${machine}::code(${state(key)})`;
+  // A raw code goes through from_code, which rejects an invalid one (docs/spec/fsm.md, B-6): the JSON value of the case, as serde_json holds it.
+  const raw = value => `${machine}::from_code(${jsonOf(value)})`;
+  // The Result of a state argument: the state of its key, or what from_code gives its raw code.
+  const stateResult = (field, rawField) => (c[rawField] !== undefined ? raw(c[rawField]) : `Ok(${state(c[field])})`);
   switch (c.feature) {
     case 'initial':
       return [`crate::check_value(${machine}::initial(), ${state(c.expect.state)});`];
     case 'code':
-      return [`crate::check_value(${machine}::code(${state(c.state)}), ${c.expect});`];
+      return c.value !== undefined
+        ? [`crate::check_result(${raw(c.value)}.map(${machine}::code), Err(${expectedOf(c.expect)}));`]
+        : [`crate::check_value(${machine}::code(${state(c.state)}), ${c.expect});`];
     case 'key':
-      return [`crate::check_result(${machine}::from_code(${c.code}).map(${machine}::key), Ok("${c.expect}"));`];
-    case 'from_code':
       return c.expect.error !== undefined
-        ? [`crate::check_result(${machine}::from_code(${c.input}), Err(${expectedOf(c.expect)}));`]
-        : [`crate::check_result(${machine}::from_code(${c.input}), Ok(${state(c.expect.state)}));`];
+        ? [`crate::check_result(${raw(c.code)}.map(${machine}::key), Err(${expectedOf(c.expect)}));`]
+        : [`crate::check_result(${raw(c.code)}.map(${machine}::key), Ok("${c.expect}"));`];
+    case 'from_code': {
+      const input = c.input_type === 'string' ? `serde_json::json!(${JSON.stringify(c.input)})` : jsonOf(c.input);
+      return c.expect.error !== undefined
+        ? [`crate::check_result(${machine}::from_code(${input}), Err(${expectedOf(c.expect)}));`]
+        : [`crate::check_result(${machine}::from_code(${input}), Ok(${state(c.expect.state)}));`];
+    }
     case 'is_final':
-      return [`crate::check_value(${machine}::is_final(${state(c.state)}), ${c.expect});`];
+      return c.value !== undefined
+        ? [`crate::check_result(${raw(c.value)}.map(${machine}::is_final), Err(${expectedOf(c.expect)}));`]
+        : [`crate::check_value(${machine}::is_final(${state(c.state)}), ${c.expect});`];
     case 'events_from':
       return [`crate::check_slice(${machine}::events_from(${state(c.state)}), &[${c.expect.map(event).join(', ')}]);`];
     case 'target':
@@ -276,7 +292,8 @@ function bodyOf(machine, c) {
         ? [`crate::check_result(${machine}::target(${state(c.state)}, ${event(c.event)}), Err(${expectedOf(c.expect)}));`]
         : [`crate::check_result(${machine}::target(${state(c.state)}, ${event(c.event)}), Ok(${state(c.expect.state)}));`];
     case 'apply': {
-      const call = `${machine}::apply(${state(c.expected)}, ${event(c.event)}, ${state(c.actual)})`;
+      const call = `${stateResult('expected', 'expected_value')}.and_then(|expected| ${stateResult('actual', 'actual_value')}`
+        + `.and_then(|actual| ${machine}::apply(expected, ${event(c.event)}, actual)))`;
       return c.expect.error !== undefined
         ? [`crate::check_result(${call}, Err(${expectedOf(c.expect)}));`]
         : [`crate::check_result(${call}, Ok(${machine}::Step { to: ${state(c.expect.to)}, changed: ${c.expect.changed} }));`];
@@ -289,7 +306,7 @@ function bodyOf(machine, c) {
         'crate::check_persist(',
         `    ${code(c.stored)},`,
         '    |stored| {',
-        `        let actual = ${machine}::from_code(stored)?;`,
+        `        let actual = ${machine}::from_code(serde_json::json!(stored))?;`,
         `        let step = ${machine}::apply(${state(c.expected)}, ${event(c.event)}, actual)?;`,
         `        Ok((${machine}::code(step.to), step.changed))`,
         '    },',
@@ -301,6 +318,11 @@ function bodyOf(machine, c) {
     default:
       throw new Error(`rust: no test for the feature ${c.feature}; the vectors and conformance.rs must agree`);
   }
+}
+
+/** The serde_json value of a literal of the vectors: an integer is an i64 (json! would read a bare one as an i32). */
+function jsonOf(literal) {
+  return /^-?[0-9]+$/.test(literal) ? `serde_json::json!(${literal}i64)` : `serde_json::json!(${literal})`;
 }
 
 /** The #[test] (or #[tokio::test] for a persist case) of one vector case `c` of `machine`, as lines. */

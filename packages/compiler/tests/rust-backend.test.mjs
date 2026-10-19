@@ -70,8 +70,8 @@ test('the vector module of the order example is the golden tests/vectors.rs, byt
   // A test is named by the case name <feature>__<id> (docs/plans/fsm-v1/plan.md, C-4), the name that the parity check of kit runs as
   // vectors::<case>.
   const names = [...text.matchAll(/^(?:async )?fn ([a-z][a-z0-9_]*__[a-z0-9_]+)\(\)/gm)].map(match => match[1]);
-  // Rust runs the cases of the kinds that admit them: the 10 cases with an invalid state value are not in its module (core, RAW_STATE_KINDS).
-  assert.equal(names.length, 92, 'one test per vector case of rust');
+  // Rust runs every case of the vector file, the invalid state values and the non-integer inputs included (docs/spec/fsm.md, B-6).
+  assert.equal(names.length, vectors(irs[0], lock).cases.length, 'one test per vector case of rust');
   assert.equal(new Set(names).size, names.length, 'every test has its own name');
 });
 
@@ -128,7 +128,7 @@ test('the src files of a machine without events build with cargo', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'fsm-rust-noevents-'));
   roots.push(root);
   mkdirSync(path.join(root, 'src'));
-  writeFileSync(path.join(root, 'Cargo.toml'), '[package]\nname = "noevents"\nversion = "0.0.0"\nedition = "2021"\n\n[lib]\npath = "src/lib.rs"\n');
+  writeFileSync(path.join(root, 'Cargo.toml'), '[package]\nname = "noevents"\nversion = "0.0.0"\nedition = "2021"\n\n[lib]\npath = "src/lib.rs"\n\n[dependencies]\nserde_json = \"1.0.151\"\n');
   for (const file of files([normalize(NO_EVENTS)], NO_EVENTS_LOCK)) writeFileSync(path.join(root, 'src', file.path), file.content);
   const result = spawnSync('cargo', ['build', '--quiet', '--manifest-path', path.join(root, 'Cargo.toml')], { encoding: 'utf8' });
   assert.deepEqual([result.status, result.stderr], [0, ''], 'cargo build of a machine without events');

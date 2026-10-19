@@ -17,7 +17,7 @@ use std::sync::MutexGuard;
 /// The step of the order machine from the observed state `expected` by `event` on the stored code.
 fn decide(expected: State, event: Event) -> impl Fn(i64) -> Result<(i32, bool), Error> {
     move |stored| {
-        let step = order::apply(expected, event, order::from_code(stored)?)?;
+        let step = order::apply(expected, event, order::from_code(serde_json::json!(stored))?)?;
         Ok((order::code(step.to), step.changed))
     }
 }
