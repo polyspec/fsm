@@ -53,6 +53,10 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1.md`; the definitio
   generated output). Paths are resolved declaratively (named in a tracked file) or by discovery (a stated discovery
   rule).
 
+## Generated files
+
+Generated files are never tracked in Git. This covers dependency installs (`node_modules/`, `vendor/`, virtual environments), build output (`dist/`, `target/`, `*.tsbuildinfo`), caches (`.cache/`, `__pycache__/`, `.pytest_cache/`), test run artifacts (`test-results/`, `playwright-report/`, PHPUnit caches) and tool downloads (`var/`). The only exceptions are files the repository deliberately needs, and only these are tracked: lock files (`package-lock.json`, `composer.lock`, `Cargo.lock`, uv locks, `mise.lock`), committed generated documents that this file names, and test fixtures. Each `.gitignore` covers these paths; a new generator adds its ignore entry in the same commit.
+
 ## Checklist
 
 `docs/plans/execution-checklist.md` is the only checklist of this plan. A task is `[ ]` waiting, `[~]` in progress, `[o]`

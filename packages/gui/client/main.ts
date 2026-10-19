@@ -10,18 +10,17 @@
 import htmx from 'htmx.org';
 import mermaid from 'mermaid';
 import { createApplication, Hyper } from '@polyspec/hyper-client';
-import { connectForm, createForm, patchContent, type FormConnection, type FormTemplate } from '@polyspec/crudui-generator-core';
+import { connectForm, createForm, patchContent, type FormConnection } from '@polyspec/crudui-generator-core';
 import { renderForm } from '@polyspec/crudui-generator-html';
 import { decodeTemplate } from '@polyspec/template/render';
 import manifest from '../app/app.json';
 import index from '@polyspec/hyper-client/templates-index';
 import { codesOfAddedRows } from './new-codes';
+import { decodeFormState } from './form-state';
 
 // Mermaid reads the canonical text of each <pre class="mermaid"> element that the server wrote. The securityLevel stays
 // strict, so Mermaid sanitizes the labels it renders.
 mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' });
-
-type RenderOptions = Parameters<typeof renderForm>[1];
 
 // The page exposes its hyper client as window.hyper, which the browser tests read.
 declare global {
@@ -89,9 +88,8 @@ function connectEditForm(): void {
   const state = document.getElementById('fsm-form-state');
   const host = document.getElementById('fsm-form');
   if (state === null || host === null) return;
-  const { template, data, nextCode, render } = JSON.parse(state.textContent ?? '') as {
-    template: FormTemplate; data: Record<string, unknown>; nextCode?: number; render: RenderOptions;
-  };
+  // crudui decodes the template and the render options, and fsm checks data and nextCode (form-state.ts).
+  const { template, data, nextCode, render } = decodeFormState(state.textContent ?? '');
   const session = createForm(template, data, { language: 'en' });
   const form = host.querySelector<HTMLElement>('.crudui-form');
   if (form === null) throw new Error('the edit page has no crudui form in its form host');
