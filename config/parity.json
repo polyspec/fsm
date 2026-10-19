@@ -13,10 +13,8 @@
     { "name": "rust", "runner": "cargo", "roots": ["packages/rust"], "tests": ["packages/rust/tests/conformance/main.rs"],
       "support": ["packages/rust/tests/common/mod.rs"] }
   ],
-  "profiles": [
-    { "name": "fsm", "implementations": ["go", "npm", "php", "php-ext", "python", "rust"] }
-  ],
   "suites": ["contracts/conformance/vectors.json"],
+  "requirements": { "pattern": "FSM-B4-[0-9]+" },
   "tools": [
     { "root": "packages/compiler", "reason": "the node tests of the compiler (fsm-gen): validation, stores and backends, one implementation that every kind's code comes from (plan C-5)" },
     { "root": "packages/db", "reason": "the node tests of the DB store and its CLI, a component of fsm, not a port of the spec (plan C-6)" },
@@ -31,8 +29,7 @@
     { "runner": "cargo", "globs": ["packages/*/tests/conformance.rs"] }
   ],
   "units": [
-    { "id": "vectors", "kind": "suite", "profile": "fsm", "file": "contracts/conformance/vectors.json", "cases": "$.machines[*].cases[*].name",
-      "admit": "kinds",
+    { "id": "vectors", "kind": "suite", "requirements": ["FSM-B4-5"], "file": "contracts/conformance/vectors.json", "cases": "$.machines[*].cases[*].name",
       "bindings": [
         { "implementation": "go", "test": "packages/go/tests/conformance_test.go", "symbol": "TestConformance" },
         { "implementation": "npm", "test": "packages/js/tests/conformance.test.mjs" },
@@ -41,7 +38,7 @@
         { "implementation": "python", "test": "packages/python/tests/test_conformance.py" },
         { "implementation": "rust", "test": "packages/rust/tests/conformance/main.rs", "symbol": "vectors" }
       ] },
-    { "id": "persist_concurrent_same_event", "kind": "feature", "profile": "fsm",
+    { "id": "persist_concurrent_same_event", "kind": "feature", "requirements": ["FSM-B4-1"],
       "bindings": [
         { "implementation": "go", "test": "packages/go/tests/persist_test.go", "id": "TestPersistConcurrentSameEvent" },
         { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_concurrent_same_event" },
@@ -50,7 +47,7 @@
         { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_concurrent_same_event" },
         { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_concurrent_same_event" }
       ] },
-    { "id": "persist_concurrent_conflict", "kind": "feature", "profile": "fsm",
+    { "id": "persist_concurrent_conflict", "kind": "feature", "requirements": ["FSM-B4-2"],
       "bindings": [
         { "implementation": "go", "test": "packages/go/tests/persist_test.go", "id": "TestPersistConcurrentConflict" },
         { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_concurrent_conflict" },
@@ -59,7 +56,7 @@
         { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_concurrent_conflict" },
         { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_concurrent_conflict" }
       ] },
-    { "id": "persist_retry_on_deadlock", "kind": "feature", "profile": "fsm",
+    { "id": "persist_retry_on_deadlock", "kind": "feature", "requirements": ["FSM-B4-3"],
       "bindings": [
         { "implementation": "go", "test": "packages/go/tests/persist_test.go", "id": "TestPersistRetryOnDeadlock" },
         { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_retry_on_deadlock" },
@@ -68,7 +65,7 @@
         { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_retry_on_deadlock" },
         { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_retry_on_deadlock" }
       ] },
-    { "id": "persist_no_retry_on_other_error", "kind": "feature", "profile": "fsm",
+    { "id": "persist_no_retry_on_other_error", "kind": "feature", "requirements": ["FSM-B4-4"],
       "bindings": [
         { "implementation": "go", "test": "packages/go/tests/persist_test.go", "id": "TestPersistNoRetryOnOtherError" },
         { "implementation": "npm", "test": "packages/js/tests/persist.test.mjs", "id": "persist_no_retry_on_other_error" },
@@ -77,6 +74,5 @@
         { "implementation": "python", "test": "packages/python/tests/test_persist.py", "id": "test_persist_no_retry_on_other_error" },
         { "implementation": "rust", "test": "packages/rust/tests/persist.rs", "id": "persist_no_retry_on_other_error" }
       ] }
-  ],
-  "exclusions": []
+  ]
 }
