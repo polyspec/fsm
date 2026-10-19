@@ -54,6 +54,14 @@ abstract class ConformanceCase extends TestCase
         return constant($module . '\\' . $type . '::' . self::pascal($key));
     }
 
+    /** The state argument of a case: a raw code goes through fromCode first (docs/spec/fsm.md, B-6), a key is the state of the case. */
+    private static function stateArgument(string $module, array $c, string $key, string $valueKey): \UnitEnum
+    {
+        return array_key_exists($valueKey, $c)
+            ? self::call($module, 'fromCode', $c[$valueKey])
+            : self::caseOf($module, 'State', $c[$key]);
+    }
+
     /** Calls the function $function of the module $module. */
     private static function call(string $module, string $function, mixed ...$arguments): mixed
     {
@@ -87,11 +95,19 @@ abstract class ConformanceCase extends TestCase
                 self::assertSame(self::caseOf($module, 'State', $c['expect']['state']), self::call($module, 'initial'));
                 return;
             case 'code':
+                if (array_key_exists('value', $c)) {
+                    self::assertError($c['expect'], fn() => self::call($module, 'code', self::call($module, 'fromCode', $c['value'])));
+                    return;
+                }
                 $state = self::caseOf($module, 'State', $c['state']);
                 self::assertSame($c['expect'], self::call($module, 'code', $state));
                 return;
             case 'key':
-                self::assertSame($c['expect'], self::call($module, 'key', self::call($module, 'fromCode', $c['code'])));
+                if (array_key_exists('error', $c['expect'])) {
+                    self::assertError($c['expect'], fn() => self::call($module, 'key', self::call($module, 'fromCode', $c['code'])));
+                } else {
+                    self::assertSame($c['expect'], self::call($module, 'key', self::call($module, 'fromCode', $c['code'])));
+                }
                 return;
             case 'from_code':
                 if (array_key_exists('error', $c['expect'])) {
@@ -102,6 +118,10 @@ abstract class ConformanceCase extends TestCase
                 }
                 return;
             case 'is_final':
+                if (array_key_exists('value', $c)) {
+                    self::assertError($c['expect'], fn() => self::call($module, 'isFinal', self::call($module, 'fromCode', $c['value'])));
+                    return;
+                }
                 $state = self::caseOf($module, 'State', $c['state']);
                 self::assertSame($c['expect'], self::call($module, 'isFinal', $state));
                 return;
@@ -123,13 +143,18 @@ abstract class ConformanceCase extends TestCase
                 }
                 return;
             case 'apply':
-                $expected = self::caseOf($module, 'State', $c['expected']);
                 $event = self::caseOf($module, 'Event', $c['event']);
-                $actual = self::caseOf($module, 'State', $c['actual']);
+                $call = fn() => self::call(
+                    $module,
+                    'apply',
+                    self::stateArgument($module, $c, 'expected', 'expected_value'),
+                    $event,
+                    self::stateArgument($module, $c, 'actual', 'actual_value'),
+                );
                 if (array_key_exists('error', $c['expect'])) {
-                    self::assertError($c['expect'], fn() => self::call($module, 'apply', $expected, $event, $actual));
+                    self::assertError($c['expect'], $call);
                 } else {
-                    $step = self::call($module, 'apply', $expected, $event, $actual);
+                    $step = $call();
                     self::assertSame(self::caseOf($module, 'State', $c['expect']['to']), $step->to);
                     self::assertSame($c['expect']['changed'], $step->changed);
                 }
