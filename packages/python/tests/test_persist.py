@@ -5,24 +5,16 @@ pattern promises, and a deadlock runs the transaction again while another databa
 feature unit of config/parity.json. They run on the dialect of FSM_TEST_DIALECT (open_persist_database of test_conformance).
 """
 
-import sys
 import tempfile
 import threading
 import types
 import unittest
-from pathlib import Path
 
-# No bytecode: a __pycache__ written into src/ is a file without the generated header, which make gen refuses.
-sys.dont_write_bytecode = True
-PACKAGE = Path(__file__).resolve().parent.parent
-# The modules of the package lie beside this test; the test names its own directories, so no PYTHONPATH is set (S-44-3).
-sys.path[:0] = [str(PACKAGE / "src"), str(PACKAGE / "examples"), str(PACKAGE / "tests")]
-
-import test_conformance as conformance  # noqa: E402
-from persist import open_database, seed, status_of, transition  # noqa: E402
-from polyspec.orm import OrmError  # noqa: E402
-from polyspec_fsm import order  # noqa: E402
-from polyspec_fsm.fsm import Code, Error  # noqa: E402
+import test_conformance as conformance
+from polyspec_fsm_examples.persist import open_database, seed, status_of, transition
+from polyspec.orm import OrmError
+from polyspec_fsm import order
+from polyspec_fsm.fsm import Code, Error
 
 
 def faulty(fault):
@@ -32,7 +24,9 @@ def faulty(fault):
         fault()
         return order.apply(*args)
 
-    return types.SimpleNamespace(apply=apply, from_code=order.from_code, code=order.code)
+    return types.SimpleNamespace(
+        apply=apply, from_code=order.from_code, code=order.code
+    )
 
 
 class PersistTest(unittest.TestCase):
@@ -60,7 +54,10 @@ class PersistTest(unittest.TestCase):
             finally:
                 db.close()
 
-        threads = [threading.Thread(target=run, args=(index, event)) for index, event in enumerate(events)]
+        threads = [
+            threading.Thread(target=run, args=(index, event))
+            for index, event in enumerate(events)
+        ]
         for thread in threads:
             thread.start()
         for thread in threads:
@@ -70,7 +67,9 @@ class PersistTest(unittest.TestCase):
     def test_persist_concurrent_same_event(self):
         outcomes = self.together([order.Event.NEXT, order.Event.NEXT])
         for outcome in outcomes:
-            self.assertIsInstance(outcome, order.Step, f"both transitions succeed: {outcomes}")
+            self.assertIsInstance(
+                outcome, order.Step, f"both transitions succeed: {outcomes}"
+            )
             self.assertEqual(outcome.to, order.State.PAID)
         self.assertEqual(sorted(outcome.changed for outcome in outcomes), [False, True])
         self.assertEqual(status_of(self.first, 1), order.code(order.State.PAID))
@@ -78,7 +77,9 @@ class PersistTest(unittest.TestCase):
     def test_persist_concurrent_conflict(self):
         outcomes = self.together([order.Event.NEXT, order.Event.CANCEL])
         changed = [outcome for outcome in outcomes if isinstance(outcome, order.Step)]
-        failed = [outcome for outcome in outcomes if not isinstance(outcome, order.Step)]
+        failed = [
+            outcome for outcome in outcomes if not isinstance(outcome, order.Step)
+        ]
         self.assertEqual(len(changed), 1, f"one transition changes the row: {outcomes}")
         self.assertTrue(changed[0].changed)
         self.assertEqual(len(failed), 1, "the other transition fails")
@@ -94,8 +95,12 @@ class PersistTest(unittest.TestCase):
             if len(attempts) == 1:
                 raise OrmError("DEADLOCK", "injected deadlock")
 
-        step = transition(self.first, faulty(fault), 1, order.State.DRAFT, order.Event.NEXT)
-        self.assertEqual(len(attempts), 2, "the transaction runs again after a deadlock")
+        step = transition(
+            self.first, faulty(fault), 1, order.State.DRAFT, order.Event.NEXT
+        )
+        self.assertEqual(
+            len(attempts), 2, "the transaction runs again after a deadlock"
+        )
         self.assertEqual(step, order.Step(to=order.State.PAID, changed=True))
         self.assertEqual(status_of(self.first, 1), order.code(order.State.PAID))
 
@@ -107,9 +112,13 @@ class PersistTest(unittest.TestCase):
             raise OrmError("CONNECTION_LOST", "injected")
 
         with self.assertRaises(OrmError) as raised:
-            transition(self.first, faulty(fault), 1, order.State.DRAFT, order.Event.NEXT)
+            transition(
+                self.first, faulty(fault), 1, order.State.DRAFT, order.Event.NEXT
+            )
         self.assertEqual(raised.exception.code, "CONNECTION_LOST")
-        self.assertEqual(len(attempts), 1, "a database error other than a deadlock is not run again")
+        self.assertEqual(
+            len(attempts), 1, "a database error other than a deadlock is not run again"
+        )
         self.assertEqual(status_of(self.first, 1), order.code(order.State.DRAFT))
 
 

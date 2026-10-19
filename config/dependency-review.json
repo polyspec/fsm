@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mts) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-15T08:10:20.281Z",
+  "reviewed": "2026-10-19T14:58:20.822Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -29,7 +29,7 @@
     },
     {
       "lock": "packages/gui/package-lock.json",
-      "sha256": "2a1ef53c4607cf4f735cd5805c5e9889fe154a18bf66a523b292b9554c333e7c",
+      "sha256": "c3aa496beaa4463af6336d2038accd953a3ad5c33dd1220349195171e5183277",
       "advisories": []
     },
     {
@@ -160,28 +160,28 @@
       "manifest": "packages/php/composer.json",
       "package": "polyspec/orm",
       "version": "0.0.18",
-      "latest": "0.0.18"
+      "latest": "[none matched]"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/php/composer.json",
       "package": "phpunit/phpunit",
       "version": "13.4.2",
-      "latest": "13.4.2"
+      "latest": "12.5.40"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/php-ext/composer.json",
       "package": "polyspec/orm",
       "version": "0.0.18",
-      "latest": "0.0.18"
+      "latest": "[none matched]"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/php-ext/composer.json",
       "package": "phpunit/phpunit",
       "version": "13.4.2",
-      "latest": "13.4.2"
+      "latest": "12.5.40"
     },
     {
       "ecosystem": "pypi",
@@ -266,6 +266,13 @@
       "package": "setuptools",
       "version": "84.0.0",
       "latest": "84.0.0"
+    },
+    {
+      "ecosystem": "pypi",
+      "manifest": "mise.toml",
+      "package": "ruff",
+      "version": "0.17.1",
+      "latest": "0.17.1"
     },
     {
       "ecosystem": "go",

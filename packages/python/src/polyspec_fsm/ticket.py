@@ -32,11 +32,19 @@ class Step:
 
 
 def _unknown_state(value):
-    return Error(Code.UNKNOWN_CODE, "ticket: " + str(value) + " is not a state of ticket")
+    return Error(
+        Code.UNKNOWN_CODE,
+        "ticket: %s is not a state of ticket" % (value,),
+    )
 
 
 def _invalid_transition(expected, event):
-    return Error(Code.INVALID_TRANSITION, "ticket: the event " + str(event) + " has no edge from " + str(expected), expected=expected, event=event)
+    return Error(
+        Code.INVALID_TRANSITION,
+        "ticket: the event %s has no edge from %s" % (event, expected),
+        expected=expected,
+        event=event,
+    )
 
 
 def initial() -> State:
@@ -82,9 +90,15 @@ def from_code(value: int) -> State:
         case 5:
             return State.CLOSED
         case 2:
-            raise Error(Code.RESERVED_CODE, "ticket: code 2 is reserved and is no state of ticket")
+            raise Error(
+                Code.RESERVED_CODE,
+                "ticket: code 2 is reserved and is no state of ticket",
+            )
         case 4:
-            raise Error(Code.RESERVED_CODE, "ticket: code 4 is reserved and is no state of ticket")
+            raise Error(
+                Code.RESERVED_CODE,
+                "ticket: code 4 is reserved and is no state of ticket",
+            )
         case _:
             raise _unknown_state(value)
 
@@ -146,4 +160,10 @@ def apply(expected: State, event: Event, actual: State) -> Step:
         return Step(to=to, changed=True)
     if actual == to:
         return Step(to=to, changed=False)
-    raise Error(Code.CONFLICT, "ticket: the stored state " + str(actual) + " is neither " + str(expected) + " nor " + str(to), expected=expected, actual=actual, event=event)
+    raise Error(
+        Code.CONFLICT,
+        "ticket: the stored state %s is neither %s nor %s" % (actual, expected, to),
+        expected=expected,
+        actual=actual,
+        event=event,
+    )

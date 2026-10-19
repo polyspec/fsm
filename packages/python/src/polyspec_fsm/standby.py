@@ -17,7 +17,6 @@ class Event(IntEnum):
     """The events of standby: the value of each member is its position in the declaration, from 1."""
 
 
-
 @dataclass(frozen=True)
 class Step:
     """The result of apply: the state that the event leads to, and whether the stored state changed."""
@@ -27,11 +26,19 @@ class Step:
 
 
 def _unknown_state(value):
-    return Error(Code.UNKNOWN_CODE, "standby: " + str(value) + " is not a state of standby")
+    return Error(
+        Code.UNKNOWN_CODE,
+        "standby: %s is not a state of standby" % (value,),
+    )
 
 
 def _invalid_transition(expected, event):
-    return Error(Code.INVALID_TRANSITION, "standby: the event " + str(event) + " has no edge from " + str(expected), expected=expected, event=event)
+    return Error(
+        Code.INVALID_TRANSITION,
+        "standby: the event %s has no edge from %s" % (event, expected),
+        expected=expected,
+        event=event,
+    )
 
 
 def initial() -> State:
@@ -103,4 +110,10 @@ def apply(expected: State, event: Event, actual: State) -> Step:
         return Step(to=to, changed=True)
     if actual == to:
         return Step(to=to, changed=False)
-    raise Error(Code.CONFLICT, "standby: the stored state " + str(actual) + " is neither " + str(expected) + " nor " + str(to), expected=expected, actual=actual, event=event)
+    raise Error(
+        Code.CONFLICT,
+        "standby: the stored state %s is neither %s nor %s" % (actual, expected, to),
+        expected=expected,
+        actual=actual,
+        event=event,
+    )

@@ -8,21 +8,19 @@ key draft.
 """
 
 import os
-import sys
 import tempfile
 import unittest
-from pathlib import Path
 
-# No bytecode: a __pycache__ written into src/ is a file without the generated header, which make gen refuses.
-sys.dont_write_bytecode = True
-PACKAGE = Path(__file__).resolve().parent.parent
-# The generated vectors module lies beside this test; the test names its own directory, so no PYTHONPATH is set (S-44-3).
-sys.path[:0] = [str(PACKAGE / "src"), str(PACKAGE / "examples"), str(PACKAGE / "tests")]
-
-import polyspec_fsm  # noqa: E402
-from persist import clear, open_database, seed, status_of, transition  # noqa: E402
-from polyspec_fsm.fsm import Error  # noqa: E402
-from vectors import vectors  # noqa: E402
+import polyspec_fsm
+from polyspec_fsm_examples.persist import (
+    clear,
+    open_database,
+    seed,
+    status_of,
+    transition,
+)
+from polyspec_fsm.fsm import Error
+from vectors import vectors
 
 
 def member(key):
@@ -71,7 +69,11 @@ def check(test, machine, case):
         test.assertEqual(machine.initial(), state_of(machine, expect["state"]))
     elif feature == "code":
         if failed(expect):
-            assert_error(test, lambda: machine.code(state_arg(machine, case, "state", "value")), expect)
+            assert_error(
+                test,
+                lambda: machine.code(state_arg(machine, case, "state", "value")),
+                expect,
+            )
         else:
             test.assertEqual(machine.code(state_of(machine, case["state"])), expect)
     elif feature == "key":
@@ -83,21 +85,32 @@ def check(test, machine, case):
         if failed(expect):
             assert_error(test, lambda: machine.from_code(case["input"]), expect)
         else:
-            test.assertEqual(machine.from_code(case["input"]), state_of(machine, expect["state"]))
+            test.assertEqual(
+                machine.from_code(case["input"]), state_of(machine, expect["state"])
+            )
     elif feature == "is_final":
         if failed(expect):
-            assert_error(test, lambda: machine.is_final(state_arg(machine, case, "state", "value")), expect)
+            assert_error(
+                test,
+                lambda: machine.is_final(state_arg(machine, case, "state", "value")),
+                expect,
+            )
         else:
             test.assertEqual(machine.is_final(state_of(machine, case["state"])), expect)
     elif feature == "events_from":
-        test.assertEqual(machine.events_from(state_of(machine, case["state"])), [event_of(machine, key) for key in expect])
+        test.assertEqual(
+            machine.events_from(state_of(machine, case["state"])),
+            [event_of(machine, key) for key in expect],
+        )
     elif feature == "target":
         state = state_of(machine, case["state"])
         event = event_of(machine, case["event"])
         if failed(expect):
             assert_error(test, lambda: machine.target(state, event), expect)
         else:
-            test.assertEqual(machine.target(state, event), state_of(machine, expect["state"]))
+            test.assertEqual(
+                machine.target(state, event), state_of(machine, expect["state"])
+            )
     elif feature == "apply":
         expected = state_arg(machine, case, "expected", "expected_value")
         event = event_of(machine, case["event"])
@@ -106,9 +119,16 @@ def check(test, machine, case):
             assert_error(test, lambda: machine.apply(expected, event, actual), expect)
         else:
             step = machine.apply(expected, event, actual)
-            test.assertEqual(step, machine.Step(to=state_of(machine, expect["to"]), changed=expect["changed"]))
+            test.assertEqual(
+                step,
+                machine.Step(
+                    to=state_of(machine, expect["to"]), changed=expect["changed"]
+                ),
+            )
     else:
-        raise AssertionError(f"no check for the feature {feature}; the vectors and this file must agree")
+        raise AssertionError(
+            f"no check for the feature {feature}; the vectors and this file must agree"
+        )
 
 
 def persist_dsn(directory):
@@ -124,9 +144,13 @@ def persist_dsn(directory):
         variable = "FSM_TEST_PG_DSN" if dialect == "postgres" else "FSM_TEST_MYSQL_DSN"
         dsn = os.environ.get(variable, "")
         if not dsn:
-            raise AssertionError(f"{variable} is not set: the {dialect} persist cases need a database DSN and never skip")
+            raise AssertionError(
+                f"{variable} is not set: the {dialect} persist cases need a database DSN and never skip"
+            )
         return dsn, dialect
-    raise AssertionError(f"FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is {dialect}")
+    raise AssertionError(
+        f"FSM_TEST_DIALECT must be sqlite, postgres or mysql, it is {dialect}"
+    )
 
 
 def open_persist_database(directory):
@@ -154,11 +178,23 @@ def persist_case(test, machine, case):
             expected = state_of(machine, case["expected"])
             event = event_of(machine, case["event"])
             if failed(expect):
-                assert_error(test, lambda: transition(db, machine, 1, expected, event), expect)
+                assert_error(
+                    test, lambda: transition(db, machine, 1, expected, event), expect
+                )
             else:
                 step = transition(db, machine, 1, expected, event)
-                test.assertEqual(step, machine.Step(to=state_of(machine, expect["stored_after"]), changed=expect["changed"]))
-            test.assertEqual(status_of(db, 1), machine.code(state_of(machine, expect["stored_after"])), "the stored state after the run")
+                test.assertEqual(
+                    step,
+                    machine.Step(
+                        to=state_of(machine, expect["stored_after"]),
+                        changed=expect["changed"],
+                    ),
+                )
+            test.assertEqual(
+                status_of(db, 1),
+                machine.code(state_of(machine, expect["stored_after"])),
+                "the stored state after the run",
+            )
         finally:
             db.close()
 
@@ -172,7 +208,9 @@ def _case_test(machine_name, case):
 
     def test(self):
         machine = getattr(polyspec_fsm, machine_name, None)
-        self.assertIsNotNone(machine, f"polyspec_fsm does not export the machine {machine_name}")
+        self.assertIsNotNone(
+            machine, f"polyspec_fsm does not export the machine {machine_name}"
+        )
         if case["feature"] == "persist":
             persist_case(self, machine, case)
         else:
@@ -183,7 +221,11 @@ def _case_test(machine_name, case):
 
 for entry in vectors:
     for case in entry["cases"]:
-        setattr(ConformanceTest, f"test_{case['feature']}__{case['id']}", _case_test(entry["machine"], case))
+        setattr(
+            ConformanceTest,
+            f"test_{case['feature']}__{case['id']}",
+            _case_test(entry["machine"], case),
+        )
 
 
 if __name__ == "__main__":

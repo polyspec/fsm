@@ -34,11 +34,19 @@ class Step:
 
 
 def _unknown_state(value):
-    return Error(Code.UNKNOWN_CODE, "order: " + str(value) + " is not a state of order")
+    return Error(
+        Code.UNKNOWN_CODE,
+        "order: %s is not a state of order" % (value,),
+    )
 
 
 def _invalid_transition(expected, event):
-    return Error(Code.INVALID_TRANSITION, "order: the event " + str(event) + " has no edge from " + str(expected), expected=expected, event=event)
+    return Error(
+        Code.INVALID_TRANSITION,
+        "order: the event %s has no edge from %s" % (event, expected),
+        expected=expected,
+        event=event,
+    )
 
 
 def initial() -> State:
@@ -178,4 +186,10 @@ def apply(expected: State, event: Event, actual: State) -> Step:
         return Step(to=to, changed=True)
     if actual == to:
         return Step(to=to, changed=False)
-    raise Error(Code.CONFLICT, "order: the stored state " + str(actual) + " is neither " + str(expected) + " nor " + str(to), expected=expected, actual=actual, event=event)
+    raise Error(
+        Code.CONFLICT,
+        "order: the stored state %s is neither %s nor %s" % (actual, expected, to),
+        expected=expected,
+        actual=actual,
+        event=event,
+    )

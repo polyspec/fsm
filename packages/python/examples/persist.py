@@ -7,7 +7,7 @@ observed state on a retry, so a retry is Unchanged and a stale request is E_CONF
 contracts/schema/persist.dbs into ./model.
 """
 
-from model.models import SCHEMA, Item, connect
+from polyspec_fsm_examples.model.models import SCHEMA, Item, connect
 
 
 def open_database(dsn):

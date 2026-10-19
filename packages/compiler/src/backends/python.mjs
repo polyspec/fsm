@@ -25,6 +25,10 @@ const text = lines => `${lines.join('\n')}\n`;
 /** A JavaScript string as a python double-quoted string; the keys and messages of a definition hold no quote or backslash. */
 const quoted = value => `"${value}"`;
 
+/** A message of the generated code: the literal text with one `%s` for each value, which str() formats, and the values in a tuple. The
+ * literal holds the name of a machine or a state key, which are identifiers, so it needs no escape of `%`. */
+const message = (literal, values) => `${quoted(literal)} % (${values.length === 1 ? `${values[0]},` : values.join(', ')})`;
+
 /** The shared module: the error codes of B-4, B-5 and B-6 that the functions raise, and the Error of every machine. */
 const FSM_PY = text([
   header(SHARED),
@@ -87,13 +91,13 @@ function machinePy(ir, lock) {
     '',
     'class State(IntEnum):',
     `    """The states of ${machine}: the value of each member is its code."""`,
-    '',
+    ...(states.length > 0 ? [''] : []),
     ...states.map(state => `    ${upper(state.key)} = ${state.code}`),
     '',
     '',
     'class Event(IntEnum):',
     `    """The events of ${machine}: the value of each member is its position in the declaration, from 1."""`,
-    '',
+    ...(events.length > 0 ? [''] : []),
     ...events.map((event, index) => `    ${upper(event.key)} = ${index + 1}`),
     '',
     '',
@@ -106,11 +110,19 @@ function machinePy(ir, lock) {
     '',
     '',
     `def _unknown_state(value):`,
-    `    return Error(Code.UNKNOWN_CODE, ${quoted(`${machine}: `)} + str(value) + ${quoted(` is not a state of ${machine}`)})`,
+    '    return Error(',
+    '        Code.UNKNOWN_CODE,',
+    `        ${message(`${machine}: %s is not a state of ${machine}`, ['value'])},`,
+    '    )',
     '',
     '',
     'def _invalid_transition(expected, event):',
-    `    return Error(Code.INVALID_TRANSITION, ${quoted(`${machine}: the event `)} + str(event) + ${quoted(' has no edge from ')} + str(expected), expected=expected, event=event)`,
+    '    return Error(',
+    '        Code.INVALID_TRANSITION,',
+    `        ${message(`${machine}: the event %s has no edge from %s`, ['event', 'expected'])},`,
+    '        expected=expected,',
+    '        event=event,',
+    '    )',
     '',
     '',
     'def initial() -> State:',
@@ -142,7 +154,10 @@ function machinePy(ir, lock) {
     ...states.flatMap(state => [`        case ${state.code}:`, `            return ${stateOf(state.key)}`]),
     ...reserved.flatMap(item => [
       `        case ${item}:`,
-      `            raise Error(Code.RESERVED_CODE, ${quoted(`${machine}: code ${item} is reserved and is no state of ${machine}`)})`,
+      '            raise Error(',
+      '                Code.RESERVED_CODE,',
+      `                ${quoted(`${machine}: code ${item} is reserved and is no state of ${machine}`)},`,
+      '            )',
     ]),
     '        case _:',
     '            raise _unknown_state(value)',
@@ -193,7 +208,13 @@ function machinePy(ir, lock) {
     '        return Step(to=to, changed=True)',
     '    if actual == to:',
     '        return Step(to=to, changed=False)',
-    `    raise Error(Code.CONFLICT, ${quoted(`${machine}: the stored state `)} + str(actual) + ${quoted(' is neither ')} + str(expected) + ${quoted(' nor ')} + str(to), expected=expected, actual=actual, event=event)`,
+    '    raise Error(',
+    '        Code.CONFLICT,',
+    `        ${message(`${machine}: the stored state %s is neither %s nor %s`, ['actual', 'expected', 'to'])},`,
+    '        expected=expected,',
+    '        actual=actual,',
+    '        event=event,',
+    '    )',
   ];
   return text(lines);
 }

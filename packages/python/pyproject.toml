@@ -14,8 +14,8 @@ dependencies = [
     "polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.18/polyspec_orm-0.0.18-py3-none-any.whl",
 ]
 
+# The examples are a package of the project, so that their tests import them from the installed package (S3): the persist example
+# and its generated model are polyspec_fsm_examples.persist and polyspec_fsm_examples.model.models.
 [tool.setuptools]
-package-dir = { "" = "src" }
-
-[tool.setuptools.packages.find]
-where = ["src"]
+package-dir = { "" = "src", "polyspec_fsm_examples" = "examples", "polyspec_fsm_examples.model" = "examples/model" }
+packages = ["polyspec_fsm", "polyspec_fsm_examples", "polyspec_fsm_examples.model"]
