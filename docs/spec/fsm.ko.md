@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 938c0af08a87ef5d61b90e3c25a1f76a3fb5a8b45e78fafa716245d5bc47a5f8 -->
+<!-- source-sha256: 3cbb5d82bf90f113915c6904aed037b48f3e560c4f8005ac6ccd0e2f373fb9e7 -->
 # fsm 정의
 
 [English](fsm.md)
@@ -255,12 +255,11 @@ stateDiagram-v2
 - php는 enum을 PSR-4(`Order/State.php`…)로, 함수는 적재기 `functions.php`를 composer `autoload.files`로 싣고, 적재기가 모든 machine의 `Order/functions.php`를 require한다(PSR-4는 함수를 싣지 못하므로 composer는 적재기만 이름으로 든다). php-ext는 같은 namespace의 enum과 함수를 C로 등록하며, 모든 C 이름은 php namespace와 extension 이름에서 유도된다: include `php_<ext>.h`와 `<ext>_arginfo.h`, Error 클래스 심볼 `<namespace의 \를 _로 바꾼 것>_Fsm_Error`(`Acme\Tool`은 `Acme_Tool_Fsm_Error`).
 - 머신이 서로 다른 모듈에 들어가므로 머신 간 식별자 충돌은 생기지 않는다. 단 php namespace와 PSR-4 디렉터리는 대소문자를 구분하지 않으므로, `_`를 지웠을 때 같아지는 두 머신 key는 `E_DUPLICATE_KEY`로 거부한다. 남는 충돌은 생성 파일·package 이름, 언어 keyword, php의 대소문자 무시 이름이며, `E_KEY_RESERVED`와 `E_DUPLICATE_KEY`의 고정 목록으로 거부한다.
 - 오류는 `fsm.Error`로만 알리고 null을 반환하지 않는다.
-- 원시 값을 받는 함수는 `from_code` 하나다.
-  - 인자는 언어의 64비트 부호 정수다(go `int64`, rust `i64`. npm `number`는 double이므로 정수가 아니거나 안전 정수 범위 밖이면 `E_UNKNOWN_CODE`. php는 `mixed`, python은 `int`로 선언한다. 아래 참고). 호출자는 DB 값을 좁히지 않고 그대로 넘긴다.
-  - php와 python은 호출자와 무관하게 정수가 아닌 값을 거부한다. 문자열, bool, float, null은 `E_UNKNOWN_CODE`이며 변환된 code가 되지 않는다. php는 `is_int`로 검사한다. 생성 파일의 `declare(strict_types=1)`은 그 선언을 하지 않은 호출자의 호출에 닿지 않고, 변환하면 `"2"`나 `2.0`은 2의 상태가, `true`는 1의 상태가 되기 때문이다. php 메시지는 값 대신 타입을 말한다(`a value of type string`). 배열은 출력할 수 없기 때문이다. python 메시지는 값을 말한다. vector는 정수가 아닌 입력(`input_type`: string, bool, float)을 그것을 담을 수 있는 kind(php, php-ext, python, 정수가 아닌 분수는 npm도)에만 준다. php-ext 확장은 정수를 읽기 전에 zval의 타입을 검사한다.
-  - 0, 범위 밖, 미지 code는 `E_UNKNOWN_CODE`, 예약 code는 `E_RESERVED_CODE`.
-- 소비자 DB의 상태 컬럼은 dbspec `i32`로 둔다.
-- go/npm/python은 상태 타입에 임의 정수가 들어갈 수 있으므로, switch의 나머지 분기가 `E_UNKNOWN_CODE`를 던진다. rust와 php는 그런 값이 없으므로(상태가 enum이다), 잘못된 상태 값은 go, npm, python에만 준다(계획 C-4).
+- 원시 값을 받는 진입점은 `from_code` 하나다. state 이름이 아니라 state code를 가진 호출자는 state 타입 함수 앞에서 `from_code`를 거친다: `code`, `key`, `is_final`과 `apply`(`expected`, `actual`)의 원시 code 인자는 거기서 검사되므로, 모든 구현이 잘못된 code를 같은 오류로 거부한다.
+  - 인자는 모든 구현에서 디코드된 JSON 값이다: go `any`, rust `serde_json::Value`, npm `unknown`, php `mixed`, python `object`. 호출자는 DB 값을 좁히지 않고 그대로 넘긴다.
+  - 정수가 아닌 값은 JSON 타입과 무관하게 `E_UNKNOWN_CODE`다: 문자열, bool, float(vector는 정수가 아닌 float `1.5`와 `1.25`를 준다), null, 64비트 부호 정수 범위 밖의 정수. 어떤 구현도 값을 변환하지 않는다: `"2"`, `2.0`, `true`는 각각 2, 2, 1의 code가 되지 않는다. npm: 안전 정수가 아닌 number도 double로 담을 수 없으므로 `E_UNKNOWN_CODE`다. npm에는 float 타입이 없어 `1.0`은 거기서 정수 1이므로, vector는 정수가 아닌 float만 준다. php 메시지는 배열을 출력할 수 없으므로 값 대신 타입을 말한다(`a value of type string`). 다른 구현의 메시지는 값을 말한다.
+  - 0, 범위 밖, 미지 code는 `E_UNKNOWN_CODE`, 예약 code는 `E_RESERVED_CODE`다.
+- 모든 구현은 잘못된 값의 같은 case를 실행한다(계획 C-4): vector는 각 원시 입력을 모든 구현에 주며, 어떤 kind도 case에서 제외하지 않는다.
 - `fsm.Error`의 필드(`code`, `expected`, `actual`, `event`)는 B-4와 이 목록이 말하는 대로 설정되며, 다른 필드는 없다:
   - `E_CONFLICT`는 `expected`와 `actual`(state code)과 `event`(event 값, 1부터의 위치)를 설정한다.
   - `E_INVALID_TRANSITION`은 `expected`와 `event`를 설정하고, `actual`은 없다.

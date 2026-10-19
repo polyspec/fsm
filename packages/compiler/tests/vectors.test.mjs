@@ -7,7 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { normalize } from '../src/core/normalize.mjs';
-import { FEATURES, RAW_STATE_KINDS, forKind, vectors } from '../src/core/vectors.mjs';
+import { FEATURES, forKind, vectors } from '../src/core/vectors.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
@@ -148,44 +148,35 @@ test('every from_code input is a decimal string unless it names its type, so tha
   }
 });
 
-test('from_code of a value that is not an int is E_UNKNOWN_CODE, given to the kinds whose language can hold that value (B-6)', () => {
+test('from_code of a value that is not an int is E_UNKNOWN_CODE, for every kind (B-6)', () => {
   const result = generate(order());
   const expect = { error: 'E_UNKNOWN_CODE', ...NO_FIELDS };
-  const typed = ['php', 'php-ext', 'python'];
   assert.deepEqual(find(result, 'order_from_code_string'), {
-    feature: 'from_code', id: 'order_from_code_string', name: 'from_code__order_from_code_string', input: '1', input_type: 'string', expect, kinds: typed,
+    feature: 'from_code', id: 'order_from_code_string', name: 'from_code__order_from_code_string', input: '1', input_type: 'string', expect,
   });
   assert.deepEqual(find(result, 'order_from_code_bool'), {
-    feature: 'from_code', id: 'order_from_code_bool', name: 'from_code__order_from_code_bool', input: 'true', input_type: 'bool', expect, kinds: typed,
+    feature: 'from_code', id: 'order_from_code_bool', name: 'from_code__order_from_code_bool', input: 'true', input_type: 'bool', expect,
   });
+  // The floats are non-integers: npm's number holds 1.0 as the int 1 (fsm.md, B-6), so an integer-valued float is no vector.
   assert.deepEqual(find(result, 'order_from_code_float'), {
-    feature: 'from_code', id: 'order_from_code_float', name: 'from_code__order_from_code_float', input: '1.0', input_type: 'float', expect, kinds: typed,
+    feature: 'from_code', id: 'order_from_code_float', name: 'from_code__order_from_code_float', input: '1.5', input_type: 'float', expect,
   });
   assert.deepEqual(find(result, 'order_from_code_fraction'), {
-    feature: 'from_code', id: 'order_from_code_fraction', name: 'from_code__order_from_code_fraction', input: '1.5', input_type: 'float', expect,
-    kinds: [...typed, 'npm'],
+    feature: 'from_code', id: 'order_from_code_fraction', name: 'from_code__order_from_code_fraction', input: '1.25', input_type: 'float', expect,
   });
 });
 
-test('an invalid state value (0 and the unknown code) is given to code, key, is_final and apply, for the kinds that admit it only', () => {
+test('an invalid state value (0 and the unknown code) is given to code, key, is_final and apply, for every kind (B-6)', () => {
   const result = generate(order());
-  assert.deepEqual(RAW_STATE_KINDS, ['go', 'npm', 'python']);
-  assert.deepEqual(find(result, 'order_code_v0'), {
-    feature: 'code', id: 'order_code_v0', name: 'code__order_code_v0', value: 0, expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
-  });
-  assert.deepEqual(find(result, 'order_is_final_v6'), {
-    feature: 'is_final', id: 'order_is_final_v6', name: 'is_final__order_is_final_v6', value: 6, expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
-  });
-  assert.deepEqual(find(result, 'order_key_v0'), {
-    feature: 'key', id: 'order_key_v0', name: 'key__order_key_v0', code: 0, expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
-  });
+  const expect = { error: 'E_UNKNOWN_CODE', ...NO_FIELDS };
+  assert.deepEqual(find(result, 'order_code_v0'), { feature: 'code', id: 'order_code_v0', name: 'code__order_code_v0', value: 0, expect });
+  assert.deepEqual(find(result, 'order_is_final_v6'), { feature: 'is_final', id: 'order_is_final_v6', name: 'is_final__order_is_final_v6', value: 6, expect });
+  assert.deepEqual(find(result, 'order_key_v0'), { feature: 'key', id: 'order_key_v0', name: 'key__order_key_v0', code: 0, expect });
   assert.deepEqual(find(result, 'order_apply_expected_v0_e0_s0'), {
-    feature: 'apply', id: 'order_apply_expected_v0_e0_s0', name: 'apply__order_apply_expected_v0_e0_s0', expected_value: 0, event: 'next', actual: 'draft',
-    expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
+    feature: 'apply', id: 'order_apply_expected_v0_e0_s0', name: 'apply__order_apply_expected_v0_e0_s0', expected_value: 0, event: 'next', actual: 'draft', expect,
   });
   assert.deepEqual(find(result, 'order_apply_actual_v6_e0_s0'), {
-    feature: 'apply', id: 'order_apply_actual_v6_e0_s0', name: 'apply__order_apply_actual_v6_e0_s0', expected: 'draft', event: 'next', actual_value: 6,
-    expect: { error: 'E_UNKNOWN_CODE', ...NO_FIELDS }, kinds: ['go', 'npm', 'python'],
+    feature: 'apply', id: 'order_apply_actual_v6_e0_s0', name: 'apply__order_apply_actual_v6_e0_s0', expected: 'draft', event: 'next', actual_value: 6, expect,
   });
 });
 
@@ -194,15 +185,14 @@ test('a machine without events has no invalid apply case, because the apply need
   assert.deepEqual(ids(generate(track)).filter(id => id.includes('_apply_')), []);
 });
 
-test('forKind keeps the cases a kind runs, without a kinds field: rust and php get no invalid state value', () => {
+test('forKind gives every kind every case, and no case carries a kinds field (B-6)', () => {
   const list = [generate(order())];
-  const rust = forKind(list, 'rust')[0].cases;
-  const go = forKind(list, 'go')[0].cases;
-  assert.equal(rust.some(entry => entry.value !== undefined || entry.expected_value !== undefined || entry.actual_value !== undefined), false);
-  assert.equal(rust.length, 102 - 10);
-  assert.equal(go.length, 102);
-  assert.ok(go.every(entry => !('kinds' in entry)));
-  assert.equal(list[0].cases.some(entry => 'kinds' in entry), true, 'the oracle keeps the field');
+  for (const kind of ['go', 'npm', 'php', 'php-ext', 'python', 'rust']) {
+    const cases = forKind(list, kind)[0].cases;
+    assert.equal(cases.length, list[0].cases.length, kind);
+    assert.ok(cases.some(entry => entry.value !== undefined), `${kind} runs the invalid state values`);
+    assert.ok(cases.every(entry => !('kinds' in entry)), kind);
+  }
 });
 
 test('from_code unknown is the smallest gap: codes 1 and 3 leave 2', () => {

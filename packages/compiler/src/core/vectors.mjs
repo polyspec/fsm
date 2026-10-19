@@ -8,30 +8,13 @@ export const FEATURES = Object.freeze([
 ]);
 
 /**
- * The kinds whose state type admits any integer, so that a case with an invalid state value (a value that is no state) can run
- * in them. The rust and php kinds have an enum for the state, so no such value exists there (docs/plans/fsm-v1/plan.md, C-4).
- */
-export const RAW_STATE_KINDS = Object.freeze(['go', 'npm', 'python']);
-
-/**
- * The kinds whose language can hold an input that is not an int (docs/spec/fsm.md, B-6): php and php-ext (any zval) and python
- * (any object). A typed input of from_code is given to these kinds only; go, rust and npm cannot hold it (npm's number holds 2.0 as
- * the int 2, and no npm value is a string or a bool, so only the non-integer fraction is given to npm too).
- */
-const TYPED_KINDS = Object.freeze(['php', 'php-ext', 'python']);
-
-/**
- * The cases of `vectorList` (the list of { machine, cases } of vectors) that the kind `kind` runs: a case without a `kinds` list is
- * run by every kind, and a case with one only by the kinds it names. The `kinds` field is removed, so the native module of the
- * kind holds the data of its cases alone.
+ * The cases of `vectorList` (the list of { machine, cases } of vectors) that the kind `kind` runs: every case, for every kind
+ * (docs/spec/fsm.md, B-6, the same behavior in every implementation). The list is returned as it is, so each native module holds
+ * all the cases of its machines.
  */
 export function forKind(vectorList, kind) {
-  return vectorList.map(({ machine, cases }) => ({
-    machine,
-    cases: cases
-      .filter(entry => entry.kinds === undefined || entry.kinds.includes(kind))
-      .map(entry => Object.fromEntries(Object.entries(entry).filter(([key]) => key !== 'kinds'))),
-  }));
+  void kind;
+  return vectorList.map(({ machine, cases }) => ({ machine, cases: cases.map(entry => ({ ...entry })) }));
 }
 
 /**
@@ -65,7 +48,7 @@ export function vectors(ir, lock) {
   const failure = (code, fields = {}) => ({ error: code, expected: null, actual: null, event: null, ...fields });
   const cases = [];
   const ids = new Set();
-  const add = (feature, suffix, data, expect, kinds) => {
+  const add = (feature, suffix, data, expect) => {
     if (!FEATURES.includes(feature)) throw new Error(`vectors: ${feature} is not a feature of contracts/features.json`);
     const id = `${machine}_${suffix}`;
     // Internal assertion: ids are unique by construction (every key is an index), so this never fails.
@@ -73,7 +56,7 @@ export function vectors(ir, lock) {
     ids.add(id);
     // name is the case name of every language (docs/plans/fsm-v1/plan.md, C-4): `<feature>__<id>`, the name that the parity check of
     // kit reads at $.machines[*].cases[*].name.
-    cases.push({ feature, id, name: `${feature}__${id}`, ...data, expect, ...(kinds === undefined ? {} : { kinds }) });
+    cases.push({ feature, id, name: `${feature}__${id}`, ...data, expect });
   };
 
   add('initial', 'initial', {}, { state: initial });
@@ -98,29 +81,27 @@ export function vectors(ir, lock) {
   add('from_code', 'from_code_int32_overflow', { input: '2147483648' }, failure('E_UNKNOWN_CODE'));
   add('from_code', 'from_code_int64_max', { input: '9223372036854775807' }, failure('E_UNKNOWN_CODE'));
 
-  // The inputs that are not an int, given to the kinds that can hold them (B-6): a string and a bool are no code in those kinds,
-  // whatever their text, and a float is no code even when it has the value of a state. Each one names its state code, so that a
-  // coercion of the value would give that state. input_type names the type: string, bool or float (the text is the literal).
+  // The inputs that are not an int (B-6), given to every kind: a string and a bool are no code whatever their text, and a float is
+  // no code whatever its value. Each one names its state code, so that a coercion of the value would give that state. input_type
+  // names the type: string, bool or float (the text is the literal). The floats are not integers: npm's number holds 1.0 as the
+  // int 1, so an integer-valued float cannot be told from a code in npm (docs/spec/fsm.md, B-6).
   const typedCode = String(states[0].code);
-  add('from_code', 'from_code_string', { input: typedCode, input_type: 'string' }, failure('E_UNKNOWN_CODE'), TYPED_KINDS);
-  add('from_code', 'from_code_bool', { input: 'true', input_type: 'bool' }, failure('E_UNKNOWN_CODE'), TYPED_KINDS);
-  add('from_code', 'from_code_float', { input: `${typedCode}.0`, input_type: 'float' }, failure('E_UNKNOWN_CODE'), TYPED_KINDS);
-  add('from_code', 'from_code_fraction', { input: `${typedCode}.5`, input_type: 'float' }, failure('E_UNKNOWN_CODE'),
-    [...TYPED_KINDS, 'npm']);
+  add('from_code', 'from_code_string', { input: typedCode, input_type: 'string' }, failure('E_UNKNOWN_CODE'));
+  add('from_code', 'from_code_bool', { input: 'true', input_type: 'bool' }, failure('E_UNKNOWN_CODE'));
+  add('from_code', 'from_code_float', { input: `${typedCode}.5`, input_type: 'float' }, failure('E_UNKNOWN_CODE'));
+  add('from_code', 'from_code_fraction', { input: `${typedCode}.25`, input_type: 'float' }, failure('E_UNKNOWN_CODE'));
 
-  // An invalid state value (0 and the unknown code) for the functions that take a state, in the kinds whose state type admits it.
-  // A state argument is a key in every other case, and an integer here (`value`, or `expected_value` and `actual_value` for apply).
+  // An invalid state value (0 and the unknown code) for the functions that take a state: an integer in `value` (or `expected_value`
+  // and `actual_value` for apply), which every kind receives through from_code (B-6).
   for (const value of [0, unknown]) {
-    add('code', `code_v${value}`, { value }, failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
-    add('is_final', `is_final_v${value}`, { value }, failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
-    add('key', `key_v${value}`, { code: value }, failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
+    add('code', `code_v${value}`, { value }, failure('E_UNKNOWN_CODE'));
+    add('is_final', `is_final_v${value}`, { value }, failure('E_UNKNOWN_CODE'));
+    add('key', `key_v${value}`, { code: value }, failure('E_UNKNOWN_CODE'));
     if (events.length > 0) {
       const first = states[0].key;
       const event = events[0].key;
-      add('apply', `apply_expected_v${value}_e0_s0`, { expected_value: value, event, actual: first },
-        failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
-      add('apply', `apply_actual_v${value}_e0_s0`, { expected: first, event, actual_value: value },
-        failure('E_UNKNOWN_CODE'), RAW_STATE_KINDS);
+      add('apply', `apply_expected_v${value}_e0_s0`, { expected_value: value, event, actual: first }, failure('E_UNKNOWN_CODE'));
+      add('apply', `apply_actual_v${value}_e0_s0`, { expected: first, event, actual_value: value }, failure('E_UNKNOWN_CODE'));
     }
   }
 
