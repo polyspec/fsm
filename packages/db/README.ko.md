@@ -1,11 +1,11 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: ce163addae75007cf44d63c48abd2b58b0aef1370ed3ed9cf7307f05bc8c3890 -->
+<!-- source-sha256: 13a569245ef2f1485de83aa8b264b2eae493a22c7ec5fbfef632d4f0de4643d0 -->
 # @polyspec/fsm-db
 
 [English](README.md)
 
 fsm의 DB store와 그 명령줄 `fsm-db`다. fsm 프로젝트는 정의와 lock을 파일 대신 orm database의 여섯 table에 둘 수 있다
-(`docs/spec/fsm.md`, B-2; `docs/plans/fsm-v1.md`, C-6). 이 패키지는 비공개이며 배포하지 않는다. 이 저장소에서 쓴다.
+(`docs/spec/fsm.md`, B-2; `docs/plans/fsm-v1/plan.md`, C-6). 이 패키지는 비공개이며 배포하지 않는다. 이 저장소에서 쓴다.
 
 ## 무엇인가
 

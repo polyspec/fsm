@@ -1,11 +1,11 @@
-// Tests of the package dependencies of the root Makefile (docs/plans/execution-checklist.md, S-29; docs/plans/fsm-v1.md,
+// Tests of the package dependencies of the root Makefile (docs/plans/fsm-v1/checklist.md, S-29; docs/plans/fsm-v1/plan.md,
 // Verification): a target that needs a package dependency installs it first, once, and a later run with the dependency
 // present installs nothing. The tests run `make -n` on a copy of the Makefile, the kit targets of the installed
-// @polyspec/kit, config/parity.json (the kinds) and the package Makefiles in a temporary directory, with the lock or manifest
+// @polyspec/kit and config/parity.json (the kinds) in a temporary directory, with the lock or manifest
 // of each dependency and, per case, the installed stamps. No dependency is installed and no network is used: make only prints the recipes.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, utimesSync } from 'node:fs';
+import { copyFileSync, mkdirSync, utimesSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -52,15 +52,15 @@ const STAMPS = [
 
 // The install line that make prints for each dependency (its recipe as make -n shows it).
 const INSTALL: ReadonlyMap<string, RegExp> = new Map([
-  ['npm', /-C packages\/js install/],
+  ['npm', /fsm-js-install/],
   ['db', /cd packages\/db && .*npm ci/],
   ['gui', /cd packages\/gui && .*npm ci/],
   ['docs', /cd docs && .*npm ci/],
-  ['php', /-C packages\/php install/],
-  ['php-ext', /-C packages\/php-ext install/],
-  ['python', /-C packages\/python install/],
-  ['go', /-C packages\/go install/],
-  ['rust', /-C packages\/rust install/],
+  ['php', /fsm-php-install/],
+  ['php-ext', /fsm-php-ext-install/],
+  ['python', /fsm-python-install/],
+  ['go', /fsm-go-install/],
+  ['rust', /fsm-rust-install/],
 ]);
 
 /** The install line of the dependency `name`, which INSTALL must declare. */
@@ -73,12 +73,12 @@ function installLine(name: string): RegExp {
 // The recipe line of each target that uses dependencies, and the dependencies it needs.
 const TARGETS = [
   { target: 'npm-types', line: /npm-types\.json/, needs: ['npm'] },
-  { target: 'test-npm', line: /-C packages\/js test/, needs: ['npm'] },
-  { target: 'test-go', line: /-C packages\/go test/, needs: ['go'] },
-  { target: 'test-php', line: /-C packages\/php test/, needs: ['php'] },
-  { target: 'test-php-ext', line: /-C packages\/php-ext test/, needs: ['php-ext'] },
-  { target: 'test-python', line: /-C packages\/python test/, needs: ['python'] },
-  { target: 'test-rust', line: /-C packages\/rust test/, needs: ['rust'] },
+  { target: 'fsm-js-test', line: /--results \.results\/npm\.json/, needs: ['npm'] },
+  { target: 'test-go', line: /go --cwd packages\/go/, needs: ['go'] },
+  { target: 'test-php', line: /phpunit --cwd packages\/php --results/, needs: ['php'] },
+  { target: 'test-php-ext', line: /phpunit --php-extension/, needs: ['php-ext'] },
+  { target: 'test-python', line: /run-tests\.mjs python --venv/, needs: ['python'] },
+  { target: 'test-rust', line: /--results \.results\/rust\.json/, needs: ['rust'] },
   { target: 'gen-check', line: /scripts\/gen-check\.mts/, needs: ['npm', 'go', 'php', 'php-ext', 'python'] },
   { target: 'db-test', line: /db-test\.json/, needs: ['db'] },
   { target: 'gui-test', line: /gui-test\.json/, needs: ['gui', 'db'] },
@@ -94,10 +94,6 @@ function sandbox(t: TestContext, { installed = false }: { installed?: boolean } 
   for (const file of ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json']) {
     mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
     copyFileSync(path.join(ROOT, file), path.join(dir, file));
-  }
-  for (const kind of readdirSync(path.join(ROOT, 'packages'))) {
-    const makefile = path.join(ROOT, 'packages', kind, 'Makefile');
-    if (existsSync(makefile)) put(dir, { [`packages/${kind}/Makefile`]: readFileSync(makefile, 'utf8') });
   }
   put(dir, Object.fromEntries(LOCKS.map(file => [file, '\n'])));
   // The GUI lock names the pinned Playwright version, which keys the browser stamp (S-29-1).
@@ -246,7 +242,7 @@ test('each target installs its dependencies before its recipe', (t) => {
 
 // `make -n check` evaluates the Makefile and the kit targets it includes and prints the recipes without running them. A make
 // warning on its stderr is a name that two definitions share (for example a repository target that replaces a kit target), so
-// the test fails on any warning line (docs/plans/fsm-v1.md, C-1; docs/plans/execution-checklist.md, S-35-2).
+// the test fails on any warning line (docs/plans/fsm-v1/plan.md, C-1; docs/plans/fsm-v1/checklist.md, S-35-2).
 test('make -n check prints no make warning: no target of the repository replaces a kit target (S-35-2)', () => {
   const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);

@@ -1,10 +1,10 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 00e13100c6d7fd4d580358d9177f064aa50f28a4fc66cd0d6e3e40b9286e4303 -->
+<!-- source-sha256: 5f27a430d553857acbb63e421778bbafca037617608a7df107b0cee79d59d2ed -->
 # fsm-rust
 
 [English](README.md)
 
-fsm의 rust 소비자(`docs/plans/fsm-v1.md`, C-2)다. crate는 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 rust 코드를
+fsm의 rust 소비자(`docs/plans/fsm-v1/plan.md`, C-2)다. crate는 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 rust 코드를
 어떻게 쓰는지 보여주고, 그 코드를 conformance vector로 검사한다. 생성된 library는 표준 라이브러리만 쓰며, orm crate는 영속화
 예제에만 필요하다.
 
@@ -155,8 +155,8 @@ crate::check_persist(
 checkout 루트에서 실행한다:
 
 ```sh
-make -C packages/rust install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.18 by its git tag)
-make -C packages/rust test      # cargo test through kit's run-tests
+make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.18 by its git tag)
+make fsm-rust-test      # cargo test through kit's run-tests
 make test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

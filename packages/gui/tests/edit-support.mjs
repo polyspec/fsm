@@ -1,4 +1,4 @@
-// Helpers of the GUI edit tests (docs/plans/fsm-v1.md, C-7): requests that share one session, so that a POST carries the
+// Helpers of the GUI edit tests (docs/plans/fsm-v1/plan.md, C-7): requests that share one session, so that a POST carries the
 // token of the page that the same session rendered; the form body that a browser posts for a machine; and the three stores
 // (json, mermaid and db) of a project that holds the order example. A test calls openProject(kind) and gets the store of the
 // project as fsm.config.json names it, so the store selection is the one the GUI uses.

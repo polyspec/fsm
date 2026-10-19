@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The command line of the compiler (docs/plans/fsm-v1.md, C-5):
+// The command line of the compiler (docs/plans/fsm-v1/plan.md, C-5):
 //   fsm-gen check [--project <dir>]
 //   fsm-gen lock  [--project <dir>] [--rename machine.old=new]...
 //   fsm-gen copy  --to json|mermaid --root <dir> [--project <dir>]

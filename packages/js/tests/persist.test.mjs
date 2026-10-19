@@ -1,10 +1,10 @@
-// The persistence tests of the npm package beyond the vector cases (docs/spec/fsm.md, B-4; docs/plans/fsm-v1.md, C-4): two
+// The persistence tests of the npm package beyond the vector cases (docs/spec/fsm.md, B-4; docs/plans/fsm-v1/plan.md, C-4): two
 // transitions of one row that run at the same time, each on its own connection, give the outcome that the pattern promises, and a
 // deadlock runs the transaction again while another database error does not. Each test is named by its feature unit of
 // config/parity.json. The dialect is FSM_TEST_DIALECT (sqlite by default; postgres and mysql take their DSN from FSM_TEST_PG_DSN
 // and FSM_TEST_MYSQL_DSN, and a missing DSN fails the run), through the dialect helper of the fsm-db tests. On postgres and mysql
 // the two transitions run at the same time. On sqlite they run one after the other: the sqlite driver is synchronous, so a second
-// BEGIN IMMEDIATE in the same process blocks the one thread that would commit the first (docs/plans/fsm-v1.md, C-4).
+// BEGIN IMMEDIATE in the same process blocks the one thread that would commit the first (docs/plans/fsm-v1/plan.md, C-4).
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';

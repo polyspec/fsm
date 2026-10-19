@@ -1,4 +1,4 @@
-// The form state that the edit page embeds in its fsm-form-state script element (docs/plans/fsm-v1.md, C-7; src/forms.mjs,
+// The form state that the edit page embeds in its fsm-form-state script element (docs/plans/fsm-v1/plan.md, C-7; src/forms.mjs,
 // editState): the compiled crudui form template, the data of the form, the next code of the machine when it has one, and the
 // render options of the page. crudui decodes its own two parts, the template (decodeFormTemplate) and the render options
 // (decodeFormRenderOptions), each failing with the JSON Pointer of the invalid member; fsm checks the fields of its own envelope,

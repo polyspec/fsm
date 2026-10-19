@@ -1,4 +1,4 @@
-// Tests of the next code that the edit page carries (docs/plans/fsm-v1.md, C-7; docs/spec/fsm.md, B-3) through the hyper
+// Tests of the next code that the edit page carries (docs/plans/fsm-v1/plan.md, C-7; docs/spec/fsm.md, B-3) through the hyper
 // application without HTTP, for the json, mermaid and db stores: the embedded form state of the edit page holds
 // nextCode(machine, definitions, lock) of the machine being edited, so that the browser can give each added state its code. After
 // a state is deleted, its code is reserved and the next code is past it; a refused save shows the same next code.

@@ -1,12 +1,12 @@
-// Tests of the Python of the checkout (docs/plans/execution-checklist.md, S-41; docs/plans/fsm-v1.md, C-1 and Verification).
+// Tests of the Python of the checkout (docs/plans/fsm-v1/checklist.md, S-41; docs/plans/fsm-v1/plan.md, C-1 and Verification).
 // The Python 3.14 of the python package comes from `make install-tools`: kit installs the tools of mise.toml with mise at the
 // digests of mise.lock, Python and uv among them, and their shims are var/tools/mise/shims/python3 and uv (S-44-6, kit K127).
-// No recipe of fsm installs an interpreter, and the Makefile has no install-python target. The tests run `make -n` on a copy of the Makefile, the kit targets of the installed
-// @polyspec/kit, config/parity.json (the kinds) and the package Makefiles in a temporary directory: make only prints the
-// recipes, so no network is used and nothing is installed.
+// No recipe of fsm installs an interpreter, and the Makefile has no install-python target. The tests run `make -n` on a copy of the
+// Makefile, the kit targets of the installed @polyspec/kit and config/parity.json (the kinds) in a temporary directory: make only
+// prints the recipes, so no network is used and nothing is installed. The package targets are targets of the root Makefile (K245).
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -41,10 +41,6 @@ function sandbox(t: TestContext): string {
   for (const file of ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json']) {
     mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
     copyFileSync(path.join(ROOT, file), path.join(dir, file));
-  }
-  for (const kind of readdirSync(path.join(ROOT, 'packages'))) {
-    const makefile = path.join(ROOT, 'packages', kind, 'Makefile');
-    if (existsSync(makefile)) put(dir, { [`packages/${kind}/Makefile`]: readFileSync(makefile, 'utf8') });
   }
   put(dir, Object.fromEntries(LOCKS.map(file => [file, '\n'])));
   return dir;
@@ -91,7 +87,7 @@ test('make install prints no uv interpreter install and runs install-tools', (t)
 test('the python package environment follows the install-tools interpreter', (t) => {
   const out = printed(sandbox(t), 'test-python');
   const interpreter = lineIndex(out, INSTALL_TOOLS);
-  const venv = lineIndex(out, /-C packages\/python install/);
+  const venv = lineIndex(out, /fsm-python-install/);
   assert.ok(interpreter >= 0 && venv > interpreter, `the python environment does not follow install-tools python:\n${out}`);
   assert.equal(lineIndex(out, UV_INTERPRETER), -1, `test-python installs an interpreter with uv:\n${out}`);
 });
@@ -108,27 +104,23 @@ test('the Makefile holds no uv python install and no link of a uv interpreter', 
 });
 
 test('the python package runs the uv and the Python of the shims of mise, never those of PATH (S-44-2, S-44-6)', () => {
-  assert.match(makefileOf('packages/python'), /^UV := \$\(abspath \$\(ROOT\)\)\/var\/tools\/mise\/shims\/uv$/m);
-  assert.match(makefileOf('packages/python'), /^PYTHON := \$\(abspath \$\(ROOT\)\)\/var\/tools\/mise\/shims\/python3$/m);
+  assert.match(makefileOf(), /^UV := var\/tools\/mise\/shims\/uv$/m);
+  assert.match(makefileOf(), /^PYTHON_BIN := var\/tools\/mise\/shims\/python3$/m);
 });
 
 // The package venv is made by kit's python-venv (uv venv) and accepted by kit's runner; kit tests both itself (S-44).
-const PACKAGE = path.join(ROOT, 'packages/python');
-
-test('make -n install of the package makes the venv with the kit python-venv, never with -m venv (S-41-1, kit K44)', (t) => {
-  const dir = sandbox(t);
-  const result = spawnSync('make', ['-n', 'install'], { cwd: path.join(dir, 'packages/python'), encoding: 'utf8', env: cleanEnv() });
-  assert.equal(result.status, 0, `make -n install failed:\n${result.stdout}${result.stderr}`);
-  assert.match(result.stdout, /python-venv DIR=packages\/python\/\.venv|python-venv\.mjs packages\/python\/\.venv/, `install does not call the kit python-venv:\n${result.stdout}`);
-  assert.doesNotMatch(result.stdout, /-m venv/, `install runs -m venv itself:\n${result.stdout}`);
+test('make -n fsm-python-install makes the venv with the kit python-venv, never with -m venv (S-41-1, kit K44)', (t) => {
+  const out = printed(sandbox(t), 'fsm-python-install');
+  assert.match(out, /python-venv DIR=packages\/python\/\.venv/, `install does not call the kit python-venv:\n${out}`);
+  assert.doesNotMatch(out, /-m venv/, `install runs -m venv itself:\n${out}`);
 });
 
-test("the package Makefile installs pylock.toml, which kit's python-lock writes, and writes no lock of its own (S-44)", () => {
-  const makefile = readFileSync(path.join(PACKAGE, 'Makefile'), 'utf8');
-  assert.match(makefile, /\$\(UV\) pip install --python \$\(VENV\)\/bin\/python --link-mode copy -r \$\(PYLOCK\)/);
-  assert.doesNotMatch(makefile, /\$\(UV\) (export|lock)\b/, "the package Makefile writes or checks a lock itself; kit's python-lock does");
-  assert.doesNotMatch(makefile, /-m venv/, 'the package Makefile runs -m venv itself; the kit python-venv makes the venv');
-  assert.match(makefile, /python-venv DIR=packages\/python\/\.venv/);
+test("the python install lists pylock.toml, which kit's python-lock writes, and writes no lock of its own (S-44)", () => {
+  const makefile = makefileOf();
+  assert.match(makefile, /\$\(UV\) pip install --python \$\(PY_VENV\)\/bin\/python --link-mode copy -r packages\/python\/pylock\.toml/);
+  assert.doesNotMatch(makefile, /\$\(UV\) (export|lock)\b/, "the Makefile writes or checks a lock itself; kit's python-lock does");
+  assert.doesNotMatch(makefile, /-m venv/, 'the Makefile runs -m venv itself; the kit python-venv makes the venv');
+  assert.match(makefile, /python-venv DIR=\$\(PY_VENV\)/);
   assert.match(makefile, /--link-mode copy/);
   const recipes = makefile.split('\n').filter(line => !line.startsWith('#')).join('\n');
   assert.doesNotMatch(recipes, /(^|[^$(\w])uv (venv|sync)\b/m, 'a recipe runs uv venv or uv sync');
@@ -137,11 +129,11 @@ test("the package Makefile installs pylock.toml, which kit's python-lock writes,
 test('test-python runs the runner with --venv and no PATH entry for the venv', (t) => {
   const out = printed(sandbox(t), 'test-python');
   assert.match(out, /run-tests\.mjs python --venv /, 'test-python does not pass --venv to the runner');
-  assert.doesNotMatch(makefileOf('packages/python'), /PATH=\$\(CURDIR\)\/\$\(VENV\)/);
+  assert.doesNotMatch(makefileOf(), /PATH=\$\(CURDIR\)\/\$\(VENV\)/);
   assert.doesNotMatch(readFileSync(path.join(ROOT, 'Makefile'), 'utf8'), /PATH=\$\(CURDIR\)\/packages\/python/);
 });
 
-/** The Makefile text of the package directory relative to the checkout root. */
-function makefileOf(relative: string): string {
-  return readFileSync(path.join(ROOT, relative, 'Makefile'), 'utf8');
+/** The text of the root Makefile, which holds every target of the runtime packages (K245). */
+function makefileOf(): string {
+  return readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
 }

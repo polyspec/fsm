@@ -1,4 +1,4 @@
-# Continuous integration (docs/plans/fsm-v1.md, C-10 and Verification; docs/plans/execution-checklist.md, S-21). One job runs
+# Continuous integration (docs/plans/fsm-v1/plan.md, C-10 and Verification; docs/plans/fsm-v1/checklist.md, S-21). One job runs
 # `make install` and then `make check`, the full suite of the repository, with the PostgreSQL and MySQL services of plan C-6.
 # The versions come from the files that declare them: PHP from config/toolchain.json, Rust from rust-toolchain.toml, and
 # Node.js, Go, Python and uv from mise.toml, which mise installs at the digests of mise.lock: Node.js with make install-tools

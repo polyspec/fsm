@@ -1,7 +1,7 @@
 // Tests of the php backend (packages/compiler/src/backends/php.mjs, docs/spec/fsm.md, B-4 and B-6): the files of the
 // order example are the golden files under tests/golden/php, byte for byte, in the order the backend returns them, and the test
 // module is the golden tests/golden/php/ConformanceTest.php. The golden files were written by the generator once, after a review of its
-// output against B-6 (docs/plans/fsm-v1.md, C-5). Every generated file is also checked by the php linter, and the namespace
+// output against B-6 (docs/plans/fsm-v1/plan.md, C-5). Every generated file is also checked by the php linter, and the namespace
 // that the command line passes is refused when it is not a PHP namespace.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';

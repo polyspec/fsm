@@ -8,9 +8,9 @@ code has no runtime dependency and does no parsing at run time. A state is an in
 its edges, and a transition is idempotent: a retry never advances the machine twice. The definition is held in one of three
 stores (JSON, Mermaid `stateDiagram-v2`, a database through orm), and all three follow one rule set.
 
-- Plan and scope: [docs/plans/fsm-v1.md](docs/plans/fsm-v1.md)
+- Plan and scope: [docs/plans/fsm-v1/plan.md](docs/plans/fsm-v1/plan.md)
 - Definition: [docs/spec/fsm.md](docs/spec/fsm.md)
-- Checklist: [docs/plans/execution-checklist.md](docs/plans/execution-checklist.md)
+- Checklist: [docs/plans/fsm-v1/checklist.md](docs/plans/fsm-v1/checklist.md)
 - Development rules: [AGENTS.md](AGENTS.md)
 - Documentation site: built from these documents by `make docs-build` (VitePress, `docs/.vitepress`, C-8 of the plan); once S-21 deploys it, it is served at https://polyspec.github.io/fsm/
 
@@ -266,7 +266,7 @@ only the toolchain of its own language:
 |---|---|
 | fsm-gen, fsm-db, fsm-gui and the generated npm code | Node.js 26.12.0 (`mise.toml`) and npm |
 | generated go code | Go 1.27.2 (`go 1.27.2` in the module) |
-| generated php code | PHP 8.4 or later (the orm client requires 8.4); the checkout tests with PHP 8.5 and Composer 2.10.3 (`config/toolchain.json`) |
+| generated php code | PHP 8.4 or later (the orm client requires 8.4); the checkout tests with PHP 8.4 and Composer 2.10.3 (`config/toolchain.json`) |
 | generated php-ext code | the php requirements, plus `phpize`, `autoconf` and a C compiler |
 | generated python code | Python 3.14 (`config/toolchain.json` `pythonBuild`); `make install` installs it into `var/tools` with the uv of `config/toolchain.json` (`make install-tools`) |
 | generated rust code | Rust 1.99.0 (`rust-toolchain.toml`); the generated library uses only the standard library |
@@ -333,7 +333,7 @@ $ fsm-gen copy --to mermaid --root ./order-mermaid --project ./order-machines
 
 ### vectors
 
-Writes the conformance vectors, the expected result of every operation of every machine (`docs/plans/fsm-v1.md`, C-4).
+Writes the conformance vectors, the expected result of every operation of every machine (`docs/plans/fsm-v1/plan.md`, C-4).
 Without `--kind`, `--out <file>` receives `{ machines: [{ machine, cases }] }`, one suite for every machine. With `--kind <kind>`, `--out` names the file of
 the native test module of that kind. The php and php-ext kinds also need `--php-namespace`.
 
@@ -445,11 +445,11 @@ checks that the documents depend on can be run one at a time:
 | `make workflows-test` | the CI and Pages workflows: every action is pinned to a verified commit, the check job runs `make install` and `make check` with the services of plan C-6, and each version comes from the file that declares it (`tests/workflows`) |
 | `make docs-build` | the documentation site builds; a dead link fails the build |
 | `make docs-build-test` | the site's dead-link failure and the real build |
-| `make documents-check` | every document has its Korean twin with a current `source-sha256` stamp, and its links are valid |
+| `make docs-check` | every document has its Korean twin with a current `source-sha256` stamp, and its links are valid |
 | `make name-check` | no tracked file names the library by its old name |
 | `make gui-test`, `make compiler-test`, `make db-test` | the tests of each tool |
 | `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | the DB store, CLI and command tests, the persistence concurrency proof of npm and the persist cases of each kind on PostgreSQL and MySQL; they read `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` (and `FSM_TEST_PG_ADMIN_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN` for the empty databases of the CLI tests), stop with exit 2 without them, and skip no dialect (plan C-6). The tests run on SQLite too (`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
-| `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | the tests of each language package |
+| `make test-go`, `make fsm-js-test`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | the tests of each language package |
 
 CI (`.github/workflows/ci.yml`) installs kit (`make install-tools TOOLS=npm`, `make install-packages`) and runs `make install` and then `make check` on every push to main, with PostgreSQL and MySQL services. The documentation site is published to https://polyspec.github.io/fsm/ by `.github/workflows/pages.yml`.
 

@@ -1,4 +1,4 @@
-// Tests of the IR of packages/compiler/src/core/normalize.mjs (docs/plans/fsm-v1.md, C-5): the IR keeps the
+// Tests of the IR of packages/compiler/src/core/normalize.mjs (docs/plans/fsm-v1/plan.md, C-5): the IR keeps the
 // declaration order of the states and the events, and its transitions follow that order, so every backend reads one IR.
 import assert from 'node:assert/strict';
 import test from 'node:test';

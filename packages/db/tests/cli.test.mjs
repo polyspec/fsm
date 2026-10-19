@@ -1,4 +1,4 @@
-// Tests of the command line packages/db/src/cli/fsm-db.mjs (docs/plans/fsm-v1.md, C-6): every command runs as a process
+// Tests of the command line packages/db/src/cli/fsm-db.mjs (docs/plans/fsm-v1/plan.md, C-6): every command runs as a process
 // against the database whose DSN is in the environment variable that fsm.config.json names. The database of a case is empty
 // (no table): a new SQLite file on SQLite, and on PostgreSQL and MySQL a new database that the admin DSN creates and the
 // file's tests drop (dialect.mjs, emptyDatabase). FSM_TEST_DIALECT names the dialect; each case has its own temporary project.

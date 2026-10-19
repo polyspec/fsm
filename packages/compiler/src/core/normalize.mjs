@@ -1,4 +1,4 @@
-// The IR of a valid definition (docs/plans/fsm-v1.md, C-5): one plain JSON object that every backend consumes. The states
+// The IR of a valid definition (docs/plans/fsm-v1/plan.md, C-5): one plain JSON object that every backend consumes. The states
 // and the events keep their declaration order, and the transitions follow the state order, then the event order.
 // The core imports nothing from node:, so the GUI runs it in a browser.
 

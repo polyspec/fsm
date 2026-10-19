@@ -3,7 +3,7 @@
 
 [한국어](README.ko.md)
 
-The rust consumer of fsm (`docs/plans/fsm-v1.md`, C-2). The crate is private and is a test bed: it is not published. It shows
+The rust consumer of fsm (`docs/plans/fsm-v1/plan.md`, C-2). The crate is private and is a test bed: it is not published. It shows
 how the generated rust code of a fsm definition is used, and it checks that code against the conformance vectors. The generated
 library uses the standard library only; the orm crates are needed by the persistence example alone.
 
@@ -159,8 +159,8 @@ script of this package and the `polyspec-orm` crates.
 From the checkout root:
 
 ```sh
-make -C packages/rust install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.18 by its git tag)
-make -C packages/rust test      # cargo test through kit's run-tests
+make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.18 by its git tag)
+make fsm-rust-test      # cargo test through kit's run-tests
 make test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

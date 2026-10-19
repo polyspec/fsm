@@ -1,4 +1,4 @@
-// The browser test of the GUI forms (docs/plans/fsm-v1.md, C-7; docs/plans/execution-checklist.md, S-22-1 and S-22-2). It runs
+// The browser test of the GUI forms (docs/plans/fsm-v1/plan.md, C-7; docs/plans/fsm-v1/checklist.md, S-22-1 and S-22-2). It runs
 // the GUI server on a temporary project that holds the order machine and its lock, opens the edit form in a headless Chromium of
 // the pinned Playwright package, and drives it as a user does: the add and remove buttons of the state and edge rows change the
 // rows on the page, Save stores them, and the page afterwards shows the stored machine with its Mermaid diagram. Only the browser

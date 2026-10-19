@@ -1,4 +1,4 @@
-// Tests of packages/compiler/src/core/vectors.mjs (docs/plans/fsm-v1.md, C-4): the oracle of the conformance vectors,
+// Tests of packages/compiler/src/core/vectors.mjs (docs/plans/fsm-v1/plan.md, C-4): the oracle of the conformance vectors,
 // computed from the IR and the lock. The two-state machine is checked against tests/fixtures/vectors/two_step.json, which is
 // written by hand and not by the code; the order example checks the order, the count and the coverage of its cases.
 import assert from 'node:assert/strict';

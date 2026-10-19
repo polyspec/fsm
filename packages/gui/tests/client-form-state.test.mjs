@@ -1,4 +1,4 @@
-// Tests of the decoder of the form state that the edit page embeds (docs/plans/fsm-v1.md, C-7; docs/plans/execution-checklist.md,
+// Tests of the decoder of the form state that the edit page embeds (docs/plans/fsm-v1/plan.md, C-7; docs/plans/fsm-v1/checklist.md,
 // S-44-18). client/main.ts reads the fsm-form-state element through decodeFormState: crudui decodes the template and the render
 // options, and fsm checks data and nextCode, the fields of its own envelope. The state is the one that editState of the server
 // writes, so the test decodes what the page carries.

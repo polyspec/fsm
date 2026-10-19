@@ -1,5 +1,5 @@
 // Package examples is the B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite, PostgreSQL and MySQL
-// (docs/plans/fsm-v1.md, C-2 and C-6; the DSN selects the dialect). A row keeps the status code. A transition runs in one
+// (docs/plans/fsm-v1/plan.md, C-2 and C-6; the DSN selects the dialect). A row keeps the status code. A transition runs in one
 // transaction: the row is read under its lock (ForUpdate), the event is applied by the machine to the code that is stored, and
 // the row is updated only when the stored state changed. The caller passes the same observed state on a retry, so a retry is
 // Unchanged and a stale request is E_CONFLICT. The machine is given as a Decide, so one example serves every machine of the

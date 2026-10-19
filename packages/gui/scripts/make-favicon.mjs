@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Writes public/favicon.ico (docs/plans/fsm-v1.md, C-7; docs/plans/execution-checklist.md, S-22-2): the icon that browsers request
+// Writes public/favicon.ico (docs/plans/fsm-v1/plan.md, C-7; docs/plans/fsm-v1/checklist.md, S-22-2): the icon that browsers request
 // at /favicon.ico. It is one 16x16 image of 32 bits per pixel in the ICO format, a filled circle of the accent color on a transparent
 // background. The file is committed; run this script again only to change the icon:
 //   node scripts/make-favicon.mjs

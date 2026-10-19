@@ -1,4 +1,4 @@
-// The canonical bytes of the JSON and the Mermaid checkouts (docs/plans/fsm-v1.md, C-5; docs/spec/fsm.md, B-1 and B-2):
+// The canonical bytes of the JSON and the Mermaid checkouts (docs/plans/fsm-v1/plan.md, C-5; docs/spec/fsm.md, B-1 and B-2):
 // the JSON texts use two spaces of indentation, the key order of the store and the $schema path of machines/; the Mermaid
 // texts use the line order of the canonical form. The store tests and the CLI tests compare files with these texts, so a
 // change of either canonical form fails both.

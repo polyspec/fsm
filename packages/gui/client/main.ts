@@ -1,4 +1,4 @@
-// The one browser script of the fsm GUI (docs/plans/fsm-v1.md, C-7). It starts the hyper client, which renders the
+// The one browser script of the fsm GUI (docs/plans/fsm-v1/plan.md, C-7). It starts the hyper client, which renders the
 // regions that the server sends, and it runs Mermaid on every diagram of the page: once when the page loads and again after
 // every htmx swap, because a swap replaces the <pre class="mermaid"> element of the new page. The edit form is a crudui form:
 // after the page loads and after every htmx swap, connectForm binds the rendered form to its instance, so that its add and

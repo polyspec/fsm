@@ -1,4 +1,4 @@
-// The python backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1.md, C-2): the generated files of the python package
+// The python backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated files of the python package
 // `src/polyspec_fsm/` (<machine>.py for every machine, fsm.py and __init__.py) and the native vector module
 // `tests/vectors.py`. It takes the IRs of the machines (normalize.mjs), in definition order, and the lock, and returns the text of
 // every file; it writes nothing. The output is deterministic: declaration order, four spaces of indentation, double quotes and a
@@ -241,7 +241,7 @@ export function vectorsFile(list) {
   };
   return text([
     header(SHARED),
-    '"""The conformance vectors of every machine (conformance/vectors, docs/plans/fsm-v1.md, C-4)."""',
+    '"""The conformance vectors of every machine (conformance/vectors, docs/plans/fsm-v1/plan.md, C-4)."""',
     '',
     `vectors = ${literal(vectorList, '')}`,
   ]);

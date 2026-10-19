@@ -1,4 +1,4 @@
-// The oracle of the conformance vectors (docs/plans/fsm-v1.md, C-4; docs/spec/fsm.md, B-4): the expected result of
+// The oracle of the conformance vectors (docs/plans/fsm-v1/plan.md, C-4; docs/spec/fsm.md, B-4): the expected result of
 // every operation of one machine, computed from its IR (normalize.mjs) and its lock (the reserved codes). No language
 // computes an expectation; each language only checks its own result against these cases. The core imports nothing from node:.
 
@@ -9,7 +9,7 @@ export const FEATURES = Object.freeze([
 
 /**
  * The kinds whose state type admits any integer, so that a case with an invalid state value (a value that is no state) can run
- * in them. The rust and php kinds have an enum for the state, so no such value exists there (docs/plans/fsm-v1.md, C-4).
+ * in them. The rust and php kinds have an enum for the state, so no such value exists there (docs/plans/fsm-v1/plan.md, C-4).
  */
 export const RAW_STATE_KINDS = Object.freeze(['go', 'npm', 'python']);
 
@@ -36,7 +36,7 @@ export function forKind(vectorList, kind) {
 
 /**
  * The vectors of `ir` (the IR of normalize) with `lock` (the lock of the machine, which holds its reserved codes):
- * { machine, cases: [{ feature, id, name, ...data, expect }] }. The cases follow docs/plans/fsm-v1.md, C-4: initial; per state
+ * { machine, cases: [{ feature, id, name, ...data, expect }] }. The cases follow docs/plans/fsm-v1/plan.md, C-4: initial; per state
  * code, key, from_code, is_final, events_from; the from_code errors; target for every (state, event); apply for every defined
  * (expected, event) and then for every undefined one; persist.
  *
@@ -71,7 +71,7 @@ export function vectors(ir, lock) {
     // Internal assertion: ids are unique by construction (every key is an index), so this never fails.
     if (ids.has(id)) throw new Error(`vectors: internal error, the id ${id} is given twice`);
     ids.add(id);
-    // name is the case name of every language (docs/plans/fsm-v1.md, C-4): `<feature>__<id>`, the name that the parity check of
+    // name is the case name of every language (docs/plans/fsm-v1/plan.md, C-4): `<feature>__<id>`, the name that the parity check of
     // kit reads at $.machines[*].cases[*].name.
     cases.push({ feature, id, name: `${feature}__${id}`, ...data, expect, ...(kinds === undefined ? {} : { kinds }) });
   };

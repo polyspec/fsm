@@ -1,4 +1,4 @@
-// Tests of the CI and Pages workflows (docs/plans/fsm-v1.md, C-10 and Verification; docs/plans/execution-checklist.md, S-21).
+// Tests of the CI and Pages workflows (docs/plans/fsm-v1/plan.md, C-10 and Verification; docs/plans/fsm-v1/checklist.md, S-21).
 // The workflows are read as text, so the test needs no YAML parser and no network. Each version is compared with the file
 // that declares it, and the services and env of the CI job with the block that plan C-6 holds, so the plan and the workflow
 // cannot drift apart. The action pins are the commits that the template repository verified for the same versions.
@@ -27,7 +27,7 @@ function text(value: unknown, what: string): string {
   return value;
 }
 
-// The workflows among the copies of kit (kit.copies of the installed @polyspec/kit) belong to kit: make kit-check keeps them
+// The workflows among the copies of kit (kit.copies of the installed @polyspec/kit: gates.yml and release.yml) belong to kit: make kit-check keeps them
 // byte for byte, so the rules of fsm's own workflows below do not read them.
 const KIT_PACKAGE: unknown = JSON.parse(read('node_modules/@polyspec/kit/package.json'));
 const COPIES = field(field(KIT_PACKAGE, 'kit', '@polyspec/kit package.json'), 'copies', '@polyspec/kit package.json kit');
@@ -37,7 +37,7 @@ const WORKFLOWS = readdirSync(path.join(ROOT, '.github/workflows')).filter(name 
   .filter(file => !VENDORED.includes(file));
 const CI = read('.github/workflows/ci.yml');
 const PAGES = read('.github/workflows/pages.yml');
-const PLAN = read('docs/plans/fsm-v1.md');
+const PLAN = read('docs/plans/fsm-v1/plan.md');
 // The PHP minors of config/toolchain.json, the implementations of config/parity.json and the tools of mise.toml.
 const PHP: unknown = field(JSON.parse(read('config/toolchain.json')), 'php', 'config/toolchain.json');
 if (!Array.isArray(PHP)) throw new Error('php of config/toolchain.json must be a list');
@@ -112,8 +112,8 @@ test('the CI workflow has one job, check, on ubuntu-26.04', () => {
   assert.match(PAGES_JOB, /^ {4}runs-on: ubuntu-26\.04$/m);
 });
 
-test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the release workflow that kit vendors', () => {
-  assert.deepEqual(VENDORED, ['.github/workflows/release.yml']);
+test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the gates and release workflows that kit vendors', () => {
+  assert.deepEqual(VENDORED, ['.github/workflows/release.yml', '.github/workflows/gates.yml']);
   assert.deepEqual(WORKFLOWS, ['.github/workflows/ci.yml', '.github/workflows/pages.yml']);
 });
 

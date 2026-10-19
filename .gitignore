@@ -17,7 +17,7 @@
 /packages/gui/public/assets/
 /packages/php*/.phpunit.result.cache
 /packages/php*/.phpunit.cache/
-# phpize output of the php-ext package, built in its src/ (docs/plans/fsm-v1.md, C-1): config.m4 and the generated sources stay tracked.
+# phpize output of the php-ext package, built in its src/ (docs/plans/fsm-v1/plan.md, C-1): config.m4 and the generated sources stay tracked.
 /packages/php-ext/src/Makefile
 /packages/php-ext/src/Makefile.fragments
 /packages/php-ext/src/Makefile.objects

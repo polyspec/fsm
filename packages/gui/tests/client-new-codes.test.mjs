@@ -1,4 +1,4 @@
-// Tests of the codes that the browser gives the states added in the edit form (docs/plans/fsm-v1.md, C-7; docs/spec/fsm.md,
+// Tests of the codes that the browser gives the states added in the edit form (docs/plans/fsm-v1/plan.md, C-7; docs/spec/fsm.md,
 // B-3). The function is the one that client/main.ts calls with the next code of the page: a stored state keeps its code, and the
 // added states take the next code and the codes after it, in the order of the rows. The server still checks every code on save.
 import assert from 'node:assert/strict';

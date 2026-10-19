@@ -1,4 +1,4 @@
-// Tests of the edit screens over HTTP (docs/plans/fsm-v1.md, C-7), with the server process of src/main.mjs as the S-16 tests
+// Tests of the edit screens over HTTP (docs/plans/fsm-v1/plan.md, C-7), with the server process of src/main.mjs as the S-16 tests
 // run it: a save of the edit form with the session cookie and the CSRF token of the page writes the project and redirects to
 // its detail; a save without the token is 403 over the wire; and a rename and a delete reach the store the same way.
 import assert from 'node:assert/strict';

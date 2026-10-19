@@ -10,7 +10,7 @@ import (
 	"github.com/polyspec/fsm/packages/go/src/ticket"
 )
 
-// vectors are the conformance vectors of the state machines, in the order of their definitions (docs/plans/fsm-v1.md, C-4).
+// vectors are the conformance vectors of the state machines, in the order of their definitions (docs/plans/fsm-v1/plan.md, C-4).
 // Each case keeps the keys of the oracle; the adapter of its machine maps them to the constants of the machine.
 var vectors = []machineVectors{
 	{

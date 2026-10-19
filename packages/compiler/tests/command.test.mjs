@@ -1,4 +1,4 @@
-// Tests of the command fsm-gen (docs/plans/execution-checklist.md, S-18-1): `npm install -g ./packages/compiler` puts
+// Tests of the command fsm-gen (docs/plans/fsm-v1/checklist.md, S-18-1): `npm install -g ./packages/compiler` puts
 // fsm-gen on the PATH. The package is installed offline into a temporary npm prefix, and the command runs from its bin
 // directory as a shell would run it, without naming node or the source file.
 import assert from 'node:assert/strict';

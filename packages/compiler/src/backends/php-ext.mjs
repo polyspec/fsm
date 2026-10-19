@@ -1,4 +1,4 @@
-// The php-ext backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1.md, C-2): the generated files of the php-ext
+// The php-ext backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated files of the php-ext
 // package `src/`, which phpize builds into one PHP extension (config.m4). It takes the IRs of the machines (normalize.mjs), in
 // definition order, the lock, the php namespace and the extension name, and returns the text of every file; it writes nothing.
 // The output is deterministic: declaration order, tab indentation and a final line break.

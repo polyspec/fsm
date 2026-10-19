@@ -3,7 +3,7 @@
 
 [한국어](README.ko.md)
 
-The npm consumer of fsm (`docs/plans/fsm-v1.md`, C-2). The package is private and is a test bed: it is not published. It
+The npm consumer of fsm (`docs/plans/fsm-v1/plan.md`, C-2). The package is private and is a test bed: it is not published. It
 shows how the generated npm code of a fsm definition is used, and it checks that code against the conformance vectors. The
 generated code is ES modules with type declarations (`.js` and `.d.ts`) and has no runtime dependency.
 
@@ -130,9 +130,8 @@ export async function transition(db, machine, id, expected, event) {
 From the checkout:
 
 ```sh
-make -C packages/js install   # npm ci: the pinned orm release and the TypeScript compiler
-make -C packages/js test      # tests/conformance.test.mjs through kit's run-tests
-make test-npm                      # the same from the root
+make fsm-js-install   # npm ci: the pinned orm release and the TypeScript compiler
+make fsm-js-test      # tests/conformance.test.mjs through kit's run-tests
 ```
 
 The run passes 89 of 89 cases. `tests/conformance.test.mjs` runs one test per vector case of `tests/vectors.mjs`, named

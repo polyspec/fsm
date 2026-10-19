@@ -1,7 +1,7 @@
 // Tests of the npm backend (packages/compiler/src/backends/npm.mjs, docs/spec/fsm.md, B-4 and B-6): the files of the
 // order example are the golden files under tests/golden/npm, byte for byte, in the order the backend returns them, and the
 // vector module is the golden tests/vectors.mjs. The golden files were written by the generator once, after a review of its
-// output against B-6 (docs/plans/fsm-v1.md, C-5).
+// output against B-6 (docs/plans/fsm-v1/plan.md, C-5).
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

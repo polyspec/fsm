@@ -2,7 +2,7 @@
 requires = ["setuptools==84.0.0"]
 build-backend = "setuptools.build_meta"
 
-# The python consumer test bed of fsm (docs/plans/fsm-v1.md, C-2). It is not published: the orm client is pinned to the wheel of its release
+# The python consumer test bed of fsm (docs/plans/fsm-v1/plan.md, C-2). It is not published: the orm client is pinned to the wheel of its release
 # (C-1), and the generated code under src/ and examples/model/ has no runtime dependency beyond the standard library.
 [project]
 name = "polyspec-fsm-python"

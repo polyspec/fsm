@@ -3,7 +3,7 @@
 
 [한국어](README.ko.md)
 
-The PHP extension kind of fsm (`docs/plans/fsm-v1.md`, C-2). The package is private and is a test bed: it is not published. It
+The PHP extension kind of fsm (`docs/plans/fsm-v1/plan.md`, C-2). The package is private and is a test bed: it is not published. It
 builds the generated state machines of a fsm definition as one PHP extension, `polyspec_fsm_test`, and checks that extension
 against the same conformance vectors as the php package. Its public API is the API of the php kind: the namespace
 `Polyspec\FsmTest`, a sub-namespace per machine (such as `Polyspec\FsmTest\Order`) with the enums `State` and `Event`, the
@@ -92,8 +92,8 @@ cases run it with the built module.
 From the checkout:
 
 ```sh
-make -C packages/php-ext install   # composer install: the same packages as the php package (composer.lock)
-make -C packages/php-ext test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
+make fsm-php-ext-install   # composer install: the same packages as the php package (composer.lock)
+make fsm-php-ext-test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
 make test-php-ext                      # the same from the root
 make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

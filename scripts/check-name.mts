@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Checks that no tracked file names the library by its old name, `status` (`make name-check`; docs/plans/execution-checklist.md,
+// Checks that no tracked file names the library by its old name, `status` (`make name-check`; docs/plans/fsm-v1/checklist.md,
 // S-18 and S-27). Every tracked file and every tracked path is scanned for the word `status` in any case, occurrence by
 // occurrence: for each line that contains the word, the spans that an entry of ALLOWED names (for the file) are removed from
 // the line, and the rest of the line is scanned again. A word left over is a finding. An entry without `match` allows the
-// whole file. The library is named fsm (docs/plans/fsm-v1.md, R12). `status` stays where it names a state value, an exit
+// whole file. The library is named fsm (docs/plans/fsm-v1/plan.md, R12). `status` stays where it names a state value, an exit
 // status or a test result, or where a document keeps history.
 //
 //   node scripts/check-name.mts [--root <dir>]
@@ -59,12 +59,12 @@ export const ALLOWED: readonly Allowed[] = Object.freeze([
     reason: 'the S-05 group has an unlabelled bullet that names the spec path it was written with, before the rename',
   },
   {
-    files: ['docs/plans/execution-checklist.md', 'docs/plans/execution-checklist.ko.md'],
+    files: ['docs/plans/fsm-v1/checklist.md', 'docs/plans/fsm-v1/checklist.ko.md'],
     match: /Rename status to fsm everywhere|a remaining `status` name that is not a state status|status를 fsm으로 전부 바꾼다|상태 의미가 아닌 `status` 이름이 남으면/,
     reason: 'the S-18 row is the task text: its phrases name the old name that the item renames and the scan it asks for',
   },
   {
-    files: ['AGENTS.md', 'AGENTS.ko.md', 'docs/plans/fsm-v1.md', 'docs/plans/fsm-v1.ko.md'],
+    files: ['AGENTS.md', 'AGENTS.ko.md', 'docs/plans/fsm-v1/plan.md', 'docs/plans/fsm-v1/plan.ko.md'],
     match: /old name `status`|옛 이름 `status`/,
     reason: 'the rules and the plan state the rename and the name-check rule, which name the old name as such',
   },

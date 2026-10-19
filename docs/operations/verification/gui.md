@@ -3,7 +3,7 @@
 
 [한국어](gui.ko.md)
 
-The manual check of the plan (`docs/plans/fsm-v1.md`, Verification; checklist S-22) run in a real browser with each of the
+The manual check of the plan (`docs/plans/fsm-v1/plan.md`, Verification; checklist S-22) run in a real browser with each of the
 three stores. It records the tree, the steps and the outcome of each store.
 
 ## Tree and environment

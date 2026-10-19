@@ -1,4 +1,4 @@
-// The order example as a project of its own (docs/plans/fsm-v1.md, C-5). The golden files of the backends and the gen commands
+// The order example as a project of its own (docs/plans/fsm-v1/plan.md, C-5). The golden files of the backends and the gen commands
 // that compare with them are the output for the order machine alone, so these tests read this project: the machine, the config
 // and the lock entry of order, copied from the repository at import. The repository holds more machines (machines/), whose
 // output is checked by the package tests and gen-check. The directory is removed when the test process exits.

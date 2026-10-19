@@ -1,10 +1,10 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: 1dbd195b7a9f428fff4d0fba9ddb96304056a03cedcfeb7bb688405f88709f64 -->
+<!-- source-sha256: 02037ad0d2fcdbb8a83b852ed9534ff7c0efec9b8aa9b48d797eac76ac6c13a6 -->
 # @polyspec/fsm-npm
 
 [English](README.md)
 
-fsm의 npm 소비자(`docs/plans/fsm-v1.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 npm 코드를
+fsm의 npm 소비자(`docs/plans/fsm-v1/plan.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 npm 코드를
 어떻게 쓰는지 보여주고, 그 코드를 conformance vector로 검사한다. 생성 코드는 type 선언(`.js`와 `.d.ts`)을 가진 ES module이며
 런타임 의존성이 없다.
 
@@ -130,9 +130,8 @@ transaction이 되돌아간다. 같은 `expected`로 다시 시도하면 `change
 checkout에서 실행한다:
 
 ```sh
-make -C packages/js install   # npm ci: the pinned orm release and the TypeScript compiler
-make -C packages/js test      # tests/conformance.test.mjs through kit's run-tests
-make test-npm                      # the same from the root
+make fsm-js-install   # npm ci: the pinned orm release and the TypeScript compiler
+make fsm-js-test      # tests/conformance.test.mjs through kit's run-tests
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/conformance.test.mjs`는 `tests/vectors.mjs`의 vector case마다 하나의 test를

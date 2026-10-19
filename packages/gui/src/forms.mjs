@@ -1,4 +1,4 @@
-// The crudui forms of the GUI (docs/plans/fsm-v1.md, C-7): the machine edit form, compiled once from crud/machine.yml, and
+// The crudui forms of the GUI (docs/plans/fsm-v1/plan.md, C-7): the machine edit form, compiled once from crud/machine.yml, and
 // the data that it renders for a stored machine. A form holds no rule. Repeated rows are keyed by sequenceRowKey of their
 // position in the stored definition: a row key only tells the rows of the form apart (form-runtime.md, "Row identity"), and the
 // core reads the codes and keys from the field values, so two stored states with one code still get two rows.

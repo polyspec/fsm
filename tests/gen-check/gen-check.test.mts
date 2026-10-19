@@ -1,4 +1,4 @@
-// Tests of scripts/gen-check.mts (docs/plans/fsm-v1.md, C-5): the generated files of a checkout must equal the working tree.
+// Tests of scripts/gen-check.mts (docs/plans/fsm-v1/plan.md, C-5): the generated files of a checkout must equal the working tree.
 // Every case builds a temporary git checkout from the files of this repository (the compiler sources, the machines, the lock,
 // the features and the vector files), changes one thing and runs the check of this checkout on it with --root.
 import assert from 'node:assert/strict';
@@ -44,8 +44,9 @@ const checkout = (t: TestContext): string => fixture(t, [], {}, {});
 /** A kind `fake` whose package generates gen/a.txt, with the generated glob `gen/**`, which the fixed patterns never covered. */
 const FAKE_GENERATED: Record<string, string[]> = { fake: ['gen/**'] };
 const FAKE_FILES: Record<string, string> = {
-  // gen is phony: the directory gen/ would otherwise make the target up to date.
-  'packages/fake/Makefile': '.PHONY: gen\ngen:\n\tmkdir -p $(DEST)/gen\n\tprintf \'a\\n\' > $(DEST)/gen/a.txt\n',
+  // The root Makefile names the gen target of the package fake (fsm-<package>-gen); it is phony: the directory gen/ would otherwise
+  // make the target up to date.
+  'Makefile': '.PHONY: fsm-fake-gen\nfsm-fake-gen:\n\tmkdir -p $(DEST)/gen\n\tprintf \'a\\n\' > $(DEST)/gen/a.txt\n',
   'packages/fake/gen/a.txt': 'a\n',
   'packages/fake/readme.txt': 'not generated\n',
 };

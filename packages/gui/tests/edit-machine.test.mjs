@@ -1,4 +1,4 @@
-// Tests of the machine edit screen (docs/plans/fsm-v1.md, C-7; docs/spec/fsm.md, B-2, B-3 and B-5) through the hyper
+// Tests of the machine edit screen (docs/plans/fsm-v1/plan.md, C-7; docs/spec/fsm.md, B-2, B-3 and B-5) through the hyper
 // application without HTTP, for the json, mermaid and db stores: the form shows the stored states with read-only keys and codes;
 // a malformed body is a bad request; a save that passes writes the machine and passes fsm-gen check; a refused save writes
 // nothing and shows its finding on the field of the finding; an edited code or key of a stored state is refused by the core;

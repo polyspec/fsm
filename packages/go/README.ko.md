@@ -1,10 +1,10 @@
 <!-- doc-id: readme-go -->
-<!-- source-sha256: 5017a38b06f029776bf154c66df7adf6961df5a11b46b8a80580a53d7fbe7ca8 -->
+<!-- source-sha256: 9a72f34249d8c37bc39bbc6cf761d34e4451a386bf8a534a308fd0be5f3a0eaf -->
 # github.com/polyspec/fsm/packages/go
 
 [English](README.md)
 
-fsm의 go 소비자(`docs/plans/fsm-v1.md`, C-2)다. 모듈은 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 go 코드를
+fsm의 go 소비자(`docs/plans/fsm-v1/plan.md`, C-2)다. 모듈은 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 go 코드를
 어떻게 쓰는지 보여주고, 그 코드를 conformance vector로 검사한다. `src/`의 생성 코드는 표준 라이브러리만 import하며, orm 패키지는
 영속화 예제에만 필요하다.
 
@@ -188,8 +188,8 @@ func Transition(db *orm.DB, id int64, decide Decide) (int32, bool, error) {
 checkout에서 실행한다(module은 한 번 온라인으로 받아야 한다):
 
 ```sh
-make -C packages/go install   # go mod download
-make -C packages/go test      # GOPROXY=off, the conformance tests and the persistence example on SQLite
+make fsm-go-install   # go mod download
+make fsm-go-test      # GOPROXY=off, the conformance tests and the persistence example on SQLite
 make test-go                      # the same from the root
 make go-persist-test-postgres     # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

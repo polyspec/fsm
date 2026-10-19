@@ -4,7 +4,7 @@
 [한국어](README.ko.md)
 
 The DB store of fsm and its command line, `fsm-db`. A fsm project can keep its definitions and its lock in six tables of
-an orm database instead of files (`docs/spec/fsm.md`, B-2; `docs/plans/fsm-v1.md`, C-6). The package is private and is not
+an orm database instead of files (`docs/spec/fsm.md`, B-2; `docs/plans/fsm-v1/plan.md`, C-6). The package is private and is not
 published: it is used from this repository.
 
 ## What it is

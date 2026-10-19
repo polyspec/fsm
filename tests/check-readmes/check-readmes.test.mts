@@ -1,4 +1,4 @@
-// Tests of scripts/check-readmes.mts (docs/plans/execution-checklist.md, S-19): every README pair declared by the checker has its
+// Tests of scripts/check-readmes.mts (docs/plans/fsm-v1/checklist.md, S-19): every README pair declared by the checker has its
 // English file, its Korean twin, every required English section, and a Korean twin with the same number of headings per level.
 // A README without a required section fails. Every case builds its checkout in a temporary directory, so no fixture is committed.
 import assert from 'node:assert/strict';

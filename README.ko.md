@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 3aa5b056adfe813b2fdc694d0794f43626f9829ec8014a84f43f0ed91161dee6 -->
+<!-- source-sha256: 520454a15826981a0e63dc4d4083de0ebe3c37c4f67e78f799e116be42a0d4e8 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -8,9 +8,9 @@ fsm은 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
 없고 실행 중에 파싱하지 않는다. 상태는 정수 code이고, event는 edge를 따라 기계를 옮기며, 전이는 멱등이다. 재시도가 기계를 두 번
 전진시키지 않는다. 정의는 세 store(JSON, Mermaid `stateDiagram-v2`, orm을 통한 database) 중 하나에 두며, 셋 모두 하나의 규칙을 따른다.
 
-- 계획과 범위: [docs/plans/fsm-v1.md](docs/plans/fsm-v1.ko.md)
+- 계획과 범위: [docs/plans/fsm-v1/plan.md](docs/plans/fsm-v1/plan.ko.md)
 - 정의: [docs/spec/fsm.ko.md](docs/spec/fsm.ko.md)
-- 체크리스트: [docs/plans/execution-checklist.ko.md](docs/plans/execution-checklist.ko.md)
+- 체크리스트: [docs/plans/fsm-v1/checklist.ko.md](docs/plans/fsm-v1/checklist.ko.md)
 - 개발 규칙: [AGENTS.ko.md](AGENTS.ko.md)
 - 문서 사이트: 이 문서들로 `make docs-build`가 만드는 사이트(VitePress, `docs/.vitepress`, 계획 C-8). S-21이 배포하면 https://polyspec.github.io/fsm/ 에서 제공된다
 
@@ -259,7 +259,7 @@ toolchain만 필요로 한다:
 |---|---|
 | fsm-gen, fsm-db, fsm-gui와 생성된 npm 코드 | Node.js 26.12.0(`mise.toml`)과 npm |
 | 생성된 go 코드 | Go 1.27.2(module에 `go 1.27.2`) |
-| 생성된 php 코드 | PHP 8.4 이상(orm client가 8.4를 요구한다). checkout은 PHP 8.5와 Composer 2.10.3으로 테스트한다(`config/toolchain.json`) |
+| 생성된 php 코드 | PHP 8.4 이상(orm client가 8.4를 요구한다). checkout은 PHP 8.4와 Composer 2.10.3으로 테스트한다(`config/toolchain.json`) |
 | 생성된 php-ext 코드 | php의 요구 사항, 그리고 `phpize`, `autoconf`, C 컴파일러 |
 | 생성된 python 코드 | Python 3.14(`config/toolchain.json`의 `pythonBuild`). `make install`이 `config/toolchain.json`의 uv로 `var/tools`에 설치한다(`make install-tools`) |
 | 생성된 rust 코드 | Rust 1.99.0(`rust-toolchain.toml`). 생성된 library는 표준 라이브러리만 쓴다 |
@@ -324,7 +324,7 @@ $ fsm-gen copy --to mermaid --root ./order-mermaid --project ./order-machines
 
 ### vectors
 
-conformance vector, 즉 모든 기계의 모든 연산의 기대 결과를 쓴다(`docs/plans/fsm-v1.md`, C-4). `--kind` 없이 `--out <file>`은 모든 기계의
+conformance vector, 즉 모든 기계의 모든 연산의 기대 결과를 쓴다(`docs/plans/fsm-v1/plan.md`, C-4). `--kind` 없이 `--out <file>`은 모든 기계의
 suite 하나 `{ machines: [{ machine, cases }] }`를 받는다. `--kind <kind>`일 때 `--out`은 그 종류의 native test module 파일 이름이다. php와 php-ext 종류는
 `--php-namespace`도 필요하다.
 
@@ -433,11 +433,11 @@ $ fsm-gen check --project ./broken
 | `make workflows-test` | CI와 Pages 워크플로: 모든 action이 검증된 commit에 고정되고, check job이 `make install`과 `make check`를 C-6의 서비스와 함께 실행하며, 각 버전이 그것을 선언하는 파일에서 오는지(`tests/workflows`) |
 | `make docs-build` | 문서 사이트가 빌드된다. dead link는 빌드를 실패시킨다 |
 | `make docs-build-test` | 사이트의 dead link 실패와 실제 빌드 |
-| `make documents-check` | 모든 문서에 현재의 `source-sha256` stamp를 가진 한국어 짝이 있고 링크가 유효한지 |
+| `make docs-check` | 모든 문서에 현재의 `source-sha256` stamp를 가진 한국어 짝이 있고 링크가 유효한지 |
 | `make name-check` | 추적 파일이 라이브러리를 옛 이름으로 부르지 않는지 |
 | `make gui-test`, `make compiler-test`, `make db-test` | 각 도구의 테스트 |
 | `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | PostgreSQL과 MySQL에서의 DB store, CLI, command 테스트, npm의 영속화 동시성 증명, 각 kind의 persist case. `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`을 읽고(CLI 테스트의 빈 database에는 `FSM_TEST_PG_ADMIN_DSN`과 `FSM_TEST_MYSQL_ADMIN_DSN`도 읽으며), 없으면 exit 2로 멈추고 dialect를 건너뛰지 않는다(계획 C-6). SQLite에서도 돈다(`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
-| `make test-go`, `make test-npm`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | 각 언어 패키지의 테스트 |
+| `make test-go`, `make fsm-js-test`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | 각 언어 패키지의 테스트 |
 
 CI(`.github/workflows/ci.yml`)는 main에 push될 때마다 kit을 설치하고(`make install-tools TOOLS=npm`, `make install-packages`) `make install`과 `make check`를 실행하며, PostgreSQL과 MySQL 서비스를 띄운다. 문서 사이트는 `.github/workflows/pages.yml`이 https://polyspec.github.io/fsm/ 에 게시한다.
 

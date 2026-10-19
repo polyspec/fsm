@@ -2,7 +2,7 @@
   "name": "@polyspec/fsm-compiler",
   "version": "0.0.0",
   "private": true,
-  "description": "The fsm compiler: validation, lock, the json and mermaid stores and the generators (docs/plans/fsm-v1.md, C-5)",
+  "description": "The fsm compiler: validation, lock, the json and mermaid stores and the generators (docs/plans/fsm-v1/plan.md, C-5)",
   "type": "module",
   "license": "MIT",
   "engines": {

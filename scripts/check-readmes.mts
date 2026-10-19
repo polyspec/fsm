@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Checks the user documentation of the library (`make readme-check`; docs/plans/fsm-v1.md, C-9, and docs/plans/execution-checklist.md,
+// Checks the user documentation of the library (`make readme-check`; docs/plans/fsm-v1/plan.md, C-9, and docs/plans/fsm-v1/checklist.md,
 // S-19). Every README pair declared in README_PAIRS has its English file, its Korean twin and every required section of its kind
 // as an English `##` heading. A Korean twin has the same number of headings per level as its English file, so that the two stay
 // the same document. Headings inside fenced code blocks are not sections.
@@ -7,7 +7,7 @@
 //   node scripts/check-readmes.mts [--root <dir>]
 //
 // Each finding is one line on standard error, `[check-readmes] <path>: <message>`; the command exits with status 1 when there is
-// one, and 2 on a usage error. The sections of each kind are the user's questions that the README answers (fsm-v1.md, R11).
+// one, and 2 on a usage error. The sections of each kind are the user's questions that the README answers (docs/plans/fsm-v1/plan.md, R11).
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';

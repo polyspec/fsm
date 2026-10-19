@@ -1,10 +1,10 @@
-// The GUI manual check of the plan (docs/verification/gui.md, checklist S-22): it drives a running fsm-gui in the Chromium of
+// The GUI manual check of the plan (docs/operations/verification/gui.md, checklist S-22): it drives a running fsm-gui in the Chromium of
 // the pinned Playwright package and walks one store through the steps of the record: the diagram names every state, a row
 // added on the edit screen holds the suggested code (6), the saved state with an edge appears in the table and the diagram,
 // the removed state leaves the table and the next suggestion is 7 (the lock reserves 6), and a rename keeps the code.
 // It records a video of the walk and a screenshot per step in <outDir>, prints one line per step, and exits 1 when a step fails.
 //   node scripts/manual-check.mjs <baseUrl> <outDir> <label>
-// The steps of docs/verification/gui.md build the project of each store and start the server; this script needs the browser
+// The steps of docs/operations/verification/gui.md build the project of each store and start the server; this script needs the browser
 // of `make gui-browsers`.
 import { mkdirSync } from 'node:fs';
 import strict from 'node:assert/strict';

@@ -7,7 +7,7 @@ namespace Polyspec\FsmTest\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 
-/** The vector cases of every machine, one data set per case under its case name (docs/plans/fsm-v1.md, C-4). */
+/** The vector cases of every machine, one data set per case under its case name (docs/plans/fsm-v1/plan.md, C-4). */
 final class ConformanceTest extends ConformanceCase
 {
     /**

@@ -1,4 +1,4 @@
-// Tests of the documentation site (docs/.vitepress/config.mts, `make docs-build`; docs/plans/fsm-v1.md, C-8). The site is built
+// Tests of the documentation site (docs/.vitepress/config.mts, `make docs-build`; docs/plans/fsm-v1/plan.md, C-8). The site is built
 // from the repository documents in place. A broken link must fail the build, and the real build must produce the pages of the
 // English and Korean root, a package and the link rewrite. Each broken case builds a copy of the repository documents and the
 // site configuration in a temporary directory, so no fixture is committed.
@@ -86,7 +86,7 @@ test('the site builds from the repository documents, with the English and Korean
   assert.equal(result.status, 0, `the build failed\n${result.stdout}${result.stderr}`);
   assert.deepEqual(warningLines(result.stdout + result.stderr), [], 'the build prints a warning');
   const out = path.join(REPO, 'docs/.vitepress/dist');
-  for (const page of ['index.html', 'README.ko.html', 'packages/go/index.html', 'docs/spec/fsm.html', 'docs/plans/fsm-v1.html']) {
+  for (const page of ['index.html', 'README.ko.html', 'packages/go/index.html', 'docs/spec/fsm.html', 'docs/plans/fsm-v1/plan.html']) {
     assert.ok(existsSync(path.join(out, page)), `the build produced no ${page}`);
   }
   // A repository file that is not a site page is linked to its public repository, not to a dead route (C-8).
@@ -96,7 +96,7 @@ test('the site builds from the repository documents, with the English and Korean
   assert.equal(existsSync(path.join(out, 'AGENTS.html')), false, 'AGENTS.md is not a site page');
 });
 
-// The install of the documentation packages prints no npm warning (docs/plans/execution-checklist.md, S-20-2; C-8). npm 11
+// The install of the documentation packages prints no npm warning (docs/plans/fsm-v1/checklist.md, S-20-2; C-8). npm 11
 // warns about the install scripts that docs/package.json does not decide (its allowScripts field), so a fresh `npm ci` of
 // docs/package-lock.json, run in a temporary directory with the same package.json and lock, must print no warning line. An
 // install-script warning is decided in docs/package.json, which the test then passes.

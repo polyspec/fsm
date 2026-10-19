@@ -1,4 +1,4 @@
-// The browser test of the drawn Mermaid diagram (docs/spec/fsm.md, B-1; docs/plans/execution-checklist.md, S-38). It runs the
+// The browser test of the drawn Mermaid diagram (docs/spec/fsm.md, B-1; docs/plans/fsm-v1/checklist.md, S-38). It runs the
 // GUI server on a temporary project that holds the order machine and its lock, opens the machine page in a headless Chromium
 // of the pinned Playwright package, and reads the labels of the svg that Mermaid draws. A state that the diagram draws without
 // its key is not named, so every state key and every code of the machine must be one of the drawn labels. The test is run by

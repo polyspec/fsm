@@ -1,4 +1,4 @@
-// Tests of the rename screen (docs/plans/fsm-v1.md, C-7; docs/spec/fsm.md, B-3) through the hyper application without HTTP,
+// Tests of the rename screen (docs/plans/fsm-v1/plan.md, C-7; docs/spec/fsm.md, B-3) through the hyper application without HTTP,
 // for the json, mermaid and db stores: the screen lists the stored states with their keys read-only; a rename changes a key,
 // keeps its code and moves its edges (core run lock with renames); a refused rename writes nothing and shows its finding on the
 // new key of the state it names; and a rename needs the CSRF token of its page.

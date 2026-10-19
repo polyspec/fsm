@@ -1,4 +1,4 @@
-// Tests of the committed vector file contracts/conformance/vectors.json (docs/plans/fsm-v1.md, C-4): it has the format that the parity
+// Tests of the committed vector file contracts/conformance/vectors.json (docs/plans/fsm-v1/plan.md, C-4): it has the format that the parity
 // checks read (the machines, each with cases of feature, id and name, every feature covered, every name once), and it is exactly
 // what the core generates from the committed definitions and lock.
 import assert from 'node:assert/strict';

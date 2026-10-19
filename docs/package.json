@@ -1,7 +1,7 @@
 {
   "name": "fsm-docs",
   "private": true,
-  "description": "The VitePress build of the documentation site of the repository (make docs-build, docs/plans/fsm-v1.md, C-8)",
+  "description": "The VitePress build of the documentation site of the repository (make docs-build, docs/plans/fsm-v1/plan.md, C-8)",
   "devDependencies": {
     "vitepress": "1.6.4"
   },

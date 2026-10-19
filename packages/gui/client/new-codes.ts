@@ -1,4 +1,4 @@
-// The codes that the browser gives the states of the edit form (docs/plans/fsm-v1.md, C-7; docs/spec/fsm.md, B-3). A stored
+// The codes that the browser gives the states of the edit form (docs/plans/fsm-v1/plan.md, C-7; docs/spec/fsm.md, B-3). A stored
 // state keeps its code. Each state added in the browser takes the next code that the page carries, and the added states after it
 // take the codes after that, in the order of the rows. The function is pure, so the test imports it without a browser; the server
 // still checks every code on save (core run save).

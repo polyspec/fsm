@@ -1,4 +1,4 @@
-// Tests of the server entry packages/gui/src/main.mjs as a process (docs/plans/fsm-v1.md, C-7): a usage error exits
+// Tests of the server entry packages/gui/src/main.mjs as a process (docs/plans/fsm-v1/plan.md, C-7): a usage error exits
 // 2, a configuration finding exits 1 and prints the finding, and the server answers the machine list over HTTP with the
 // sessions directory created in the project.
 import assert from 'node:assert/strict';

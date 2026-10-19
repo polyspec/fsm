@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Checks that the generated files equal the files of the working tree (docs/plans/fsm-v1.md, C-5; `make gen-check`):
+// Checks that the generated files equal the files of the working tree (docs/plans/fsm-v1/plan.md, C-5; `make gen-check`):
 //
 //   node scripts/gen-check.mts [--root <dir>]
 //
 // It regenerates into var/gen-check/: the vectors (fsm-gen vectors --out var/gen-check/contracts/conformance/vectors.json) and, for each
 // kind (an implementation of config/parity.json, the one list of the kinds), the generated files of its package, the first
-// root of the implementation (make -C <root> gen DEST=<var/gen-check/<kind>>). It then compares the tracked and non-ignored files of the working tree
+// package of the implementation (make -C <root> fsm-<package>-gen DEST=<var/gen-check/<kind>>). It then compares the tracked and non-ignored files of the working tree
 // (trackedFiles of @polyspec/kit) with the generated contracts/conformance/vectors.json and, per kind, with the files that the kind's
 // globs of config/gen-check.json match: the same set of files with the same bytes. A kind without globs, or globs of a name
 // that is no kind, is a finding (rule `gen-config`). Each difference is one line on standard error,
@@ -85,8 +85,9 @@ function generate(root: string, packages: Map<string, string>): Finding[] {
   if (vectors.status !== 0) return [finding('generate', VECTORS, `fsm-gen vectors failed: ${vectors.stderr.trim()}`)];
   for (const [kind, dir] of packages) {
     const dest = `DEST=${path.join(root, OUT, kind)}`;
-    const make = spawnSync('make', ['-C', path.join(root, dir), 'gen', dest], { encoding: 'utf8' });
-    if (make.status !== 0) return [finding('generate', dir, `make gen failed: ${make.stderr.trim()}`)];
+    const target = `fsm-${path.posix.basename(dir)}-gen`;
+    const make = spawnSync('make', ['-C', root, target, dest], { encoding: 'utf8' });
+    if (make.status !== 0) return [finding('generate', dir, `make ${target} failed: ${make.stderr.trim()}`)];
   }
   return [];
 }

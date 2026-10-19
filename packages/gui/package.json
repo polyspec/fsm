@@ -2,7 +2,7 @@
   "name": "@polyspec/fsm-gui",
   "version": "0.0.0",
   "private": true,
-  "description": "GUI of fsm: hyper server, crudui list and detail, Mermaid display (docs/plans/fsm-v1.md, C-7)",
+  "description": "GUI of fsm: hyper server, crudui list and detail, Mermaid display (docs/plans/fsm-v1/plan.md, C-7)",
   "type": "module",
   "license": "MIT",
   "bin": {

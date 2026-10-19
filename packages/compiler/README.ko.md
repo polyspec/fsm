@@ -1,10 +1,10 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: 098b7c3715a19c189cc3905540461cadcd774917c4627081598347f175201942 -->
+<!-- source-sha256: 67abd61a57c7404d264d17ed21fa7078476d3f590cf69bea7a7d0a219dd16d3b -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
 
-fsm의 컴파일러와 명령 줄 `fsm-gen`이다(`docs/spec/fsm.md`, B-2; `docs/plans/fsm-v1.md`, C-5). 정의를 읽고, 검사하고, lock을 유도하고,
+fsm의 컴파일러와 명령 줄 `fsm-gen`이다(`docs/spec/fsm.md`, B-2; `docs/plans/fsm-v1/plan.md`, C-5). 정의를 읽고, 검사하고, lock을 유도하고,
 conformance vector를 쓰고, 여섯 언어의 소스를 생성한다. 의존성이 없으며, 프로젝트에서 쓰는 방법은 루트 README가 설명한다. 이 README는
 컴파일러를 고치거나 읽는 사람을 위한 것이다.
 

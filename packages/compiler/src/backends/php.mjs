@@ -1,4 +1,4 @@
-// The php backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1.md, C-2): the generated files of the php package
+// The php backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated files of the php package
 // `src/` and the native test module `tests/ConformanceTest.php`. It takes the IRs of the machines (normalize.mjs), in definition order,
 // and the lock and the php namespace, and returns the text of every file; it writes nothing. The output is deterministic: declaration
 // order, four spaces of indentation and a final line break. The core imports nothing from node:, and the generated code has no
@@ -340,7 +340,7 @@ export function files(irs, lock, { phpNamespace } = {}) {
 /**
  * The native test module tests/ConformanceTest.php of `vectorList`, the vectors of every machine in order, in the namespace
  * <ns>\Tests: the PHPUnit class ConformanceTest whose one method testConformance takes every case from the data provider
- * cases(), one data set per case named by the case name <feature>__<id> (docs/plans/fsm-v1.md, C-4). The parity check of kit
+ * cases(), one data set per case named by the case name <feature>__<id> (docs/plans/fsm-v1/plan.md, C-4). The parity check of kit
  * runs that method by its symbol and reads each data set as the case of its name (K137); one camelCase method keeps the
  * file within PSR-1, whose method names a case name with underscores would break. Each data set is the machine and the case
  * that the method passes to conformance() of the hand-written ConformanceCase.
@@ -353,7 +353,7 @@ export function vectorsFile(list, { phpNamespace } = {}) {
     ...opening(SHARED, `${phpNs}\\Tests`),
     'use PHPUnit\\Framework\\Attributes\\DataProvider;',
     '',
-    '/** The vector cases of every machine, one data set per case under its case name (docs/plans/fsm-v1.md, C-4). */',
+    '/** The vector cases of every machine, one data set per case under its case name (docs/plans/fsm-v1/plan.md, C-4). */',
     'final class ConformanceTest extends ConformanceCase',
     '{',
     '    /**',

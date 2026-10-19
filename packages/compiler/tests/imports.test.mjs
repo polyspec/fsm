@@ -1,4 +1,4 @@
-// Tests of the imports of packages/compiler/src (docs/plans/fsm-v1.md, C-5; docs/plans/execution-checklist.md, S-32). The
+// Tests of the imports of packages/compiler/src (docs/plans/fsm-v1/plan.md, C-5; docs/plans/fsm-v1/checklist.md, S-32). The
 // compiler imports only node built-ins (by their `node:` specifier) and its own files (S-44-1: no file of kit, whose
 // internals the package @polyspec/kit does not export). Every import specifier of src is scanned: an npm package, a bare
 // built-in name, a relative path that leaves src, a dynamic import() or require(), and any node: import in src/core is a

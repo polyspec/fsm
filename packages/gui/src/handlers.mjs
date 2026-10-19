@@ -1,4 +1,4 @@
-// The loaders and actions of the fsm GUI (docs/plans/fsm-v1.md, C-7): the machine list and detail, and the machine edit,
+// The loaders and actions of the fsm GUI (docs/plans/fsm-v1/plan.md, C-7): the machine list and detail, and the machine edit,
 // rename, new and delete screens. The handlers read the store from the service 'store' and the hyper asset URL from the service
 // 'assets', which the entry point binds. A handler owns no rule: the definitions come from store.load(), the findings of a page
 // from core run('check') (which returns the load findings first), and a save or a rename from core run. Every finding of the

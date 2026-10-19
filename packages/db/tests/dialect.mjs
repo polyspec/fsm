@@ -1,4 +1,4 @@
-// The database of the tests that run on every dialect the documents name (docs/plans/fsm-v1.md, C-6). FSM_TEST_DIALECT names
+// The database of the tests that run on every dialect the documents name (docs/plans/fsm-v1/plan.md, C-6). FSM_TEST_DIALECT names
 // the dialect: sqlite (the default, a new file of the caller's temporary directory), postgres or mysql. A server dialect takes its
 // DSN from FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN, and a missing DSN throws: the tests never skip a dialect. A test that needs a
 // database with no table takes one from emptyDatabase, which creates it through the admin DSN of the dialect (S-37-2).
@@ -21,7 +21,7 @@ export function dialectOf(env = process.env) {
 export function serverDsn(dialect, env = process.env) {
   const variable = dialect === 'postgres' ? 'FSM_TEST_PG_DSN' : 'FSM_TEST_MYSQL_DSN';
   const dsn = env[variable];
-  if (!dsn) throw new Error(`${variable} is not set: the ${dialect} tests need a database DSN and never skip (docs/plans/fsm-v1.md, C-6)`);
+  if (!dsn) throw new Error(`${variable} is not set: the ${dialect} tests need a database DSN and never skip (docs/plans/fsm-v1/plan.md, C-6)`);
   return dsn;
 }
 

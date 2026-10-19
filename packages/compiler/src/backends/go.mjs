@@ -1,4 +1,4 @@
-// The go backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1.md, C-2): the generated `src/` files of a go package
+// The go backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated `src/` files of a go package
 // and the native vector file `tests/vectors_test.go`. It takes the IRs of the machines (normalize.mjs), in definition order,
 // the lock and the options { module }, the module path of the package, and returns the text of every file; it writes nothing.
 // The output is deterministic: declaration order, tab indentation and a final line break. The generated code has no runtime
@@ -229,13 +229,13 @@ export function files(irs, lock, { module } = {}) {
   return out;
 }
 
-/** The Go field of each data field of the oracle (docs/plans/fsm-v1.md, C-4): a state value is an int64 with a flag. */
+/** The Go field of each data field of the oracle (docs/plans/fsm-v1/plan.md, C-4): a state value is an int64 with a flag. */
 const DATA_FIELDS = {
   state: 'state', event: 'event', expected: 'expected', actual: 'actual', scenario: 'scenario', stored: 'stored',
   input: 'input', code: 'code', value: 'value', expected_value: 'expectedValue', actual_value: 'actualValue',
 };
 
-/** The Go literal of one vector case: its feature and id, its data fields, and its expectation (docs/plans/fsm-v1.md, C-4). */
+/** The Go literal of one vector case: its feature and id, its data fields, and its expectation (docs/plans/fsm-v1/plan.md, C-4). */
 function caseLiteral(entry) {
   const fields = [`feature: ${quoted(entry.feature)}`, `id: ${quoted(entry.id)}`, `name: ${quoted(entry.name)}`];
   const want = [];
@@ -459,7 +459,7 @@ export function vectorsFile(list, { module } = {}) {
     ...vectorList.map(({ machine }) => `\t"${module}/src/${machine}"`),
     ')',
     '',
-    '// vectors are the conformance vectors of the state machines, in the order of their definitions (docs/plans/fsm-v1.md, C-4).',
+    '// vectors are the conformance vectors of the state machines, in the order of their definitions (docs/plans/fsm-v1/plan.md, C-4).',
     '// Each case keeps the keys of the oracle; the adapter of its machine maps them to the constants of the machine.',
     'var vectors = []machineVectors{',
   ];

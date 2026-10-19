@@ -1,7 +1,7 @@
 // Tests of the go backend (packages/compiler/src/backends/go.mjs, docs/spec/fsm.md, B-4 and B-6): the files of the
 // order example are the golden files under tests/golden/go, byte for byte, in the order the backend returns them, and the
 // vector file is the golden tests/vectors_test.go. The golden files were written by the generator once, after a review of its
-// output against B-6 (docs/plans/fsm-v1.md, C-5). The generated machine packages import the shared package by the module
+// output against B-6 (docs/plans/fsm-v1/plan.md, C-5). The generated machine packages import the shared package by the module
 // path, so the module path is an input: the backend refuses to run without it, and gen --kind go needs --go-module.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';

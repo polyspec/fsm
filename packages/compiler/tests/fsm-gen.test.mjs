@@ -1,4 +1,4 @@
-// Tests of the command line of packages/compiler/src/cli/fsm-gen.mjs (docs/plans/fsm-v1.md, C-5): the exit codes
+// Tests of the command line of packages/compiler/src/cli/fsm-gen.mjs (docs/plans/fsm-v1/plan.md, C-5): the exit codes
 // (0 ok, 1 findings, 2 usage), the finding lines on stderr, the summary line on stdout, and the options. check and lock take
 // --project <dir> (the project root, default the current directory). copy takes the source from --project and the target
 // directory from --root, which is required. Every case runs in temporary directories that are removed when the file's tests end.

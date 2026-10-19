@@ -1,10 +1,10 @@
 <?php
 
-// The conformance checks of the php package (docs/plans/fsm-v1.md, C-4). ConformanceTest.php, generated from the core
+// The conformance checks of the php package (docs/plans/fsm-v1/plan.md, C-4). ConformanceTest.php, generated from the core
 // oracle, runs its one test testConformance on every vector case, a data set named <feature>__<id>, and calls
 // conformance() with its machine and case: it calls the generated functions and cases of the machine module and asserts
 // the expected value or the error code. The persist cases run the B-4 example (examples/persist.php) on the dialect of
-// FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1.md, C-6) and assert the stored state after the run. The names
+// FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1/plan.md, C-6) and assert the stored state after the run. The names
 // follow docs/spec/fsm.md, B-6: a key is a case by its pascal notation.
 //
 // The file uses the public API of the generated code only: the namespace of each machine and its functions and cases,
@@ -140,7 +140,7 @@ abstract class ConformanceCase extends TestCase
     }
 
     /**
-     * The DSN and the name of the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6): sqlite, the default,
+     * The DSN and the name of the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1/plan.md, C-6): sqlite, the default,
      * is a new file of $directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN. A
      * missing DSN fails the case, so no dialect is skipped.
      *

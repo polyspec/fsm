@@ -1,7 +1,7 @@
 <!-- doc-id: plan-fsm-v1 -->
 # fsm v1 plan
 
-[한국어](fsm-v1.ko.md)
+[한국어](plan.ko.md)
 
 ## Context
 - A state is stored as an integer code (key = value). Event transitions are **idempotent and deterministic**. The same rules apply to six targets: go, npm (js+d.ts), php, php-ext, python and rust.
@@ -84,7 +84,7 @@
   - The full suite runs once per tree with `full-run.mjs` after the last item is committed. It is not a checklist item.
 - No hidden errors: no fallback, no silent conversion or drop, no null return. No backward-compatibility layer.
 - Checklist
-  - Only `docs/plans/execution-checklist.md(.ko)`. The format is the kit table (`| id | item | RED → GREEN | state |`).
+  - Only `docs/plans/fsm-v1/checklist.md(.ko)`. The format is the kit table (`| id | item | RED → GREEN | state |`).
   - States are `[ ] [~] [o] [!] [-]`. An `[o]` item is never reopened; a sub-id is created instead.
 - Commits
   - Format: `type(scope): Subject (#S-xx)`, in English. The subject is at most 50 characters, starts with a capital, has no period and is imperative. The body wraps at 72 characters and states What/Why.
@@ -92,7 +92,7 @@
 - Enforcement
   - kit tools
     - `commits-check` + commit-msg hook: subject format, length, body width
-    - `documents-check`: checklist format
+    - `docs-check`: checklist format
     - `push-gate`: no push in the `[~]` state
     - `owner-validate`: path ownership
   - `name-check` (`scripts/check-name.mts`, RED tests in `tests/check-name/`): no tracked file or path names the library by its old name `status`. Each occurrence is judged on its own: the spans that an allowed entry names are removed from its line, and the rest must hold no such word. The allowed entries are a state value of the consumer status column (its accessors and column words), an exit, HTTP or test result word of a process or request, the vendored kit, the CHANGELOG bullets up to the rename (S-01 to S-18) and the rename words of the plan and the rules; each entry is in `ALLOWED` with its reason and matches exact phrases only (R12).
@@ -122,7 +122,7 @@
 
 ## B. State machine definition (fixed in `docs/spec/fsm.md`)
 
-The definition (B-0 to B-6) is fixed in [docs/spec/fsm.md](../spec/fsm.md) (S-02); that document is the only source of the definition.
+The definition (B-0 to B-6) is fixed in [docs/spec/fsm.md](../../spec/fsm.md) (S-02); that document is the only source of the definition.
 
 ## C. Structure and enforcement tools
 
@@ -135,7 +135,7 @@ fsm/
   scripts/kit/kit-bootstrap.mk scripts/kit/bootstrap/ config/layout.kit.yml ...   # copies of @polyspec/kit (kit.copies; make kit-sync, make kit-check)
   scripts/check-name.mts scripts/check-readmes.mts scripts/gen-check.mts   tests/support/ tests/check-name/ tests/check-readmes/ tests/docs-build/ tests/gen-check/ tests/python-tools/
   contracts/features.json
-  docs/spec/fsm.md(.ko)  docs/plans/execution-checklist.md(.ko)  docs/plans/fsm-v1.md(.ko)
+  docs/spec/fsm.md(.ko)  docs/plans/fsm-v1/checklist.md(.ko)  docs/plans/fsm-v1/plan.md(.ko)
   docs/package.json docs/package-lock.json docs/.vitepress/config.mts   # the documentation site (C-8)
   contracts/: the fsm project of the repository (S-44-5): fsm.config.json  machines/order.fsm.json  fsm.lock.json  schema/fsm.schema.json
              schema/persist.dbs schema/dbspec-set.json   # persist.dbs = shared by the six language package examples
@@ -153,14 +153,13 @@ fsm/
   - cargo: `{ git = "https://github.com/polyspec/orm.git", tag = "v0.0.14" }`
   - `.node-version` holds an exact 26.y.z release (required by hyper; kit toolchain-declared.mjs accepts only `<major>.<minor>.<patch>`).
 - The pins live in the manifests and lock files and are listed in `config/dependency-policy.json`. The kit gate does not check npm URLs, the Composer artifact zips, python wheel URLs or cargo tags; pin verification is a review rule (no R requires a tool for it), except the python lock, which `make python-lock-check` checks (the decision below).
-  - Decision (python lock, S-34, S-44): the python tree is locked by `packages/python/pylock.toml` (PEP 751), the one Python lock format of kit, which kit's `make python-lock` (ONLINE) writes with the uv of `config/toolchain.json` from `pyproject.toml` (the requirements) and `constraints.txt` (a pin of every package, transitive ones too: `name==version` for a registry package, `name @ <url>#sha256=<digest>` for a polyspec wheel), and which kit's `make python-lock-check` (offline) checks against them (kit K54). `config/dependency-policy.json` names the lock and its sources in `pythonLocks`, so the kit gate and the review record (`config/dependency-review.json`) cover every transitive python package. fsm's own uv.lock, its export and its `lock-check` are removed (S-44): they were a second lock of the same tree, and fsm's `python-lock-check` replaced the kit target of the same name. `make -C packages/python install` installs pylock.toml with `uv pip install --link-mode copy` into the venv that kit's `make python-venv DIR=packages/python/.venv` makes from the install-tools Python, so uv checks each artifact against its hash (measured in S-34: a tampered wheel hash is refused with `Hash mismatch for pyyaml==6.0.3`); `make install` removes the venv before it makes a new one. orm and ordered-json are pinned by their wheel assets as `name @ <wheel asset URL>#sha256=<digest>`. The build backend `setuptools==84.0.0` is pinned by version in pyproject.toml and built in an isolated environment, which uv does not hash.
+  - Decision (python lock, S-34, S-44): the python tree is locked by `packages/python/pylock.toml` (PEP 751), the one Python lock format of kit, which kit's `make python-lock` (ONLINE) writes with the uv of `config/toolchain.json` from `pyproject.toml` (the requirements) and `constraints.txt` (a pin of every package, transitive ones too: `name==version` for a registry package, `name @ <url>#sha256=<digest>` for a polyspec wheel), and which kit's `make python-lock-check` (offline) checks against them (kit K54). `config/dependency-policy.json` names the lock and its sources in `pythonLocks`, so the kit gate and the review record (`config/dependency-review.json`) cover every transitive python package. fsm's own uv.lock, its export and its `lock-check` are removed (S-44): they were a second lock of the same tree, and fsm's `python-lock-check` replaced the kit target of the same name. `make fsm-python-install` installs pylock.toml with `uv pip install --link-mode copy` into the venv that kit's `make python-venv DIR=packages/python/.venv` makes from the install-tools Python, so uv checks each artifact against its hash (measured in S-34: a tampered wheel hash is refused with `Hash mismatch for pyyaml==6.0.3`); `make install` removes the venv before it makes a new one. orm and ordered-json are pinned by their wheel assets as `name @ <wheel asset URL>#sha256=<digest>`. The build backend `setuptools==84.0.0` is pinned by version in pyproject.toml and built in an isolated environment, which uv does not hash.
 
 ### C-2. Canonical structure of a language package (identical for all six)
 ```
 packages/<folder>/   # the first root of the kind in config/parity.json
   README.md README.ko.md
-  Makefile          # gen (gen + vectors --kind; flags only here; DEST ?= .)
-                    # test (run-tests --cwd packages/<folder> --results .results/<kind>.json; paths resolve against the checkout root)
+                    # the targets of the root Makefile (K245): fsm-<folder>-install, fsm-<folder>-gen (gen + vectors --kind; DEST names the package by default) and fsm-<folder>-test (run-tests --cwd packages/<folder> --results .results/<kind>.json; paths resolve against the checkout root)
   <manifest>        # [allowed difference] depends on orm (SQLite) for tests and examples
   <lock>            # [allowed difference] go.sum, package-lock.json, composer.lock, Cargo.lock (read by the kit dependency gate); python has `pylock.toml`, which kit's `make python-lock` writes from `pyproject.toml` and `constraints.txt` and `uv pip install` reads (S-34, S-44)
   src/…             # fsm-gen output only
@@ -170,7 +169,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
   examples/persist.<ext>    # B-4 orm persistence; tests run it with the persist vectors
   examples/model/           # orm-generated model from the root contracts/schema/persist.dbs (committed, covered by gen-check); rust uses build.rs as an allowed difference
 ```
-- `make gen` produces the fsm-gen output and the orm-gen output together; the globs of the kind in `config/gen-check.json` name the files it writes (the kinds are the implementations of `config/parity.json`, S-44), and `gen-check` compares exactly those files.
+- `make fsm-<folder>-gen` produces the fsm-gen output and the orm-gen output together; the globs of the kind in `config/gen-check.json` name the files it writes (the kinds are the implementations of `config/parity.json`, S-44), and `gen-check` compares exactly those files.
 
 | kind | manifest | src | tests |
 |---|---|---|---|
@@ -183,7 +182,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 
 - `make layout-check` (kit, alint over `config/layout.yml` and the common rules of `config/layout.kit.yml`) fails when (S-44):
   - a folder or file of the root, of `packages/` or of the root `tests/` is not one that the layout declares (S5, S7), or a folder under `packages/` carries the `fsm-` prefix, or a go.mod module path is not `github.com/polyspec/fsm/<folder>`
-  - a kind package lacks a canonical file (`README.md`, `README.ko.md`, `Makefile`), a canonical folder (`src`, `tests`, `examples`) or a required file of its kind, or holds a file that its kind does not allow
+  - a kind package lacks a canonical file (`README.md`, `README.ko.md`), a canonical folder (`src`, `tests`, `examples`) or a required file of its kind, or holds a file that its kind does not allow
   - the php and php-ext `tests/` files are not byte-identical
   - `PYTHONPATH` appears, a path leaves the repository, or an infrastructure script under `scripts/` or `tests/` is not TypeScript (S9)
   The allowed files beyond the required set (`tests/common/mod.rs` of rust, the dialect module of its two test crates) carry their reason in a comment above their rule.
@@ -272,7 +271,7 @@ Vectors (exhaustive; the core generates the oracle):
   - `copy --to json|mermaid --root <dir>`
 - Root `gen-check`
   1. Run `fsm-gen vectors --out var/gen-check/conformance/vectors.json`.
-  2. In each package of `kinds`, run `make gen DEST=$(CURDIR)/var/gen-check/<kind>`.
+  2. For each package of `kinds`, run `make fsm-<folder>-gen DEST=$(CURDIR)/var/gen-check/<kind>`.
   3. `scripts/gen-check.mts` compares with the working tree through `trackedFiles` of `@polyspec/kit/tracked-files` (tracked and non-ignored files only, so ignored outputs such as `__pycache__/` and the phpize output in php-ext `src/` are not read). `contracts/conformance/vectors.json` and each package's `src/`, `tests/vectors.<ext>` and `examples/model/` (except rust) must hold the same file set with byte-identical content; the compared files of each package are the ones matched by its kind's `generated` globs in `contracts/layout.json`, and a kind without them is a `layout-config` finding.
   - `gen-check-test` (`tests/gen-check/`) RED: a one-byte change fixture, an added file fixture, an ignored file that must not be read
 
@@ -376,8 +375,8 @@ Vectors (exhaustive; the core generates the oracle):
 - Build: `make docs-build` runs `docs-deps` (`npm ci --no-audit --no-fund` from `docs/package-lock.json`), then VitePress builds the site into `docs/.vitepress/dist`. `docs/node_modules`, `docs/.vitepress/dist` and `docs/.vitepress/cache` are git-ignored.
 - Install scripts (S-20-2): npm 11 warned `npm warn install-scripts` for two install scripts that `docs/package.json` did not decide (its `allowScripts` field), so a fresh install printed a warning on every `make docs-deps`. Traced: (1) `esbuild@0.25.12` (postinstall `node install.js`) replaces the command shim `bin/esbuild` with the platform binary and checks its version. The JS API that vite uses does not need that replacement: esbuild's `lib/main.js` (`generateBinPath`) resolves `@esbuild/<platform>/bin/esbuild` itself. The script is approved for the pinned version (`"esbuild@0.25.12": true`), which keeps the installed state as it was. In the unconfigured install the postinstall still ran (the shim was replaced), so the warning did not mean a skip in npm 11.19; the decision does not depend on it. (2) `fsevents@2.3.3` (macOS only, an optional dependency of vite's watcher, chokidar) ships its prebuilt `fsevents.node` (163,626 bytes, the same size with the scripts skipped), and `require('fsevents')` loads after `npm ci --ignore-scripts`. The site runs no watcher, so the script is denied (`"fsevents": false`). The test `the docs install prints no npm warning` (tests/docs-build) runs a fresh `npm ci` of the lock and fails on any warning line; it failed on these two lines before the decision.
 - Versions: `docs/package.json` pins `vitepress` 1.6.4 exactly (the release of the template repository). It also overrides `vite` to 6.4.4, because vitepress 1.6.4 requires `vite ^5.4.14`, and the 5.4.x line has moderate and high advisories with no fixed release (`npm audit` of the first lock). 6.4.4 has none, and pulls esbuild 0.25.x. `make dependency-review RECORD=1` records the lock with no advisory. The site runs no dev server; the override is accepted because `make docs-build-test` passes with it.
-- Source: the documents are read in place, with no copy and no generated Markdown. The VitePress srcDir is the repository root. The include list is: `README.md` and `README.ko.md`; `packages/*/README.md` and `packages/*/README.ko.md`; `docs/spec/**`; `docs/plans/fsm-v1.md` and `docs/plans/fsm-v1.ko.md`; `docs/verification/**`; `CHANGELOG.md` and `CHANGELOG.ko.md`. Every other Markdown file is in srcExclude, computed from a walk of the repository at build time, and so are `node_modules`, `.git`, `var`, `vendor`, `target` and `docs/.vitepress`. A page outside the include list is not built.
-- Images: a document shows a local image with a relative path (`docs/verification/gui.md` shows the GIFs of the GUI manual check beside it); VitePress bundles it, so a missing image fails the build, and the dead-link test of `tests/docs-build` copies the images of every document into its mirror of the site.
+- Source: the documents are read in place, with no copy and no generated Markdown. The VitePress srcDir is the repository root. The include list is: `README.md` and `README.ko.md`; `packages/*/README.md` and `packages/*/README.ko.md`; `docs/spec/**`; `docs/plans/fsm-v1/plan.md` and `docs/plans/fsm-v1/plan.ko.md`; `docs/operations/verification/**`; `CHANGELOG.md` and `CHANGELOG.ko.md`. Every other Markdown file is in srcExclude, computed from a walk of the repository at build time, and so are `node_modules`, `.git`, `var`, `vendor`, `target` and `docs/.vitepress`. A page outside the include list is not built.
+- Images: a document shows a local image with a relative path (`docs/operations/verification/gui.md` shows the GIFs of the GUI manual check beside it); VitePress bundles it, so a missing image fails the build, and the dead-link test of `tests/docs-build` copies the images of every document into its mirror of the site.
 - Languages: there are no VitePress locales, because a locale needs a directory prefix. Each Korean document is its own page, and each page links its twin.
 - Rewrites: a `README.md` renders as `index.md` of its directory, so the root is `/` and a package is `/packages/<name>/`. A `README.ko.md` keeps its own route, `/README.ko`. A relative link works in both, because twins share a directory.
 - Repository links: a link from a site page to a repository file or directory that is not a site page (for example `AGENTS.md`, `packages/db/schema/fsm.dbs` or `Makefile`) is rewritten to `https://github.com/polyspec/fsm/blob/main/<path>` (`tree` for a directory) by the markdown-it rule `repositoryLinks` of `docs/.vitepress/config.mts`. A link to a file that does not exist is left as written and fails the build. `ignoreDeadLinks` is not set.
@@ -386,7 +385,7 @@ Vectors (exhaustive; the core generates the oracle):
 - Markup in prose: VitePress compiles Markdown as Vue templates, so an angle-bracket placeholder in prose (for example `<major>`) fails the build. Such a placeholder is written in a code span. The `<a id="...">` anchors of the changelogs are HTML and render.
 - Vue on the root pages: the pages sit at the repository root, where no `node_modules` holds `vue`. `docs/.vitepress/config.mts` aliases `vue` to its runtime entry `dist/vue.runtime.esm-bundler.js` (the `import` condition of its exports) and `vue/server-renderer` to its ESM entry in `docs/node_modules`, so one copy of vue is bundled.
 - Circular chunk (S-20-1): the build printed `Circular chunk: framework -> theme -> framework`. It is removed, and its cause is recorded here with its evidence. Reproduced: `make docs-build` printed the line. Not the cause: the vite 6.4.4 override (the same vitepress and configuration with vite 5.4.21 printed it too), and vitepress itself (a minimal vitepress 1.6.4 project with its default configuration printed nothing). The cause: the alias of `vue` to `vue/index.mjs`, which is `export * from './index.js'`, the CommonJS wrapper of `dist/vue.cjs.js`. The manual chunks of vitepress put the ESM `@vue/*` modules into `framework` and the wrapper into `theme`, which closes the cycle; a minimal project with that alias printed the line. The fix aliases `vue` to `dist/vue.runtime.esm-bundler.js`, and `make docs-build` prints no warning. `docs-build-test` fails on a warning line of the build output: a line that starts with `(!)`, `warn` or `warning`, or names a circular chunk or dependency (`tests/docs-build`).
-- Tests: `tests/docs-build` (`make docs-build-test`, a root tool test with the record `.results/docs-build-test.json`) builds, in a temporary copy of the repository documents, a document with a link to a missing file, and requires the build to fail with a dead link. Then it builds the repository itself, and requires the pages `index.html`, `README.ko.html`, `packages/go/index.html`, `docs/spec/fsm.html` and `docs/plans/fsm-v1.html`, the GitHub rewrite of `AGENTS.md`, and no page for `AGENTS.md`, and no warning line in its output (S-20-1). `docs-build` and `docs-build-test` are in `CHECK_TARGETS`, with their owner rules in `config/owner-checks.json`. `config/documents.json` sets `siteLinks`, so `documents-check` accepts the link forms of the site: a link that starts with `/`, and a link without extension that names a `.md`, `.ko.md` or `index.md` file.
+- Tests: `tests/docs-build` (`make docs-build-test`, a root tool test with the record `.results/docs-build-test.json`) builds, in a temporary copy of the repository documents, a document with a link to a missing file, and requires the build to fail with a dead link. Then it builds the repository itself, and requires the pages `index.html`, `README.ko.html`, `packages/go/index.html`, `docs/spec/fsm.html` and `docs/plans/fsm-v1/plan.html`, the GitHub rewrite of `AGENTS.md`, and no page for `AGENTS.md`, and no warning line in its output (S-20-1). `docs-build` and `docs-build-test` are in `CHECK_TARGETS`, with their owner rules in `config/owner-checks.json`. `config/documents.json` sets `siteLinks`, so `docs-check` accepts the link forms of the site: a link that starts with `/`, and a link without extension that names a `.md`, `.ko.md` or `index.md` file.
 
 ---
 
@@ -396,7 +395,7 @@ Vectors (exhaustive; the core generates the oracle):
 - Kinds of sections: root (what fsm is and is not, the model, codes and the lock, transitions, validation errors, project files, requirements and setup, the fsm-gen CLI, the tools, generated names, checks); compiler (architecture, the store contract, commands, backend options, vectors); db (what it is, set up, the six tables, DSN, commands, moving a project to the database, checks); gui (what it does, setup, running, screens, rules; its testing section is written by S-22-2); language (generate into your project, generated files, API, errors, persistence, tests).
 - The command names in the documents are `fsm-gen`, `fsm-db` and `fsm-gui`, the bare names of the commands that S-18-1 installs; the install and invocation are in the root README, and no document runs `node packages/...`.
 - Every documented command is run for real through the installed command, in a temporary copy of a project, and its output is pasted. A code excerpt is copied from a repository file with its path. A snippet that is not a repository file is run in a temporary consumer project before it is written, and its output is quoted with it (the go, npm, php, python and rust APIs).
-- A Korean fenced code block is identical to its English block (`documents-check` requires it), so code and command output are not translated; the prose around them is.
+- A Korean fenced code block is identical to its English block (`docs-check` requires it), so code and command output are not translated; the prose around them is.
 - The tests are `tests/check-readmes/` (`make readme-test`); `make readme-check` runs the check on the repository.
 
 ### C-10. CI and Pages (S-21)
@@ -412,15 +411,15 @@ Vectors (exhaustive; the core generates the oracle):
 
 ## D. Checklist and owner checks
 
-The state of every item is in [docs/plans/execution-checklist.md](execution-checklist.md), the only checklist of this plan (AGENTS.md, Checklist). This section holds no state. The kit items K17 to K19 are items of the kit repository, not of this checklist; section E names them.
+The state of every item is in [docs/plans/fsm-v1/checklist.md](checklist.md), the only checklist of this plan (AGENTS.md, Checklist). This section holds no state. The kit items K17 to K19 are items of the kit repository, not of this checklist; section E names them.
 
 owner-checks mapping (each item adds its own part):
 
 | Path | Owner checks |
 |---|---|
-| `scripts/kit/**`, `package.json`, `package-lock.json`, the other copies of kit, `config/**`, `Makefile`, `.gitignore`, `.node-version`, `rust-toolchain.toml` | `kit-check owner-validate documents-check commits-check toolchain-check dependency-policy-check` |
+| `scripts/kit/**`, `package.json`, `package-lock.json`, the other copies of kit, `config/**`, `Makefile`, `.gitignore`, `.node-version`, `rust-toolchain.toml` | `kit-check owner-validate docs-check commits-check toolchain-check dependency-policy-check` |
 | `.githooks/**` | `hooks-check` |
-| `**/*.md` | `documents-check` |
+| `**/*.md` | `docs-check` |
 | `config/layout.yml`, `config/layout.kit.yml` | `layout-check` |
 | `config/gen-check.json`, `config/parity.json` | `gen-check packages-test parity-declarations-check` |
 | `scripts/gen-check.mts`, `tests/gen-check/**` | `gen-check-test gen-check` |
@@ -449,12 +448,12 @@ owner-checks mapping (each item adds its own part):
   - `workflows-test` (`tests/workflows`: the CI and Pages workflows, their pins, versions and services, C-10, S-21)
   - `test-<kind>`, `packages-test` (the `test-<kind>` of `kinds` with `make -j6`)
 - `check` = `node $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)`
-  - `CHECK_TARGETS` = `kit-check owner-validate documents-check commits-check hooks-check toolchain-check dependency-policy-check layout-check lint-ts compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-check workflows-test parity-declarations-check parity-check`
+  - `CHECK_TARGETS` = `kit-check owner-validate docs-check commits-check hooks-check toolchain-check dependency-policy-check layout-check lint-ts compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-check workflows-test parity-declarations-check parity-check`
 - Python interpreter (S-41, S-44-2): the python package runs on the Python that `make install-tools` installs. `config/toolchain.json` declares `uv` (the exact release and the sha256 of each platform's archive) and `pythonBuild` (`3.14.8`); install-tools installs uv into `var/tools` and then, with `uv python install`, the python-build-standalone build that uv names for that release, checked against the sha256 that uv records, and writes the wrapper `var/tools/bin/python3`, which `make install` and every python target use (kit K64). No recipe of fsm installs an interpreter, and the uv-managed interpreter of `install-python` (S-11-3) stays removed. uv is the resolver and installer of `packages/python` (`uv pip install --python <venv>/bin/python --link-mode copy`, with the venv that `make python-venv` makes from `var/tools/bin/python3`). `pythonBackend` is not declared, because the repository publishes no wheel.
 
 - Package dependencies (S-29): `make install` (ONLINE, once per clone) installs the toolchains of `install-tools` into `var/tools` and every package dependency: `npm ci` of the locks of `packages/js`, `packages/db`, `packages/gui` and `docs`; `composer install` of `packages/php` and `packages/php-ext` (keyed on `composer.lock` and `composer.json`, because the autoload of `composer.json` is not in the lock, and the stamp is touched after the install, S-29-2); the Python 3.14 of `install-tools` (`var/tools/bin/python3`, S-41) and the venv of `packages/python` (made by kit's `make python-venv` from that interpreter and filled from its `pylock.toml`; the python stamp is keyed on `pylock.toml`, S-44); the go modules and the cargo crates (`var/deps/go` and `var/deps/rust`). Each one is a file target keyed on its lock, so a later run finds it up to date and needs no network. The targets that use a package name its file as a prerequisite: `npm-types`, `gen-check`, `test-<kind>` (and so `packages-test` and kit's `parity-check`), `db-test`, `gui-test`, `gui-browser-test` (through the browser stamp), `docs-build` and `docs-build-test`. A fresh clone runs `make install` once, then `make check`: the toolchains come only from `make install`. `make make-install-test` (`tests/make-install/`) checks the prerequisites on a copy of the Makefile, with no dependency installed and with every dependency present.
 - During item work only the owner-checks mapping runs.
-- GUI manual check, for each of the json, mermaid and db stores (the steps, the driver `packages/gui/scripts/manual-check.mjs` and the recorded outcome are in `docs/verification/gui.md`):
+- GUI manual check, for each of the json, mermaid and db stores (the steps, the driver `packages/gui/scripts/manual-check.mjs` and the recorded outcome are in `docs/operations/verification/gui.md`):
   1. Add, delete and rename states, then save (save updates the lock too).
   2. `check` passes (`fsm-gen check` for json and mermaid, `fsm-db check` for db).
   3. Mermaid renders in the browser.

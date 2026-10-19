@@ -3,7 +3,7 @@
 
 [한국어](README.ko.md)
 
-The compiler of fsm and its command line, `fsm-gen` (`docs/spec/fsm.md`, B-2; `docs/plans/fsm-v1.md`, C-5). It reads a
+The compiler of fsm and its command line, `fsm-gen` (`docs/spec/fsm.md`, B-2; `docs/plans/fsm-v1/plan.md`, C-5). It reads a
 definition, checks it, derives the lock, writes the conformance vectors and generates the source of the six languages. It
 has no dependency, and the root README explains how to use it in a project. This README is for someone who changes or reads
 the compiler.

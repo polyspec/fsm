@@ -1,4 +1,4 @@
-// The parse test of the pinned Mermaid package (docs/spec/fsm.md, B-1 and B-5; docs/plans/fsm-v1.md, C-7 and S-16). It
+// The parse test of the pinned Mermaid package (docs/spec/fsm.md, B-1 and B-5; docs/plans/fsm-v1/plan.md, C-7 and S-16). It
 // checks the canonical form against the Mermaid version that the GUI ships, and it decides which words Mermaid cannot carry
 // as state keys, so that the reserved lists of packages/compiler/src/core/reserved.mjs are the measured ones.
 //

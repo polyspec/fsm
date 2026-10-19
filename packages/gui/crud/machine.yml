@@ -1,4 +1,4 @@
-# The crudui form of the machine edit screen (docs/plans/fsm-v1.md, C-7). It holds no validation rule: every rule belongs to
+# The crudui form of the machine edit screen (docs/plans/fsm-v1/plan.md, C-7). It holds no validation rule: every rule belongs to
 # the core (docs/spec/fsm.md, B-5), and a save goes through core run save. A stored state keeps its key and its code. Its key
 # is a read-only control (dummy-input) shown while `persisted` is 1; a new state takes its key in `newKey`, labeled "New key" as the
 # rename form labels the new key of a state, so the two fields of a row never share a label. The code is always a

@@ -1,8 +1,8 @@
-"""The conformance tests of the python package (docs/plans/fsm-v1.md, C-4).
+"""The conformance tests of the python package (docs/plans/fsm-v1/plan.md, C-4).
 
 Every vector case of tests/vectors.py (generated from the core oracle) is one unittest method named test_<feature>__<id>. It calls
 the generated function of src/polyspec_fsm and asserts the expected value or the error code. The persist cases run the B-4
-example (examples/persist.py) on the dialect of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1.md, C-6) and assert the
+example (examples/persist.py) on the dialect of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1/plan.md, C-6) and assert the
 stored value after the run. The names follow docs/spec/fsm.md, B-6: a key becomes a member in upper case, so the state DRAFT of the
 key draft.
 """
@@ -112,7 +112,7 @@ def check(test, machine, case):
 
 
 def persist_dsn(directory):
-    """The DSN of the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1.md, C-6), and the dialect.
+    """The DSN of the dialect that FSM_TEST_DIALECT names (docs/plans/fsm-v1/plan.md, C-6), and the dialect.
 
     sqlite, the default, is a new file of `directory`; postgres and mysql take their DSN from FSM_TEST_PG_DSN and FSM_TEST_MYSQL_DSN.
     A missing DSN fails the case, so no dialect is skipped.

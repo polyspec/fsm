@@ -1,4 +1,4 @@
-# The documentation site (docs/plans/fsm-v1.md, C-8 and C-10; docs/plans/execution-checklist.md, S-21). Every push to main
+# The documentation site (docs/plans/fsm-v1/plan.md, C-8 and C-10; docs/plans/fsm-v1/checklist.md, S-21). Every push to main
 # builds the site with `make docs-build` at the base /fsm/, the path of the GitHub Pages site of polyspec/fsm, and deploys it.
 # A manual run (workflow_dispatch) does the same. A newer commit of main does not cancel the deployment of an earlier one.
 name: Pages

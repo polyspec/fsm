@@ -1,4 +1,4 @@
-// The dialect of the persist tests (docs/plans/fsm-v1.md, C-6), the shared module of the test crates tests/conformance/ and
+// The dialect of the persist tests (docs/plans/fsm-v1/plan.md, C-6), the shared module of the test crates tests/conformance/ and
 // tests/persist.rs: the scratch directory of a case, the DSN of FSM_TEST_DIALECT and the guard that serializes the cases of a
 // server dialect.
 
@@ -11,7 +11,10 @@ pub struct Scratch(pub PathBuf);
 
 impl Drop for Scratch {
     fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.0);
+        // A failed removal is reported, not hidden, and does not panic: a panic while the case unwinds would abort the run.
+        if let Err(error) = std::fs::remove_dir_all(&self.0) {
+            eprintln!("remove the directory of the persist case {}: {error}", self.0.display());
+        }
     }
 }
 
@@ -31,7 +34,7 @@ pub fn scratch_directory() -> Scratch {
     Scratch(dir)
 }
 
-/// The database of the persist cases (docs/plans/fsm-v1.md, C-6): FSM_TEST_DIALECT names the dialect, sqlite by default. sqlite is a new
+/// The database of the persist cases (docs/plans/fsm-v1/plan.md, C-6): FSM_TEST_DIALECT names the dialect, sqlite by default. sqlite is a new
 /// file of the case's scratch directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN, and a missing
 /// DSN fails the case, so no dialect is skipped. The DSN of the dialect is returned with its name.
 pub fn persist_dsn(scratch: &Scratch) -> (String, String) {

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The fsm GUI server (docs/plans/fsm-v1.md, C-7):
+// The fsm GUI server (docs/plans/fsm-v1/plan.md, C-7):
 //   fsm-gui [--project <dir>] [--port <n>]
 // --project is the project root, whose fsm.config.json selects the store (default: the current directory). --port is the
 // port on 127.0.0.1 (default 8080). The assets must be built first (make gui-build). The sessions are kept in

@@ -3,7 +3,7 @@
 
 [한국어](README.ko.md)
 
-The go consumer of fsm (`docs/plans/fsm-v1.md`, C-2). The module is private and is a test bed: it is not published. It shows
+The go consumer of fsm (`docs/plans/fsm-v1/plan.md`, C-2). The module is private and is a test bed: it is not published. It shows
 how the generated go code of a fsm definition is used, and it checks that code against the conformance vectors. The generated
 code of `src/` imports only the standard library; the orm packages are needed by the persistence example alone.
 
@@ -191,8 +191,8 @@ in the same place.
 From the checkout (the modules must be downloaded once, online):
 
 ```sh
-make -C packages/go install   # go mod download
-make -C packages/go test      # GOPROXY=off, the conformance tests and the persistence example on SQLite
+make fsm-go-install   # go mod download
+make fsm-go-test      # GOPROXY=off, the conformance tests and the persistence example on SQLite
 make test-go                      # the same from the root
 make go-persist-test-postgres     # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

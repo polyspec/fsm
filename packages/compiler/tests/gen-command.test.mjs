@@ -1,4 +1,4 @@
-// Tests of the gen and vectors --kind commands (docs/plans/fsm-v1.md, C-5): run('gen') refuses an unknown kind, and the
+// Tests of the gen and vectors --kind commands (docs/plans/fsm-v1/plan.md, C-5): run('gen') refuses an unknown kind, and the
 // command line writes the generated set under --out, removes the stale generated files there, and refuses a file without the
 // fsm-gen header (it is reported as a finding; nothing is written or removed). Every case writes into a temporary
 // directory that is removed when the file's tests end.

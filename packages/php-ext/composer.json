@@ -1,6 +1,6 @@
 {
     "name": "polyspec/fsm-php-ext",
-    "description": "PHP extension test bed of fsm: the generated state machines as one C extension, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1.md, C-2)",
+    "description": "PHP extension test bed of fsm: the generated state machines as one C extension, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)",
     "type": "php-ext",
     "license": "MIT",
     "php-ext": {
@@ -8,7 +8,7 @@
         "build-path": "src"
     },
     "require": {
-        "php": ">=8.5",
+        "php": ">=8.4",
         "polyspec/orm": "0.0.18"
     },
     "require-dev": {
@@ -31,7 +31,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.5.0"
+            "php": "8.4.1"
         }
     }
 }

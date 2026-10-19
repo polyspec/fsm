@@ -1,12 +1,12 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: cf2b08ad0ca08757873bab6d794535a6579db8a278a33bc5558588cd426d95b2 -->
+<!-- source-sha256: 7f66dd479467c98474caa87bda0afe425516250aa8a0dd8329587446e162536c -->
 # fsm GUI
 
 [English](README.md).
 
 ## 기능
 
-`fsm-gui`는 fsm 프로젝트의 상태 기계를 편집하는 browser GUI다(`docs/plans/fsm-v1.md`, C-7). 목록 페이지는 모든 기계를
+`fsm-gui`는 fsm 프로젝트의 상태 기계를 편집하는 browser GUI다(`docs/plans/fsm-v1/plan.md`, C-7). 목록 페이지는 모든 기계를
 보여준다. 상세 페이지는 상태, edge가 있는 event, 그리고 `docs/spec/fsm.md`의 B-1 정규 형식으로 쓴 Mermaid 다이어그램을
 보여준다. 같은 페이지에서 기계를 편집한다. 상태와 event를 추가하고, 바꾸고, 이름을 바꾸고, 삭제하며, 기계를 추가하고 삭제한다.
 
@@ -154,7 +154,7 @@ json과 mermaid 프로젝트는 저장 뒤 `check`를 통과한다.
 | `public/assets/` | client bundle과 chunk, `make gui-build`가 `@polyspec/crudui-generator-core`에서 복사하는 `crudui.css`(git이 무시) |
 | `public/favicon.ico` | `/favicon.ico`의 아이콘. `scripts/make-favicon.mjs`가 쓴다(ICO 파일이다. 계획 C-7 참고) |
 | `scripts/make-favicon.mjs` | `public/favicon.ico`를 쓴다. 아이콘을 바꿀 때만 손으로 실행한다 |
-| `scripts/manual-check.mjs` | GUI 수동 확인(`docs/verification/gui.md`)의 driver: 실행 중인 서버를 Chromium으로 밟고 녹화한다 |
+| `scripts/manual-check.mjs` | GUI 수동 확인(`docs/operations/verification/gui.md`)의 driver: 실행 중인 서버를 Chromium으로 밟고 녹화한다 |
 | `tests/browser/` | form의 브라우저 테스트(`make gui-browser-test`) |
 
 의존성 버전은 `package.json`과 `package-lock.json`에 고정하며 `config/dependency-policy.json`에 기록한다: hyper v0.0.17, crudui

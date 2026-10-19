@@ -1,4 +1,4 @@
-// The DB store (docs/spec/fsm.md, B-2; docs/plans/fsm-v1.md, C-6): the definitions and the lock in the six tables of
+// The DB store (docs/spec/fsm.md, B-2; docs/plans/fsm-v1/plan.md, C-6): the definitions and the lock in the six tables of
 // schema/fsm.dbs, through the orm client. dbStore(db) converts between those rows and the objects of the core and writes
 // them in one transaction. It does not validate: the core does (run and copy). Its load returns the same objects as the
 // file stores, so every command gives the same result on every store.

@@ -42,7 +42,7 @@
       "targets": [
         "kit-check",
         "owner-validate",
-        "documents-check",
+        "docs-check",
         "commits-check",
         "toolchain-check",
         "dependency-policy-check"
@@ -61,7 +61,7 @@
         "**/*.md"
       ],
       "targets": [
-        "documents-check"
+        "docs-check"
       ]
     },
     {
@@ -130,7 +130,7 @@
       "targets": [
         "layout-check",
         "gen-check",
-        "test-npm",
+        "fsm-js-test",
         "npm-types",
         "dependency-policy-check",
         "npm-persist-test",
@@ -238,7 +238,7 @@
       "targets": [
         "kit-check",
         "owner-validate",
-        "documents-check",
+        "docs-check",
         "commits-check",
         "toolchain-check",
         "dependency-policy-check"
@@ -266,7 +266,7 @@
       "targets": [
         "layout-check",
         "gen-check",
-        "test-npm",
+        "fsm-js-test",
         "dependency-policy-check",
         "npm-persist-test",
         "npm-persist-test-postgres",
@@ -386,7 +386,6 @@
     {
       "paths": [
         "Makefile",
-        "packages/*/Makefile",
         "tests/make-install/**"
       ],
       "targets": [

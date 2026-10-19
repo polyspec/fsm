@@ -1,4 +1,4 @@
-// Tests of scripts/check-name.mts (docs/plans/execution-checklist.md, S-18): a tracked file or path that names the library by
+// Tests of scripts/check-name.mts (docs/plans/fsm-v1/checklist.md, S-18): a tracked file or path that names the library by
 // its old name is a finding, and each allowed use of the word (a state value, an exit status, a test result, the history of
 // the changelog) passes. Every case builds its checkout in a temporary directory, so no fixture is committed.
 import assert from 'node:assert/strict';
@@ -76,7 +76,7 @@ test('the rules and the plan may state the old name only as the old name', (t) =
   assert.equal(elsewhere.result.status, 1, elsewhere.result.stdout + elsewhere.result.stderr);
 });
 
-// The audit probe lines (audit 6, docs/plans/execution-checklist.md, S-27): each one still names the library through a word
+// The audit probe lines (audit 6, docs/plans/fsm-v1/checklist.md, S-27): each one still names the library through a word
 // that no allowed phrase covers, so every line is a finding, and the phrases of the same line are not an allowance for it.
 test('the audit probe lines are findings, one per line', (t) => {
   const { result } = check(t, {
@@ -141,9 +141,9 @@ test('a CHANGELOG bullet is allowed only for an item up to the rename (S-01 to S
 
 test('the S-18 row allows its task phrases and no other occurrence', (t) => {
   const row = '| S-18 | Rename status to fsm everywhere: the plan | a remaining `status` name that is not a state status RED (a scan) → GREEN |';
-  const ok = check(t, { 'docs/plans/execution-checklist.md': `${row}\n` });
+  const ok = check(t, { 'docs/plans/fsm-v1/checklist.md': `${row}\n` });
   assert.equal(ok.result.status, 0, ok.result.stdout + ok.result.stderr);
-  const extra = check(t, { 'docs/plans/execution-checklist.md': '| S-18 | Rename status to fsm everywhere; status-gen stays | x | [o] |\n' });
+  const extra = check(t, { 'docs/plans/fsm-v1/checklist.md': '| S-18 | Rename status to fsm everywhere; status-gen stays | x | [o] |\n' });
   assert.equal(extra.result.status, 1, extra.result.stdout + extra.result.stderr);
 });
 

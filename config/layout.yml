@@ -1,7 +1,7 @@
 # The folder layout of fsm (S5, S7, S9), checked by make layout-check: the common rules of config/layout.kit.yml (a copy of
 # kit) and the map of this repository. fsm has the runtime ports of its spec and three components: the compiler, the DB
 # store and the GUI. Each path that this map does not allow is a finding of layout-check until the item that moves it
-# lands (docs/plans/execution-checklist.md).
+# lands (docs/plans/fsm-v1/checklist.md).
 version: 1
 extends:
   - layout.kit.yml
@@ -15,7 +15,7 @@ rules:
     id: layout-go-module-path
     vars: { repo: fsm }
 
-  # The components of fsm beside the runtime ports: the compiler (fsm-gen), the DB store and the GUI (docs/plans/fsm-v1.md, C-5 to C-7).
+  # The components of fsm beside the runtime ports: the compiler (fsm-gen), the DB store and the GUI (docs/plans/fsm-v1/plan.md, C-5 to C-7).
   - id: layout-packages
     paths:
       - "packages/*"
@@ -47,7 +47,7 @@ rules:
       # the type check of the declarations of packages/js (S-09-2, make npm-types): tsc compiles tests/npm-types/consumer.ts in strict mode against packages/js/src/*.d.ts
       - "!tests/npm-types"
 
-  # ---- The kind packages (docs/plans/fsm-v1.md, C-2; S-44 moved these rules from fsm's own check-layout) ----------------
+  # ---- The kind packages (docs/plans/fsm-v1/plan.md, C-2; S-44 moved these rules from fsm's own check-layout) ----------------
   # Every kind package holds the canonical files and folders, the required files of its kind, and only files that its kind
   # allows. The language-inherent difference of rust: it has no examples/model/, because its build.rs generates the orm model of
   # contracts/schema/persist.dbs into OUT_DIR.
@@ -58,7 +58,6 @@ rules:
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
-      - { kind: file_exists, paths: "{path}/Makefile" }
       - { kind: file_exists, paths: "{path}/go.mod" }
       - { kind: file_exists, paths: "{path}/go.sum" }
       - { kind: file_exists, paths: "{path}/tests/conformance_test.go" }
@@ -84,7 +83,6 @@ rules:
       - "packages/go/**"
       - "!packages/go/README.md"
       - "!packages/go/README.ko.md"
-      - "!packages/go/Makefile"
       - "!packages/go/go.mod"
       - "!packages/go/go.sum"
       - "!packages/go/tests/conformance_test.go"
@@ -102,7 +100,6 @@ rules:
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
-      - { kind: file_exists, paths: "{path}/Makefile" }
       - { kind: file_exists, paths: "{path}/package.json" }
       - { kind: file_exists, paths: "{path}/package-lock.json" }
       - { kind: file_exists, paths: "{path}/tests/conformance.test.mjs" }
@@ -128,7 +125,6 @@ rules:
       - "packages/js/**"
       - "!packages/js/README.md"
       - "!packages/js/README.ko.md"
-      - "!packages/js/Makefile"
       - "!packages/js/package.json"
       - "!packages/js/package-lock.json"
       - "!packages/js/tests/conformance.test.mjs"
@@ -147,7 +143,6 @@ rules:
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
-      - { kind: file_exists, paths: "{path}/Makefile" }
       - { kind: file_exists, paths: "{path}/composer.json" }
       - { kind: file_exists, paths: "{path}/composer.lock" }
       - { kind: file_exists, paths: "{path}/tests/ConformanceCase.php" }
@@ -173,7 +168,6 @@ rules:
       - "packages/php/**"
       - "!packages/php/README.md"
       - "!packages/php/README.ko.md"
-      - "!packages/php/Makefile"
       - "!packages/php/composer.json"
       - "!packages/php/composer.lock"
       - "!packages/php/tests/ConformanceCase.php"
@@ -191,7 +185,6 @@ rules:
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
-      - { kind: file_exists, paths: "{path}/Makefile" }
       - { kind: file_exists, paths: "{path}/Cargo.toml" }
       - { kind: file_exists, paths: "{path}/Cargo.lock" }
       - { kind: file_exists, paths: "{path}/build.rs" }
@@ -218,7 +211,6 @@ rules:
       - "packages/rust/**"
       - "!packages/rust/README.md"
       - "!packages/rust/README.ko.md"
-      - "!packages/rust/Makefile"
       - "!packages/rust/Cargo.toml"
       - "!packages/rust/Cargo.lock"
       - "!packages/rust/build.rs"
@@ -238,7 +230,6 @@ rules:
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
-      - { kind: file_exists, paths: "{path}/Makefile" }
       - { kind: file_exists, paths: "{path}/pyproject.toml" }
       - { kind: file_exists, paths: "{path}/constraints.txt" }
       - { kind: file_exists, paths: "{path}/pylock.toml" }
@@ -265,7 +256,6 @@ rules:
       - "packages/python/**"
       - "!packages/python/README.md"
       - "!packages/python/README.ko.md"
-      - "!packages/python/Makefile"
       - "!packages/python/pyproject.toml"
       - "!packages/python/constraints.txt"
       - "!packages/python/pylock.toml"
@@ -284,7 +274,6 @@ rules:
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
-      - { kind: file_exists, paths: "{path}/Makefile" }
       - { kind: file_exists, paths: "{path}/composer.json" }
       - { kind: file_exists, paths: "{path}/composer.lock" }
       - { kind: file_exists, paths: "{path}/tests/ConformanceCase.php" }
@@ -310,7 +299,6 @@ rules:
       - "packages/php-ext/**"
       - "!packages/php-ext/README.md"
       - "!packages/php-ext/README.ko.md"
-      - "!packages/php-ext/Makefile"
       - "!packages/php-ext/composer.json"
       - "!packages/php-ext/composer.lock"
       - "!packages/php-ext/tests/ConformanceCase.php"
@@ -345,3 +333,56 @@ rules:
     source: { file: "packages/php/tests/PersistTest.php" }
     targets: [{ file: "packages/php-ext/tests/PersistTest.php" }]
     message: "C-2: the php-ext tests are byte-identical to the php tests"
+
+  # ---- The exceptions of fsm to the common layout rules (S9): each exception names its reason in the comment above it ----
+
+  # The golden stub of the PHP extension is test data: packages/compiler/tests/golden/php-ext holds the expected output of
+  # the compiler for the php-ext kind, which php-ext-backend.test.mjs compares with the generated files. It is not the stub
+  # of a package; the stub of the package is packages/php-ext/src/polyspec_<repository>.stub.php.
+  - id: php-ext-stub-place
+    paths:
+      - "**/*.stub.php"
+      - "!packages/php-ext/src/*.stub.php"
+      - "!packages/compiler/tests/golden/php-ext/src/*.stub.php"
+
+  # The conformance suite of the rust package stays in the crate: Cargo's test target tests/conformance/main.rs and its
+  # module vectors.rs (written by fsm-gen) lie in packages/rust, the crate whose Cargo.toml names them, and build.rs and
+  # tests/common/mod.rs are shared with that crate; a suite outside the crate cannot be a target of its manifest.
+  - id: suites-at-root
+    paths:
+      - "packages/**/integration"
+      - "packages/**/conformance"
+      - "!packages/rust/tests/conformance"
+
+  # The VitePress site of docs/ is one npm project: docs/package.json and docs/package-lock.json are the input of npm ci in
+  # docs (make docs-build, and the Pages workflow that runs it), and the site's config lies in docs/.vitepress.
+  - id: docs-files
+    paths:
+      - "docs/*"
+      - "!docs/features.md"
+      - "!docs/features.ko.md"
+      - "!docs/index.md"
+      - "!docs/index.ko.md"
+      - "!docs/404.md"
+      - "!docs/404.ko.md"
+      - "!docs/package.json"
+      - "!docs/package-lock.json"
+
+  # AGENTS, CHANGELOG and Makefile lie at the root only: each runtime package's targets are targets of the root Makefile, named
+  # fsm-<package>-<task> (K245).
+  - id: management-files-at-root
+    paths:
+      - "packages/**/AGENTS*.md"
+      - "packages/**/CHANGELOG*.md"
+      - "packages/**/Makefile"
+
+  # The example model of the js package is generated TypeScript: orm-gen writes packages/js/examples/model/models.ts from
+  # contracts/schema/persist.dbs (the fsm-js-gen target of the root Makefile), so the file is generated output, not a js source that is written by hand.
+  - id: runtime-language
+    paths:
+      - "packages/js/**/*.{ts,mts,cts,tsx}"
+      - "packages/*/js/**/*.{ts,mts,cts,tsx}"
+      - "!packages/**/*.d.ts"
+      - "!packages/**/*.d.mts"
+      - "!packages/**/*.d.cts"
+      - "!packages/js/examples/model/models.ts"

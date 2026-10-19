@@ -1,4 +1,4 @@
-// Tests of adding and deleting a machine (docs/plans/fsm-v1.md, C-7; docs/spec/fsm.md, B-3) through the hyper application
+// Tests of adding and deleting a machine (docs/plans/fsm-v1/plan.md, C-7; docs/spec/fsm.md, B-3) through the hyper application
 // without HTTP, for the json, mermaid and db stores: a new machine is created from its form as a minimal valid machine whose
 // state takes the code that core nextCode suggests; a machine with an invalid key is refused with the finding on its field;
 // deleting a machine is a save without it, after which its codes are reserved in the lock; a deleted machine that is added

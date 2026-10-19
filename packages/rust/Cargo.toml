@@ -4,7 +4,7 @@ version = "0.0.0"
 edition = "2021"
 rust-version = "1.99.0"
 publish = false
-description = "Rust consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1.md, C-2)"
+description = "Rust consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)"
 
 # The test targets are tests/conformance/main.rs, with its module tests/conformance/vectors.rs (Cargo's layout of a test target
 # of several files), and tests/persist.rs; both take the modules tests/common/mod.rs and examples/persist.rs. The modules are no targets of their own, so automatic test and example discovery
@@ -35,7 +35,7 @@ path = "tests/conformance/main.rs"
 name = "persist"
 path = "tests/persist.rs"
 
-# The orm pins of docs/plans/fsm-v1.md, C-1: the model generator runs in build.rs, the runtime is used by the persist example.
+# The orm pins of docs/plans/fsm-v1/plan.md, C-1: the model generator runs in build.rs, the runtime is used by the persist example.
 [build-dependencies]
 polyspec-orm-build = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.18" }
 

@@ -1,4 +1,4 @@
-// The backends of the kinds (docs/plans/fsm-v1.md, C-2 and C-5): one module per kind, which returns the generated files of
+// The backends of the kinds (docs/plans/fsm-v1/plan.md, C-2 and C-5): one module per kind, which returns the generated files of
 // its package for the IRs and the lock. A kind that has no backend is an Error, so no command runs an unknown kind.
 import * as go from './go.mjs';
 import * as npm from './npm.mjs';

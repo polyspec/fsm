@@ -1,4 +1,4 @@
-// The store of a project for the GUI (docs/spec/fsm.md, B-2; docs/plans/fsm-v1.md, C-7): the store that the project's
+// The store of a project for the GUI (docs/spec/fsm.md, B-2; docs/plans/fsm-v1/plan.md, C-7): the store that the project's
 // fsm.config.json names. The GUI owns no rule, so it only selects the store, and every command goes through core run.
 // openStore returns { store, close } or { findings } with the reason in the same finding shape as the core (E_STORE_NOT_
 // CONFIGURED), and it never falls back to another store. The db store is imported only when it is selected, because its

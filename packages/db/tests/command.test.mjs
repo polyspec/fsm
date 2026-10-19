@@ -1,4 +1,4 @@
-// Tests of the command fsm-db (docs/plans/execution-checklist.md, S-18-1): `npm install -g ./packages/db` puts fsm-db on
+// Tests of the command fsm-db (docs/plans/fsm-v1/checklist.md, S-18-1): `npm install -g ./packages/db` puts fsm-db on
 // the PATH. The package is installed offline into a temporary npm prefix, and the command installs the schema into a new empty
 // database of FSM_TEST_DIALECT (SQLite, PostgreSQL or MySQL; dialect.mjs, emptyDatabase) and checks it, run from the bin
 // directory as a shell would run it.

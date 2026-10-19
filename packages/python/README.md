@@ -3,7 +3,7 @@
 
 [한국어](README.ko.md)
 
-The python consumer of fsm (`docs/plans/fsm-v1.md`, C-2). The package is private and is a test bed: it is not published. It
+The python consumer of fsm (`docs/plans/fsm-v1/plan.md`, C-2). The package is private and is a test bed: it is not published. It
 shows how the generated python code of a fsm definition is used, and it checks that code against the conformance vectors. The
 generated code uses the standard library only.
 
@@ -134,7 +134,7 @@ The python package needs Python 3.14 in a virtual environment. From the checkout
 
 ```sh
 make install-tools TOOLS=python            # online: Python 3.14 of pythonBuild in config/toolchain.json, into var/tools (var/tools/bin/python3; no system path changes)
-make -C packages/python install    # online: .venv, made by the kit tool (make python-venv) from the install-tools Python 3.14 as a copy, filled from pylock.toml (kit's make python-lock: orm v0.0.18 and ordered-json v0.0.9 from their release wheels, every artifact by sha256)
+make fsm-python-install    # online: .venv, made by the kit tool (make python-venv) from the install-tools Python 3.14 as a copy, filled from pylock.toml (kit's make python-lock: orm v0.0.18 and ordered-json v0.0.9 from their release wheels, every artifact by sha256)
 make test-python                       # offline: the vector cases and the persist cases, run by the kit runner with --venv .venv (no PATH change)
 make python-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
@@ -142,6 +142,6 @@ make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_D
 
 The run passes 290 of 290 cases. `tests/test_conformance.py` generates one unittest method per vector case, named
 `test_<feature>__<id>`, and asserts the result of the generated function or its error code. The generated files are committed,
-so `test` needs no generator; `make -C packages/python gen` regenerates them, and the root `make gen-check` checks that they
+so `test` needs no generator; `make fsm-python-gen` regenerates them, and the root `make gen-check` checks that they
 are current. `make parity-python` checks the result record of every case. `uv.lock` locks every package of the tree (exact versions, sha256
 hashes, git commits), and `make python-lock-check` checks it against `pyproject.toml`, and that `pylock.toml`, the PEP 751 export the kit gate reads, is its current export.

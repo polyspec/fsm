@@ -5,7 +5,7 @@
 
 ## What it does
 
-`fsm-gui` is a browser editor for the state machines of a fsm project (`docs/plans/fsm-v1.md`, C-7). The list page shows
+`fsm-gui` is a browser editor for the state machines of a fsm project (`docs/plans/fsm-v1/plan.md`, C-7). The list page shows
 every machine. The detail page shows its states, its events with their edges, and its Mermaid diagram in the canonical form
 of `docs/spec/fsm.md`, B-1. The same pages edit the machines: they add, change, rename and delete states and events, and
 they add and delete machines.
@@ -162,7 +162,7 @@ with a browser DOM that Node does not have. The edit tests (`edit-machine`, `ren
 | `public/assets/` | The client bundle and its chunks, and `crudui.css` copied from `@polyspec/crudui-generator-core` by `make gui-build` (ignored) |
 | `public/favicon.ico` | The icon at `/favicon.ico`, written by `scripts/make-favicon.mjs` (an ICO file: see the plan, C-7) |
 | `scripts/make-favicon.mjs` | Writes `public/favicon.ico`; run it by hand only when the icon changes |
-| `scripts/manual-check.mjs` | The driver of the GUI manual check (`docs/verification/gui.md`): walks a running server in Chromium and records it |
+| `scripts/manual-check.mjs` | The driver of the GUI manual check (`docs/operations/verification/gui.md`): walks a running server in Chromium and records it |
 | `tests/browser/` | The browser test of the forms (`make gui-browser-test`) |
 
 The versions of the dependencies are pinned in `package.json` and `package-lock.json` and recorded in

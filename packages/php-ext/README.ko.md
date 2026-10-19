@@ -1,10 +1,10 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: 8ac1fb39f327672341a07e425dba3e10cfa90799356fa158bc9482fd16040179 -->
+<!-- source-sha256: 0ba52b9cc7e15d27d6c7135ee429063422a31249c1be0b1ad87993de604d5889 -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
 
-fsm의 PHP extension 종류(`docs/plans/fsm-v1.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의의 생성된 상태
+fsm의 PHP extension 종류(`docs/plans/fsm-v1/plan.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의의 생성된 상태
 기계를 `polyspec_fsm_test`라는 PHP extension 하나로 빌드하고, 그 extension을 php 패키지와 같은 conformance vector로 검사한다. 공개 API는
 php 종류의 API다. namespace `Polyspec\FsmTest`, 기계마다 하위 namespace(예: `Polyspec\FsmTest\Order`)에 enum `State`와 `Event`, class
 `Step`, 함수 `initial`, `code`, `key`, `fromCode`, `isFinal`, `eventsFrom`, `target`, `apply`를 둔다. 공유 `Polyspec\FsmTest\Fsm`은 enum
@@ -89,8 +89,8 @@ module에서 이를 단언한다:
 checkout에서 실행한다:
 
 ```sh
-make -C packages/php-ext install   # composer install: the same packages as the php package (composer.lock)
-make -C packages/php-ext test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
+make fsm-php-ext-install   # composer install: the same packages as the php package (composer.lock)
+make fsm-php-ext-test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
 make test-php-ext                      # the same from the root
 make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

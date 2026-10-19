@@ -2,7 +2,7 @@
   "name": "@polyspec/fsm-db",
   "version": "0.0.0",
   "private": true,
-  "description": "DbStore of fsm: the definitions and the lock in orm tables (docs/plans/fsm-v1.md, C-6)",
+  "description": "DbStore of fsm: the definitions and the lock in orm tables (docs/plans/fsm-v1/plan.md, C-6)",
   "type": "module",
   "license": "MIT",
   "engines": {

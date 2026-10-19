@@ -1,4 +1,4 @@
-// Tests of the command fsm-gui (docs/plans/execution-checklist.md, S-18-1): `npm install -g ./packages/gui` puts fsm-gui
+// Tests of the command fsm-gui (docs/plans/fsm-v1/checklist.md, S-18-1): `npm install -g ./packages/gui` puts fsm-gui
 // on the PATH. The package is installed offline into a temporary npm prefix; the command serves a temporary json project,
 // run from the bin directory as a shell would run it, and answers the list of machines.
 import assert from 'node:assert/strict';

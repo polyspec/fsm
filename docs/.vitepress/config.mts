@@ -1,4 +1,4 @@
-// The documentation site of the repository (`make docs-build`; docs/plans/fsm-v1.md, C-8). The site is built from the
+// The documentation site of the repository (`make docs-build`; docs/plans/fsm-v1/plan.md, C-8). The site is built from the
 // repository documents in place: srcDir is the repository root, and srcExclude keeps every Markdown file outside the include
 // list of C-8. A README.md renders as the index page of its directory (rewrites); README.ko.md keeps its own route. A link to
 // a repository file or directory that is not a site page points to the public repository (repositoryLinks). A link to a
@@ -52,8 +52,8 @@ function isSitePage(file: string): boolean {
   return /^(?:README|CHANGELOG)(?:\.ko)?\.md$/.test(file)
     || /^packages\/[^/]+\/README(?:\.ko)?\.md$/.test(file)
     || /^docs\/spec\/.+\.md$/.test(file)
-    || /^docs\/plans\/fsm-v1(?:\.ko)?\.md$/.test(file)
-    || /^docs\/verification\/.+\.md$/.test(file);
+    || /^docs\/plans\/fsm-v1\/plan(?:\.ko)?\.md$/.test(file)
+    || /^docs\/operations\/verification\/.+\.md$/.test(file);
 }
 
 const MARKDOWN = markdownFiles();
@@ -106,13 +106,13 @@ function entriesOf(lang: 'en' | 'ko') {
     .filter(([name]) => has(`packages/${name}/README${suffix}.md`))
     .map(([name, labels]) => ({ text: `${labels[lang]} (${name})`, link: routeOf(`packages/${name}/README${suffix}.md`) }));
   const verification = [...SITE_PAGES]
-    .filter(file => file.startsWith('docs/verification/') && file.endsWith('.ko.md') === (lang === 'ko'))
+    .filter(file => file.startsWith('docs/operations/verification/') && file.endsWith('.ko.md') === (lang === 'ko'))
     .sort()
     .map(file => ({ text: path.posix.basename(file, '.md'), link: routeOf(file) }));
   return {
     overview: { text: lang === 'ko' ? '개요' : 'Overview', link: routeOf(`README${suffix}.md`) },
     specification: { text: lang === 'ko' ? '명세' : 'Specification', link: routeOf(`docs/spec/fsm${suffix}.md`) },
-    plan: { text: lang === 'ko' ? '계획' : 'Plan', link: routeOf(`docs/plans/fsm-v1${suffix}.md`) },
+    plan: { text: lang === 'ko' ? '계획' : 'Plan', link: routeOf(`docs/plans/fsm-v1/plan${suffix}.md`) },
     packages,
     verification,
     changelog: { text: lang === 'ko' ? '변경 이력' : 'Changelog', link: routeOf(`CHANGELOG${suffix}.md`) },
@@ -158,7 +158,7 @@ export default defineConfig({
   // The pages live at the repository root, where no node_modules holds vue, so the bare imports of the page modules name the
   // ESM entries of vue in docs/node_modules (the entries the theme imports, so one copy of vue is bundled). `vue` names the
   // runtime entry of its exports` import condition, not index.mjs: that file re-exports the CommonJS build and made vite print
-  // "Circular chunk: framework -> theme -> framework" (docs/plans/fsm-v1.md, C-8, S-20-1).
+  // "Circular chunk: framework -> theme -> framework" (docs/plans/fsm-v1/plan.md, C-8, S-20-1).
   vite: {
     resolve: {
       alias: [

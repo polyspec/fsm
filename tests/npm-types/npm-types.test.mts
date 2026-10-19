@@ -1,5 +1,5 @@
 // The type check of the declarations that the npm backend generates into packages/js (docs/spec/fsm.md, B-6;
-// docs/plans/execution-checklist.md, S-09-2). The consumer file tests/npm-types/consumer.ts uses every public name of the
+// docs/plans/fsm-v1/checklist.md, S-09-2). The consumer file tests/npm-types/consumer.ts uses every public name of the
 // notation of packages/js/src/*.d.ts and holds the lines that must fail to compile under @ts-expect-error. tsc, the TypeScript
 // of the devDependencies of packages/js, compiles it in strict mode and the test asserts that it exits with status 0: a
 // declaration that is too loose makes a directive unused, and a declaration that is too narrow makes a line of the consumer
@@ -18,7 +18,7 @@ const TSC = path.join(PACKAGE, 'node_modules/typescript/bin/tsc');
 const CONSUMER = path.join(HERE, 'consumer.ts');
 
 test('the generated declarations type-check the consumer in strict mode', () => {
-  assert.ok(existsSync(TSC), `${TSC} does not exist; run make -C packages/js install`);
+  assert.ok(existsSync(TSC), `${TSC} does not exist; run make fsm-js-install`);
   const result = spawnSync(process.execPath, [TSC, '--ignoreConfig', '--noEmit', '--strict', '--module', 'nodenext', '--target', 'es2022', '--pretty', 'false', CONSUMER], { encoding: 'utf8' });
   assert.equal(result.error, undefined, `tsc could not run: ${result.error?.message}`);
   assert.equal(result.status, 0, `tsc reported findings:\n${result.stdout}${result.stderr}`);

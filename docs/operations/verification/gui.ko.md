@@ -1,10 +1,10 @@
 <!-- doc-id: verification-gui -->
-<!-- source-sha256: 0c6107e133f7d77bc2a3f2aa068bfe08b0228f09d26ad2dd008a58212be78645 -->
+<!-- source-sha256: 894d511913634a678de7e8d1cf235aa5c063e723126c86edd24517dd0d423cb0 -->
 # GUI 수동 확인
 
 [English](gui.md)
 
-계획(`docs/plans/fsm-v1.md`, Verification; 체크리스트 S-22)의 수동 확인을 실제 browser에서 세 store 각각으로 실행했다. 트리, 단계,
+계획(`docs/plans/fsm-v1/plan.md`, Verification; 체크리스트 S-22)의 수동 확인을 실제 browser에서 세 store 각각으로 실행했다. 트리, 단계,
 store별 결과를 기록한다.
 
 ## 트리와 환경

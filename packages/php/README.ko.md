@@ -1,10 +1,10 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: 7fb99b2a4f7c7d63a37361646c543e665a87b974b2e646695134cb14946ef463 -->
+<!-- source-sha256: 320fbe9cf9182bb1105f25745573f567afea35bff59d080c96601906c22ec613 -->
 # polyspec/fsm-php
 
 [English](README.md)
 
-fsm의 PHP 소비자(`docs/plans/fsm-v1.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 PHP 코드를
+fsm의 PHP 소비자(`docs/plans/fsm-v1/plan.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 PHP 코드를
 어떻게 쓰는지 보여주고, 그 코드를 conformance vector로 검사한다. test bench는 namespace `Polyspec\FsmTest`를 생성한다. 프로젝트는
 `--php-namespace`로 자신의 namespace를 고른다. 기계마다 하위 namespace `<ns>\<Pascal machine key>`가 생긴다. 예: `Polyspec\FsmTest\Order`.
 
@@ -153,8 +153,8 @@ database를 열 때 `examples/model/bootstrap.php`를 읽는다.
 checkout에서 실행한다:
 
 ```sh
-make -C packages/php install   # composer install: the pinned orm release and PHPUnit 13.4.2 (composer.lock)
-make -C packages/php test      # PHPUnit through kit's run-tests
+make fsm-php-install   # composer install: the pinned orm release and PHPUnit 13.4.2 (composer.lock)
+make fsm-php-test      # PHPUnit through kit's run-tests
 make test-php                      # the same from the root
 make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
@@ -162,5 +162,5 @@ make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_D
 
 실행 결과는 89개 case 중 89개 통과다. `fsm-gen vectors --kind php`가 생성하는 `tests/ConformanceTest.php`는 PHPUnit test
 `testConformance` 하나를 vector case마다 이름이 `<feature>__<id>`인 data set으로 실행하며, 각 data set은 손으로 쓴 `tests/ConformanceCase.php`의 검사를 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 루트의 `make gen-check`는
-생성 파일이 `fsm-gen`이 지금 쓰는 것과 같은지 검사한다. checkout의 PHP 릴리스는 8.5(`config/toolchain.json`)이며, `composer.json`의
-`config.platform.php`는 `composerPlatforms`(config/dependency-policy.json)의 정밀도로 쓴 kit의 PHP pin 8.5.0이고, `require.php`는 `>=8.5`다.
+생성 파일이 `fsm-gen`이 지금 쓰는 것과 같은지 검사한다. checkout의 PHP 릴리스는 8.4(`config/toolchain.json`)이며, `composer.json`의
+`config.platform.php`는 `composerPlatforms`(config/dependency-policy.json)의 정밀도로 쓴 kit의 PHP pin 8.4.0이고, `require.php`는 `>=8.4`다.

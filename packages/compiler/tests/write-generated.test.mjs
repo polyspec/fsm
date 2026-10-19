@@ -1,4 +1,4 @@
-// Tests of the git-ignored files of the output directory of gen (docs/plans/execution-checklist.md, S-14-3): an ignored file is a
+// Tests of the git-ignored files of the output directory of gen (docs/plans/fsm-v1/checklist.md, S-14-3): an ignored file is a
 // build output, not a hand-written file, so gen neither refuses it with E_NOT_GENERATED nor removes it as stale. A tracked file or
 // a file that Git does not ignore still gives E_NOT_GENERATED. Outside a git work tree nothing counts as ignored. Every case runs
 // in a temporary directory that is removed when the file's tests end.

@@ -1,4 +1,4 @@
-"""The B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite, PostgreSQL and MySQL (docs/plans/fsm-v1.md,
+"""The B-4 persistence pattern (docs/spec/fsm.md, B-4) with polyspec orm on SQLite, PostgreSQL and MySQL (docs/plans/fsm-v1/plan.md,
 C-2 and C-6; the DSN selects the dialect).
 
 A row keeps the status code. A transition runs in one transaction: the row is read under its lock (for_update), the event is

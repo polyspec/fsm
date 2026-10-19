@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The command line of the DB store (docs/plans/fsm-v1.md, C-6; docs/spec/fsm.md, B-2):
+// The command line of the DB store (docs/plans/fsm-v1/plan.md, C-6; docs/spec/fsm.md, B-2):
 //   fsm-db install [--project <dir>]
 //   fsm-db check [--project <dir>]
 //   fsm-db lock  [--project <dir>] [--rename machine.old=new]...

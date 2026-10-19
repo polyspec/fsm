@@ -1,4 +1,4 @@
-// Tests of the loaders of packages/gui/src/handlers.mjs (docs/plans/fsm-v1.md, C-7) through the hyper application
+// Tests of the loaders of packages/gui/src/handlers.mjs (docs/plans/fsm-v1/plan.md, C-7) through the hyper application
 // without HTTP: the machine list, the machine detail with the canonical Mermaid text byte for byte, an unknown machine that
 // answers 404, and the findings of the project, which every page shows as errors.
 import assert from 'node:assert/strict';

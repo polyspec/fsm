@@ -1,4 +1,4 @@
-// The npm backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1.md, C-2): the generated files of the npm package
+// The npm backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated files of the npm package
 // `src/` and the native vector module `tests/vectors.mjs`. It takes the IRs of the machines (normalize.mjs), in definition
 // order, and the lock, and returns the text of every file; it writes nothing. The output is deterministic: declaration order,
 // two spaces of indentation and a final line break. The core imports nothing from node:, and the generated code has no runtime

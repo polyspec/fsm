@@ -1,8 +1,8 @@
-// Package tests holds the conformance tests of the go package (docs/plans/fsm-v1.md, C-4). Every vector case of vectors_test.go
+// Package tests holds the conformance tests of the go package (docs/plans/fsm-v1/plan.md, C-4). Every vector case of vectors_test.go
 // (generated from the core oracle) is one subtest named test_<feature>__<id>. The case is run through the adapter of its machine
 // in vectors_test.go, which maps the keys of the oracle to the constants of the machine and calls its generated functions. The
 // persist cases run the B-4 example (examples/persist.go) on the dialect of FSM_TEST_DIALECT and assert the stored code after the
-// run (docs/plans/fsm-v1.md, C-6).
+// run (docs/plans/fsm-v1/plan.md, C-6).
 package tests
 
 import (

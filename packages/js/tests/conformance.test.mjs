@@ -1,4 +1,4 @@
-// The conformance tests of the npm package (docs/plans/fsm-v1.md, C-4). Every vector case of tests/vectors.mjs (generated from
+// The conformance tests of the npm package (docs/plans/fsm-v1/plan.md, C-4). Every vector case of tests/vectors.mjs (generated from
 // the core oracle) is one node:test test named test_<feature>__<id>: it calls the generated function of src/ and asserts the
 // expected value and, for an error, the code and the fields of fsm.Error (docs/spec/fsm.md, B-4 and B-6; a field that does not
 // apply is null in the vector and undefined in the error). The persist cases run the B-4 example (examples/persist.mjs) on the

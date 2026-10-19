@@ -1,7 +1,7 @@
-// The conformance tests of the rust package (docs/plans/fsm-v1.md, C-4), the crate root of the test target conformance.
+// The conformance tests of the rust package (docs/plans/fsm-v1/plan.md, C-4), the crate root of the test target conformance.
 // tests/conformance/vectors.rs, its module, is generated from the core oracle: one #[test] per vector case, named
 // test_<feature>__<id>, which calls the check functions below with the values of its case. The persist cases run the B-4
-// transaction through examples/persist.rs on the dialect of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1.md, C-6). The
+// transaction through examples/persist.rs on the dialect of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1/plan.md, C-6). The
 // names follow docs/spec/fsm.md, B-6.
 
 #[path = "../common/mod.rs"]
