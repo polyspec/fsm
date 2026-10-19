@@ -58,6 +58,7 @@ async function together(calls) {
 /** The order machine whose apply runs `fault` before it applies the event, once per attempt of the transaction. */
 const faulty = fault => ({ ...order, apply: (...args) => { fault(); return order.apply(...args); } });
 
+// FSM-B4-1: two transitions of one (expected, event) at the same time: one Changed, one Unchanged (the row lock).
 test('persist_concurrent_same_event', async () => {
   const [first, second] = await connections(2);
   const outcomes = await together([
@@ -71,6 +72,7 @@ test('persist_concurrent_same_event', async () => {
   assert.equal(await statusOf(first, 1), order.code(order.State.Paid), 'the stored state after both runs');
 });
 
+// FSM-B4-2: two transitions from one expected state with different events at the same time: one Changed, one E_CONFLICT.
 test('persist_concurrent_conflict', async () => {
   const [first, second] = await connections(2);
   const outcomes = await together([
@@ -87,6 +89,7 @@ test('persist_concurrent_conflict', async () => {
   assert.equal(await statusOf(first, 1), order.code(changed[0].value.to), 'the stored state is the one the changed run reached');
 });
 
+// FSM-B4-3: a deadlock inside the transaction runs the transaction again.
 test('persist_retry_on_deadlock', async () => {
   const [db] = await connections(1);
   let attempts = 0;
@@ -99,6 +102,7 @@ test('persist_retry_on_deadlock', async () => {
   assert.equal(await statusOf(db, 1), order.code(order.State.Paid));
 });
 
+// FSM-B4-4: another database error is returned after one attempt, with no second run.
 test('persist_no_retry_on_other_error', async () => {
   const [db] = await connections(1);
   let attempts = 0;

@@ -199,6 +199,7 @@ def persist_case(test, machine, case):
             db.close()
 
 
+# FSM-B4-5: every apply case of the vector file gives the result of the B-4 table.
 class ConformanceTest(unittest.TestCase):
     """One method per vector case is added below: test_<feature>__<id>."""
 

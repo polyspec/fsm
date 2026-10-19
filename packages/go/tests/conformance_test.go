@@ -93,6 +93,7 @@ type machineUnderTest interface {
 }
 
 // TestConformance runs every vector case as the subtest test_<feature>__<id> of this test, through the adapter of its machine.
+// FSM-B4-5: every apply case of the vector file gives the result of the B-4 table.
 func TestConformance(t *testing.T) {
 	for _, machine := range vectors {
 		adapter, ok := machines[machine.machine]

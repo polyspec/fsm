@@ -60,6 +60,7 @@ func together(first, second *orm.DB, decideFirst, decideSecond examples.Decide) 
 
 // TestPersistConcurrentSameEvent asserts that two transitions with the same (expected, event) at the same time give one Changed
 // and one Unchanged, both to the target.
+// FSM-B4-1: two transitions of one (expected, event) at the same time: one Changed, one Unchanged (the row lock).
 func TestPersistConcurrentSameEvent(t *testing.T) {
 	first, second := twoConnections(t)
 	next := orderMachine{}.decide("draft", "next")
@@ -79,6 +80,7 @@ func TestPersistConcurrentSameEvent(t *testing.T) {
 
 // TestPersistConcurrentConflict asserts that two events from one expected state at the same time give one Changed and one
 // E_CONFLICT, and that the stored state is the one of the changed run.
+// FSM-B4-2: two transitions from one expected state with different events at the same time: one Changed, one E_CONFLICT.
 func TestPersistConcurrentConflict(t *testing.T) {
 	first, second := twoConnections(t)
 	outcomes := together(first, second, orderMachine{}.decide("draft", "next"), orderMachine{}.decide("draft", "cancel"))
@@ -105,6 +107,7 @@ func TestPersistConcurrentConflict(t *testing.T) {
 
 // TestPersistRetryOnDeadlock asserts that a deadlock inside the transaction runs it again: the first attempt fails with the
 // DEADLOCK error of orm after the row is read, and the second attempt changes the row.
+// FSM-B4-3: a deadlock inside the transaction runs the transaction again.
 func TestPersistRetryOnDeadlock(t *testing.T) {
 	db := openPersistDB(t)
 	assertNoError(t, examples.Seed(db, 1, orderCode(t, "draft")))
@@ -130,6 +133,7 @@ func TestPersistRetryOnDeadlock(t *testing.T) {
 
 // TestPersistNoRetryOnOtherError asserts that a database error other than a deadlock is returned after one attempt and that the
 // row keeps its state.
+// FSM-B4-4: another database error is returned after one attempt, with no second run.
 func TestPersistNoRetryOnOtherError(t *testing.T) {
 	db := openPersistDB(t)
 	draft := orderCode(t, "draft")

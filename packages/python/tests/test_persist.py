@@ -64,6 +64,7 @@ class PersistTest(unittest.TestCase):
             thread.join()
         return outcomes
 
+    # FSM-B4-1: two transitions of one (expected, event) at the same time: one Changed, one Unchanged (the row lock).
     def test_persist_concurrent_same_event(self):
         outcomes = self.together([order.Event.NEXT, order.Event.NEXT])
         for outcome in outcomes:
@@ -74,6 +75,7 @@ class PersistTest(unittest.TestCase):
         self.assertEqual(sorted(outcome.changed for outcome in outcomes), [False, True])
         self.assertEqual(status_of(self.first, 1), order.code(order.State.PAID))
 
+    # FSM-B4-2: two transitions from one expected state with different events at the same time: one Changed, one E_CONFLICT.
     def test_persist_concurrent_conflict(self):
         outcomes = self.together([order.Event.NEXT, order.Event.CANCEL])
         changed = [outcome for outcome in outcomes if isinstance(outcome, order.Step)]
@@ -87,6 +89,7 @@ class PersistTest(unittest.TestCase):
         self.assertEqual(failed[0].code, Code.CONFLICT)
         self.assertEqual(status_of(self.first, 1), order.code(changed[0].to))
 
+    # FSM-B4-3: a deadlock inside the transaction runs the transaction again.
     def test_persist_retry_on_deadlock(self):
         attempts = []
 
@@ -104,6 +107,7 @@ class PersistTest(unittest.TestCase):
         self.assertEqual(step, order.Step(to=order.State.PAID, changed=True))
         self.assertEqual(status_of(self.first, 1), order.code(order.State.PAID))
 
+    # FSM-B4-4: another database error is returned after one attempt, with no second run.
     def test_persist_no_retry_on_other_error(self):
         attempts = []
 

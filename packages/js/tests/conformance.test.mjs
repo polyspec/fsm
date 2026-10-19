@@ -139,6 +139,7 @@ for (const { machine: name, cases } of vectors) {
   const machine = api[name];
   assert.ok(machine !== undefined, `src/index.js does not export the machine ${name}`);
   for (const c of cases) {
+    // FSM-B4-5: every apply case of the vector file gives the result of the B-4 table.
     test(c.name, async () => {
       if (c.feature === 'persist') await persistCase(machine, c);
       else await check(machine, c);

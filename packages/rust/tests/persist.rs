@@ -47,6 +47,7 @@ async fn close(dbs: Vec<Db>) {
 }
 
 #[tokio::test]
+// FSM-B4-1: two transitions of one (expected, event) at the same time: one Changed, one Unchanged (the row lock).
 async fn persist_concurrent_same_event() {
     let (_serial, _scratch, dbs) = connections(2).await;
     let (first, second) = tokio::join!(
@@ -67,6 +68,7 @@ async fn persist_concurrent_same_event() {
 }
 
 #[tokio::test]
+// FSM-B4-2: two transitions from one expected state with different events at the same time: one Changed, one E_CONFLICT.
 async fn persist_concurrent_conflict() {
     let (_serial, _scratch, dbs) = connections(2).await;
     let (first, second) = tokio::join!(
@@ -87,6 +89,7 @@ async fn persist_concurrent_conflict() {
 
 /// The first attempt fails with a DEADLOCK error before the row is read; the second attempt changes it.
 #[tokio::test]
+// FSM-B4-3: a deadlock inside the transaction runs the transaction again.
 async fn persist_retry_on_deadlock() {
     let (_serial, _scratch, dbs) = connections(1).await;
     let attempts = std::cell::Cell::new(0u32);
@@ -108,6 +111,7 @@ async fn persist_retry_on_deadlock() {
 
 /// A database error other than a deadlock is returned after one attempt, and the row keeps its state.
 #[tokio::test]
+// FSM-B4-4: another database error is returned after one attempt, with no second run.
 async fn persist_no_retry_on_other_error() {
     let (_serial, _scratch, dbs) = connections(1).await;
     let attempts = std::cell::Cell::new(0u32);
