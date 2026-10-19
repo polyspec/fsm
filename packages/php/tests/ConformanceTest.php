@@ -229,7 +229,7 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'in_review_from_code_float',
             'name' => 'from_code__in_review_from_code_float',
-            'input' => 1.0,
+            'input' => 1.5,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -241,7 +241,135 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'in_review_from_code_fraction',
             'name' => 'from_code__in_review_from_code_fraction',
-            'input' => 1.5,
+            'input' => 1.25,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__in_review_code_v0' => ['in_review', [
+            'feature' => 'code',
+            'id' => 'in_review_code_v0',
+            'name' => 'code__in_review_code_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__in_review_is_final_v0' => ['in_review', [
+            'feature' => 'is_final',
+            'id' => 'in_review_is_final_v0',
+            'name' => 'is_final__in_review_is_final_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__in_review_key_v0' => ['in_review', [
+            'feature' => 'key',
+            'id' => 'in_review_key_v0',
+            'name' => 'key__in_review_key_v0',
+            'code' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__in_review_apply_expected_v0_e0_s0' => ['in_review', [
+            'feature' => 'apply',
+            'id' => 'in_review_apply_expected_v0_e0_s0',
+            'name' => 'apply__in_review_apply_expected_v0_e0_s0',
+            'expected_value' => 0,
+            'event' => 'start_work',
+            'actual' => 'to_do',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__in_review_apply_actual_v0_e0_s0' => ['in_review', [
+            'feature' => 'apply',
+            'id' => 'in_review_apply_actual_v0_e0_s0',
+            'name' => 'apply__in_review_apply_actual_v0_e0_s0',
+            'expected' => 'to_do',
+            'event' => 'start_work',
+            'actual_value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__in_review_code_v4' => ['in_review', [
+            'feature' => 'code',
+            'id' => 'in_review_code_v4',
+            'name' => 'code__in_review_code_v4',
+            'value' => 4,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__in_review_is_final_v4' => ['in_review', [
+            'feature' => 'is_final',
+            'id' => 'in_review_is_final_v4',
+            'name' => 'is_final__in_review_is_final_v4',
+            'value' => 4,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__in_review_key_v4' => ['in_review', [
+            'feature' => 'key',
+            'id' => 'in_review_key_v4',
+            'name' => 'key__in_review_key_v4',
+            'code' => 4,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__in_review_apply_expected_v4_e0_s0' => ['in_review', [
+            'feature' => 'apply',
+            'id' => 'in_review_apply_expected_v4_e0_s0',
+            'name' => 'apply__in_review_apply_expected_v4_e0_s0',
+            'expected_value' => 4,
+            'event' => 'start_work',
+            'actual' => 'to_do',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__in_review_apply_actual_v4_e0_s0' => ['in_review', [
+            'feature' => 'apply',
+            'id' => 'in_review_apply_actual_v4_e0_s0',
+            'name' => 'apply__in_review_apply_actual_v4_e0_s0',
+            'expected' => 'to_do',
+            'event' => 'start_work',
+            'actual_value' => 4,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -769,7 +897,7 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'limits_from_code_float',
             'name' => 'from_code__limits_from_code_float',
-            'input' => 1.0,
+            'input' => 1.5,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -781,7 +909,135 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'limits_from_code_fraction',
             'name' => 'from_code__limits_from_code_fraction',
-            'input' => 1.5,
+            'input' => 1.25,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__limits_code_v0' => ['limits', [
+            'feature' => 'code',
+            'id' => 'limits_code_v0',
+            'name' => 'code__limits_code_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__limits_is_final_v0' => ['limits', [
+            'feature' => 'is_final',
+            'id' => 'limits_is_final_v0',
+            'name' => 'is_final__limits_is_final_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__limits_key_v0' => ['limits', [
+            'feature' => 'key',
+            'id' => 'limits_key_v0',
+            'name' => 'key__limits_key_v0',
+            'code' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__limits_apply_expected_v0_e0_s0' => ['limits', [
+            'feature' => 'apply',
+            'id' => 'limits_apply_expected_v0_e0_s0',
+            'name' => 'apply__limits_apply_expected_v0_e0_s0',
+            'expected_value' => 0,
+            'event' => 'rise',
+            'actual' => 'floor',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__limits_apply_actual_v0_e0_s0' => ['limits', [
+            'feature' => 'apply',
+            'id' => 'limits_apply_actual_v0_e0_s0',
+            'name' => 'apply__limits_apply_actual_v0_e0_s0',
+            'expected' => 'floor',
+            'event' => 'rise',
+            'actual_value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__limits_code_v2' => ['limits', [
+            'feature' => 'code',
+            'id' => 'limits_code_v2',
+            'name' => 'code__limits_code_v2',
+            'value' => 2,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__limits_is_final_v2' => ['limits', [
+            'feature' => 'is_final',
+            'id' => 'limits_is_final_v2',
+            'name' => 'is_final__limits_is_final_v2',
+            'value' => 2,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__limits_key_v2' => ['limits', [
+            'feature' => 'key',
+            'id' => 'limits_key_v2',
+            'name' => 'key__limits_key_v2',
+            'code' => 2,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__limits_apply_expected_v2_e0_s0' => ['limits', [
+            'feature' => 'apply',
+            'id' => 'limits_apply_expected_v2_e0_s0',
+            'name' => 'apply__limits_apply_expected_v2_e0_s0',
+            'expected_value' => 2,
+            'event' => 'rise',
+            'actual' => 'floor',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__limits_apply_actual_v2_e0_s0' => ['limits', [
+            'feature' => 'apply',
+            'id' => 'limits_apply_actual_v2_e0_s0',
+            'name' => 'apply__limits_apply_actual_v2_e0_s0',
+            'expected' => 'floor',
+            'event' => 'rise',
+            'actual_value' => 2,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -1167,7 +1423,7 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'order_from_code_float',
             'name' => 'from_code__order_from_code_float',
-            'input' => 1.0,
+            'input' => 1.5,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -1179,7 +1435,135 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'order_from_code_fraction',
             'name' => 'from_code__order_from_code_fraction',
-            'input' => 1.5,
+            'input' => 1.25,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__order_code_v0' => ['order', [
+            'feature' => 'code',
+            'id' => 'order_code_v0',
+            'name' => 'code__order_code_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__order_is_final_v0' => ['order', [
+            'feature' => 'is_final',
+            'id' => 'order_is_final_v0',
+            'name' => 'is_final__order_is_final_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__order_key_v0' => ['order', [
+            'feature' => 'key',
+            'id' => 'order_key_v0',
+            'name' => 'key__order_key_v0',
+            'code' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__order_apply_expected_v0_e0_s0' => ['order', [
+            'feature' => 'apply',
+            'id' => 'order_apply_expected_v0_e0_s0',
+            'name' => 'apply__order_apply_expected_v0_e0_s0',
+            'expected_value' => 0,
+            'event' => 'next',
+            'actual' => 'draft',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__order_apply_actual_v0_e0_s0' => ['order', [
+            'feature' => 'apply',
+            'id' => 'order_apply_actual_v0_e0_s0',
+            'name' => 'apply__order_apply_actual_v0_e0_s0',
+            'expected' => 'draft',
+            'event' => 'next',
+            'actual_value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__order_code_v6' => ['order', [
+            'feature' => 'code',
+            'id' => 'order_code_v6',
+            'name' => 'code__order_code_v6',
+            'value' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__order_is_final_v6' => ['order', [
+            'feature' => 'is_final',
+            'id' => 'order_is_final_v6',
+            'name' => 'is_final__order_is_final_v6',
+            'value' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__order_key_v6' => ['order', [
+            'feature' => 'key',
+            'id' => 'order_key_v6',
+            'name' => 'key__order_key_v6',
+            'code' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__order_apply_expected_v6_e0_s0' => ['order', [
+            'feature' => 'apply',
+            'id' => 'order_apply_expected_v6_e0_s0',
+            'name' => 'apply__order_apply_expected_v6_e0_s0',
+            'expected_value' => 6,
+            'event' => 'next',
+            'actual' => 'draft',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__order_apply_actual_v6_e0_s0' => ['order', [
+            'feature' => 'apply',
+            'id' => 'order_apply_actual_v6_e0_s0',
+            'name' => 'apply__order_apply_actual_v6_e0_s0',
+            'expected' => 'draft',
+            'event' => 'next',
+            'actual_value' => 6,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -2110,7 +2494,7 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'standby_from_code_float',
             'name' => 'from_code__standby_from_code_float',
-            'input' => 1.0,
+            'input' => 1.5,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -2122,7 +2506,79 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'standby_from_code_fraction',
             'name' => 'from_code__standby_from_code_fraction',
-            'input' => 1.5,
+            'input' => 1.25,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__standby_code_v0' => ['standby', [
+            'feature' => 'code',
+            'id' => 'standby_code_v0',
+            'name' => 'code__standby_code_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__standby_is_final_v0' => ['standby', [
+            'feature' => 'is_final',
+            'id' => 'standby_is_final_v0',
+            'name' => 'is_final__standby_is_final_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__standby_key_v0' => ['standby', [
+            'feature' => 'key',
+            'id' => 'standby_key_v0',
+            'name' => 'key__standby_key_v0',
+            'code' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__standby_code_v2' => ['standby', [
+            'feature' => 'code',
+            'id' => 'standby_code_v2',
+            'name' => 'code__standby_code_v2',
+            'value' => 2,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__standby_is_final_v2' => ['standby', [
+            'feature' => 'is_final',
+            'id' => 'standby_is_final_v2',
+            'name' => 'is_final__standby_is_final_v2',
+            'value' => 2,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__standby_key_v2' => ['standby', [
+            'feature' => 'key',
+            'id' => 'standby_key_v2',
+            'name' => 'key__standby_key_v2',
+            'code' => 2,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -2366,7 +2822,7 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'ticket_from_code_float',
             'name' => 'from_code__ticket_from_code_float',
-            'input' => 1.0,
+            'input' => 1.5,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -2378,7 +2834,135 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'ticket_from_code_fraction',
             'name' => 'from_code__ticket_from_code_fraction',
-            'input' => 1.5,
+            'input' => 1.25,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__ticket_code_v0' => ['ticket', [
+            'feature' => 'code',
+            'id' => 'ticket_code_v0',
+            'name' => 'code__ticket_code_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__ticket_is_final_v0' => ['ticket', [
+            'feature' => 'is_final',
+            'id' => 'ticket_is_final_v0',
+            'name' => 'is_final__ticket_is_final_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__ticket_key_v0' => ['ticket', [
+            'feature' => 'key',
+            'id' => 'ticket_key_v0',
+            'name' => 'key__ticket_key_v0',
+            'code' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__ticket_apply_expected_v0_e0_s0' => ['ticket', [
+            'feature' => 'apply',
+            'id' => 'ticket_apply_expected_v0_e0_s0',
+            'name' => 'apply__ticket_apply_expected_v0_e0_s0',
+            'expected_value' => 0,
+            'event' => 'submit',
+            'actual' => 'open',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__ticket_apply_actual_v0_e0_s0' => ['ticket', [
+            'feature' => 'apply',
+            'id' => 'ticket_apply_actual_v0_e0_s0',
+            'name' => 'apply__ticket_apply_actual_v0_e0_s0',
+            'expected' => 'open',
+            'event' => 'submit',
+            'actual_value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__ticket_code_v6' => ['ticket', [
+            'feature' => 'code',
+            'id' => 'ticket_code_v6',
+            'name' => 'code__ticket_code_v6',
+            'value' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__ticket_is_final_v6' => ['ticket', [
+            'feature' => 'is_final',
+            'id' => 'ticket_is_final_v6',
+            'name' => 'is_final__ticket_is_final_v6',
+            'value' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__ticket_key_v6' => ['ticket', [
+            'feature' => 'key',
+            'id' => 'ticket_key_v6',
+            'name' => 'key__ticket_key_v6',
+            'code' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__ticket_apply_expected_v6_e0_s0' => ['ticket', [
+            'feature' => 'apply',
+            'id' => 'ticket_apply_expected_v6_e0_s0',
+            'name' => 'apply__ticket_apply_expected_v6_e0_s0',
+            'expected_value' => 6,
+            'event' => 'submit',
+            'actual' => 'open',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__ticket_apply_actual_v6_e0_s0' => ['ticket', [
+            'feature' => 'apply',
+            'id' => 'ticket_apply_actual_v6_e0_s0',
+            'name' => 'apply__ticket_apply_actual_v6_e0_s0',
+            'expected' => 'open',
+            'event' => 'submit',
+            'actual_value' => 6,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -2742,7 +3326,6 @@ final class ConformanceTest extends ConformanceCase
      * @param array<string, mixed> $case
      */
     #[DataProvider('cases')]
-    // FSM-B4-5: every apply case of the vector file gives the result of the B-4 table.
     public function testConformance(string $machine, array $case): void
     {
         $this->conformance($machine, $case);

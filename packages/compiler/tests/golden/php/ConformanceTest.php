@@ -308,7 +308,7 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'order_from_code_float',
             'name' => 'from_code__order_from_code_float',
-            'input' => 1.0,
+            'input' => 1.5,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
@@ -320,7 +320,135 @@ final class ConformanceTest extends ConformanceCase
             'feature' => 'from_code',
             'id' => 'order_from_code_fraction',
             'name' => 'from_code__order_from_code_fraction',
-            'input' => 1.5,
+            'input' => 1.25,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__order_code_v0' => ['order', [
+            'feature' => 'code',
+            'id' => 'order_code_v0',
+            'name' => 'code__order_code_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__order_is_final_v0' => ['order', [
+            'feature' => 'is_final',
+            'id' => 'order_is_final_v0',
+            'name' => 'is_final__order_is_final_v0',
+            'value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__order_key_v0' => ['order', [
+            'feature' => 'key',
+            'id' => 'order_key_v0',
+            'name' => 'key__order_key_v0',
+            'code' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__order_apply_expected_v0_e0_s0' => ['order', [
+            'feature' => 'apply',
+            'id' => 'order_apply_expected_v0_e0_s0',
+            'name' => 'apply__order_apply_expected_v0_e0_s0',
+            'expected_value' => 0,
+            'event' => 'next',
+            'actual' => 'draft',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__order_apply_actual_v0_e0_s0' => ['order', [
+            'feature' => 'apply',
+            'id' => 'order_apply_actual_v0_e0_s0',
+            'name' => 'apply__order_apply_actual_v0_e0_s0',
+            'expected' => 'draft',
+            'event' => 'next',
+            'actual_value' => 0,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'code__order_code_v6' => ['order', [
+            'feature' => 'code',
+            'id' => 'order_code_v6',
+            'name' => 'code__order_code_v6',
+            'value' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'is_final__order_is_final_v6' => ['order', [
+            'feature' => 'is_final',
+            'id' => 'order_is_final_v6',
+            'name' => 'is_final__order_is_final_v6',
+            'value' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'key__order_key_v6' => ['order', [
+            'feature' => 'key',
+            'id' => 'order_key_v6',
+            'name' => 'key__order_key_v6',
+            'code' => 6,
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__order_apply_expected_v6_e0_s0' => ['order', [
+            'feature' => 'apply',
+            'id' => 'order_apply_expected_v6_e0_s0',
+            'name' => 'apply__order_apply_expected_v6_e0_s0',
+            'expected_value' => 6,
+            'event' => 'next',
+            'actual' => 'draft',
+            'expect' => [
+                'error' => 'E_UNKNOWN_CODE',
+                'expected' => null,
+                'actual' => null,
+                'event' => null,
+            ],
+        ]];
+        yield 'apply__order_apply_actual_v6_e0_s0' => ['order', [
+            'feature' => 'apply',
+            'id' => 'order_apply_actual_v6_e0_s0',
+            'name' => 'apply__order_apply_actual_v6_e0_s0',
+            'expected' => 'draft',
+            'event' => 'next',
+            'actual_value' => 6,
             'expect' => [
                 'error' => 'E_UNKNOWN_CODE',
                 'expected' => null,
