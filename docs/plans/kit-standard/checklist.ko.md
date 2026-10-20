@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 179f570c371c810e66af5e7d1dd48436e6bdb3cc328723ffd1b684fbbf8ce337 -->
+<!-- source-sha256: a1d00aa7ad231aa9a0c903c443b1c6a15a3e824b15a973bb6c2943fa3a9f3b30 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -41,4 +41,5 @@
 | S-45-14 | config/dependency-review.json을 [none matched] sentinel 없이 다시 기록하고, review 뒤에 바뀐 lock을 기록한다(kit K281) | config/dependency-review.json | `make dependency-policy-check` | [!] 원인: make dependency-review RECORD=1이 멈춘다: polyspec/orm 0.0.18은 PHP >=8.5를 요구하므로 platform 8.4.1의 composer outdated가 그 release를 보고하지 않고(S-45-7), phpunit(13.4.3)과 setuptools(84.2.0)의 더 새로운 stable release가 있으며 이는 마지막에 묶어 하는 upgrade다; 재시도: PHP 8.4용 orm release와 묶음 upgrade 뒤에 make dependency-review UPDATE=1을 실행하고 이어 RECORD=1을 실행한다 |
 | S-45-15 | kit-check: kit의 복사본이 @polyspec/kit과 다시 같다(PRINCIPLES.md, PRINCIPLES.ko.md). make kit-sync가 쓴다 | PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-16 | php 적재기는 machine의 namespace에 함수가 아직 없을 때만 그 함수를 require하므로 library와 extension이 공존한다(S10, B-6) | docs/spec/fsm.md, docs/spec/fsm.ko.md, packages/compiler/src/backends/php.mjs, packages/compiler/tests/php-backend.test.mjs | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/php-backend.json --inputs packages/compiler -- packages/compiler/tests/php-backend.test.mjs` | [o] |
+| S-45-17 | make test-php-ext가 통과한다: extension의 enum은 library의 enum처럼 final이고(S10 선언), packages/php는 test 폴더를 이름 짓는 phpunit.xml.dist를 가진다 | packages/compiler/src/backends/php-ext.mjs, its golden files, packages/php/phpunit.xml.dist, config/layout.yml | `make test-php-ext CASES=Conformance` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [!] 원인: from_code는 모든 구현에서 디코드된 값을 받고 원시 code는 그것을 거친다. go, npm, python, rust는 벡터 290개와 persist id 4개를 통과한다(make parity-check UNITS=...). 그러나 php와 php-ext는 이 환경에서 실행되지 않는다: composer vendor를 GitHub에서 받을 수 없으므로, 그들의 290개 case는 작성되고 php -l로만 검사되었으며 실행되지 않았다; 재시도: CI에서, 또는 php와 php-ext의 composer vendor를 설치한 뒤 여섯 구현 모두에 대해 make parity-check UNITS="vectors persist_concurrent_same_event persist_concurrent_conflict persist_retry_on_deadlock persist_no_retry_on_other_error"가 통과하고, 전체 검사는 CI에서 실행되며, docs/plans/fsm-v1/plan.md C-4가 모든 종류 규칙으로 갱신된다 |

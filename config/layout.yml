@@ -159,6 +159,8 @@ rules:
       - "!packages/php/README.ko.md"
       - "!packages/php/composer.json"
       - "!packages/php/composer.lock"
+      # the PHPUnit configuration of the php package: kit test-php-ext runs the package with the extension loaded and passes only a filter, so the test folder is declared here
+      - "!packages/php/phpunit.xml.dist"
       - "!packages/php/tests/ConformanceCase.php"
       - "!packages/php/tests/ConformanceTest.php"
       - "!packages/php/tests/PersistTest.php"

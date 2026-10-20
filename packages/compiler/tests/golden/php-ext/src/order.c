@@ -402,6 +402,7 @@ zend_result order_minit(void)
 	zend_string *state_name = zend_string_init_interned("Polyspec\\FsmTest\\Order\\State", sizeof("Polyspec\\FsmTest\\Order\\State") - 1, 1);
 
 	order_state_ce = zend_register_internal_enum("Polyspec\\FsmTest\\Order\\State", IS_LONG, order_state_methods);
+	order_state_ce->ce_flags |= ZEND_ACC_FINAL;
 	ZVAL_LONG(&value, 1);
 	zend_enum_add_case_cstr(order_state_ce, "Draft", &value);
 	ZVAL_LONG(&value, 2);
@@ -414,6 +415,7 @@ zend_result order_minit(void)
 	zend_enum_add_case_cstr(order_state_ce, "Canceled", &value);
 
 	order_event_ce = zend_register_internal_enum("Polyspec\\FsmTest\\Order\\Event", IS_LONG, order_event_methods);
+	order_event_ce->ce_flags |= ZEND_ACC_FINAL;
 	ZVAL_LONG(&value, 1);
 	zend_enum_add_case_cstr(order_event_ce, "Next", &value);
 	ZVAL_LONG(&value, 2);

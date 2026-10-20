@@ -4,7 +4,7 @@
 // The output is deterministic: declaration order, tab indentation and a final line break.
 //
 // The extension registers the same public API as the php kind (backends/php.mjs): the enums State and Event of each machine
-// with zend_register_internal_enum, the namespace functions of B-6 with ZEND_NS_NAMED_FE, the final class Step, and the shared
+// with zend_register_internal_enum (final, as a userland enum is), the namespace functions of B-6 with ZEND_NS_NAMED_FE, the final class Step, and the shared
 // Fsm\Code enum and Fsm\Error exception. The machine module of key <m> is the namespace <ns>\<Pascal m>; the shared module
 // is <ns>\Fsm. Each machine is one C file `<m>.c`; `fsm.c` holds the shared classes and the module entry, which calls the
 // init function of every machine in definition order. `<ext>.stub.php` declares the signatures, and the arginfo `<ext>_arginfo.h` is written from it by `make php-ext-arginfo` of kit
@@ -409,9 +409,11 @@ function machineC(ir, phpNs, ext, reserved) {
     `\tzend_string *state_name = zend_string_init_interned(${cLiteral(stateName)}, sizeof(${cLiteral(stateName)}) - 1, 1);`,
     '',
     `\t${p}_state_ce = zend_register_internal_enum(${cLiteral(stateName)}, IS_LONG, ${p}_state_methods);`,
+    `\t${p}_state_ce->ce_flags |= ZEND_ACC_FINAL;`,
     ...states.flatMap(state => [`\tZVAL_LONG(&value, ${state.code});`, `\tzend_enum_add_case_cstr(${p}_state_ce, ${cLiteral(pascal(state.key))}, &value);`]),
     '',
     `\t${p}_event_ce = zend_register_internal_enum(${cLiteral(eventName)}, IS_LONG, ${p}_event_methods);`,
+    `\t${p}_event_ce->ce_flags |= ZEND_ACC_FINAL;`,
     ...events.flatMap((event, index) => [`\tZVAL_LONG(&value, ${index + 1});`, `\tzend_enum_add_case_cstr(${p}_event_ce, ${cLiteral(pascal(event.key))}, &value);`]),
     '',
     `\tINIT_NS_CLASS_ENTRY(ce, ${cLiteral(d.ns)}, "Step", ${p}_step_methods);`,
@@ -537,6 +539,7 @@ function fsmC(phpNs, ext, machines) {
     '\tzval undef;',
     '',
     `\tfsm_code_ce = zend_register_internal_enum(${cLiteral(`${ns}\\Code`)}, IS_STRING, fsm_code_methods);`,
+    '\tfsm_code_ce->ce_flags |= ZEND_ACC_FINAL;',
     ...codes.flatMap(([name, code]) => [
       `\tZVAL_STR(&value, zend_string_init_interned(${cLiteral(code)}, sizeof(${cLiteral(code)}) - 1, 1));`,
       `\tzend_enum_add_case_cstr(fsm_code_ce, ${cLiteral(name)}, &value);`,

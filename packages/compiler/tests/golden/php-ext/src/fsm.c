@@ -101,6 +101,7 @@ zend_result fsm_minit(void)
 	zval undef;
 
 	fsm_code_ce = zend_register_internal_enum("Polyspec\\FsmTest\\Fsm\\Code", IS_STRING, fsm_code_methods);
+	fsm_code_ce->ce_flags |= ZEND_ACC_FINAL;
 	ZVAL_STR(&value, zend_string_init_interned("E_CONFLICT", sizeof("E_CONFLICT") - 1, 1));
 	zend_enum_add_case_cstr(fsm_code_ce, "Conflict", &value);
 	ZVAL_STR(&value, zend_string_init_interned("E_INVALID_TRANSITION", sizeof("E_INVALID_TRANSITION") - 1, 1));
