@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: f8847b19f47298fcfd33c8a80e7a6f07457dd9384e45b2afb1253fb43529cef7 -->
+<!-- source-sha256: 4df2353ffd7668a8522a4516696a1457e1889aa9a8fe782b2b232bff40802bb8 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -21,7 +21,7 @@
 | S-45-6-2-4 | duplication-check: packages/db/tests와 packages/rust/tests의 코드 중복을 각각 한 module로 옮긴다 | packages/db/tests, packages/rust/tests | `make duplication-check` | [o] |
 | S-45-6-2-5 | duplication-check: tests/make-install과 scripts/check-name.mts의 코드 중복을 각각 함수 하나로 옮긴다 | tests/make-install, scripts/check-name.mts | `make duplication-check` | [o] |
 | S-45-6-3 | duplication-check: orm-gen 산출물(packages/db/src/models/models.ts와 packages/*/examples/model)의 중복이 없다 | regenerated models of db, js, go, php, php-ext and python | `make duplication-check` | [o] |
-| S-45-7 | dependency-policy-check: 환경 문제가 아닌 finding은 kit 결함이 정리된 뒤 고친다 | config/dependency-review.json, config/dependency-policy.json | `make dependency-policy-check` | [ ] |
+| S-45-7 | dependency-policy-check: 환경 문제가 아닌 finding은 kit 결함이 정리된 뒤 고친다 | config/dependency-review.json, config/dependency-policy.json | `make dependency-policy-check` | [!] 원인: kit K304-2: link lock packages/php-ext/composer.link.lock이 polyspec/orm과 polyspec/ordered-json을 PHP >=8.5를 요구하는 zip dist로 기록하고(106-109행: type zip, url ../../var/composer-artifacts/polyspec-orm-php-0.0.18.zip) packages/php의 link가 해석되지 않는다(polyspec/orm이 purrphp/yaml 1.0.0-p1을 요구하는데 dev-master와 1.0.0만 있다); 재시도: K304-2가 연결된 package를 로컬 폴더에서 path repository로 해석한 뒤: repository root에서 kit link, 이어 PHP 8.4.26에서 packages/php와 packages/php-ext의 composer update --lock |
 | S-45-7-1 | php와 php-ext의 Composer vendor가 local link를 통해 PHP 8.4.26에서 실행된다: platform_check.php가 PHP >= 8.5.0을 요구하지 않아 lint-php, test-php-ext, parity-check가 실행된다(S-45-7의 vendor와 runtime 부분) | packages/php/vendor and packages/php-ext/vendor (the link, not committed) | `make lint-php` | [o] |
 | S-45-8 | fsm-gen과 orm-gen 산출물은 추적하지 않고 make가 생성한다 | the .gitignore entries, the fsm-<package>-gen prerequisites of every target that reads the output, no gen-check, config/parity.json, config/layout.yml, docs/plans/fsm-v1/plan.md, the README excerpts | `git ls-files packages/go/src \| wc -l` prints 0 | [o] |
 | S-45-8-1 | 생성된 산출물을 읽는 모든 target은 해당 fsm-<package>-gen target에 의존한다 | Makefile, tests/make-install | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts` | [o] |
