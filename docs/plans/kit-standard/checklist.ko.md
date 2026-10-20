@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 9733dcdb261bcdbf426a273aeaa680528d4b8291f9bbdb615666a13c668c16a6 -->
+<!-- source-sha256: 3c6a2caddd64595bf6937c6a1cb192057143cac6fb98a6a85e8c22687b519fdb -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -8,7 +8,7 @@
 | S-45-1 | lint-ts와 lint-js: packages/compiler/tests/rust-backend.test.mjs:131의 불필요한 이스케이프를 제거한다 | packages/compiler/tests/rust-backend.test.mjs | `make lint-ts` | [o] |
 | S-45-2 | lint-go: packages/go/tests/conformance_test.go:112의 사용되지 않는 함수 int32Of를 제거한다 | packages/go/tests/conformance_test.go | `make lint-go` | [o] |
 | S-45-3 | lint-php: 손으로 쓴 php 파일(php와 php-ext의 examples/persist.php, tests/ConformanceCase.php, tests/PersistTest.php)의 줄 길이 경고를 고친다 | packages/php and packages/php-ext hand-written examples and tests | `make lint-php` | [o] |
-| S-45-3-1 | S-45-3 뒤에 ConformanceCase.php의 PHP conformance case가 green으로 실행된다 | packages/php/tests/ConformanceCase.php and its copy in packages/php-ext | `node node_modules/@polyspec/kit/dist/run-tests.mjs phpunit --cwd packages/php --results .results/php-conformance.json --inputs packages/php --inputs contracts/schema/dbspec-set.json -- tests/ConformanceTest.php` | [!] 원인: 이 machine에서 php vendor를 받을 수 없어 PHPUnit이 실행되지 않는다; 재시도: php vendor가 설치되면 |
+| S-45-3-1 | S-45-3 뒤에 ConformanceCase.php의 PHP conformance case가 green으로 실행된다 | packages/php/tests/ConformanceCase.php and its copy in packages/php-ext | `node node_modules/@polyspec/kit/dist/run-tests.mjs phpunit --cwd packages/php --results .results/php-conformance.json --inputs packages/php --inputs contracts/schema/dbspec-set.json -- tests/ConformanceTest.php` | [o] |
 | S-45-4 | lint-php, lint-python: orm-gen 산출물(php examples/model/Item.php와 bootstrap.php, python examples/model/models.py)이 각 생태계 formatter를 통과한다. orm-gen에서 고친 뒤 여기서 다시 생성한다 | regenerated packages/php, packages/php-ext and packages/python examples/model | `make lint-php`, `make lint-python` | [ ] |
 | S-45-5 | lint-php-ext: php 라이브러리는 polyspec/fsm, 확장은 polyspec/fsm-php-ext이고 stub은 polyspec_fsm.stub.php이다 (S10) | packages/php and packages/php-ext names, stub and config.m4 | `make lint-php-ext` | [ ] |
 | S-45-6 | duplication-check: 추적되는 fixture와 golden 출력은 이유와 함께 config/duplication.json에서 제외하고, 코드 중복은 제거한다 | config/duplication.json, compiler backends, store-json, cli, db models | `make duplication-check` | [ ] |
