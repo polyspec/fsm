@@ -229,13 +229,6 @@ fsm-install: install-kit $(PACKAGE_DEPS)
 check:
 	$(NODE) $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)
 
-# commit-msg-check is the check of the commit-msg hook (.githooks/commit-msg): kit's commit check on the message being committed,
-# whose file git passes to the hook as MESSAGE.
-.PHONY: commit-msg-check
-commit-msg-check:
-	@test -n "$(MESSAGE)" || { echo "commit-msg-check: MESSAGE is required: the message file that git passes to the commit-msg hook"; exit 2; }
-	$(NODE) $(KIT)/check-commits.$(KIT_EXT) --message $(MESSAGE)
-
 # make-install-test runs the tests of the package dependencies (tests/make-install): a target that needs a dependency installs it
 # first, and a present dependency is not installed again (docs/plans/fsm-v1/checklist.md, S-29).
 make-install-test:

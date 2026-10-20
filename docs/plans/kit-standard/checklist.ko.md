@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 7371e9056287014e7fe7acef4cb65af3e25ed7136ad559939a79688f2cd22f98 -->
+<!-- source-sha256: 2cbcd6fdb0e33f0589d296b332ade91340f5d957f71911fa6aa3cfe6b2d63d45 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -61,4 +61,5 @@
 | S-45-33 | kit-check: scripts/kit/kit-bootstrap.mk은 tool을 설치한 뒤에 link하는 kit K360-1의 사본이며, make kit-sync가 쓴다 | scripts/kit/kit-bootstrap.mk | `make kit-check` | [o] |
 | S-45-34 | P30: fsm-php-install과 fsm-php-ext-install은 composer install 바로 뒤에 make link를 실행하므로, tracked lock에서 설치한 vendor가 link를 대신하지 않는다(kit link-state-check는 $(COMPOSER) install을 놓쳤다) | Makefile, tests/make-install/make-install.test.mts | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts` | [o] |
 | S-45-35 | fsm은 74d2e87a의 kit 사본을 받는다(K348 K385 K384 K383 K380 K382 K375): make kit-sync와 make hooks를 실행하며, kit의 commit-msg hook이 fsm의 hook을 대신한다(K380) | the copies of kit, .githooks | `make kit-check` | [o] |
+| S-45-36 | kit의 commit-msg hook(K380)은 kit의 commit-msg-hook을 실행하므로, 더 이상 어떤 hook이나 recipe도 부르지 않는 fsm Makefile의 commit-msg-check target을 지운다 | Makefile | `make hooks-check`, node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
