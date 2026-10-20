@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 6f6845fe0b3bbc25a4986f620fb72ef96cdb5f3f1855de68f01b117ee485bb5e -->
+<!-- source-sha256: 3a928f44bdfddb79abce43d51df06ea3582f9ca7d534ad3f3bffa8ad1886b095 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -14,7 +14,7 @@
 | S-45-5-1 | php-ext는 추적하는 설정의 상대 경로 없이 PHP package의 PHPUnit 파일을 실행한다(autoload-dev ../php, Makefile의 ../php/tests 인자) | packages/php-ext/composer.json, Makefile | `make lint-php-ext` | [!] 원인: kit K285: php-ext의 test root가 packages/php/tests임을 kit이 알아야 설정에 상대 경로가 필요 없다; 재시도: K285가 연결된 kit에 들어온 뒤 |
 | S-45-6 | duplication-check: 추적되는 fixture와 golden 출력은 이유와 함께 config/duplication.json에서 제외하고, 코드 중복은 제거한다 | config/duplication.json, compiler backends, store-json, cli, db models | `make duplication-check` | [ ] |
 | S-45-6-1 | duplication-check: compiler backend의 golden 출력을 이유와 함께 config/duplication.json에서 제외한다 | config/duplication.json | `make duplication-check` | [o] |
-| S-45-6-2 | duplication-check: compiler, db, gui와 그 test의 코드 중복을 각각 한 module로 옮긴다 | packages/compiler, packages/db, packages/gui sources and tests | `make duplication-check` | [ ] |
+| S-45-6-2 | duplication-check: compiler, db, gui와 그 test의 코드 중복을 각각 한 module로 옮긴다 | packages/compiler, packages/db, packages/gui sources and tests | `make duplication-check` | [o] |
 | S-45-6-2-1 | duplication-check: packages/compiler/src의 코드 중복과 packages/db/src와 공유하는 command line의 중복을 각각 한 module로 옮긴다 | packages/compiler/src, packages/db/src/cli | `make duplication-check` | [o] |
 | S-45-6-2-2 | duplication-check: packages/compiler/tests의 코드 중복을 각각 helper 하나로 옮긴다 | packages/compiler/tests | `make duplication-check` | [o] |
 | S-45-6-2-3 | duplication-check: packages/gui/src와 packages/gui/tests의 코드 중복을 각각 한 module로 옮긴다 | packages/gui | `make duplication-check` | [o] |
