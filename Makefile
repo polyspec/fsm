@@ -158,13 +158,15 @@ fsm-php-ext-install:
 	$(MAKE) release-assets-fetch
 	cd packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
 
-# fsm-php-ext-gen writes the generated files of the extension (src/). The extension has no test of its own: kit's test-php-ext runs the
+# fsm-php-ext-gen writes the generated files of the extension (src/): fsm-gen writes the C files and the stub, and kit's php-ext-arginfo
+# writes the arginfo header from the stub with the gen_stub.php of the PHP (ONLINE: it downloads its PHP-Parser once). The extension has no test of its own: kit's test-php-ext runs the
 # PHPUnit files of packages/php with the extension that kit's build-php-ext built from src/, so the model of the php package is
 # generated first.
 fsm-php-ext-gen: $(PHP_EXT_DEP) fsm-php-gen
 fsm-php-ext-gen:
 	mkdir -p packages/php-ext/src
 	$(FSM_GEN) gen --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --php-ext-name $(PHP_EXT_NAME) --out packages/php-ext/src
+	$(MAKE) php-ext-arginfo
 
 # fsm-python-install makes the venv .venv with the Python of the checkout, var/tools/mise/shims/python3, which install-tools
 # installs with uv. The venv is made by kit's python-venv, and uv fills it with --link-mode copy: the locked packages of pylock.toml

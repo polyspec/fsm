@@ -7,7 +7,7 @@
 // line passes are refused when they are not valid.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -21,7 +21,6 @@ const NAMES = [
   'order.c',
   'fsm.c',
   'php_polyspec_fsm.h',
-  'polyspec_fsm_arginfo.h',
   'polyspec_fsm.stub.php',
   'config.m4',
 ];
@@ -85,23 +84,4 @@ test('every name of the output derives from the namespace and the extension name
   const fsm = out.find(file => file.path === 'fsm.c').content;
   assert.match(fsm, /^ZEND_METHOD\(Acme_Tool_Fsm_Error, __construct\)$/m);
   assert.match(fsm, /^\tZEND_ME\(Acme_Tool_Fsm_Error, __construct, /m);
-});
-
-test('the extension builds with phpize, ./configure and make under a second name, and its namespace is registered', async (t) => {
-  const dir = mkdtempSync(path.join(tmpdir(), 'fsm-php-ext-build-'));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  const { irs, lock } = await orderIrs();
-  for (const file of files(irs, lock, { phpNamespace: OTHER_NAMESPACE, phpExtName: OTHER_EXT })) {
-    const target = path.join(dir, file.path);
-    mkdirSync(path.dirname(target), { recursive: true });
-    writeFileSync(target, file.content);
-  }
-  for (const [command, args] of [['phpize', []], [path.join(dir, 'configure'), ['--enable-acme-tool']], ['make', []]]) {
-    const run = spawnSync(command, args, { cwd: dir, encoding: 'utf8' });
-    assert.equal(run.status, 0, `${command}: ${run.stdout}${run.stderr}`);
-  }
-  const module = path.join(dir, 'modules', `${OTHER_EXT}.so`);
-  assert.ok(existsSync(module), `${module} is built`);
-  const smoke = spawnSync('php', ['-n', '-d', `extension=${module}`, '-r', 'echo \\Acme\\Tool\\Order\\State::Draft->value, "\\n";'], { encoding: 'utf8' });
-  assert.deepEqual([smoke.status, smoke.stdout], [0, '1\n'], smoke.stderr);
 });

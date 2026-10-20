@@ -24,7 +24,10 @@ namespace Polyspec\FsmTest\Order {
 
     final class Step
     {
-        public function __construct(public readonly State $to, public readonly bool $changed) {}
+        public readonly State $to;
+        public readonly bool $changed;
+
+        public function __construct(State $to, bool $changed) {}
     }
 
     function initial(): State {}

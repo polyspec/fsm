@@ -7,8 +7,9 @@
 // with zend_register_internal_enum, the namespace functions of B-6 with ZEND_NS_NAMED_FE, the final class Step, and the shared
 // Fsm\Code enum and Fsm\Error exception. The machine module of key <m> is the namespace <ns>\<Pascal m>; the shared module
 // is <ns>\Fsm. Each machine is one C file `<m>.c`; `fsm.c` holds the shared classes and the module entry, which calls the
-// init function of every machine in definition order. The arginfo of every function and method is `<ext>_arginfo.h`, written
-// directly here (no php gen_stub run), and `<ext>.stub.php` declares the same signatures for editors.
+// init function of every machine in definition order. `<ext>.stub.php` declares the signatures, and the arginfo `<ext>_arginfo.h` is written from it by `make php-ext-arginfo` of kit
+// with the gen_stub.php of the PHP, so the C code names the arginfo that gen_stub names (arginfo_<namespace>_<function>,
+// arginfo_class_<namespace>_<class>_<method>).
 //
 // The language-forced differences from the php kind: the functions are C functions that read the backing value of an enum case
 // (its code, or its event index) and return the case object of a value with zend_enum_get_case_by_value, so no state is stored
@@ -388,7 +389,7 @@ function machineC(ir, phpNs, ext, reserved) {
     '};',
     '',
     `static const zend_function_entry ${p}_step_methods[] = {`,
-    `\tZEND_ME(${token}_Step, __construct, arginfo_${p}_step___construct, ZEND_ACC_PUBLIC)`,
+    `\tZEND_ME(${token}_Step, __construct, arginfo_class_${token}_Step___construct, ZEND_ACC_PUBLIC)`,
     '\tZEND_FE_END',
     '};',
     '',
@@ -396,7 +397,7 @@ function machineC(ir, phpNs, ext, reserved) {
     ...[
       ['initial', 'initial'], ['code', 'code'], ['key', 'key'], ['fromCode', 'from_code'],
       ['isFinal', 'is_final'], ['eventsFrom', 'events_from'], ['target', 'target'], ['apply', 'apply'],
-    ].map(([php, c]) => `\tZEND_NS_NAMED_FE(${cLiteral(d.ns)}, ${php}, zif_${p}_${c}, arginfo_${p}_${c})`),
+    ].map(([php, c]) => `\tZEND_NS_NAMED_FE(${cLiteral(d.ns)}, ${php}, zif_${p}_${c}, arginfo_${token}_${php})`),
     '\tZEND_FE_END',
     '};',
     '',
@@ -525,7 +526,7 @@ function fsmC(phpNs, ext, machines) {
     '}',
     '',
     'static const zend_function_entry fsm_error_methods[] = {',
-    `\tZEND_ME(${errorClass}, __construct, arginfo_fsm_error___construct, ZEND_ACC_PUBLIC)`,
+    `\tZEND_ME(${errorClass}, __construct, arginfo_class_${errorClass}___construct, ZEND_ACC_PUBLIC)`,
     '\tZEND_FE_END',
     '};',
     '',
@@ -611,69 +612,6 @@ function headerFile(phpNs, ext, machines) {
   ]);
 }
 
-/** The arginfo of every function and method, written directly (the signatures of the php kind's functions.php and Fsm). */
-function arginfoFile(irs, phpNs) {
-  const lines = [header(SHARED), ''];
-  for (const ir of irs) {
-    const d = describe(ir, phpNs);
-    const state = cText(`${d.ns}\\State`);
-    const event = cText(`${d.ns}\\Event`);
-    const step = cText(`${d.ns}\\Step`);
-    const p = ir.machine;
-    lines.push(
-      `ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_${p}_initial, 0, 0, ${state}, 0)`,
-      'ZEND_END_ARG_INFO()',
-      '',
-      `ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_${p}_code, 0, 1, IS_LONG, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, state, ${state}, 0)`,
-      'ZEND_END_ARG_INFO()',
-      '',
-      `ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_${p}_key, 0, 1, IS_STRING, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, state, ${state}, 0)`,
-      'ZEND_END_ARG_INFO()',
-      '',
-      `ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_${p}_from_code, 0, 1, ${state}, 0)`,
-      '\tZEND_ARG_INFO(0, value)',
-      'ZEND_END_ARG_INFO()',
-      '',
-      `ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_${p}_is_final, 0, 1, _IS_BOOL, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, state, ${state}, 0)`,
-      'ZEND_END_ARG_INFO()',
-      '',
-      `ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_${p}_events_from, 0, 1, IS_ARRAY, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, state, ${state}, 0)`,
-      'ZEND_END_ARG_INFO()',
-      '',
-      `ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_${p}_target, 0, 2, ${state}, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, expected, ${state}, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, event, ${event}, 0)`,
-      'ZEND_END_ARG_INFO()',
-      '',
-      `ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_${p}_apply, 0, 3, ${step}, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, expected, ${state}, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, event, ${event}, 0)`,
-      `\tZEND_ARG_OBJ_INFO(0, actual, ${state}, 0)`,
-      'ZEND_END_ARG_INFO()',
-      '',
-      `ZEND_BEGIN_ARG_INFO_EX(arginfo_${p}_step___construct, 0, 0, 2)`,
-      `\tZEND_ARG_OBJ_INFO(0, to, ${state}, 0)`,
-      '\tZEND_ARG_TYPE_INFO(0, changed, _IS_BOOL, 0)',
-      'ZEND_END_ARG_INFO()',
-      '',
-    );
-  }
-  lines.push(
-    'ZEND_BEGIN_ARG_INFO_EX(arginfo_fsm_error___construct, 0, 0, 2)',
-    `\tZEND_ARG_OBJ_INFO(0, code, ${cText(`${phpNs}\\${pascal(SHARED)}\\Code`)}, 0)`,
-    '\tZEND_ARG_TYPE_INFO(0, message, IS_STRING, 0)',
-    '\tZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, expected, IS_LONG, 1, "null")',
-    '\tZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, actual, IS_LONG, 1, "null")',
-    '\tZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, event, IS_LONG, 1, "null")',
-    'ZEND_END_ARG_INFO()',
-  );
-  return text(lines);
-}
-
 /** The stub php_<ext>.stub.php: the declarations of the namespaces, for editors and static analysis; it is never run. */
 function stubFile(irs, phpNs) {
   const lines = [
@@ -701,7 +639,10 @@ function stubFile(irs, phpNs) {
       '',
       '    final class Step',
       '    {',
-      '        public function __construct(public readonly State $to, public readonly bool $changed) {}',
+      '        public readonly State $to;',
+      '        public readonly bool $changed;',
+      '',
+      '        public function __construct(State $to, bool $changed) {}',
       '    }',
       '',
       '    function initial(): State {}',
@@ -755,7 +696,7 @@ function configM4(irs, ext) {
 
 /**
  * The files of the php-ext package `src/` for the machines `irs` (their IRs in definition order), the lock and the options
- * { phpNamespace, phpExtName }: <machine>.c per machine, then fsm.c, the header php_<ext>.h, the arginfo <ext>_arginfo.h,
+ * { phpNamespace, phpExtName }: <machine>.c per machine, then fsm.c, the header php_<ext>.h,
  * the stub <ext>.stub.php and config.m4. Each file is { path, content }, with the path relative to src/.
  */
 export function files(irs, lock, { phpNamespace, phpExtName } = {}) {
@@ -769,7 +710,6 @@ export function files(irs, lock, { phpNamespace, phpExtName } = {}) {
   const machines = irs.map(ir => ir.machine);
   out.push({ path: 'fsm.c', content: fsmC(phpNs, ext, machines) });
   out.push({ path: `php_${ext}.h`, content: headerFile(phpNs, ext, machines) });
-  out.push({ path: `${ext}_arginfo.h`, content: arginfoFile(irs, phpNs) });
   out.push({ path: `${ext}.stub.php`, content: stubFile(irs, phpNs) });
   out.push({ path: 'config.m4', content: configM4(irs, ext) });
   return out;

@@ -378,19 +378,19 @@ static const zend_function_entry order_event_methods[] = {
 };
 
 static const zend_function_entry order_step_methods[] = {
-	ZEND_ME(Polyspec_FsmTest_Order_Step, __construct, arginfo_order_step___construct, ZEND_ACC_PUBLIC)
+	ZEND_ME(Polyspec_FsmTest_Order_Step, __construct, arginfo_class_Polyspec_FsmTest_Order_Step___construct, ZEND_ACC_PUBLIC)
 	ZEND_FE_END
 };
 
 static const zend_function_entry order_functions[] = {
-	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", initial, zif_order_initial, arginfo_order_initial)
-	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", code, zif_order_code, arginfo_order_code)
-	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", key, zif_order_key, arginfo_order_key)
-	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", fromCode, zif_order_from_code, arginfo_order_from_code)
-	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", isFinal, zif_order_is_final, arginfo_order_is_final)
-	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", eventsFrom, zif_order_events_from, arginfo_order_events_from)
-	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", target, zif_order_target, arginfo_order_target)
-	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", apply, zif_order_apply, arginfo_order_apply)
+	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", initial, zif_order_initial, arginfo_Polyspec_FsmTest_Order_initial)
+	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", code, zif_order_code, arginfo_Polyspec_FsmTest_Order_code)
+	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", key, zif_order_key, arginfo_Polyspec_FsmTest_Order_key)
+	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", fromCode, zif_order_from_code, arginfo_Polyspec_FsmTest_Order_fromCode)
+	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", isFinal, zif_order_is_final, arginfo_Polyspec_FsmTest_Order_isFinal)
+	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", eventsFrom, zif_order_events_from, arginfo_Polyspec_FsmTest_Order_eventsFrom)
+	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", target, zif_order_target, arginfo_Polyspec_FsmTest_Order_target)
+	ZEND_NS_NAMED_FE("Polyspec\\FsmTest\\Order", apply, zif_order_apply, arginfo_Polyspec_FsmTest_Order_apply)
 	ZEND_FE_END
 };
 

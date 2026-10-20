@@ -90,7 +90,7 @@ ZEND_METHOD(Polyspec_FsmTest_Fsm_Error, __construct)
 }
 
 static const zend_function_entry fsm_error_methods[] = {
-	ZEND_ME(Polyspec_FsmTest_Fsm_Error, __construct, arginfo_fsm_error___construct, ZEND_ACC_PUBLIC)
+	ZEND_ME(Polyspec_FsmTest_Fsm_Error, __construct, arginfo_class_Polyspec_FsmTest_Fsm_Error___construct, ZEND_ACC_PUBLIC)
 	ZEND_FE_END
 };
 
