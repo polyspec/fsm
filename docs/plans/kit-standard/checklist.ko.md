@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: e67f36de40003c3fc77d6715642fdd53b6dfa71b5b7e7d6e9842e52df35d60c0 -->
+<!-- source-sha256: 42e054d352f2d6568bf002161afa2374cf39b747ed5bc84c6f03644c102f4945 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -48,4 +48,5 @@
 | S-45-21 | kit-check: CHECK_TARGETS가 bypass-check를 실행하고 kit의 복사본(PRINCIPLES, config/php-lint)이 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md, config/php-lint | `make kit-check` | [o] |
 | S-45-22 | kit-check: PRINCIPLES 복사본이 @polyspec/kit과 다시 같다 | PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-23 | divergence-check(kit K315, P32): config/duplication.json의 모든 예외와 config/parity.json의 tools는 kit의 kind로 시작하는 이유를 가진다. CHECK_TARGETS가 divergence-check를 실행한다 | config/duplication.json, config/parity.json, Makefile | `make divergence-check` | [o] |
+| S-45-24 | php와 php-ext의 composer.json이 polyspec/orm이 1.0.0-p1로 요구하는 purrphp/yaml fork의 vcs repository(https://github.com/min-0-max/yaml, no-api)를 선언한다 | packages/php/composer.json, packages/php-ext/composer.json | `composer validate --strict packages/php/composer.json` | [!] 원인: 선언은 추가했다. 해석은 link lock을 통해서만 보이는데 kit K304-2가 이를 PHP >=8.5를 요구하는 zip dist로 기록하므로 composer update --lock이 purrphp/yaml에 닿기 전에 그 요구에서 멈춘다; 재시도: K304-2 뒤: repository root에서 kit link, 이어 packages/php와 packages/php-ext의 composer update --lock이 vcs repository에서 purrphp/yaml 1.0.0-p1을 해석한다 |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |

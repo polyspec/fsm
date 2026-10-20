@@ -14,6 +14,11 @@
         {
             "type": "artifact",
             "url": "../../var/composer-artifacts"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/min-0-max/yaml",
+            "no-api": true
         }
     ],
     "autoload": {
