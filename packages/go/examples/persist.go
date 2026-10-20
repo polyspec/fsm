@@ -7,6 +7,8 @@
 package examples
 
 import (
+	"errors"
+
 	"github.com/polyspec/orm/packages/go/orm"
 	_ "github.com/polyspec/orm/packages/go/orm/pg"
 	_ "github.com/polyspec/orm/packages/go/orm/sqlite"
@@ -26,8 +28,7 @@ func Open(dsn string) (*orm.DB, error) {
 		return nil, err
 	}
 	if err := db.Utils().Schema().Install(model.Schema); err != nil {
-		_ = db.Close()
-		return nil, err
+		return nil, errors.Join(err, db.Close())
 	}
 	return db, nil
 }
