@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The .gitignore ignores go.work and go.work.sum, which kit link writes for each Go module (S-45-26)
 - The php loader functions.php requires the functions of every machine with no function_exists guard, and packages/php/phpunit.xml.dist names no bootstrap, so the extension run loads the PHPUnit files of the library and none of its sources (S-45-25)
 - S-45-23: the exception of `config/duplication.json` (the golden outputs, `fixture:`) and the four tools of `config/parity.json` (the node tests of the compiler, the db store, the GUI and the root tools, `test:`) carry a reason that begins with a kind of kit, and `CHECK_TARGETS` runs `divergence-check`. RED `make divergence-check` exit 2, 5 divergences ("gives a reason of no kind that kit defines") and `make kit-check` exit 2 ("CHECK_TARGETS runs no divergence-check"); GREEN both exit 0, `make duplication-check` and `make parity-declarations-check` still exit 0. This item also corrects S-45-22, whose line says kit-check exit 0 after the sync while it still lacked this gate. (S-45-23)
 - S-45-22: `make kit-sync` wrote the current text of PRINCIPLES.md and PRINCIPLES.ko.md. RED `make kit-check` exit 2, 2 findings (the copies differ); GREEN exit 0. (S-45-22)

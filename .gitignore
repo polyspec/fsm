@@ -53,3 +53,7 @@ __pycache__/
 test-results/
 playwright-report/
 coverage/
+
+# The go.work that kit link writes for each Go module (kit local-links)
+go.work
+go.work.sum
