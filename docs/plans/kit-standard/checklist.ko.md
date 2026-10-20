@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: c01c65226ff8e23c81b55bed14d78791443800385da15083b0edac9b4894309d -->
+<!-- source-sha256: ff6560a7c2b99e4264e9afc413a7d9d97cc168d5c1fd17952599e296b073d607 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -57,4 +57,5 @@
 | S-45-28 | lint-go: go example의 Open은 errors.Join으로 database를 닫고, 오류를 _에 대입하지 않는다 | packages/go/examples/persist.go | `make lint-go` | [o] |
 | S-45-31 | lint-php (S2): php generator는 require만 하는 loader src/functions.php를 쓰지 않는다. composer autoload files는 generator가 밝히는 각 machine의 namespaced functions.php를 직접 나열한다(plan.md C-3 표, spec B-6) | packages/compiler/src/backends/php.mjs, packages/compiler/tests/php-backend.test.mjs, the php golden files, packages/php/composer.json, docs/plans/fsm-v1/plan.md, docs/spec/fsm.md and their Korean twins | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/php-backend.json --inputs packages/compiler -- packages/compiler/tests/php-backend.test.mjs`, `node node_modules/@polyspec/kit/dist/run-tests.mjs phpunit --cwd packages/php --results .results/php-conformance.json --inputs packages/php --inputs contracts/conformance/vectors.json -- tests/ConformanceTest.php` | [ ] |
 | S-45-32 | kit-check와 layout-check: kit 사본이 다시 일치하며 make kit-sync가 쓴다. kit K356의 config/layout.kit.yml은 root의 clippy.toml을 선언하고, kit K360의 scripts/kit/kit-bootstrap.mk는 npm ci 뒤에 저장소 옆 kit checkout의 link를 실행한다 | config/layout.kit.yml, scripts/kit/kit-bootstrap.mk | `make kit-check`, `make layout-check` | [o] |
+| S-45-33 | kit-check: scripts/kit/kit-bootstrap.mk은 tool을 설치한 뒤에 link하는 kit K360-1의 사본이며, make kit-sync가 쓴다 | scripts/kit/kit-bootstrap.mk | `make kit-check` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |

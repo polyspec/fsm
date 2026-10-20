@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 815badf3b51f0434dab998eaba3940db82315a5f0a2840e728b970ed2b13618a -->
+<!-- source-sha256: 0810a38ff954846d050afd047adea0fecedeeed63165a7e1373addf106d6ffcc -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-33: `make kit-sync`가 tool을 설치한 뒤에 link하는 kit K360-1의 scripts/kit/kit-bootstrap.mk를 썼다. RED `make kit-check` exit 2("scripts/kit/kit-bootstrap.mk: differs"); GREEN exit 0. (S-45-33)
 - S-45-7: lock 항목은 S-45-14와 함께 닫힌다. php와 php-ext의 lock은 link lock으로 판정하며(kit K326, K326-1), 남은 한 finding인 review 기록은 S-45-14에서 다시 기록했다. GREEN `make dependency-policy-check` exit 0. (S-45-7)
 - S-45-14: kit K365 이후 연결된 lock에 대해 `make dependency-review RECORD=1`로 config/dependency-review.json을 다시 기록한다(packages/php와 packages/php-ext의 phpunit 13.4.3). RED `make dependency-policy-check` exit 2, lock은 phpunit 13.4.3인데 기록은 두 package 모두 13.4.2; GREEN exit 0. (S-45-14)
 - S-45-32: `make kit-sync`가 kit 사본을 다시 썼다. kit K356의 `config/layout.kit.yml`은 root의 `clippy.toml`을 선언하고, kit K360의 `scripts/kit/kit-bootstrap.mk`는 `npm ci` 바로 뒤에 저장소 옆 kit checkout의 link를 실행한다. RED efa614b에서 `make kit-check` exit 2("config/layout.kit.yml: differs"), `make layout-check` exit 2("clippy.toml: a file at the root that the layout does not declare"); GREEN 둘 다 exit 0("all rules passed"). (S-45-32)
