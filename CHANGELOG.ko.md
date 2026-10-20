@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6ad13572df18d972397d0c4b114102a0cad2e9da320b3d5060dea9c2d9b880dd -->
+<!-- source-sha256: 4106a92ebfe42445332c8753d5c4b6443510d73bfacc5bad688e902d0a2c49e5 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-20: kit K305-1이 P30의 gate 이름을 `link-state-check`("0.0.x인 설치된 polyspec package는 모두 해석되는 link다")로 바꾸었으므로 `CHECK_TARGETS`는 `link-metadata-check` 대신 `link-state-check`를 실행하고 `make kit-sync`가 새 P30 문구를 썼다. RED `make kit-check` exit 2(복사본이 다르고 gate가 없다), `make rules-check` "make link-metadata-check is no target"; GREEN `make kit-check` exit 0과 `make link-state-check` exit 0. (S-45-20)
 - S-45-18: `CHECK_TARGETS`가 `link-metadata-check`(P30, kit K305)를 실행하고, PRINCIPLES 복사본이 P30을 가지며(`make kit-sync`), repository root에서 다시 실행한 `kit link`(`--project`를 쓰면 중첩된 Composer project를 건너뛴다)가 연결된 polyspec/ordered-json의 autoload를 두 vendor에 기록한다. RED `make kit-check` exit 2, "CHECK_TARGETS runs no link-metadata-check"이고 `make link-metadata-check` exit 2, finding 2개(installed.json의 autoload가 연결된 source와 다르다); GREEN `make kit-check` exit 0과 `make link-metadata-check` exit 0, "every linked package carries the metadata of its source". (S-45-18)
 - S-46: `config/parity.json`의 모든 unit이 모든 implementation에서 성립한다: `from_code`는 decode된 값을 받고 raw code는 여섯 kind 모두에서 이를 거친다(S-45-8-4부터 S-45-8-8이 실행할 때 vector 파일을 읽는다). plan C-4는 두 언어로 모든 kind의 규칙을 말하며(`kinds` 필드 없음, kind별 허용 없음, 모든 kind에서 290개 case), php와 php-ext의 case가 이제 실행된다: vectors unit과 persist id 네 개의 `make parity-check`가 여섯 implementation 모두에서 통과하고(binding 12개가 두 번씩 실행, 1764 case) `make parity-declarations-check`는 exit 0이다. RED `make parity-declarations-check`는 0이었으나 php의 전 kind 실행은 이 checkout에서 한 번도 실행되지 않았다(php vendor가 platform 검사에서 멈췄다); GREEN 다섯 unit이 여섯 implementation 모두에서 실행된다. (S-46)
 - S-45-7-1: S-45-5-1과 S-45-17 뒤에 완료: PHP lock 항목의 vendor와 runtime 부분에는 열린 원인이 없으며 commit되는 lock의 재해결은 S-45-7에 남는다. (S-45-7-1)
