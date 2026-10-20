@@ -6,10 +6,11 @@
 // prints the recipes, so no network is used and nothing is installed. The package targets are targets of the root Makefile (K245).
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { cleanEnv, copyMakeFiles, lineIndex } from '../support/make-sandbox.mts';
 import { put, tree } from '../support/tree.mts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -38,21 +39,9 @@ const LOCKS = [
 /** A copy of the Makefile and of the files that it reads, without any installed dependency. */
 function sandbox(t: TestContext): string {
   const dir = tree(t, {});
-  for (const file of ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json']) {
-    mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
-    copyFileSync(path.join(ROOT, file), path.join(dir, file));
-  }
+  copyMakeFiles(ROOT, dir);
   put(dir, Object.fromEntries(LOCKS.map(file => [file, '\n'])));
   return dir;
-}
-
-/** The environment of a make run, with no inherited make flags. */
-function cleanEnv() {
-  const env = { ...process.env };
-  delete env.MAKEFLAGS;
-  delete env.MAKELEVEL;
-  delete env.MFLAGS;
-  return env;
 }
 
 /** The result of `make -n <goal>` in dir, with no inherited make flags. */
@@ -65,11 +54,6 @@ function printed(dir: string, goal: string): string {
   const result = dryRun(dir, goal);
   assert.equal(result.status, 0, `make -n ${goal} failed:\n${result.stdout}${result.stderr}`);
   return result.stdout;
-}
-
-/** The index of the first line of `output` that matches `pattern`, or -1. */
-function lineIndex(output: string, pattern: RegExp): number {
-  return output.split('\n').findIndex(line => pattern.test(line));
 }
 
 test('the interpreter var/tools/mise/shims/python3 is made by install-tools, never by uv', (t) => {

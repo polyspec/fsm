@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 7ca9fe23b1544b748ac546896126578374a4c2e7c62524fb71a930c9ffa48867 -->
+<!-- source-sha256: 6f6845fe0b3bbc25a4986f620fb72ef96cdb5f3f1855de68f01b117ee485bb5e -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -19,7 +19,7 @@
 | S-45-6-2-2 | duplication-check: packages/compiler/tests의 코드 중복을 각각 helper 하나로 옮긴다 | packages/compiler/tests | `make duplication-check` | [o] |
 | S-45-6-2-3 | duplication-check: packages/gui/src와 packages/gui/tests의 코드 중복을 각각 한 module로 옮긴다 | packages/gui | `make duplication-check` | [o] |
 | S-45-6-2-4 | duplication-check: packages/db/tests와 packages/rust/tests의 코드 중복을 각각 한 module로 옮긴다 | packages/db/tests, packages/rust/tests | `make duplication-check` | [o] |
-| S-45-6-2-5 | duplication-check: tests/make-install과 scripts/check-name.mts의 코드 중복을 각각 함수 하나로 옮긴다 | tests/make-install, scripts/check-name.mts | `make duplication-check` | [ ] |
+| S-45-6-2-5 | duplication-check: tests/make-install과 scripts/check-name.mts의 코드 중복을 각각 함수 하나로 옮긴다 | tests/make-install, scripts/check-name.mts | `make duplication-check` | [o] |
 | S-45-6-3 | duplication-check: orm-gen 산출물(packages/db/src/models/models.ts와 packages/*/examples/model)의 중복이 없다 | regenerated models of db, js, go, php, php-ext and python | `make duplication-check` | [o] |
 | S-45-7 | dependency-policy-check: 환경 문제가 아닌 finding은 kit 결함이 정리된 뒤 고친다 | config/dependency-review.json, config/dependency-policy.json | `make dependency-policy-check` | [ ] |
 | S-45-8 | fsm-gen과 orm-gen 산출물은 추적하지 않고 make가 생성한다 | the .gitignore entries, the fsm-<package>-gen prerequisites of every target that reads the output, no gen-check, config/parity.json, config/layout.yml, docs/plans/fsm-v1/plan.md, the README excerpts | `git ls-files packages/go/src \| wc -l` prints 0 | [o] |

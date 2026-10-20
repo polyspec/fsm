@@ -1,5 +1,5 @@
 // What the tests of the command line of fsm-gen share: the temporary directories that are removed when the file's tests end, a
-// project directory made from a map of files, and the run of fsm-gen with its status, stdout and stderr.
+// project directory made from a map of files, and the run of fsm-gen with its exit code, stdout and stderr.
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

@@ -10,8 +10,8 @@
 // one, and 2 on a usage error. The sections of each kind are the user's questions that the README answers (docs/plans/fsm-v1/plan.md, R11).
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import { rootOption } from './root-option.mts';
 
 /** A README pair: its kind, the English file, its Korean twin and the `##` sections the English file must hold. */
 export interface ReadmePair {
@@ -158,15 +158,8 @@ export function readmeFindings(root: string): ReadmeFinding[] {
 }
 
 function main(argv: string[]): number {
-  let options: { root?: string | undefined };
-  try {
-    options = parseArgs({ args: argv, options: { root: { type: 'string' } }, strict: true }).values;
-  } catch (error) {
-    if (!(error instanceof Error)) throw error;
-    process.stderr.write(`usage: check-readmes.mts [--root <dir>] (${error.message})\n`);
-    return 2;
-  }
-  const root = path.resolve(options.root ?? path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
+  const root = rootOption('check-readmes', argv, import.meta.url);
+  if (root === undefined) return 2;
   const findings = readmeFindings(root);
   for (const finding of findings) process.stderr.write(`[check-readmes] ${finding.file}: ${finding.message}\n`);
   if (findings.length > 0) {

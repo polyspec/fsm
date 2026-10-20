@@ -5,10 +5,11 @@
 // of each dependency and, per case, the installed stamps. No dependency is installed and no network is used: make only prints the recipes.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, utimesSync } from 'node:fs';
+import { utimesSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { cleanEnv, copyMakeFiles, lineIndex } from '../support/make-sandbox.mts';
 import { put, tree } from '../support/tree.mts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -107,10 +108,7 @@ const ALL = [...INSTALL.keys()];
 /** A copy of the Makefile and of the files it reads, with empty locks; `installed` adds the stamps, each newer than its lock. */
 function sandbox(t: TestContext, { installed = false }: { installed?: boolean } = {}): string {
   const dir = tree(t, {});
-  for (const file of ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json']) {
-    mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
-    copyFileSync(path.join(ROOT, file), path.join(dir, file));
-  }
+  copyMakeFiles(ROOT, dir);
   put(dir, Object.fromEntries(LOCKS.map(file => [file, '\n'])));
   // The GUI lock names the pinned Playwright version, which keys the browser stamp (S-29-1).
   put(dir, { 'packages/gui/package-lock.json': JSON.stringify({ packages: { 'node_modules/playwright': { version: PLAYWRIGHT } } }) });
@@ -128,18 +126,9 @@ function sandbox(t: TestContext, { installed = false }: { installed?: boolean } 
 
 /** The output of `make -n <goal>` in dir, with no inherited make flags. Every recipe line is printed and no recipe runs. */
 function dryRun(dir: string, goal: string): string {
-  const env = { ...process.env };
-  delete env.MAKEFLAGS;
-  delete env.MAKELEVEL;
-  delete env.MFLAGS;
-  const result = spawnSync('make', ['-n', ...goal.split(' ')], { cwd: dir, encoding: 'utf8', env });
+  const result = spawnSync('make', ['-n', ...goal.split(' ')], { cwd: dir, encoding: 'utf8', env: cleanEnv() });
   assert.equal(result.status, 0, `make -n ${goal} failed:\n${result.stdout}${result.stderr}`);
   return result.stdout;
-}
-
-/** The index of the first line of `output` that matches `pattern`, or -1. */
-function lineIndex(output: string, pattern: RegExp): number {
-  return output.split('\n').findIndex(line => pattern.test(line));
 }
 
 /** The targets of the full-run line of `make -n check`, which must print it. */

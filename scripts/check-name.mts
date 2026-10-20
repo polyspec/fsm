@@ -13,10 +13,10 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import kitPackage from '@polyspec/kit/package.json' with { type: 'json' };
 import picomatch from 'picomatch';
+import { rootOption } from './root-option.mts';
 
 const NAME = /status/i;
 
@@ -137,15 +137,8 @@ export function nameFindings(root: string): NameFinding[] {
 }
 
 function main(argv: string[]): number {
-  let options: { root?: string | undefined };
-  try {
-    options = parseArgs({ args: argv, options: { root: { type: 'string' } }, strict: true }).values;
-  } catch (error) {
-    if (!(error instanceof Error)) throw error;
-    process.stderr.write(`usage: check-name.mts [--root <dir>] (${error.message})\n`);
-    return 2;
-  }
-  const root = path.resolve(options.root ?? path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
+  const root = rootOption('check-name', argv, import.meta.url);
+  if (root === undefined) return 2;
   const findings = nameFindings(root);
   for (const finding of findings) {
     const where = finding.line === 0 ? finding.file : `${finding.file}:${finding.line}`;
