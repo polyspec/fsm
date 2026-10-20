@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 3f4636ff03b2df1d2bbfda11c7546ecce13838761c7fa4ceeab047a969be863d -->
+<!-- source-sha256: aebcb4e535bd3a9d986ee0a2de259acd943035574a5c20e136e3281d5bc283ed -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-34: `fsm-php-install`과 `fsm-php-ext-install`은 `composer install` 바로 뒤에 `make link`를 실행한다(P30). 그래서 tracked lock에서 설치한 vendor가 link를 대신하지 않는다. RED `tests/make-install/make-install.test.mts`의 `node --test` exit 1, "no make link right after the composer install of fsm-php-install"(16 passed, 1 failed); GREEN exit 0, 17 passed, 0 failed; `make link-state-check` exit 0; `make kit-check` exit 0. (S-45-34)
 - S-45-31: php generator는 require만 하는 loader `src/functions.php`를 쓰지 않는다. composer `autoload.files`는 기계마다 namespace가 있는 `src/<Machine>/functions.php`를 정의 순서대로 든다(kit S2, B-6). coercion test는 `Order`의 생성된 함수를 손으로 require한다. RED `packages/compiler/tests/php-backend.test.mjs`의 `node --test` exit 1, "no file is the loader src/functions.php"(7 passed, 1 failed); GREEN exit 0, 8 passed, 0 failed; ConformanceTest OK(290 tests, 843 assertions); `make lint-php` exit 0. (S-45-31)
 - S-45: 저장소는 kit standard 0.0.54를 따른다. 하위 항목은 완료되었고, make-install test, `make docs-check`, `make kit-check layout-check rules-check language-check test-markers-check lint-go`가 통과한다. (S-45)
 - S-45-33: `make kit-sync`가 tool을 설치한 뒤에 link하는 kit K360-1의 scripts/kit/kit-bootstrap.mk를 썼다. RED `make kit-check` exit 2("scripts/kit/kit-bootstrap.mk: differs"); GREEN exit 0. (S-45-33)

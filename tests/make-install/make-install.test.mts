@@ -176,6 +176,16 @@ test('the Composer packages fetch the release zips of config/release-assets.json
   }
 });
 
+test('the php installs link right after composer install, so a vendor from the tracked lock never replaces the links (P30)', (t) => {
+  for (const target of ['fsm-php-install', 'fsm-php-ext-install']) {
+    const out = dryRun(sandbox(t), target);
+    const install = lineIndex(out, /composer install/);
+    const link = lineIndex(out, /(^|[ /])make\b.*\blink\b|link\.mjs link/);
+    assert.ok(install >= 0, `no composer install in ${target}:\n${out}`);
+    assert.ok(link > install, `no make link right after the composer install of ${target}:\n${out}`);
+  }
+});
+
 test('the python environment is keyed on pylock.toml: a newer lock installs it again, a newer manifest alone does not', (t) => {
   const dir = sandbox(t, { installed: true });
   const now = Date.now() / 1000;

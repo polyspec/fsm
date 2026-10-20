@@ -137,11 +137,13 @@ fsm-js-test: $(NPM_DEP) fsm-js-gen
 	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- packages/js/tests/conformance.test.mjs
 
 # fsm-php-install downloads the release zips of orm and ordered-json into var/composer-artifacts, the artifact repository of
-# composer.json, with make release-assets-fetch of kit (K140), then installs the dependencies of composer.lock.
+# composer.json, with make release-assets-fetch of kit (K140), then installs the dependencies of composer.lock, and links right
+# after the install (P30), so the vendor installed from the tracked lock never replaces the links.
 .PHONY: fsm-php-install fsm-php-gen fsm-php-test
 fsm-php-install:
 	$(MAKE) release-assets-fetch
 	cd packages/php && $(COMPOSER) install --no-interaction --no-progress
+	$(MAKE) --no-print-directory link
 
 fsm-php-gen: $(PHP_DEP)
 fsm-php-gen:
@@ -157,6 +159,7 @@ fsm-php-test: $(PHP_DEP) fsm-php-gen
 fsm-php-ext-install:
 	$(MAKE) release-assets-fetch
 	cd packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
+	$(MAKE) --no-print-directory link
 
 # fsm-php-ext-gen writes the generated files of the extension (src/): fsm-gen writes the C files and the stub, and kit's php-ext-arginfo
 # writes the arginfo header from the stub with the gen_stub.php of the PHP (ONLINE: it downloads its PHP-Parser once). The extension has no test of its own: kit's test-php-ext runs the

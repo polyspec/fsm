@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: b639abca461b1352421d6410f70b1e3922a7da4930798bf3aaf6c154e55de0a0 -->
+<!-- source-sha256: deab134e9379dc78a63ac4de990ef9a263dc27f852d7868b9a1297c224d0bdfd -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -58,4 +58,5 @@
 | S-45-31 | lint-php (S2): php generator는 require만 하는 loader src/functions.php를 쓰지 않는다. composer autoload files는 generator가 밝히는 각 machine의 namespaced functions.php를 직접 나열한다(plan.md C-3 표, spec B-6) | packages/compiler/src/backends/php.mjs, packages/compiler/tests/php-backend.test.mjs, the php golden files, packages/php/composer.json, docs/plans/fsm-v1/plan.md, docs/spec/fsm.md and their Korean twins | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/php-backend.json --inputs packages/compiler -- packages/compiler/tests/php-backend.test.mjs`, `node node_modules/@polyspec/kit/dist/run-tests.mjs phpunit --cwd packages/php --results .results/php-conformance.json --inputs packages/php --inputs contracts/conformance/vectors.json -- tests/ConformanceTest.php` | [o] |
 | S-45-32 | kit-check와 layout-check: kit 사본이 다시 일치하며 make kit-sync가 쓴다. kit K356의 config/layout.kit.yml은 root의 clippy.toml을 선언하고, kit K360의 scripts/kit/kit-bootstrap.mk는 npm ci 뒤에 저장소 옆 kit checkout의 link를 실행한다 | config/layout.kit.yml, scripts/kit/kit-bootstrap.mk | `make kit-check`, `make layout-check` | [o] |
 | S-45-33 | kit-check: scripts/kit/kit-bootstrap.mk은 tool을 설치한 뒤에 link하는 kit K360-1의 사본이며, make kit-sync가 쓴다 | scripts/kit/kit-bootstrap.mk | `make kit-check` | [o] |
+| S-45-34 | P30: fsm-php-install과 fsm-php-ext-install은 composer install 바로 뒤에 make link를 실행하므로, tracked lock에서 설치한 vendor가 link를 대신하지 않는다(kit link-state-check는 $(COMPOSER) install을 놓쳤다) | Makefile, tests/make-install/make-install.test.mts | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
