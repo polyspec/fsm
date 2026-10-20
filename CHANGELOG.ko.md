@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 8167f5dddba05e4e843c5a795602669f775c0aef2ae3171d181e6df83a590ef1 -->
+<!-- source-sha256: a11fbd93aab028d32d6cada51d3bdd37ae151a4ff83673fa4fe302c8831e1658 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-10: 예약된 machine key `examples`, `vectors`, `machines`, `expectation`, `lookup`을 docs/spec/fsm.md B-5와 `reserved.mjs`(`GO_TEST_NAMES`)에서 없앤다. 이 key들은 생성되던 go test 파일의 식별자 이름이었고 fsm-gen은 더 이상 test 파일을 쓰지 않는다(S-45-8-7). keyword, go 사전 선언 식별자, `internal`, `init`, `testdata`, `vendor`는 이유와 함께 남는다. RED `validate-names.test.mjs` exit 1, 23 통과 1 실패(`vectors`라는 machine은 E_KEY_RESERVED); GREEN exit 0, 24 통과, packages/compiler/tests의 test 471개와 mermaid parse test 통과, `make lint-ts` exit 0. (S-45-10)
 - S-45-5: fsm의 S10을 쓰인 대로 적용한다. PHP library `packages/php`는 `polyspec/fsm`이고(이전 `polyspec/fsm-php`), extension `polyspec/fsm-php-ext`는 `polyspec_fsm`으로 빌드되며(이전 `polyspec_fsm_test`) stub은 `polyspec_fsm.stub.php`이고, Makefile, `config/parity.json`, compiler golden 파일과 예, CLI usage, README가 따른다. RED `make lint-php-ext` exit 2, finding 4개(extension 이름이 `polyspec/fsm-php-php-ext`, 두 번째 stub `polyspec_fsm_test.stub.php`, `polyspec_fsm_test`를 가리키는 `PHP_NEW_EXTENSION`, 없는 stub `polyspec_fsm_php.stub.php`); rename 뒤 finding 2개가 남는다. `config.m4`와 stub을 찾지 못한다: kit `scripts/kit/php-extension.mts:63-77`과 `:118`이 추적하는 파일로만 읽는데 생성되는 `packages/php-ext/src`는 추적하지 않는다(S-45-8). extension은 kit의 PHP 8.4.26으로 `polyspec_fsm.so`로 빌드되고 로드된다(`extension_loaded("polyspec_fsm")` true, machine 함수 등록). compiler test 336 통과, `layout-check`, `parity-declarations-check`, `readme-check`, `owner-validate`, `name-check` 통과. php-ext의 PHPUnit 실행은 Composer vendor의 platform 검사(">= 8.5.0", PHP 8.4.26)에서 멈춘다: S-45-7. (S-45-5)
 - S-45-9: `PRINCIPLES.md`와 `PRINCIPLES.ko.md`가 @polyspec/kit 0.0.54의 K277 문구를 가지며 `make kit-sync`가 썼다. RED `make kit-check` exit 2, finding 2개(두 복사본이 다르다); GREEN `make kit-check` exit 0. (S-45-9)
 - S-45-8: fsm-gen과 orm-gen 산출물은 여섯 kind와 packages/db 모두에서 make가 생성하고 추적하지 않는다. 항목 S-45-8-1부터 S-45-8-9는 target이 gen target에 의존하게 한 것, golden 파일을 위해 gen-check를 없앤 것, 실행할 때 `contracts/conformance/vectors.json`을 읽는 언어별 손으로 쓴 conformance test, php의 PHPUnit 파일을 실행하는 php-ext, untrack을 담는다. RED 항목 전의 main에서 `git ls-files packages/go/src | wc -l`이 6을 출력한다. GREEN HEAD의 worktree에서 0을 출력하고, 거기서 `make fsm-go-gen`과 go runner `./tests -run "TestConformance|TestPersist"`가 295개 중 295개 통과한다(S-45-8-3). go vectors 결함(`cannot use "1" as int64`)은 생성 파일과 함께 없어졌다(S-45-8-7). (S-45-8)

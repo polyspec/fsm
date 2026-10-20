@@ -8,15 +8,6 @@
  */
 export const MACHINE_FIXED = Object.freeze(['fsm', 'index', 'lib', 'main', 'internal', 'init', 'testdata', 'vendor']);
 
-/**
- * Machine keys that the go test files of packages/go declare or import, by docs/spec/fsm.md B-5 (measured by S-39 with go 1.27.2):
- * `examples` is the import of the persist example in tests/vectors_test.go, `vectors` and `machines` are its package variables, and
- * `expectation` and `lookup` are package-level declarations of tests/conformance_test.go. A machine of any of these names fails
- * `go test ./...` ("redeclared in this block" or "already declared through import"). `tests` is not on the list: a machine of that
- * name builds and its tests pass.
- */
-export const GO_TEST_NAMES = Object.freeze(['examples', 'vectors', 'machines', 'expectation', 'lookup']);
-
 /** The predeclared identifiers of Go 1.25 (Go specification, Predeclared identifiers); an import of the name would shadow them. */
 export const GO_PREDECLARED = Object.freeze([
   'any', 'bool', 'byte', 'comparable', 'complex64', 'complex128', 'error', 'float32', 'float64', 'int', 'int8', 'int16', 'int32',

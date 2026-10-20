@@ -62,11 +62,11 @@ test('a machine key on the fixed lists fails E_KEY_RESERVED at machine', () => {
   }
 });
 
-test('a machine key that a go test file of packages/go imports or declares fails E_KEY_RESERVED (B-5, measured by S-39)', () => {
-  // tests/vectors_test.go imports the persist example as `examples` and declares `vectors` and `machines`; tests/conformance_test.go
-  // declares `expectation` and `lookup`. A machine of any of these names breaks `go test ./...` (measured with go 1.27.2).
+test('a machine key that the go test bed once declared is accepted: no generated go test file exists (B-5)', () => {
+  // The names of the test files of the go test bed (examples, vectors, machines, expectation, lookup) were reserved while
+  // fsm-gen wrote the test file; the compiler writes no test now, so a machine of any of these names is a valid key.
   for (const key of ['examples', 'vectors', 'machines', 'expectation', 'lookup']) {
-    assert.deepEqual(names(d => { d.machine = key; }), [at('E_KEY_RESERVED', key, '$.machine')], key);
+    assert.deepEqual(names(d => { d.machine = key; }), [], key);
   }
 });
 
