@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-3: the hand-written php files (tests/ConformanceCase.php, tests/PersistTest.php and examples/persist.php of php, copied to php-ext) keep to the 120 character lines of the phpcs standard. RED `make lint-php` exit 2, 26 warnings of which 12 line-length warnings in these files (ConformanceCase.php:3,7,57,99,107,109,122,168, PersistTest.php:119,132, persist.php:4) in each package; GREEN `make lint-php` still exit 2 only for the 14 findings of the orm-gen output examples/model (S-45-4), none left in the hand-written files, phpstan passed on both packages, `php -l` of the three files in both packages passed. (S-45-3)
 - S-45-2: the Go conformance test drops the unused function `int32Of`. RED `make lint-go` exit 2, `packages/go/tests/conformance_test.go:112:6: func int32Of is unused (unused)` and deadcode `unreachable func: int32Of`; GREEN `make lint-go` exit 0, golangci-lint 0 issues and deadcode passed, and `go vet ./tests/` in packages/go exit 0. (S-45-2)
 - S-45-1: the Rust backend test writes its Cargo.toml string without the useless escapes of `"`. RED `make lint-ts` exit 2, `packages/compiler/tests/rust-backend.test.mjs:131:177: Unnecessary escape character`; GREEN `make lint-ts` exit 0, oxlint and knip passed, and `node --test packages/compiler/tests/rust-backend.test.mjs` 10 of 10. (S-45-1)
 - S-44-23: AGENTS.md points to kit `docs/plans/local-links.md`: while polyspec versions are 0.0.x, development checkouts link installed polyspec packages to their source, and links are never committed.

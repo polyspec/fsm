@@ -116,7 +116,8 @@ namespace Polyspec\FsmTest\Tests {
             return $outcomes;
         }
 
-        // FSM-B4-1: two transitions of one (expected, event) at the same time: one Changed, one Unchanged (the row lock).
+        // FSM-B4-1: two transitions of one (expected, event) at the same time: one Changed, one Unchanged (the row
+        // lock).
         public function testPersistConcurrentSameEvent(): void
         {
             $outcomes = $this->together([Event::Next, Event::Next]);
@@ -129,7 +130,8 @@ namespace Polyspec\FsmTest\Tests {
             self::assertSame(\Polyspec\FsmTest\Order\code(State::Paid), Examples\statusOf($this->db, 1));
         }
 
-        // FSM-B4-2: two transitions from one expected state with different events at the same time: one Changed, one E_CONFLICT.
+        // FSM-B4-2: two transitions from one expected state with different events at the same time: one Changed, one
+        // E_CONFLICT.
         public function testPersistConcurrentConflict(): void
         {
             $outcomes = $this->together([Event::Next, Event::Cancel]);
