@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 5cfd4b065f3a5e0be522d91833dcbc16c6d4e2861018057f6e782f083a8fc101 -->
+<!-- source-sha256: 2d14b65c8622267f99d302dc3f13ae9ef5428ea034ab3d95fe6afe6bf08cd5a1 -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -198,7 +198,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 
 ### C-4. vector parity(kit K33)
 kit의 parity 검사(`make parity-check`, kit 0.0.26의 K33, `config/parity.json`, S-42-1)는 모든 kind의 conformance 테스트를 두 번 실행하며, 예외 없이 다음일 때 실패한다:
-- kind가 자기 `kinds`가 허용하는 `contracts/conformance/vectors.json`의 case를 실행하지 않았거나(`kinds`가 없는 case는 모든 kind가 허용한다), `kinds`가 제외하는 case를 실행했거나, vector에 없는 case를 실행했다;
+- kind가 `contracts/conformance/vectors.json`의 case를 실행하지 않았거나(모든 kind가 모든 case를 실행한다, S-46) vector에 없는 case를 실행했다;
 - 한 실행이 case 하나를 두 번 보고한다;
 - case가 실패하거나 skip이거나 todo이거나, binding이 0이 아닌 exit code로 끝난다.
 
@@ -220,27 +220,13 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
   - 그 외 모든 정의 상태 → `E_CONFLICT`
 - 미정의 (state, event) → `E_INVALID_TRANSITION`
 - `from_code`: 0, 미지 code, 각 예약 code, 음수 code, 2^31, 64비트 최댓값(예약 code를 제외하고 모두 E_UNKNOWN_CODE)
-- 잘못된 state 값(S-26): `code`, `is_final`, `key`, `apply`(expected 또는 actual)에 0과 미지 code, 아래 표의 kind에서만
-- `persist`: 첫 시도 / 재시도 / 충돌
-- 모든 오류 case는 fsm.Error의 네 필드(`code`, `expected`, `actual`, `event`, 명세 B-6)를 명명한다. 해당하지 않는 필드는 null이다: E_CONFLICT는 expected와 actual의 state code와 event 위치, E_INVALID_TRANSITION은 expected의 code와 event 위치, E_UNKNOWN_CODE와 E_RESERVED_CODE는 아무것도 없다
-- `from_code`의 입력은 십진 문자열이므로 파일에서 64비트 범위가 정확하다. npm kind는 가장 가까운 number를 받는데, 이는 안전하지 않은 정수이므로 E_UNKNOWN_CODE다
-- case id: case id는 `<machine>_<suffix>`이고, suffix의 key마다 선언 index를 쓴다. 이름과 무관하게 두 id가 충돌하지 않게 하기 위해서다. state는 `s<i>`, event는 `e<j>`(둘 다 0부터 시작), 예약 code는 `r<code>`다. id는 `<m>_initial`; `<m>_code_s<i>`, `<m>_key_s<i>`, `<m>_from_code_s<i>`, `<m>_is_final_s<i>`, `<m>_events_from_s<i>`; `<m>_from_code_zero`, `<m>_from_code_unknown`, `<m>_from_code_r<code>`, `<m>_from_code_negative`, `<m>_from_code_int32_overflow`, `<m>_from_code_int64_max`; `<m>_code_v<value>`, `<m>_is_final_v<value>`, `<m>_key_v<value>`, `<m>_apply_expected_v<value>_e0_s0`, `<m>_apply_actual_v<value>_e0_s0`(value는 0과 미지 code); `<m>_target_s<i>_e<j>`; `<m>_apply_s<i>_e<j>_s<k>`(expected, event, actual); `<m>_persist_first`, `<m>_persist_retry`, `<m>_persist_conflict`다. 케이스 데이터 필드는 key(state, event, expected, actual 등)를 그대로 쓰며, 바뀌는 것은 id뿐이다.
-- 잘못된 state 값(S-26): state 인자가 state가 아닌 값을 가질 수 있는지는 kind의 state 타입에 달려 있다. 잘못된 값을 가진 case는 `kinds`에 그 값을 허용하는 kind를 적고, kit의 parity 검사는 그 kind들에만 이를 요구한다. 명세 B-6의 규칙(함수는 E_UNKNOWN_CODE로 실패한다)에 대해 kind별 결정은 다음과 같고 여기에 기록한다.
+- 잘못된 state 값(S-26, S-46): 모든 kind가 잘못된 state 값을 가진 case를 포함해 모든 case를 실행한다. 그런 state 인자는 raw code이고 raw code는 먼저 `from_code`를 거치며(명세 B-6) 이것이 E_UNKNOWN_CODE로 실패하므로, 닫힌 state 타입(rust `enum State`, php `enum State: int`)에 state가 아닌 값이 없어도 된다. 다섯 machine의 290개 case가 여섯 kind 모두에서 실행되며 `contracts/conformance/vectors.json`에는 `kinds` 필드가 없다.
 
-  | kind | state 타입 | 잘못된 state 값 |
-  |---|---|---|
-  | go | `State int32` | 허용: switch의 default 분기가 E_UNKNOWN_CODE다 |
-  | npm | number이며 state가 곧 그 값 | 허용 |
-  | python | int(`IntEnum`의 멤버이며 함수는 어떤 int든 받는다) | 허용 |
-  | rust | `#[repr(i32)]`의 `enum State` | 허용하지 않음: 타입에 state가 아닌 값이 없다 |
-  | php, php-ext | `enum State: int` | 허용하지 않음: 타입에 state가 아닌 값이 없다 |
-
-- rust, php, php-ext의 native vector 모듈은 자기 kind가 허용하는 case만 담는다(core `forKind`). 그래서 다섯 machine의 270개 case 중 224개를 돌리고, go, npm, python은 270개를 모두 돌린다.
 - persist 케이스는 machine에 transition이 있을 때만 존재한다. `conflict`는 third state가 있을 때만 존재하므로, state가 2개인 machine은 `first`와 `retry`만 갖고, transition이 없는 machine(예: state가 1개인 machine)은 persist 케이스가 없다.
 
 - 영속화 패턴의 동시성과 재시도(S-37, S-44-9, 결정): B-4는 모든 kind에 행 잠금과 deadlock 재시도를 약속하므로, 모든 kind가 자기 persist 테스트(go `tests/persist_test.go`, npm `tests/persist.test.mjs`, php와 php-ext `tests/PersistTest.php`, python `tests/test_persist.py`, rust `tests/persist.rs`)에서 config/parity.json의 feature unit 네 개로 이를 증명한다. 같은 event로 한 row에 동시에 일어나는 두 전이(Changed 하나, Unchanged 하나)와 두 event의 두 전이(Changed 하나, E_CONFLICT 하나)를 각자의 연결에서 실행하고(goroutine, thread, tokio task, 한 thread만 쓰는 PHP는 pcntl_fork의 두 process), transaction 안의 orm DEADLOCK 오류는 transaction을 다시 실행하지만 다른 database 오류는 그렇지 않음을 보인다(machine step으로 주입하거나 rust 예제의 fault hook으로 주입). persist case는 `make <kind>-persist-test-postgres`와 `make <kind>-persist-test-mysql`로 PostgreSQL과 MySQL에서 실행한다(S-37-1). `FSM_TEST_DIALECT`가 dialect를 고르고, `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, case마다 persist table을 비우고, 서버 dialect의 case는 차례로 실행한다(rust는 static 잠금을 쓰고, 다른 kind는 순차 실행한다). DSN이 비어 있으면 각 target은 exit 2로 멈추며(Makefile의 `require_dsn`), 테스트도 실패한다. kind별 RED: 테스트가 `FSM_TEST_DIALECT`를 읽기 전에는 PostgreSQL target이 SQLite의 persist case 11개를 통과시켰다(rust, php, php-ext, python). go는 예제가 `orm/pg`를 import하기 전까지 `driver "postgres" is not registered`로 실패했다. SQLite에서는 두 전이를 차례로 실행한다. SQLite driver가 동기식이라, 같은 프로세스의 두 번째 `BEGIN IMMEDIATE`가 첫 번째를 커밋할 thread를 막고, 5000밀리초 busy timeout 뒤 `CANCELED: sqlite: database is locked`로 실패하기 때문이다. RED: `examples/persist.mjs`에서 `forUpdate()`를 빼면 PostgreSQL 17.11과 MySQL 8.4.11 모두에서 두 전이가 Changed를 보고하고 두 테스트가 실패한다. 복원한 패턴은 세 dialect에서 통과한다.
 
-- vector parity(S-42-1, 결정): vector는 kit의 parity 검사(K33, K47을 담은 kit 0.0.26)로 실행되며, 이 검사가 모든 binding을 실행하고 kind마다 case를 허용한다. 저장된 기록을 읽던 fsm 자체의 scripts/check-parity.mjs는 있는 도구가 검사하므로 제거했다(kit에 case별 허용이 없는 동안 S-35-2와 S-42가 이를 유지했다).
+- vector parity(S-42-1, 결정): vector는 kit의 parity 검사(K33, K47을 담은 kit 0.0.26)로 실행되며, 이 검사가 모든 binding을 실행하고 모든 kind의 모든 case를 요구한다. 저장된 기록을 읽던 fsm 자체의 scripts/check-parity.mjs는 있는 도구가 검사하므로 제거했다(kit에 case별 허용이 없는 동안 S-35-2와 S-42가 이를 유지했다).
 
 ### C-5. compiler `packages/compiler`
 - Import(S-32): `packages/compiler/src`는 다음만 import한다: (1) node 내장 모듈, `node:` specifier로; (2) 자기 파일, `src` 안에 머무르는 상대 경로. kit의 파일은 import하지 않는다. package `@polyspec/kit`은 자기 tool API만 export하므로, `src/io/files.mjs`가 파일을 원자적으로 쓰고 `src/io/git.mjs`가 `node:fs`와 `node:child_process`로 git을 실행한다(S-44-1). npm 패키지, bare 내장 이름, 동적 `import()`·`require()`는 없다. `src/core`는 `node:` 모듈을 전혀 import하지 않는다. `packages/compiler/tests/imports.test.mjs`가 `src`의 모든 import specifier를 검사하고 그 밖이면 실패한다.

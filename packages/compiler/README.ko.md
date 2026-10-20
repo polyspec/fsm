@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: 62d0e0d16d6a686f6d2445d63bf87c7323ae5f578ed54367fffccc3cf4c41a19 -->
+<!-- source-sha256: 4d4afd631a25db3be366d218d700eddfe06bf2922dad0b35fa98ddd25ad97404 -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -111,7 +111,7 @@ vector는 기계의 모든 연산의 기대 결과다. core가 정의와 lock으
 
 `fsm-gen vectors --out <file>`은 공통 형식, 모든 기계의 파일 하나를 쓴다(이 저장소에서는 `contracts/conformance/vectors.json`). 각 언어 패키지는
 conformance test가 실행될 때 이 파일을 읽고 input을 자기 방식으로 해석한다(docs/spec/fsm.md, B-6). compiler는 test를 쓰지 않는다.
-패키지는 case마다 test 하나를 실행하며, kit의 parity 검사(`make parity-check`)는 case를 허용하는 모든 종류에서
+패키지는 case마다 test 하나를 실행하며, kit의 parity 검사(`make parity-check`)는 모든 종류에서
 모든 case가 한 번씩 실행되어 통과할 것을 요구한다.
 
 ## 검사

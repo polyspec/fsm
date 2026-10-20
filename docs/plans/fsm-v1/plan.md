@@ -197,7 +197,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 
 ### C-4. Vector parity (kit K33)
 kit's parity check (`make parity-check`, K33 of kit 0.0.26, `config/parity.json`; S-42-1) runs the conformance test of every kind twice and fails, with no exemption, when
-- a kind did not run a case of `contracts/conformance/vectors.json` that its `kinds` admits (a case without `kinds` is admitted by every kind), ran a case that its `kinds` excludes, or ran a case that the vectors do not hold;
+- a kind did not run a case of `contracts/conformance/vectors.json` (every kind runs every case, S-46), or ran a case that the vectors do not hold;
 - one run reports a case twice;
 - a case fails, is skipped or is a todo, or the binding exits with a nonzero exit code.
 
@@ -234,24 +234,13 @@ Vectors (exhaustive; the core generates the oracle):
 - Persist cases exist only when the machine has a transition. `conflict` exists only when a third state exists, so a
   two-state machine has `first` and `retry`, and a machine without a transition (such as a one-state machine) has no
   persist case.
-- Invalid state values (S-26): whether a state argument can hold a value that is no state depends on the state type of the kind.
-  A case with an invalid value names the kinds that admit it in `kinds`, and kit's parity check requires it of those kinds only. The
-  decision per kind, recorded here for the spec B-6 rule that the functions fail with E_UNKNOWN_CODE:
+- Invalid state values (S-26, S-46): every kind runs every case, the cases with an invalid state value included. Such a state argument is a raw code, and a raw code goes through `from_code` first (spec B-6), which fails with E_UNKNOWN_CODE, so a closed state type (rust `enum State`, php `enum State: int`) needs no value that is no state. The 290 cases of the five machines run in all six kinds; `contracts/conformance/vectors.json` has no `kinds` field.
 
-  | kind | state type | invalid state value |
-  |---|---|---|
-  | go | `State int32` | admitted: the default branch of the switch is E_UNKNOWN_CODE |
-  | npm | a number; the state is its value | admitted |
-  | python | an int (the members of `IntEnum`; the functions take any int) | admitted |
-  | rust | `enum State` with `#[repr(i32)]` | not admitted: the type has no value that is no state |
-  | php, php-ext | `enum State: int` | not admitted: the type has no value that is no state |
-
-- The native vector modules of rust, php and php-ext hold the cases that their kinds admit (core `forKind`), so they run 224 of
   the 270 cases of the five machines; go, npm and python run all 270.
 
 - Concurrency and retry of the persistence pattern (S-37, S-44-9, decision): B-4 promises the row lock and the deadlock retry in every kind, so every kind proves them in its persist test (go `tests/persist_test.go`, npm `tests/persist.test.mjs`, php and php-ext `tests/PersistTest.php`, python `tests/test_persist.py`, rust `tests/persist.rs`), the four feature units of config/parity.json: two transitions of one row at the same time with the same event (one Changed, one Unchanged) and with two events (one Changed, one E_CONFLICT), each on its own connection (goroutines, threads, tokio tasks, two processes of pcntl_fork in PHP, which runs one thread), and a DEADLOCK error of orm inside the transaction that runs it again while another database error does not (injected through the machine step, or the fault hook of the rust example). The persist cases run on PostgreSQL and MySQL through `make <kind>-persist-test-postgres` and `make <kind>-persist-test-mysql` (S-37-1): `FSM_TEST_DIALECT` selects the dialect, `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` name the database, each case clears the persist table, and the cases of a server dialect run one after another (rust takes a static lock; the other kinds run sequentially). Each target stops with exit 2 when its DSN is empty (`require_dsn` in the Makefile), and the test fails too. RED per kind: before the test read `FSM_TEST_DIALECT`, the target passed with 11 persist cases on SQLite under the PostgreSQL target (rust, php, php-ext, python); go failed with `driver "postgres" is not registered` until its example imported `orm/pg`. On SQLite the two transitions run one after the other, because the SQLite driver is synchronous: a second `BEGIN IMMEDIATE` in the same process blocks the thread that would commit the first, and fails with `CANCELED: sqlite: database is locked` after the 5000 ms busy timeout. RED: with `forUpdate()` removed from `examples/persist.mjs`, both transitions report Changed on PostgreSQL 17.11 and on MySQL 8.4.11, and both tests fail; the restored pattern passes on the three dialects.
 
-- Vector parity (S-42-1, decision): the vectors run on kit's parity check (K33, kit 0.0.26 with K47), which runs every binding and admits cases per kind; fsm's own scripts/check-parity.mjs, which read the saved records, is removed, since an existing tool does the check (S-35-2 and S-42 had kept it while kit lacked per-case admission).
+- Vector parity (S-42-1, decision): the vectors run on kit's parity check (K33, kit 0.0.26 with K47), which runs every binding and requires every case of every kind; fsm's own scripts/check-parity.mjs, which read the saved records, is removed, since an existing tool does the check (S-35-2 and S-42 had kept it while kit lacked per-case admission).
 
 ### C-5. compiler `packages/compiler`
 - Imports (S-32): `packages/compiler/src` imports only (1) node built-ins, by their `node:` specifier; (2) its own files, by a relative path that stays in `src`. It imports no file of kit: the package `@polyspec/kit` exports only its tool APIs, so `src/io/files.mjs` writes a file atomically and `src/io/git.mjs` runs git with `node:fs` and `node:child_process` (S-44-1). No npm package, no bare built-in name and no dynamic `import()` or `require()`. `src/core` imports no `node:` module at all. `packages/compiler/tests/imports.test.mjs` scans every import specifier of `src` and fails on anything else.

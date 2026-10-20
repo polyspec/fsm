@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d049d233b5df4494e1d2238f61aadbcde3e75cc7235b0763a583f9b6e251303d -->
+<!-- source-sha256: 85cd32cd9fbe4664dc453579548cb023ed3784b25984a7000346a8aab93046b7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-46: `config/parity.json`의 모든 unit이 모든 implementation에서 성립한다: `from_code`는 decode된 값을 받고 raw code는 여섯 kind 모두에서 이를 거친다(S-45-8-4부터 S-45-8-8이 실행할 때 vector 파일을 읽는다). plan C-4는 두 언어로 모든 kind의 규칙을 말하며(`kinds` 필드 없음, kind별 허용 없음, 모든 kind에서 290개 case), php와 php-ext의 case가 이제 실행된다: vectors unit과 persist id 네 개의 `make parity-check`가 여섯 implementation 모두에서 통과하고(binding 12개가 두 번씩 실행, 1764 case) `make parity-declarations-check`는 exit 0이다. RED `make parity-declarations-check`는 0이었으나 php의 전 kind 실행은 이 checkout에서 한 번도 실행되지 않았다(php vendor가 platform 검사에서 멈췄다); GREEN 다섯 unit이 여섯 implementation 모두에서 실행된다. (S-46)
 - S-45-7-1: S-45-5-1과 S-45-17 뒤에 완료: PHP lock 항목의 vendor와 runtime 부분에는 열린 원인이 없으며 commit되는 lock의 재해결은 S-45-7에 남는다. (S-45-7-1)
 - S-45-7-1: php와 php-ext의 Composer vendor가 link를 통해 PHP 8.4.26에서 실행된다: provider에 대한 `link.mjs link`(kit K304) 뒤 installed.json이 연결된 source의 요구를 가지고 platform_check.php가 더 이상 PHP >= 8.5.0을 묻지 않으며, `make lint-php` exit 0, `make test-php-ext` 통과, 다섯 unit의 `make parity-check`가 여섯 implementation 모두에서 통과한다(1764 case). K304의 link 뒤 2026-10-20에 S-45-17과 함께 측정했다. (S-45-7-1)
 - S-45-5-1: `make test-php-ext`가 추적하는 설정의 상대 경로 없이 packages/php의 PHPUnit 파일을 extension에서 실행한다(S-45-17이 통과하게 했다): `CASES=Conformance`가 `var/php-ext/polyspec_fsm.so`에서 290개, `CASES=Persist`가 15개 case를 실행하고, `make lint-php-ext` exit 0, `make parity-declarations-check` exit 0. (S-45-5-1)

@@ -114,7 +114,7 @@ The vectors are the expected result of every operation of a machine, computed by
 
 `fsm-gen vectors --out <file>` writes the common form, one file for every machine (`contracts/conformance/vectors.json` in this repository). Each
 language package reads that file when its conformance test runs and decodes the inputs in its own way (docs/spec/fsm.md, B-6); the compiler writes
-no test. The package runs one test per case, and kit's parity check (`make parity-check`) requires every case to run once and pass in every kind that admits it.
+no test. The package runs one test per case, and kit's parity check (`make parity-check`) requires every case to run once and pass in every kind.
 
 ## Checks
 
