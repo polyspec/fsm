@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45: the repository follows the kit standard 0.0.54: its sub-items are done, and the make-install test, `make docs-check` and `make kit-check layout-check rules-check language-check test-markers-check lint-go` pass. (S-45)
 - S-45-33: `make kit-sync` wrote scripts/kit/kit-bootstrap.mk of kit K360-1, which links after the tools are installed. RED `make kit-check` exit 2 ("scripts/kit/kit-bootstrap.mk: differs"); GREEN exit 0. (S-45-33)
 - S-45-7: the lock item closes with S-45-14: the locks of php and php-ext are judged on their link locks (kit K326, K326-1), and the one remaining finding, the review record, was re-recorded in S-45-14. GREEN `make dependency-policy-check` exit 0. (S-45-7)
 - S-45-14: `make dependency-review RECORD=1` re-records config/dependency-review.json on the linked locks after kit K365 (phpunit 13.4.3 in packages/php and packages/php-ext). RED `make dependency-policy-check` exit 2, the locks hold phpunit 13.4.3 but the review recorded 13.4.2 in both packages; GREEN exit 0. (S-45-14)
