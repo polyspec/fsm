@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 5b5ce066a3725520aa28236df93b28bd5dbb7c54d92134f6115c64f30fd425b8 -->
+<!-- source-sha256: eeca624d55a720c69fb18c40fe15c1d46bd39454a58e5ab10a912801c2c8acbc -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-22: `make kit-sync`가 PRINCIPLES.md와 PRINCIPLES.ko.md의 현재 문구를 썼다. RED `make kit-check` exit 2, finding 2개(복사본이 다르다); GREEN exit 0. (S-45-22)
 - S-45-21: `CHECK_TARGETS`가 `bypass-check`("no test, script or Makefile impersonates CI, assumes a gate up to date or skips a hook")를 실행하고, `make kit-sync`가 PRINCIPLES.md, PRINCIPLES.ko.md, lint 설정 `config/php-lint`의 새 문구를 썼다. RED `make kit-check` exit 2, "CHECK_TARGETS runs no bypass-check"; GREEN exit 0과 `make bypass-check` exit 0. (S-45-21)
 - S-45-19: `AGENTS.md`와 `AGENTS.ko.md`의 모든 rule은 `Own:` 또는 `Refines <id>:`로 시작한다(kit K300): kit 복사본, `Makefile` 규약, README, 외부 출처, 경로, 옛 이름, 생성 파일, 병렬 기록의 rule은 Own이고, link rule은 P30(link는 `packages/gui`, `packages/db`, `packages/php`를 건너뛰는 `--project` 없이 root에서 실행한다), 기본 테스트는 S7, test runner는 S3, 소유 검사는 P20, 체크리스트는 P24를 구체화하며 각각 이 저장소의 용어를 이름 짓는다. RED `make rules-check` exit 2, finding 13개("the rule begins with neither `Own:` nor `Refines <id>:`"); GREEN exit 0. (S-45-19)
 - S-45-20: kit K305-1이 P30의 gate 이름을 `link-state-check`("0.0.x인 설치된 polyspec package는 모두 해석되는 link다")로 바꾸었으므로 `CHECK_TARGETS`는 `link-metadata-check` 대신 `link-state-check`를 실행하고 `make kit-sync`가 새 P30 문구를 썼다. RED `make kit-check` exit 2(복사본이 다르고 gate가 없다), `make rules-check` "make link-metadata-check is no target"; GREEN `make kit-check` exit 0과 `make link-state-check` exit 0. (S-45-20)
