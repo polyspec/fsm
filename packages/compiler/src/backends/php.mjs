@@ -1,5 +1,5 @@
 // The php backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated files of the php package
-// `src/` and the native test module `tests/ConformanceTest.php`. It takes the IRs of the machines (normalize.mjs), in definition order,
+// `src/`. It takes the IRs of the machines (normalize.mjs), in definition order,
 // and the lock and the php namespace, and returns the text of every file; it writes nothing. The output is deterministic: declaration
 // order, four spaces of indentation and a final line break. The core imports nothing from node:, and the generated code has no
 // runtime dependency.
@@ -17,10 +17,7 @@
 // because the strict_types of the generated file does not reach the calls of a caller without it (a coercion would give the
 // state of "2" or 2.0, and true would give the state of 1). A value that is not an int is E_UNKNOWN_CODE in every caller.
 
-import { forKind } from '../core/vectors.mjs';
-
 const SHARED = 'fsm';
-const KIND = 'php';
 const NAMESPACE = /^[A-Za-z][A-Za-z0-9]*(\\[A-Za-z][A-Za-z0-9]*)*$/;
 
 /** The member name of a key: the pascal notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
@@ -261,44 +258,6 @@ function errorFile(ns) {
   ]);
 }
 
-/** The PHP int literal of a decimal string of the oracle; a value that is no decimal string is an Error. */
-function integerOf(item) {
-  if (typeof item !== 'string' || !/^-?[0-9]+$/.test(item)) throw new Error(`php: the input ${JSON.stringify(item)} is not a decimal string`);
-  return item;
-}
-
-/**
- * The PHP literal of a typed input of the oracle (input_type: string, bool or float; docs/spec/fsm.md, B-6). An input without a
- * type is a decimal string written as an int (integerOf).
- */
-function inputOf(text, type) {
-  if (type === undefined) return integerOf(text);
-  if (type === 'string') return literal(text);
-  if (type === 'bool' && (text === 'true' || text === 'false')) return text;
-  if (type === 'float' && /^-?[0-9]+\.[0-9]+$/.test(text)) return text;
-  throw new Error(`php: the input ${JSON.stringify(text)} of type ${JSON.stringify(type)} is not a string, bool or float literal`);
-}
-
-/** A PHP literal of a vector value (null, bool, int, string, list or map) at nesting `depth`, with four spaces per level. */
-
-function value(item, depth) {
-  const pad = '    '.repeat(depth);
-  if (item === null) return 'null';
-  if (typeof item === 'boolean') return item ? 'true' : 'false';
-  if (typeof item === 'number') {
-    if (!Number.isSafeInteger(item)) throw new Error(`php: the vector value ${item} is not an integer`);
-    return String(item);
-  }
-  if (typeof item === 'string') return literal(item);
-  // The input_type of a case is read by its input and is not written (docs/spec/fsm.md, B-6).
-  const entries = Array.isArray(item) ? item.map(entry => [undefined, entry]) : Object.entries(item).filter(([key]) => key !== 'input_type');
-  if (entries.length === 0) return '[]';
-  // An input is a decimal string of the oracle, written as the PHP int it names: the 64-bit range stays exact (docs/spec/fsm.md, B-6).
-  const rendered = (key, entry) => (key === 'input' ? inputOf(entry, item.input_type) : value(entry, depth + 1));
-  const cell = ([key, entry]) => `${pad}    ${key === undefined ? '' : `${literal(key)} => `}${rendered(key, entry)},`;
-  return ['[', ...entries.map(cell), `${pad}]`].join('\n');
-}
-
 /**
  * The loader src/functions.php: composer's autoload.files names this one file, because PSR-4 cannot load functions. It requires
  * the functions.php of every machine in definition order, so a new machine needs no edit of composer.json.
@@ -335,48 +294,4 @@ export function files(irs, lock, { phpNamespace } = {}) {
   out.push({ path: 'Fsm/Error.php', content: errorFile(`${phpNs}\\Fsm`) });
   out.push({ path: 'functions.php', content: loaderFile(irs) });
   return out;
-}
-
-/**
- * The native test module tests/ConformanceTest.php of `vectorList`, the vectors of every machine in order, in the namespace
- * <ns>\Tests: the PHPUnit class ConformanceTest whose one method testConformance takes every case from the data provider
- * cases(), one data set per case named by the case name <feature>__<id> (docs/plans/fsm-v1/plan.md, C-4). The parity check of kit
- * runs that method by its symbol and reads each data set as the case of its name (K137); one camelCase method keeps the
- * file within PSR-1, whose method names a case name with underscores would break. Each data set is the machine and the case
- * that the method passes to conformance() of the hand-written ConformanceCase.
- */
-export function vectorsFile(list, { phpNamespace } = {}) {
-  const phpNs = checkedNamespace(phpNamespace);
-  const sets = forKind(list, KIND).flatMap(({ machine, cases: items }) => items.map(item =>
-    `        yield ${literal(item.name)} => [${literal(machine)}, ${value(item, 2)}];`));
-  return text([
-    ...opening(SHARED, `${phpNs}\\Tests`),
-    'use PHPUnit\\Framework\\Attributes\\DataProvider;',
-    '',
-    '/** The vector cases of every machine, one data set per case under its case name (docs/plans/fsm-v1/plan.md, C-4). */',
-    'final class ConformanceTest extends ConformanceCase',
-    '{',
-    '    /**',
-    '     * The machine and the case of every vector case, keyed by the case name.',
-    '     *',
-    '     * @return iterable<string, array{string, array<string, mixed>}>',
-    '     */',
-    '    public static function cases(): iterable',
-    '    {',
-    ...sets,
-    '    }',
-    '',
-    '    /**',
-    '     * Runs one vector case of a machine through the checks of ConformanceCase.',
-    '     *',
-    '     * @param array<string, mixed> $case',
-    '     */',
-    "    #[DataProvider('cases')]",
-    '    // FSM-B4-5: every apply case of the vector file gives the result of the B-4 table (docs/spec/fsm.md).',
-    '    public function testConformance(string $machine, array $case): void',
-    '    {',
-    '        $this->conformance($machine, $case);',
-    '    }',
-    '}',
-  ]);
 }

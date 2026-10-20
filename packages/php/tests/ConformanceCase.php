@@ -108,7 +108,7 @@ abstract class ConformanceCase extends TestCase
                 return;
             case 'key':
                 $key = fn() => self::call($module, 'key', self::call($module, 'fromCode', $c['code']));
-                if (array_key_exists('error', $c['expect'])) {
+                if (is_array($c['expect'])) {
                     self::assertError($c['expect'], $key);
                 } else {
                     self::assertSame($c['expect'], $key());

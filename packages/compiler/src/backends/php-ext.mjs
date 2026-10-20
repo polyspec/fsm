@@ -12,11 +12,8 @@
 //
 // The language-forced differences from the php kind: the functions are C functions that read the backing value of an enum case
 // (its code, or its event index) and return the case object of a value with zend_enum_get_case_by_value, so no state is stored
-// in C; the error messages are the ones of the php kind, and the Error fields are the same ints. The test module is the php
-// kind's Vectors.php, byte for byte (see the re-export below), because both packages run the same tests.
-
-// The test module of the php-ext package is the test module of the php kind: the same vector cases under the same names.
-export { vectorsFile } from './php.mjs';
+// in C; the error messages are the ones of the php kind, and the Error fields are the same ints. The php package's PHPUnit files
+// test either implementation, so the php-ext package holds no test.
 
 const NAMESPACE = /^[A-Za-z][A-Za-z0-9]*(\\[A-Za-z][A-Za-z0-9]*)*$/;
 const EXTENSION = /^[a-z][a-z0-9_]*$/;

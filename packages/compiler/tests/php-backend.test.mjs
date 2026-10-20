@@ -1,6 +1,5 @@
 // Tests of the php backend (packages/compiler/src/backends/php.mjs, docs/spec/fsm.md, B-4 and B-6): the files of the
-// order example are the golden files under tests/golden/php, byte for byte, in the order the backend returns them, and the test
-// module is the golden tests/golden/php/ConformanceTest.php. The golden files were written by the generator once, after a review of its
+// order example are the golden files under tests/golden/php, byte for byte, in the order the backend returns them. The golden files were written by the generator once, after a review of its
 // output against B-6 (docs/plans/fsm-v1/plan.md, C-5). Every generated file is also checked by the php linter, and the namespace
 // that the command line passes is refused when it is not a PHP namespace.
 import assert from 'node:assert/strict';
@@ -10,9 +9,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { files, vectorsFile } from '../src/backends/php.mjs';
+import { files } from '../src/backends/php.mjs';
 import { normalize } from '../src/core/normalize.mjs';
-import { vectors } from '../src/core/vectors.mjs';
 import { jsonStore } from '../src/store-json/store.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
@@ -53,12 +51,6 @@ test('every generated file starts with <?php, the blank line of PSR-12 and the f
   }
 });
 
-test('the test module of the order example is the golden ConformanceTest.php, byte for byte', async () => {
-  const { irs, lock } = await orderIrs();
-  const generated = irs.map(ir => vectors(ir, lock));
-  assert.equal(vectorsFile(generated, { phpNamespace: NAMESPACE }), readFileSync(path.join(GOLDEN, 'ConformanceTest.php'), 'utf8'));
-});
-
 test('the backend is deterministic: the same input gives the same files', async () => {
   const { irs, lock } = await orderIrs();
   assert.deepEqual(files(irs, lock, { phpNamespace: NAMESPACE }), files(irs, lock, { phpNamespace: NAMESPACE }));
@@ -68,16 +60,13 @@ test('the namespace is required and must be a PHP namespace of letters, digits a
   const { irs, lock } = await orderIrs();
   for (const phpNamespace of [undefined, '', 'Bad Name', '\\Polyspec', 'Polyspec\\', 'Polyspec\\\\FsmTest', '1Fsm', 'Poly-spec']) {
     assert.throws(() => files(irs, lock, { phpNamespace }), /php namespace/, JSON.stringify(phpNamespace));
-    assert.throws(() => vectorsFile([], { phpNamespace }), /php namespace/, JSON.stringify(phpNamespace));
   }
 });
 
 test('every generated php file passes the php linter (php -l)', async (t) => {
   const dir = mkdtempSync(path.join(tmpdir(), 'fsm-php-backend-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  const { irs, lock } = await orderIrs();
-  const testModule = { path: 'Tests/ConformanceTest.php', content: vectorsFile(irs.map(ir => vectors(ir, lock)), { phpNamespace: NAMESPACE }) };
-  for (const file of [...await orderFiles(), testModule]) {
+  for (const file of await orderFiles()) {
     const target = path.join(dir, file.path);
     mkdirSync(path.dirname(target), { recursive: true });
     writeFileSync(target, file.content);

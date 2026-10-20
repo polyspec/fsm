@@ -1,7 +1,7 @@
 // Tests of the php-ext backend (packages/compiler/src/backends/php-ext.mjs, docs/spec/fsm.md, B-4 and B-6): the files of
 // the order example are the golden files under tests/golden/php-ext/src, byte for byte, in the order the backend returns them.
-// The test module is the golden tests/golden/php-ext/ConformanceTest.php, which equals the php golden ConformanceTest.php byte for byte, because
-// the php-ext package runs the same tests (docs/plans/fsm-v1/plan.md, C-2). The golden files were written by the generator once,
+// The php-ext package holds no test: the PHPUnit files of the php package
+// test the extension (docs/plans/fsm-v1/plan.md, C-2). The golden files were written by the generator once,
 // after a review of its output against B-6 (docs/plans/fsm-v1/plan.md, C-5). The config.m4 and the stub are checked by their own
 // tools in the package tests; here the stub passes the php linter, and the namespace and the extension name that the command
 // line passes are refused when they are not valid.
@@ -12,16 +12,14 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { files, vectorsFile } from '../src/backends/php-ext.mjs';
-import { files as phpFiles, vectorsFile as phpVectorsFile } from '../src/backends/php.mjs';
+import { files } from '../src/backends/php-ext.mjs';
+import { files as phpFiles } from '../src/backends/php.mjs';
 import { normalize } from '../src/core/normalize.mjs';
-import { vectors } from '../src/core/vectors.mjs';
 import { jsonStore } from '../src/store-json/store.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GOLDEN = path.join(HERE, 'golden/php-ext');
-const GOLDEN_PHP = path.join(HERE, 'golden/php');
 const NAMESPACE = 'Polyspec\\FsmTest';
 const EXT = 'polyspec_fsm_test';
 const NAMES = [
@@ -66,15 +64,6 @@ test('every generated file carries the fsm-gen header of its machine or of fsm, 
   }
 });
 
-test('the test module is the php golden ConformanceTest.php, byte for byte, and equals the php backend output', async () => {
-  const { irs, lock } = await orderIrs();
-  const generated = irs.map(ir => vectors(ir, lock));
-  const module = vectorsFile(generated, { phpNamespace: NAMESPACE });
-  assert.equal(module, readFileSync(path.join(GOLDEN, 'ConformanceTest.php'), 'utf8'));
-  assert.equal(module, readFileSync(path.join(GOLDEN_PHP, 'ConformanceTest.php'), 'utf8'));
-  assert.equal(module, phpVectorsFile(generated, { phpNamespace: NAMESPACE }));
-});
-
 test('the backend is deterministic and the php src files are not part of its output', async () => {
   const { irs, lock } = await orderIrs();
   assert.deepEqual(files(irs, lock, { phpNamespace: NAMESPACE, phpExtName: EXT }), files(irs, lock, { phpNamespace: NAMESPACE, phpExtName: EXT }));
@@ -85,7 +74,6 @@ test('the namespace and the extension name are required and must be valid, other
   const { irs, lock } = await orderIrs();
   for (const phpNamespace of [undefined, '', 'Bad Name', '\\Polyspec', 'Polyspec\\', 'Polyspec\\\\FsmTest', '1Fsm', 'Poly-spec']) {
     assert.throws(() => files(irs, lock, { phpNamespace, phpExtName: EXT }), /php namespace/, JSON.stringify(phpNamespace));
-    assert.throws(() => vectorsFile([], { phpNamespace }), /php namespace/, JSON.stringify(phpNamespace));
   }
   for (const phpExtName of [undefined, '', 'Polyspec', '1ext', 'poly-spec', 'poly spec']) {
     assert.throws(() => files(irs, lock, { phpNamespace: NAMESPACE, phpExtName }), /php extension name/, JSON.stringify(phpExtName));

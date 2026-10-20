@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: bf049a63e0754c73c4d112a4d4566dbf912b884f78d40ed49655cbe4631b82db -->
+<!-- source-sha256: bcc902a8a276fac770eadb2c7f4612fccc64bbc96ce695c2f51dda2499791e92 -->
 # polyspec/fsm-php
 
 [English](README.md)
@@ -40,8 +40,8 @@ test bed의 namespace는 `Polyspec\FsmTest`다. 이 README의 namespace(`Acme\Fs
 `"psr-4": { "Acme\\Fsm\\": "src/" }`를 쓰고 `files` 항목은 같은 `src/functions.php`로 둔다. `composer.json`을 쓴 뒤
 `composer dump-autoload`를 한 번 실행한다. 생성된 파일은 새 dump를 필요로 하지 않는다.
 
-정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --kind php --php-namespace 'Acme\Fsm' --out <file>`로 자신의 test
-파일에 쓴다(test bed는 `tests/ConformanceTest.php`에 쓴다).
+정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --out <file>`로 쓴 JSON 파일 하나이며 자신의 test가 읽는다(test bed는
+`tests/ConformanceTest.php`가 실행될 때 `contracts/conformance/vectors.json`을 읽는다).
 
 ## 생성 파일
 
@@ -111,7 +111,7 @@ E_CONFLICT 1 3 1
 
 `Error`를 잡아 `getCode()`와 세 속성을 읽는다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/ConformanceTest.php`의 vector가 이를 단언한다:
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `contracts/conformance/vectors.json`의 vector가 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -160,7 +160,7 @@ make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG
 make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `fsm-gen vectors --kind php`가 생성하는 `tests/ConformanceTest.php`는 PHPUnit test
+실행 결과는 89개 case 중 89개 통과다. `contracts/conformance/vectors.json`을 읽는 `tests/ConformanceTest.php`는 PHPUnit test
 `testConformance` 하나를 vector case마다 이름이 `<feature>__<id>`인 data set으로 실행하며, 각 data set은 손으로 쓴 `tests/ConformanceCase.php`의 검사를 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 생성 파일은 추적하지 않는다.
 `make fsm-php-gen`이 생성하며 `make test-php`가 먼저 실행한다. checkout의 PHP 릴리스는 8.4(`config/toolchain.json`)이며, `composer.json`의
 `config.platform.php`는 `composerPlatforms`(config/dependency-policy.json)의 정밀도로 쓴 kit의 PHP pin 8.4.0이고, `require.php`는 `>=8.4`다.

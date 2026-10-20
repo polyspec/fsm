@@ -61,8 +61,9 @@ use Polyspec\FsmTest\Order;
 $step = Order\apply(State::Draft, Event::Next, State::Draft);   // Step with ->to and ->changed
 ```
 
-The pure call and the persistence pattern are the same code as the php package's: the test bed copies `tests/ConformanceCase.php`
-and `examples/persist.php` from the php package, and `tests/ConformanceTest.php` is byte-identical to the php package's file.
+The pure call and the persistence pattern are the same code as the php package's: the test bed has no test of its own:
+the PHPUnit files of the php package (`packages/php/tests`) and its `examples/persist.php` test the extension, which its `composer.json`
+(`autoload-dev`) reaches.
 
 ## Errors
 
@@ -72,7 +73,7 @@ codes are the values of the enum `Code`. The C side throws the same class as the
 registered in `fsm.c`), so a `catch` written for the php kind works unchanged.
 
 Which properties a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), the same as the php kind's. The vectors of
-`tests/ConformanceTest.php` assert it on the built module:
+`packages/php/tests/ConformanceTest.php` assert it on the built module:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -99,7 +100,7 @@ make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_P
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-The run passes 89 of 89 cases: `tests/ConformanceTest.php` (byte-identical to the php package's file) runs its one PHPUnit test `testConformance` on every vector case,
-a data set named `<feature>__<id>`, against the built module, with the checks of `tests/ConformanceCase.php`. `make gen` runs after a build without `make clean`. The generated files and the copies
+The run passes 89 of 89 cases: `packages/php/tests/ConformanceTest.php` runs its one PHPUnit test `testConformance` on every vector case,
+a data set named `<feature>__<id>`, against the built module, with the checks of `packages/php/tests/ConformanceCase.php`. `make gen` runs after a build without `make clean`. The generated files
 are not tracked: `make fsm-php-ext-gen` writes them and `make test-php-ext` runs it first. `make parity-php-ext` checks that every vector
 case ran once and passed.

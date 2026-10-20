@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: bca8a98e6215519e726ddac1ce54ad3e3c1d0510ab3b32205ed9839cee4cc40a -->
+<!-- source-sha256: 6b66f7ac6b1022db113d01ca3e07f604171b69cc222198acb941018469073079 -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -176,15 +176,14 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 |---|---|---|---|
 | go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`(일반형: 각 case를 그 machine의 adapter로 실행), `vectors_test.go`(생성: vector case, 모든 machine의 key 표, machine마다 `conformance_test.go`의 interface를 구현하는 adapter 하나; import는 `<module>/src/<machine>` machine package뿐이므로 `vectors --kind go`는 `--go-module`을 받는다. persistence 예제는 test bed의 것이라 import하지 않으며, `decide`가 `examples.Decide`가 이름 붙이던 함수 타입을 반환한다(S-26-1-1)) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts`(`export * as order`) | `conformance.test.mjs`(`contracts/conformance/vectors.json`을 읽는다) |
-| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceCase.php`(손으로 쓴 검사), `ConformanceTest.php`(생성, case마다 method 하나) |
-| php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c`(공용 `<ns>\Fsm\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | php와 **바이트 동일**한 테스트. `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
+| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceCase.php`(손으로 쓴 검사), `ConformanceTest.php`(`contracts/conformance/vectors.json`을 읽고 case마다 data set 하나) |
+| php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c`(공용 `<ns>\Fsm\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | 자체 테스트 없음: php 패키지의 PHPUnit 파일이 extension을 로드해 실행됨(`composer.json`의 `autoload-dev`). `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
 | python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py`(`contracts/conformance/vectors.json`을 읽고 케이스 이름 그대로의 메서드 생성) |
 | rust | Cargo.toml(`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs`(`pub mod order; pub mod fsm;`), `order.rs`, `fsm.rs` | `conformance.rs`(`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`), persist 케이스는 `#[tokio::test]`, 생성 `tests/vectors.rs`는 `#![allow(non_snake_case)]`로 시작 |
 
 - `make layout-check`(kit, `config/layout.yml`과 `config/layout.kit.yml`의 공통 규칙을 alint로 검사)가 실패하는 경우(S-44):
   - 루트, `packages/`, 루트 `tests/`의 폴더나 파일이 layout이 선언한 것이 아니거나(S5, S7), `packages/` 아래 폴더가 `fsm-` 접두사를 갖거나, go.mod module 경로가 `github.com/polyspec/fsm/<folder>`가 아님
   - kind 패키지에 정규 파일(`README.md`, `README.ko.md`), 정규 폴더(`src`, `tests`, `examples`), kind의 필수 파일이 없거나, kind가 허용하지 않는 파일이 있음
-  - php와 php-ext의 `tests/` 파일이 바이트 단위로 다름
   - `PYTHONPATH`가 있거나, 경로가 저장소를 벗어나거나, `scripts/`나 `tests/` 아래 인프라 스크립트가 TypeScript가 아님(S9)
   필수 집합 밖의 허용 파일(rust의 두 test crate가 쓰는 dialect module `tests/common/mod.rs`)은 규칙 위 주석에 이유를 적는다.
 - kind는 패키지 항목에서 하나씩 추가한다.

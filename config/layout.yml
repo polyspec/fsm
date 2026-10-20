@@ -149,10 +149,9 @@ rules:
     level: error
     select: "packages/php"
     require:
-      - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
-    message: "C-2: the php package holds a file in each canonical folder (src, tests, examples)"
+    message: "C-2: the php package holds a file in each canonical folder (tests, examples; src is generated and not tracked)"
 
   - id: layout-php-files
     kind: file_absent
@@ -167,8 +166,6 @@ rules:
       - "!packages/php/tests/ConformanceTest.php"
       - "!packages/php/tests/PersistTest.php"
       - "!packages/php/examples/persist.php"
-      - "!packages/php/src/**/*.php"
-      - "!packages/php/examples/model/**"
     message: "C-2: a file that the php package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-rust-required
@@ -266,21 +263,7 @@ rules:
       - { kind: file_exists, paths: "{path}/README.ko.md" }
       - { kind: file_exists, paths: "{path}/composer.json" }
       - { kind: file_exists, paths: "{path}/composer.lock" }
-      - { kind: file_exists, paths: "{path}/tests/ConformanceCase.php" }
-      - { kind: file_exists, paths: "{path}/tests/ConformanceTest.php" }
-      - { kind: file_exists, paths: "{path}/tests/PersistTest.php" }
-      - { kind: file_exists, paths: "{path}/examples/persist.php" }
     message: "C-2: the php-ext package holds the canonical files and the required files of its kind"
-
-  - id: layout-php-ext-folders
-    kind: for_each_dir
-    level: error
-    select: "packages/php-ext"
-    require:
-      - { kind: file_exists, paths: "{path}/src/**" }
-      - { kind: file_exists, paths: "{path}/tests/**" }
-      - { kind: file_exists, paths: "{path}/examples/**" }
-    message: "C-2: the php-ext package holds a file in each canonical folder (src, tests, examples)"
 
   - id: layout-php-ext-files
     kind: file_absent
@@ -291,48 +274,16 @@ rules:
       - "!packages/php-ext/README.ko.md"
       - "!packages/php-ext/composer.json"
       - "!packages/php-ext/composer.lock"
-      - "!packages/php-ext/tests/ConformanceCase.php"
-      - "!packages/php-ext/tests/ConformanceTest.php"
-      - "!packages/php-ext/tests/PersistTest.php"
-      - "!packages/php-ext/examples/persist.php"
-      - "!packages/php-ext/src/**"
-      - "!packages/php-ext/examples/model/**"
     message: "C-2: a file that the php-ext package does not allow; add it to its canonical, required or allowed files with its reason"
-
-  # The php and php-ext packages hold the same tests (C-2): the php-ext tests are the php tests, byte for byte.
-  - id: layout-php-twin
-    kind: cross_file
-    level: error
-    relation: identical
-    source: { file: "packages/php/tests/ConformanceCase.php" }
-    targets: [{ file: "packages/php-ext/tests/ConformanceCase.php" }]
-    message: "C-2: the php-ext tests are byte-identical to the php tests"
-
-  - id: layout-php-twin-test
-    kind: cross_file
-    level: error
-    relation: identical
-    source: { file: "packages/php/tests/ConformanceTest.php" }
-    targets: [{ file: "packages/php-ext/tests/ConformanceTest.php" }]
-    message: "C-2: the php-ext tests are byte-identical to the php tests"
-
-  - id: layout-php-twin-persist
-    kind: cross_file
-    level: error
-    relation: identical
-    source: { file: "packages/php/tests/PersistTest.php" }
-    targets: [{ file: "packages/php-ext/tests/PersistTest.php" }]
-    message: "C-2: the php-ext tests are byte-identical to the php tests"
 
   # ---- The exceptions of fsm to the common layout rules (S9): each exception names its reason in the comment above it ----
 
   # The golden stub of the PHP extension is test data: packages/compiler/tests/golden/php-ext holds the expected output of
   # the compiler for the php-ext kind, which php-ext-backend.test.mjs compares with the generated files. It is not the stub
-  # of a package; the stub of the package is packages/php-ext/src/polyspec_<repository>.stub.php.
+  # of a package; the stub of the package is generated and not tracked.
   - id: php-ext-stub-place
     paths:
       - "**/*.stub.php"
-      - "!packages/php-ext/src/*.stub.php"
       - "!packages/compiler/tests/golden/php-ext/src/*.stub.php"
 
   # The conformance suite of the rust package stays in the crate: Cargo's test target tests/conformance/main.rs and its

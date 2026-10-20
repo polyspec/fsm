@@ -22,11 +22,11 @@
     ],
     "autoload-dev": {
         "psr-4": {
-            "Polyspec\\FsmTest\\Tests\\": "tests/",
-            "Polyspec\\FsmTest\\Model\\": "examples/model/"
+            "Polyspec\\FsmTest\\Tests\\": "../php/tests/",
+            "Polyspec\\FsmTest\\Model\\": "../php/examples/model/"
         },
         "files": [
-            "examples/persist.php"
+            "../php/examples/persist.php"
         ]
     },
     "config": {

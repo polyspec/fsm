@@ -19,6 +19,11 @@
 /packages/js/examples/model/
 /packages/python/src/polyspec_fsm/
 /packages/python/examples/model/
+/packages/php/src/
+/packages/php/examples/model/
+/packages/php-ext/src/
+/packages/php-ext/tests/
+/packages/php-ext/examples/
 /packages/gui/build/
 /packages/gui/public/assets/
 /packages/php*/.phpunit.result.cache
