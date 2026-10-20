@@ -86,6 +86,23 @@ const TARGETS = [
   { target: 'docs-build-test', line: /docs-build-test\.json/, needs: ['docs'] },
 ];
 
+// The kind whose generated files each target of TARGETS reads: no checkout tracks them, so the target generates them first
+// (AGENTS.md, Generated files).
+const GENERATES: ReadonlyMap<string, string> = new Map([
+  ['npm-types', 'npm'],
+  ['fsm-js-test', 'npm'],
+  ['test-go', 'go'],
+  ['test-php', 'php'],
+  ['test-php-ext', 'php-ext'],
+  ['test-python', 'python'],
+  ['test-rust', 'rust'],
+]);
+
+/** The line of the fsm-gen call that writes the src of the kind `kind`. */
+function genLine(kind: string): RegExp {
+  return new RegExp(`fsm-gen\\.mjs gen --project contracts --kind ${kind}( |$)`);
+}
+
 const ALL = [...INSTALL.keys()];
 
 /** A copy of the Makefile and of the files it reads, with empty locks; `installed` adds the stamps, each newer than its lock. */
@@ -116,7 +133,7 @@ function dryRun(dir: string, goal: string): string {
   delete env.MAKEFLAGS;
   delete env.MAKELEVEL;
   delete env.MFLAGS;
-  const result = spawnSync('make', ['-n', goal], { cwd: dir, encoding: 'utf8', env });
+  const result = spawnSync('make', ['-n', ...goal.split(' ')], { cwd: dir, encoding: 'utf8', env });
   assert.equal(result.status, 0, `make -n ${goal} failed:\n${result.stdout}${result.stderr}`);
   return result.stdout;
 }
@@ -237,6 +254,27 @@ test('each target installs its dependencies before its recipe', (t) => {
       const install = lineIndex(out, installLine(name));
       assert.ok(install >= 0 && install < run, `${target} does not install ${name} before its recipe:\n${out}`);
     }
+  }
+});
+
+test('each target generates the files of its kind after the install and before its recipe', (t) => {
+  const dir = sandbox(t);
+  for (const [target, kind] of GENERATES) {
+    const entry = TARGETS.find(candidate => candidate.target === target);
+    assert.ok(entry !== undefined, `TARGETS has no ${target}`);
+    const out = dryRun(dir, target);
+    const run = lineIndex(out, entry.line);
+    const gen = lineIndex(out, genLine(kind));
+    assert.ok(gen >= 0 && gen < run, `${target} does not generate the ${kind} files before its recipe:\n${out}`);
+    for (const name of entry.needs) assert.ok(lineIndex(out, installLine(name)) < gen, `${target} generates the ${kind} files before the install of ${name}:\n${out}`);
+  }
+});
+
+test('the gates that read generated files generate the files of every kind first', (t) => {
+  const dir = sandbox(t);
+  for (const gate of ['layout-check', 'parity-declarations-check', 'parity-check UNITS=vectors']) {
+    const out = dryRun(dir, gate);
+    for (const kind of ['go', 'npm', 'php', 'php-ext', 'python', 'rust']) assert.ok(lineIndex(out, genLine(kind)) >= 0, `${gate} does not generate the ${kind} files:\n${out}`);
   }
 });
 

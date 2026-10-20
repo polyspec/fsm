@@ -113,6 +113,7 @@ fsm-go-install:
 	cd packages/go && $(GO) mod download
 
 fsm-go-gen: DEST ?= packages/go
+fsm-go-gen: $(GO_DEP)
 fsm-go-gen:
 	$(FSM_GEN) gen --project contracts --kind go --go-module $(GO_MODULE) --out $(DEST)/src
 	$(FSM_GEN) vectors --project contracts --kind go --go-module $(GO_MODULE) --out $(DEST)/tests/vectors_test.go
@@ -123,7 +124,7 @@ fsm-go-gen:
 	cd $(DEST) && $(GO) tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...
 
 # fsm-go-test runs the conformance cases and the persist example with GOPROXY=off, so that the modules must already be downloaded.
-fsm-go-test: $(GO_DEP)
+fsm-go-test: $(GO_DEP) fsm-go-gen
 	GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests
 
 # fsm-js-install installs the dependencies of package-lock.json (the orm release); gen and test need them.
@@ -132,13 +133,14 @@ fsm-js-install:
 	cd packages/js && $(NPM) ci --allow-remote=root --no-audit --no-fund
 
 fsm-js-gen: DEST ?= packages/js
+fsm-js-gen: $(NPM_DEP)
 fsm-js-gen:
 	$(FSM_GEN) gen --project contracts --kind npm --out $(DEST)/src
 	$(FSM_GEN) vectors --project contracts --kind npm --out $(DEST)/tests/vectors.mjs
 	packages/js/node_modules/.bin/orm-gen gen --set contracts/schema/dbspec-set.json --out $(DEST)/examples/model
 
 # fsm-js-test runs the conformance cases of the npm package; the kit reporter names every file from the checkout root.
-fsm-js-test: $(NPM_DEP)
+fsm-js-test: $(NPM_DEP) fsm-js-gen
 	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- packages/js/tests/conformance.test.mjs
 
 # fsm-php-install downloads the release zips of orm and ordered-json into var/composer-artifacts, the artifact repository of
@@ -149,13 +151,14 @@ fsm-php-install:
 	cd packages/php && $(COMPOSER) install --no-interaction --no-progress
 
 fsm-php-gen: DEST ?= packages/php
+fsm-php-gen: $(PHP_DEP)
 fsm-php-gen:
 	$(FSM_GEN) gen --project contracts --kind php --php-namespace '$(PHP_NAMESPACE)' --out $(DEST)/src
 	$(FSM_GEN) vectors --project contracts --kind php --php-namespace '$(PHP_NAMESPACE)' --out $(DEST)/tests/ConformanceTest.php
 	packages/php/vendor/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out $(DEST)/examples/model --namespace '$(PHP_NAMESPACE)\Model'
 
 # fsm-php-test runs phpunit on the tests of packages/php (the conformance cases and the persist example).
-fsm-php-test: $(PHP_DEP)
+fsm-php-test: $(PHP_DEP) fsm-php-gen
 	$(RUN_TESTS) phpunit --cwd packages/php --results .results/php.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests
 
 # fsm-php-ext-install is the install of the extension: the same Composer packages as packages/php (composer.lock).
@@ -167,6 +170,7 @@ fsm-php-ext-install:
 # fsm-php-ext-gen writes the generated files of the extension (src/) and of the tests and the persist example, which are copies
 # of the php package's files, so gen-check proves that they are the same bytes.
 fsm-php-ext-gen: DEST ?= packages/php-ext
+fsm-php-ext-gen: $(PHP_EXT_DEP)
 fsm-php-ext-gen:
 	mkdir -p $(DEST)/src $(DEST)/tests $(DEST)/examples
 	$(FSM_GEN) gen --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --php-ext-name $(PHP_EXT_NAME) --out $(DEST)/src
@@ -177,11 +181,11 @@ fsm-php-ext-gen:
 	packages/php-ext/vendor/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out $(DEST)/examples/model --namespace '$(PHP_NAMESPACE)\Model'
 
 # fsm-php-ext-build compiles the extension in packages/php-ext/src with phpize, ./configure and make; the module is $(PHP_EXT_MODULE).
-fsm-php-ext-build:
+fsm-php-ext-build: fsm-php-ext-gen
 	cd packages/php-ext/src && phpize && ./configure && make
 
 # fsm-php-ext-test builds the extension and runs the conformance cases and the persist example with the built module.
-fsm-php-ext-test: $(PHP_EXT_DEP)
+fsm-php-ext-test: $(PHP_EXT_DEP) fsm-php-ext-gen
 	$(MAKE) fsm-php-ext-build
 	$(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php-ext --results .results/php-ext.json --inputs packages/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests
 
@@ -203,6 +207,7 @@ fsm-python-install:
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
 fsm-python-gen: DEST ?= packages/python
+fsm-python-gen: $(PYTHON_DEP)
 fsm-python-gen: export PYTHONDONTWRITEBYTECODE := 1
 fsm-python-gen:
 	$(FSM_GEN) gen --project contracts --kind python --out $(DEST)/src/polyspec_fsm
@@ -211,7 +216,7 @@ fsm-python-gen:
 
 # fsm-python-test runs the tests through the kit runner with --venv, which runs the venv interpreter only when pyvenv.cfg names the
 # install-tools Python; it runs from the checkout root with root-relative paths.
-fsm-python-test: $(PYTHON_DEP)
+fsm-python-test: $(PYTHON_DEP) fsm-python-gen
 fsm-python-test: export PYTHONDONTWRITEBYTECODE := 1
 fsm-python-test:
 	@test -x $(PY_VENV)/bin/python || { echo "fsm-python-test: $(PY_VENV) is missing; run make install first"; exit 1; }
@@ -230,8 +235,15 @@ fsm-rust-gen:
 	$(FSM_GEN) vectors --project contracts --kind rust --out $(DEST)/tests/conformance/vectors.rs
 
 # fsm-rust-test runs cargo on the conformance test of packages/rust through the kit reporter.
-fsm-rust-test: $(RUST_DEP)
+fsm-rust-test: $(RUST_DEP) fsm-rust-gen
 	$(RUN_TESTS) cargo --results .results/rust.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance
+
+# fsm-gen generates the files of every kind, which no checkout tracks: fsm-gen and orm-gen write them (AGENTS.md, Generated files). The
+# gates that read them (the layout, the parity declarations and the parity check) and every test of a kind depend on the gen of
+# its kind, so a fresh checkout generates what it reads.
+.PHONY: fsm-gen
+fsm-gen: fsm-go-gen fsm-js-gen fsm-php-gen fsm-php-ext-gen fsm-python-gen fsm-rust-gen
+layout-check parity-declarations-check parity-check: fsm-gen
 
 # install is for a fresh clone and for CI, which runs `make install` once and then `make check`. kit's install runs its bootstrap
 # as install-kit (K246-2); fsm-install adds the package dependencies above, so a later run downloads nothing.
@@ -385,21 +397,21 @@ test-js: fsm-js-test
 # The three targets run them on each dialect: sqlite (a temporary file), postgres (FSM_TEST_PG_DSN) and mysql (FSM_TEST_MYSQL_DSN).
 # The two files run one after the other: on a server dialect they share the persist table, which each case clears.
 NPM_PERSIST_TESTS := --test-concurrency=1 --test-name-pattern=persist packages/js/tests/conformance.test.mjs packages/js/tests/persist.test.mjs
-npm-persist-test: $(NPM_DEP) $(DB_DEP)
+npm-persist-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen
 	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
-npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP)
+npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP) fsm-js-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
-npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP)
+npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP) fsm-js-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
 # npm-types runs tests/npm-types: tsc compiles tests/npm-types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/fsm-v1/checklist.md, S-09-2). It is a tool test with
 # its own record, so the conformance test of the npm kind holds only vector cases for kit's parity check.
-npm-types: $(NPM_DEP)
+npm-types: $(NPM_DEP) fsm-js-gen
 	$(RUN_TESTS) node --results .results/npm-types.json --inputs packages/js -- tests/npm-types
 
 
@@ -413,7 +425,7 @@ test-php: fsm-php-test
 test-rust: fsm-rust-test
 # rust-persist-test runs tests/persist.rs of packages/rust on sqlite: two transitions of one row at the same time, and a deadlock
 # runs the persistence transaction again while another database error does not (docs/spec/fsm.md, B-4; S-31, S-44-9).
-rust-persist-test: $(RUST_DEP)
+rust-persist-test: $(RUST_DEP) fsm-rust-gen
 	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test persist
 # python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/mise/shims/python3
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
@@ -435,44 +447,44 @@ define require_dsn
 test -n "$${$(1)}" || { echo "$@ needs $(1): a server dialect never skips (docs/plans/fsm-v1/plan.md, C-6)" >&2; exit 2; }
 endef
 
-go-persist-test-postgres: $(GO_DEP)
+go-persist-test-postgres: $(GO_DEP) fsm-go-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-postgres.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
 
-go-persist-test-mysql: $(GO_DEP)
+go-persist-test-mysql: $(GO_DEP) fsm-go-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-mysql.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
 
-rust-persist-test-postgres: $(RUST_DEP)
+rust-persist-test-postgres: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
 
-rust-persist-test-mysql: $(RUST_DEP)
+rust-persist-test-mysql: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
 
-php-persist-test-postgres: $(PHP_DEP)
+php-persist-test-postgres: $(PHP_DEP) fsm-php-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-postgres.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
-php-persist-test-mysql: $(PHP_DEP)
+php-persist-test-mysql: $(PHP_DEP) fsm-php-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-mysql.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
-php-ext-persist-test-postgres: $(PHP_EXT_DEP)
+php-ext-persist-test-postgres: $(PHP_EXT_DEP) fsm-php-ext-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	$(MAKE) fsm-php-ext-build
 	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension packages/php-ext/src/modules/polyspec_fsm_test.so --cwd packages/php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
-php-ext-persist-test-mysql: $(PHP_EXT_DEP)
+php-ext-persist-test-mysql: $(PHP_EXT_DEP) fsm-php-ext-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	$(MAKE) fsm-php-ext-build
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension packages/php-ext/src/modules/polyspec_fsm_test.so --cwd packages/php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
-python-persist-test-postgres: $(PYTHON_DEP)
+python-persist-test-postgres: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	FSM_TEST_DIALECT=postgres $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-postgres.json --inputs packages/python --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
 
-python-persist-test-mysql: $(PYTHON_DEP)
+python-persist-test-mysql: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-mysql.json --inputs packages/python --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
