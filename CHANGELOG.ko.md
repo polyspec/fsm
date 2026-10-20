@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a077f08552448b73dbf307f3019f956494b2fa66bbd5a830294a944c2b2b0b79 -->
+<!-- source-sha256: 6a4900457616880e03c3f457d0a987ee6bd26eaf0c7725f2f4a20f77a37dc629 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- php와 php-ext의 composer.json은 purrphp/yaml fork의 vcs repository를 선언하고, link lock은 orm과 ordered-json을 path dist로, purrphp/yaml을 v1.0.0-p1로 해석한다(S-45-24)
 - .gitignore는 kit link가 Go module마다 쓰는 go.work와 go.work.sum을 무시한다(S-45-26)
 - php 적재기 functions.php는 function_exists guard 없이 모든 machine의 함수를 require하고, packages/php/phpunit.xml.dist는 bootstrap을 두지 않으므로 extension 실행은 library의 PHPUnit 파일을 싣고 그 소스는 싣지 않는다(S-45-25)
 - S-45-23: `config/duplication.json`의 예외(golden 출력, `fixture:`)와 `config/parity.json`의 tool 넷(compiler, db store, GUI, 루트 도구의 node test, `test:`)이 kit의 kind로 시작하는 이유를 가지며 `CHECK_TARGETS`가 `divergence-check`를 실행한다. RED `make divergence-check` exit 2, divergence 5개("gives a reason of no kind that kit defines")와 `make kit-check` exit 2("CHECK_TARGETS runs no divergence-check"); GREEN 둘 다 exit 0이고 `make duplication-check`와 `make parity-declarations-check`는 여전히 exit 0이다. 이 항목은 S-45-22도 바로잡는다. S-45-22의 줄은 sync 뒤 kit-check exit 0이라 하지만 이 gate가 아직 없었다. (S-45-23)
