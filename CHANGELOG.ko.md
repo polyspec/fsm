@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: f2368365e6035cb02e4fe57470ccf10fa7ac7afb0eb48216d55f606072277653 -->
+<!-- source-sha256: 1e1144c782f3468d2bafa1f31ec9e37bfbd54eb4b0d8b2b41af8be9c0622cf60 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-11: `config/rebuild.json`에서 `paths`를 없애고(kit K286이 layout으로 tool source를 찾는다) 분류가 없던 도구 다섯을 분류한다. `packages/gui/scripts/make-favicon.mjs`와 검사 `scripts/check-name.mts`, `scripts/check-readmes.mts`는 이유와 함께 policy, `packages/gui/scripts/manual-check.mjs`는 ecosystem(playwright), `scripts/root-option.mts`는 ecosystem(node:util)이다. RED `make rebuild-check` exit 2, `config/rebuild.json: / must NOT have additional properties {"additionalProperty":"paths"}`이고 제거 뒤에는 분류 없는 도구 5개; GREEN exit 0. (S-45-11)
 - S-45-5-1: kit K285는 extension을 로드해 packages/php의 PHPUnit 파일을 실행하므로 상대 경로가 없어졌다. `packages/php-ext/composer.json`에는 `autoload-dev`가 없고, `config/parity.json`은 php-ext에 자기 root만 주며(kit이 layout으로 packages/php의 root를 인정한다), Makefile에는 `fsm-php-ext-test`, `fsm-php-ext-build`, `fsm-php-ext-clean`이 없고(kit이 `var/php-ext`에서 빌드한다. `test-php-ext`와 `build-php-ext`는 `fsm-php-ext-gen`에 의존한다), php-ext persist target은 `var/php-ext`의 extension으로 `packages/php`를 실행한다. RED `grep -rn "\.\./php" packages/php-ext/composer.json Makefile config` 6줄; GREEN 0줄이고 `make parity-declarations-check` exit 0. `make test-php-ext`는 여기서 아직 실행되지 않는다: kit `scripts/kit/php-extension.mts:62-77`과 `:112-123`이 추적하는 파일로 검사하고 빌드하는데 `packages/php-ext/src`는 생성되며 추적하지 않으므로(S-45-8) `build-php-ext`가 "the stub of the extension is missing"으로 멈추고, Composer vendor도 PHP 8.4에서 platform 검사에서 멈춘다(S-45-7). (S-45-5-1)
 - S-45-6: `make duplication-check` exit 0: golden 출력은 이유와 함께 제외하고(S-45-6-1), 코드 중복은 각각 한 module에 있으며(S-45-6-2), orm-gen 산출물은 추적하지 않는다(S-45-6-3). RED exit 2, 중복 213개; GREEN exit 0. (S-45-6)
 - S-45-6-2: fsm의 모든 코드 중복을 한 module로 옮겼다. 항목 S-45-6-2-1부터 S-45-6-2-5가 compiler source, compiler test, GUI, db와 rust test, 루트 script와 test를 덮는다. RED `make duplication-check` exit 2, S-45-6 항목을 시작할 때 중복 213개; GREEN exit 0, "no piece of code exists twice". (S-45-6-2)

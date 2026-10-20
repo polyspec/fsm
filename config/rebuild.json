@@ -1,11 +1,30 @@
 {
   "schema": 1,
-  "comment": "The class of each tool of fsm that is checked by make rebuild-check (S1). A tool of an ecosystem that fsm uses as it is is not listed here. The decoder of the render options of the edit form is kit's own implementation until crudui 0.0.8 is released; its rebuild record says why none fits.",
-  "paths": ["packages/gui/client/form-state.ts"],
+  "comment": "The class of each tool of fsm that is checked by make rebuild-check (S1); kit finds the tool sources by the layout of the repository and this file classifies them. A tool of an ecosystem that fsm uses as it is is not listed here. The decoder of the render options of the edit form is kit's own implementation until crudui 0.0.8 is released; its rebuild record says why none fits.",
   "tools": {
     "packages/gui/client/form-state.ts": {
       "kind": "record",
       "record": "docs/rebuild/crudui-render-options.md"
+    },
+    "packages/gui/scripts/make-favicon.mjs": {
+      "kind": "policy",
+      "reason": "a one-time generator of the 16x16 icon public/favicon.ico, which is committed; no build or CI step runs it, and an ecosystem image tool would be a dependency for one fixed icon"
+    },
+    "packages/gui/scripts/manual-check.mjs": {
+      "kind": "ecosystem",
+      "tool": "playwright"
+    },
+    "scripts/check-name.mts": {
+      "kind": "policy",
+      "reason": "the check of one rule of this repository, that no tracked file names the library by its old name outside the reasoned entries; no ecosystem tool states that rule"
+    },
+    "scripts/check-readmes.mts": {
+      "kind": "policy",
+      "reason": "the check of the required sections and the Korean twin of each README pair of this repository, which no ecosystem tool states"
+    },
+    "scripts/root-option.mts": {
+      "kind": "ecosystem",
+      "tool": "node:util"
     }
   }
 }
