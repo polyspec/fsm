@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 1952ca8df24c2c9860016d8f40942035bbc212b18f05cac56f41a1533a59d818 -->
+<!-- source-sha256: 606c1ccf49cff64e2c5f8effe0379221c2810840c8c390be81058a0f5c09703d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-15: `PRINCIPLES.md`와 `PRINCIPLES.ko.md`가 @polyspec/kit 0.0.54의 새 문구를 가지며 `make kit-sync`가 썼다. RED `make kit-check` exit 2, finding 2개; GREEN exit 0. (S-45-15)
 - S-45-13: 저장소의 Composer platform은 PHP 8.4.1 하나다. `.php-version`의 minor에 PHPUnit 13이 필요로 하는 patch 1을 더한 것이다: `packages/php/composer.json`과 `packages/php-ext/composer.json`의 `config.platform.php`, 그리고 `config/dependency-policy.json`의 `composerPlatforms` 둘. RED `make dependency-policy-check` finding 14개 중 4개가 "the PHP platform is 8.4.0, the one platform of this repository is 8.4.1"; GREEN finding 10개이며 platform에 대한 것은 없다(lock, review 기록, orm release는 남는다: S-45-7). (S-45-13)
 - S-45-5: kit K297이 extension source를 디스크에서 읽으므로 `make lint-php-ext`와 `make build-php-ext`가 생성되고 추적하지 않는 `packages/php-ext/src`에서 실행된다. arginfo header는 더 이상 php-ext backend가 쓰지 않는다: `make fsm-php-ext-gen`이 C 파일과 stub을 위해 fsm-gen을 실행한 뒤 kit `php-ext-arginfo`를 실행하고, 이것이 PHP의 gen_stub.php(생태계 도구, S1)로 `polyspec_fsm_arginfo.h`를 쓴다. C 파일은 gen_stub이 짓는 arginfo 이름(`arginfo_<namespace>_<function>`, `arginfo_class_<namespace>_<class>_<method>`)을 쓰고, stub은 gen_stub이 promoted property를 거부하므로 Step의 property를 평범한 constructor 옆에 선언한다. extension을 두 번째 이름으로 빌드하던 compiler test는 header가 필요하여 제거했다(extension의 빌드는 kit build-php-ext다). RED `make lint-php-ext` exit 1, "the stub hash is missing"; GREEN `make lint-php-ext` exit 0("the names, the stub and the arginfo header of the extension match"), `make build-php-ext` exit 0("built var/php-ext/polyspec_fsm.so"), compiler test 339개 통과, `make lint-ts` exit 0. `make test-php-ext`는 빌드한 뒤 Composer vendor의 platform 검사(">= 8.5.0", PHP 8.4.26)에서 멈춘다: S-45-7. (S-45-5)
 - S-45-12: Makefile의 `CHECK_TARGETS`가 fsm의 runtime에 대해 kit-gates가 이름 짓는데 빠져 있던 gate 열(rules-check, rebuild-check, language-check, test-markers-check, duplication-check, lint-php, lint-python, lint-go, lint-php-ext, test-php-ext)을 실행하고, `make kit-sync`가 PRINCIPLES.md와 PRINCIPLES.ko.md의 새 문구를 쓴다. RED `make kit-check` exit 2, finding 12개(CHECK_TARGETS에 없는 gate 10개, 다른 복사본 2개); GREEN exit 0이고 `tests/make-install` 16개 통과. (S-45-12)
