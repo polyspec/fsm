@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-29: the rust tests handle each `Err` that clippy of kit K334 reports through `unwrap_or_else` (P8): `persist_dsn` of `tests/common/mod.rs` takes sqlite only when `FSM_TEST_DIALECT` is not present and fails on a value that is not unicode, which it turned into sqlite before; `server_cases` recovers a poisoned lock with its need stated in `#[allow(clippy::disallowed_methods, reason = ...)]` (the lock guards no data and the case that panicked reports its own failure); the parse of a case input (`parsed` of `tests/conformance/vectors.rs`) and the read and parse of the vector file panic through a `match`, as the closures did. RED `make lint-rust` exit 2, 9 errors "use of a disallowed method `core::result::Result::unwrap_or_else`" (7 sites, `tests/common/mod.rs` counted by both test crates); GREEN exit 0, and the conformance test 290 passed and the persist test 4 passed. (S-45-29)
 - kit-check passes with lint-rust in CHECK_TARGETS and the copies of kit 0.0.54 (S-45-27)
 - CHECK_TARGETS runs lint-rust and the copies synced from kit (clippy.toml, ruff.toml, .golangci.yml) are current (S-45-27)
 - The link lock of php and php-ext resolves purrphp/yaml v1.0.0-p1 with orm and ordered-json as path dists, and composer validate passes on the link files (S-45-24)

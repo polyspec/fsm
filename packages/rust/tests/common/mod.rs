@@ -38,7 +38,11 @@ pub fn scratch_directory() -> Scratch {
 /// file of the case's scratch directory; postgres and mysql take their DSN from FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN, and a missing
 /// DSN fails the case, so no dialect is skipped. The DSN of the dialect is returned with its name.
 pub fn persist_dsn(scratch: &Scratch) -> (String, String) {
-    let dialect = std::env::var("FSM_TEST_DIALECT").unwrap_or_else(|_| "sqlite".to_string());
+    let dialect = match std::env::var("FSM_TEST_DIALECT") {
+        Ok(dialect) => dialect,
+        Err(std::env::VarError::NotPresent) => "sqlite".to_string(),
+        Err(error) => panic!("FSM_TEST_DIALECT cannot be read: {error}"),
+    };
     let variable = match dialect.as_str() {
         "sqlite" => return (dialect, format!("sqlite://{}/persist.db", scratch.0.display())),
         "postgres" => "FSM_TEST_PG_DSN",
@@ -55,6 +59,10 @@ pub fn persist_dsn(scratch: &Scratch) -> (String, String) {
 static SERVER_CASES: Mutex<()> = Mutex::new(());
 
 /// The guard that serializes a persist case on a server dialect while it lives; none on sqlite, whose case has its own file.
+#[allow(
+    clippy::disallowed_methods,
+    reason = "a case that panics poisons the lock; the lock guards no data and that case reports its own failure, so the next case takes the guard and runs instead of failing for it"
+)]
 pub fn server_cases(dialect: &str) -> Option<MutexGuard<'static, ()>> {
     if dialect == "sqlite" {
         None

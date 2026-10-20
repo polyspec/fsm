@@ -38,11 +38,22 @@ fn failed(expect: &Value) -> bool {
 fn input_of(case: &Value) -> Value {
     let text = case["input"].as_str().expect("the input of a from_code case is a string");
     match case.get("input_type").and_then(Value::as_str) {
-        None => Value::from(text.parse::<i64>().unwrap_or_else(|error| panic!("{text} is no i64: {error}"))),
-        Some("float") => Value::from(text.parse::<f64>().unwrap_or_else(|error| panic!("{text} is no f64: {error}"))),
+        None => Value::from(parsed::<i64>(text, "i64")),
+        Some("float") => Value::from(parsed::<f64>(text, "f64")),
         Some("string") => Value::from(text),
-        Some("bool") => Value::from(text.parse::<bool>().unwrap_or_else(|error| panic!("{text} is no bool: {error}"))),
+        Some("bool") => Value::from(parsed::<bool>(text, "bool")),
         Some(other) => panic!("the input type {other} is not known"),
+    }
+}
+
+/// The value of the text of a case as a T; a text that names none fails the case with the text and the error of the parse.
+fn parsed<T: std::str::FromStr>(text: &str, kind: &str) -> T
+where
+    T::Err: std::fmt::Display,
+{
+    match text.parse::<T>() {
+        Ok(value) => value,
+        Err(error) => panic!("{text} is no {kind}: {error}"),
     }
 }
 
@@ -244,8 +255,14 @@ fn run(machine: &str, case: &Value) {
 /// One trial per vector case of every machine, in the order of the vector file, named vectors::<feature>__<id>.
 pub fn trials() -> Vec<Trial> {
     let file = vectors_file();
-    let text = std::fs::read_to_string(&file).unwrap_or_else(|error| panic!("read {}: {error}", file.display()));
-    let document: Value = serde_json::from_str(&text).unwrap_or_else(|error| panic!("parse {}: {error}", file.display()));
+    let text = match std::fs::read_to_string(&file) {
+        Ok(text) => text,
+        Err(error) => panic!("read {}: {error}", file.display()),
+    };
+    let document: Value = match serde_json::from_str(&text) {
+        Ok(document) => document,
+        Err(error) => panic!("parse {}: {error}", file.display()),
+    };
     document["machines"]
         .as_array()
         .expect("the machines of the vector file")

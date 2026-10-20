@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: e75c38e04511833785769a8e5e37316d1e692f7836cf187fedba927e4660633f -->
+<!-- source-sha256: 106b0592c71482b6cfc35d3f026f1054e494cdc4bdf43a7c4f4bdede0fed7cee -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -52,4 +52,5 @@
 | S-45-25 | php 적재기는 extension에 대한 guard를 갖지 않는다. extension 실행은 packages/php의 PHPUnit 파일을 싣고 그 소스는 싣지 않는다(kit K329) | spec B-6, packages/compiler/src/backends/php.mjs, packages/php/phpunit.xml.dist, the php golden files | `make divergence-check` and `make test-php-ext CASES=Conformance` | [o] |
 | S-45-26 | .gitignore는 kit link가 Go module마다 쓰는 go.work와 go.work.sum을 무시한다 | .gitignore | `git check-ignore packages/go/go.work packages/go/go.work.sum` | [o] |
 | S-45-27 | CHECK_TARGETS가 lint-rust를 실행하고, kit의 동기화 사본(clippy.toml, ruff.toml, .golangci.yml, kit-bootstrap.mk)이 최신이다 | Makefile, the synced copies | `make kit-check` | [o] |
+| S-45-29 | lint-rust: rust test는 unwrap_or_else 대신 각 Err를 처리한다(kit K334). unicode가 아닌 FSM_TEST_DIALECT는 실패하고, poisoned case lock의 복구는 그 필요를 밝히며, 실패한 parse나 read는 match로 panic한다 | packages/rust/tests/common/mod.rs, packages/rust/tests/conformance/vectors.rs | `make lint-rust`, `node node_modules/@polyspec/kit/dist/run-tests.mjs cargo --results .results/rust-conformance.json --inputs packages/rust --inputs contracts/conformance/vectors.json -- --manifest-path packages/rust/Cargo.toml --test conformance`, `node node_modules/@polyspec/kit/dist/run-tests.mjs cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/schema/persist.dbs -- --manifest-path packages/rust/Cargo.toml --test persist` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
