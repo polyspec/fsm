@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c87c689cd8104013337ab2d55a8fadd5cc7292e4c00dd29de4e61864be798754 -->
+<!-- source-sha256: 988c26657a04de39d16a22c30cbde1843af3d5e970c0ac83a01d421c8d6bfb77 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-35: `make kit-sync`와 `make hooks`는 kit 74d2e87a의 사본을 받는다(K380). `.githooks/commit-msg`는 이제 `make commit-msg-hook`을 실행하며, 메시지 검사는 kit의 것이다(`check-commits.mts --message`, 이전과 같은 스크립트). RED 커밋된 `.githooks/commit-msg`가 `make hooks`가 쓰는 hook과 다르다. GREEN `make kit-check`, `make hooks-check`, `make layout-check`, `make docs-check` exit 0. (S-45-35)
 - S-45-14-1: `make dependency-review UPDATE=1`은 S-45-31의 relink가 tracked lock을 link lock 위에 복사한 뒤 packages/php의 최신 stable phpunit 13.4.3을 link lock에 기록한다(kit link.mts:429). RED `make dependency-policy-check` exit 2, "packages/php/composer.json phpunit/phpunit: the lock holds 13.4.2, the review ... recorded 13.4.3"; update 뒤 GREEN exit 0. (S-45-14-1)
 - S-44-18: gui는 edit form의 render options를 link로 연결한 crudui의 `decodeFormRenderOptions`로 decode한다(crudui 0.0.8을 기다리지 않는다). 로컬 decoder `decodeRenderOptions`와 그 rebuild record `docs/rebuild/crudui-render-options.md`는 없어졌고, `config/rebuild.json`은 `form-state.ts`를 더 분류하지 않는다. gui form-state test는 전후 모두 통과한다(43 passed, 0 failed). `make lint-ts`, `make rebuild-check`, `make docs-check`는 exit 0. (S-44-18)
 - S-45-34: `fsm-php-install`과 `fsm-php-ext-install`은 `composer install` 바로 뒤에 `make link`를 실행한다(P30). 그래서 tracked lock에서 설치한 vendor가 link를 대신하지 않는다. RED `tests/make-install/make-install.test.mts`의 `node --test` exit 1, "no make link right after the composer install of fsm-php-install"(16 passed, 1 failed); GREEN exit 0, 17 passed, 0 failed; `make link-state-check` exit 0; `make kit-check` exit 0. (S-45-34)
