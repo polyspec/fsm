@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: eeca624d55a720c69fb18c40fe15c1d46bd39454a58e5ab10a912801c2c8acbc -->
+<!-- source-sha256: 82230bc0dac1a0276209220ad10ea8ddda96aaef61d03111c1f7766142bb6205 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-23: `config/duplication.json`의 예외(golden 출력, `fixture:`)와 `config/parity.json`의 tool 넷(compiler, db store, GUI, 루트 도구의 node test, `test:`)이 kit의 kind로 시작하는 이유를 가지며 `CHECK_TARGETS`가 `divergence-check`를 실행한다. RED `make divergence-check` exit 2, divergence 5개("gives a reason of no kind that kit defines")와 `make kit-check` exit 2("CHECK_TARGETS runs no divergence-check"); GREEN 둘 다 exit 0이고 `make duplication-check`와 `make parity-declarations-check`는 여전히 exit 0이다. 이 항목은 S-45-22도 바로잡는다. S-45-22의 줄은 sync 뒤 kit-check exit 0이라 하지만 이 gate가 아직 없었다. (S-45-23)
 - S-45-22: `make kit-sync`가 PRINCIPLES.md와 PRINCIPLES.ko.md의 현재 문구를 썼다. RED `make kit-check` exit 2, finding 2개(복사본이 다르다); GREEN exit 0. (S-45-22)
 - S-45-21: `CHECK_TARGETS`가 `bypass-check`("no test, script or Makefile impersonates CI, assumes a gate up to date or skips a hook")를 실행하고, `make kit-sync`가 PRINCIPLES.md, PRINCIPLES.ko.md, lint 설정 `config/php-lint`의 새 문구를 썼다. RED `make kit-check` exit 2, "CHECK_TARGETS runs no bypass-check"; GREEN exit 0과 `make bypass-check` exit 0. (S-45-21)
 - S-45-19: `AGENTS.md`와 `AGENTS.ko.md`의 모든 rule은 `Own:` 또는 `Refines <id>:`로 시작한다(kit K300): kit 복사본, `Makefile` 규약, README, 외부 출처, 경로, 옛 이름, 생성 파일, 병렬 기록의 rule은 Own이고, link rule은 P30(link는 `packages/gui`, `packages/db`, `packages/php`를 건너뛰는 `--project` 없이 root에서 실행한다), 기본 테스트는 S7, test runner는 S3, 소유 검사는 P20, 체크리스트는 P24를 구체화하며 각각 이 저장소의 용어를 이름 짓는다. RED `make rules-check` exit 2, finding 13개("the rule begins with neither `Own:` nor `Refines <id>:`"); GREEN exit 0. (S-45-19)

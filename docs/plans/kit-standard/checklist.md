@@ -46,4 +46,5 @@
 | S-45-20 | kit-check: CHECK_TARGETS runs link-state-check (P30 as kit K305-1 states it) and the PRINCIPLES copies match | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-21 | kit-check: CHECK_TARGETS runs bypass-check (kit K-series) and the copies of kit match (PRINCIPLES, config/php-lint) | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md, config/php-lint | `make kit-check` | [o] |
 | S-45-22 | kit-check: the PRINCIPLES copies match @polyspec/kit again | PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
+| S-45-23 | divergence-check (kit K315, P32): every exception of config/duplication.json and the tools of config/parity.json carries a reason that begins with a kind of kit; CHECK_TARGETS runs divergence-check | config/duplication.json, config/parity.json, Makefile | `make divergence-check` | [o] |
 | S-46 | Every unit of config/parity.json holds in every implementation and cites the spec requirements its tests name (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |

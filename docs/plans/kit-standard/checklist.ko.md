@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: eea863d99d63f707b49f4964a3cbd7379bb01099853969a9e4f8a48c8246d71d -->
+<!-- source-sha256: e67f36de40003c3fc77d6715642fdd53b6dfa71b5b7e7d6e9842e52df35d60c0 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -47,4 +47,5 @@
 | S-45-20 | kit-check: CHECK_TARGETS가 link-state-check(kit K305-1이 말하는 P30)를 실행하고 PRINCIPLES 복사본이 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-21 | kit-check: CHECK_TARGETS가 bypass-check를 실행하고 kit의 복사본(PRINCIPLES, config/php-lint)이 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md, config/php-lint | `make kit-check` | [o] |
 | S-45-22 | kit-check: PRINCIPLES 복사본이 @polyspec/kit과 다시 같다 | PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
+| S-45-23 | divergence-check(kit K315, P32): config/duplication.json의 모든 예외와 config/parity.json의 tools는 kit의 kind로 시작하는 이유를 가진다. CHECK_TARGETS가 divergence-check를 실행한다 | config/duplication.json, config/parity.json, Makefile | `make divergence-check` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
