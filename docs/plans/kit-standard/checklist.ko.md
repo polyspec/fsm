@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 553d49ec5ba0cfbe05465e7674aaf5b2cdb6587ec4898276fe20d84f932c1204 -->
+<!-- source-sha256: f099adc2a87fbf05d747da009e498cde98ccf32aa697ba027335fb8855de8976 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -16,7 +16,7 @@
 | S-45-6-2 | duplication-check: compiler, db, gui와 그 test의 코드 중복을 각각 한 module로 옮긴다 | packages/compiler, packages/db, packages/gui sources and tests | `make duplication-check` | [ ] |
 | S-45-6-3 | duplication-check: orm-gen 산출물(packages/db/src/models/models.ts와 packages/*/examples/model)의 중복이 없다 | regenerated models of db, js, go, php, php-ext and python | `make duplication-check` | [o] |
 | S-45-7 | dependency-policy-check: 환경 문제가 아닌 finding은 kit 결함이 정리된 뒤 고친다 | config/dependency-review.json, config/dependency-policy.json | `make dependency-policy-check` | [ ] |
-| S-45-8 | fsm-gen과 orm-gen 산출물은 추적하지 않고 make가 생성한다 | the .gitignore entries, the fsm-<package>-gen prerequisites of every target that reads the output, no gen-check, config/parity.json, config/layout.yml, docs/plans/fsm-v1/plan.md, the README excerpts | `git ls-files packages/go/src \| wc -l` prints 0 | [ ] |
+| S-45-8 | fsm-gen과 orm-gen 산출물은 추적하지 않고 make가 생성한다 | the .gitignore entries, the fsm-<package>-gen prerequisites of every target that reads the output, no gen-check, config/parity.json, config/layout.yml, docs/plans/fsm-v1/plan.md, the README excerpts | `git ls-files packages/go/src \| wc -l` prints 0 | [o] |
 | S-45-8-1 | 생성된 산출물을 읽는 모든 target은 해당 fsm-<package>-gen target에 의존한다 | Makefile, tests/make-install | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts` | [o] |
 | S-45-8-2 | gen-check를 제거한다: packages/compiler의 golden test가 각 kind의 출력을 증명한다 | scripts/gen-check.mts, tests/gen-check, config/gen-check.json, the gen-check targets of the Makefile, the plan text | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/compiler-golden.json --inputs packages/compiler -- packages/compiler/tests/go-backend.test.mjs packages/compiler/tests/npm-backend.test.mjs packages/compiler/tests/php-backend.test.mjs packages/compiler/tests/php-ext-backend.test.mjs packages/compiler/tests/python-backend.test.mjs packages/compiler/tests/rust-backend.test.mjs` | [o] |
 | S-45-8-3 | 각 kind의 생성 파일은 추적하지 않고 git에서 무시한다 | .gitignore, config/parity.json, config/layout.yml, docs/plans/fsm-v1/plan.md, the READMEs | `git ls-files packages/go/src \| wc -l` prints 0 | [o] |

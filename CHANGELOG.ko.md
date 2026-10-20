@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4f59317f9815f7e377081065a243a2d5bf61464c54cff74ae81e99669707131b -->
+<!-- source-sha256: 4de684d1ecc177e2a20136c931393757b97c651679cc53c4210764d56695505e -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-8: fsm-gen과 orm-gen 산출물은 여섯 kind와 packages/db 모두에서 make가 생성하고 추적하지 않는다. 항목 S-45-8-1부터 S-45-8-9는 target이 gen target에 의존하게 한 것, golden 파일을 위해 gen-check를 없앤 것, 실행할 때 `contracts/conformance/vectors.json`을 읽는 언어별 손으로 쓴 conformance test, php의 PHPUnit 파일을 실행하는 php-ext, untrack을 담는다. RED 항목 전의 main에서 `git ls-files packages/go/src | wc -l`이 6을 출력한다. GREEN HEAD의 worktree에서 0을 출력하고, 거기서 `make fsm-go-gen`과 go runner `./tests -run "TestConformance|TestPersist"`가 295개 중 295개 통과한다(S-45-8-3). go vectors 결함(`cannot use "1" as int64`)은 생성 파일과 함께 없어졌다(S-45-8-7). (S-45-8)
 - S-45-6-3: orm-gen 산출물에는 `make duplication-check`가 나열하는 중복이 없다. 추적하는 orm-gen 파일이 더 이상 없기 때문이다(S-45-8-3부터 S-45-8-9). 로그의 `grep -cE "models/|examples/model"`이 0을 출력한다(이전에는 `packages/db/src/models`와 js, php, go의 model에 11개). 산출물 자체의 중복 제거는 orm KSTD-3에 남는다. (S-45-6-3)
 - S-45-4: orm-gen 산출물의 lint는 추적하는 파일을 읽지 않는다. `packages/php*/examples/model`과 `packages/python/examples/model`은 추적하지 않으므로(S-45-8-5, S-45-8-6) `make lint-php` exit 0(Item.php와 bootstrap.php의 phpcs finding 14개가 없어졌다)과 `make lint-python` exit 0(`ruff format --check`와 vulture 통과)이며, 둘 다 untrack 뒤에 측정했다. orm-gen 산출물의 format은 orm KSTD-3에 남는다. (S-45-4)
 - S-45-8-3: fsm-gen이나 orm-gen이 쓰는 어떤 파일도 추적하지 않는다. go, js, php, php-ext, python, rust의 `src/`, go, js, php, python의 `examples/model`, `packages/db/src/models`, php-ext의 test와 example 폴더 전부를 git이 무시하고, `.gitignore`는 `/packages/php-ext/src/`가 덮는 phpize 목록을 없애며, `config/layout.yml`은 각 package의 손으로 쓴 파일만 요구하고 허용하고, `config/parity.json`은 php-ext를 php의 test 파일에 묶고(roots `packages/php-ext`와 `packages/php`), plan과 README는 golden 파일과 vector 파일을 가리킨다. RED S-45-8-4에서 S-45-8-9 전의 main worktree에서 `git ls-files packages/go/src | wc -l`이 6을 출력하고 여섯 `src/` 폴더에 추적하는 파일이 67개; GREEN HEAD의 worktree(checkout의 `var`와 `node_modules`를 연결)에서 모든 `src/` 폴더와 models의 개수가 0이고, `make fsm-go-gen`이 go 파일을 쓰며, go runner `./tests -run "TestConformance|TestPersist"`가 295개 중 295개 통과하고, 같은 worktree에서 `make layout-check`(alint), `make parity-declarations-check`, `make docs-check`, `make owner-validate`가 생성 파일 없이 통과하며, `make duplication-check`가 그 경로를 하나도 나열하지 않고 중복 77개를 보고한다(S-45-6 항목을 시작할 때 213개, golden 제외 뒤 183개). (S-45-8-3)
