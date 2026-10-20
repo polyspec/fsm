@@ -44,4 +44,5 @@
 | S-45-18 | kit-check and link-metadata-check: CHECK_TARGETS runs link-metadata-check (P30) and the installed metadata of the linked packages equals their source | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make link-metadata-check` | [o] |
 | S-45-19 | rules-check: every rule of AGENTS.md begins with Own: or Refines <id>: (kit K300) | AGENTS.md, AGENTS.ko.md | `make rules-check` | [o] |
 | S-45-20 | kit-check: CHECK_TARGETS runs link-state-check (P30 as kit K305-1 states it) and the PRINCIPLES copies match | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
+| S-45-21 | kit-check: CHECK_TARGETS runs bypass-check (kit K-series) and the copies of kit match (PRINCIPLES, config/php-lint) | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md, config/php-lint | `make kit-check` | [o] |
 | S-46 | Every unit of config/parity.json holds in every implementation and cites the spec requirements its tests name (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |

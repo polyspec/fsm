@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 6b7752b9047f8fac42fb1a9f952a2de7be9efc0e013ae09c5881364958e2b356 -->
+<!-- source-sha256: f8847b19f47298fcfd33c8a80e7a6f07457dd9384e45b2afb1253fb43529cef7 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -45,4 +45,5 @@
 | S-45-18 | kit-check와 link-metadata-check: CHECK_TARGETS가 link-metadata-check(P30)를 실행하고 연결된 package의 설치된 metadata가 source와 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make link-metadata-check` | [o] |
 | S-45-19 | rules-check: AGENTS.md의 모든 rule은 Own: 또는 Refines <id>:로 시작한다(kit K300) | AGENTS.md, AGENTS.ko.md | `make rules-check` | [o] |
 | S-45-20 | kit-check: CHECK_TARGETS가 link-state-check(kit K305-1이 말하는 P30)를 실행하고 PRINCIPLES 복사본이 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
+| S-45-21 | kit-check: CHECK_TARGETS가 bypass-check를 실행하고 kit의 복사본(PRINCIPLES, config/php-lint)이 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md, config/php-lint | `make kit-check` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
