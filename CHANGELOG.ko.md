@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 07cfbe53af1cbf2fe301075b7ad67ff1c8384f3df1ef0b24a25edf654b440f65 -->
+<!-- source-sha256: 4830f90328b5c0a9d9639377af81e491a2c498f05447a4dad11bc778bc5fdf45 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,7 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- S-45-7-1: php와 php-ext의 Composer vendor가 link를 통해 PHP 8.4.26에서 실행된다: provider에 대한 `link.mjs link`(kit K304) 뒤 installed.json이 연결된 source의 요구를 가지고 platform_check.php가 더 이상 PHP >= 8.5.0을 묻지 않으며, `make lint-php` exit 0, `make test-php-ext` 통과, 다섯 unit의 `make parity-check`가 여섯 implementation 모두에서 통과한다(1764 case). (S-45-7-1)
+- S-45-7-1: php와 php-ext의 Composer vendor가 link를 통해 PHP 8.4.26에서 실행된다: provider에 대한 `link.mjs link`(kit K304) 뒤 installed.json이 연결된 source의 요구를 가지고 platform_check.php가 더 이상 PHP >= 8.5.0을 묻지 않으며, `make lint-php` exit 0, `make test-php-ext` 통과, 다섯 unit의 `make parity-check`가 여섯 implementation 모두에서 통과한다(1764 case). K304의 link 뒤 2026-10-20에 측정했다. (S-45-7-1)
 - S-45-5-1: `make test-php-ext`가 추적하는 설정의 상대 경로 없이 packages/php의 PHPUnit 파일을 extension에서 실행한다(S-45-17이 통과하게 했다): `CASES=Conformance`가 `var/php-ext/polyspec_fsm.so`에서 290개, `CASES=Persist`가 15개 case를 실행하고, `make lint-php-ext` exit 0, `make parity-declarations-check` exit 0. (S-45-5-1)
 - S-45-17: `make test-php-ext`가 연결된 orm으로 통과한다(kit K304가 연결된 source의 metadata를 유지하므로 PHP 8.4.26 platform 검사가 더 이상 >= 8.5.0을 요구하지 않는다). S10의 선언 검사가 extension의 enum 11개가 library의 enum과 달리 final이 아님을 찾았으므로(class State, Event, Code final: extension false, library true) 생성되는 C가 enum을 등록한 뒤 각각 `ZEND_ACC_FINAL`을 설정하고, kit은 packages/php에 `--filter`만 넘기므로 `packages/php/phpunit.xml.dist`가 test 폴더를 이름 짓는다(`config/layout.yml`에 이유와 함께 허용). RED `make test-php-ext` exit 2와 차이 11개, 이어 설정이 없으면 "phpunit packages/php: no test ran"; GREEN `CASES=Conformance`가 extension에서 290개, `CASES=Persist`가 15개 case를 실행하고, 다섯 unit의 `make parity-check`가 여섯 implementation 모두에서 통과하며(1764 case), `make lint-php` exit 0, compiler test 339개가 통과한다. (S-45-17)
 - S-45-16: php 적재기 `src/functions.php`는 machine의 namespace에 `initial` 함수가 아직 없을 때만 그 함수를 require하므로 library와 extension이 공존한다(spec B-6이 두 언어로 먼저 이를 말한다). 원인: `make test-php-ext`가 extension을 로드한 채 packages/php의 PHPUnit 파일을 실행하는데 적재기가 함수를 다시 선언했다(`Cannot redeclare function Polyspec\FsmTest\InReview\initial()`). RED `php-backend.test.mjs` exit 1, 7개 통과 1개 실패(guard가 있는 적재기); GREEN exit 0, compiler test 339개 통과, `make test-php-ext CASES=Conformance`가 extension에서 290개 case를 실행한다. (S-45-16)

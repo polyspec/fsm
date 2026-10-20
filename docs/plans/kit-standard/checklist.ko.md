@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 01fbb94915a00046f9418c71dd6c7d5bfd177ad22345d9c39ad73b899e68204a -->
+<!-- source-sha256: 8168fe0e72f61a3781decdbc7db01c3bd9776c8aecae4fcb3c9ef23a728f2dd6 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -22,7 +22,7 @@
 | S-45-6-2-5 | duplication-check: tests/make-install과 scripts/check-name.mts의 코드 중복을 각각 함수 하나로 옮긴다 | tests/make-install, scripts/check-name.mts | `make duplication-check` | [o] |
 | S-45-6-3 | duplication-check: orm-gen 산출물(packages/db/src/models/models.ts와 packages/*/examples/model)의 중복이 없다 | regenerated models of db, js, go, php, php-ext and python | `make duplication-check` | [o] |
 | S-45-7 | dependency-policy-check: 환경 문제가 아닌 finding은 kit 결함이 정리된 뒤 고친다 | config/dependency-review.json, config/dependency-policy.json | `make dependency-policy-check` | [ ] |
-| S-45-7-1 | php와 php-ext의 Composer vendor가 local link를 통해 PHP 8.4.26에서 실행된다: platform_check.php가 PHP >= 8.5.0을 요구하지 않아 lint-php, test-php-ext, parity-check가 실행된다(S-45-7의 vendor와 runtime 부분) | packages/php/vendor and packages/php-ext/vendor (the link, not committed) | `make lint-php` | [!] 원인: kit K304: kit link가 release된 package의 metadata를 installed.json에 남기므로 vendor의 platform 검사가 PHP >= 8.5.0을 요구한다; 재시도: K304가 전달된 뒤: link를 다시 실행하고 PHP 8.4.26에서 lint-php, test-php-ext, parity-check를 실행한다 |
+| S-45-7-1 | php와 php-ext의 Composer vendor가 local link를 통해 PHP 8.4.26에서 실행된다: platform_check.php가 PHP >= 8.5.0을 요구하지 않아 lint-php, test-php-ext, parity-check가 실행된다(S-45-7의 vendor와 runtime 부분) | packages/php/vendor and packages/php-ext/vendor (the link, not committed) | `make lint-php` | [~] |
 | S-45-8 | fsm-gen과 orm-gen 산출물은 추적하지 않고 make가 생성한다 | the .gitignore entries, the fsm-<package>-gen prerequisites of every target that reads the output, no gen-check, config/parity.json, config/layout.yml, docs/plans/fsm-v1/plan.md, the README excerpts | `git ls-files packages/go/src \| wc -l` prints 0 | [o] |
 | S-45-8-1 | 생성된 산출물을 읽는 모든 target은 해당 fsm-<package>-gen target에 의존한다 | Makefile, tests/make-install | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts` | [o] |
 | S-45-8-2 | gen-check를 제거한다: packages/compiler의 golden test가 각 kind의 출력을 증명한다 | scripts/gen-check.mts, tests/gen-check, config/gen-check.json, the gen-check targets of the Makefile, the plan text | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/compiler-golden.json --inputs packages/compiler -- packages/compiler/tests/go-backend.test.mjs packages/compiler/tests/npm-backend.test.mjs packages/compiler/tests/php-backend.test.mjs packages/compiler/tests/php-ext-backend.test.mjs packages/compiler/tests/python-backend.test.mjs packages/compiler/tests/rust-backend.test.mjs` | [o] |
