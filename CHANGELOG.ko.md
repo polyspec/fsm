@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a11fbd93aab028d32d6cada51d3bdd37ae151a4ff83673fa4fe302c8831e1658 -->
+<!-- source-sha256: 3409631ad14aa8bdc8d31390ff5d0fb158f8ea33c514d1adc794f6f3272b864a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-6-2-1: `packages/compiler/src`의 중복이 없다. backend는 `SHARED`, `pascal`, `text`, `header`를 새 `backends/common.mjs`에서 가져오고, json store와 mermaid store는 machine file의 load와 save, canonical state를 새 `store-common/machine-files.mjs`에서 가져오며, `fsm-gen`과 `fsm-db`는 flag, 공통 option, command 실행을 새 `cli/command-line.mjs`에서 가져오고, `lock.mjs`의 `renameState`는 name test가 쓴다. 동작은 바뀌지 않는다: `packages/compiler/tests`의 336개 test, packages/db의 `db-store`, `cli`, `command` test(30), `make lint-ts`가 통과한다. RED `make duplication-check` exit 2, 중복 77개 중 10개가 `packages/compiler/src`와 `packages/db/src`에 있다(backend 블록 3, store 블록 3, command line 블록 4); GREEN exit 2, 중복 67개이며 그 두 폴더에는 없다. (S-45-6-2-1)
 - S-45-10: 예약된 machine key `examples`, `vectors`, `machines`, `expectation`, `lookup`을 docs/spec/fsm.md B-5와 `reserved.mjs`(`GO_TEST_NAMES`)에서 없앤다. 이 key들은 생성되던 go test 파일의 식별자 이름이었고 fsm-gen은 더 이상 test 파일을 쓰지 않는다(S-45-8-7). keyword, go 사전 선언 식별자, `internal`, `init`, `testdata`, `vendor`는 이유와 함께 남는다. RED `validate-names.test.mjs` exit 1, 23 통과 1 실패(`vectors`라는 machine은 E_KEY_RESERVED); GREEN exit 0, 24 통과, packages/compiler/tests의 test 471개와 mermaid parse test 통과, `make lint-ts` exit 0. (S-45-10)
 - S-45-5: fsm의 S10을 쓰인 대로 적용한다. PHP library `packages/php`는 `polyspec/fsm`이고(이전 `polyspec/fsm-php`), extension `polyspec/fsm-php-ext`는 `polyspec_fsm`으로 빌드되며(이전 `polyspec_fsm_test`) stub은 `polyspec_fsm.stub.php`이고, Makefile, `config/parity.json`, compiler golden 파일과 예, CLI usage, README가 따른다. RED `make lint-php-ext` exit 2, finding 4개(extension 이름이 `polyspec/fsm-php-php-ext`, 두 번째 stub `polyspec_fsm_test.stub.php`, `polyspec_fsm_test`를 가리키는 `PHP_NEW_EXTENSION`, 없는 stub `polyspec_fsm_php.stub.php`); rename 뒤 finding 2개가 남는다. `config.m4`와 stub을 찾지 못한다: kit `scripts/kit/php-extension.mts:63-77`과 `:118`이 추적하는 파일로만 읽는데 생성되는 `packages/php-ext/src`는 추적하지 않는다(S-45-8). extension은 kit의 PHP 8.4.26으로 `polyspec_fsm.so`로 빌드되고 로드된다(`extension_loaded("polyspec_fsm")` true, machine 함수 등록). compiler test 336 통과, `layout-check`, `parity-declarations-check`, `readme-check`, `owner-validate`, `name-check` 통과. php-ext의 PHPUnit 실행은 Composer vendor의 platform 검사(">= 8.5.0", PHP 8.4.26)에서 멈춘다: S-45-7. (S-45-5)
 - S-45-9: `PRINCIPLES.md`와 `PRINCIPLES.ko.md`가 @polyspec/kit 0.0.54의 K277 문구를 가지며 `make kit-sync`가 썼다. RED `make kit-check` exit 2, finding 2개(두 복사본이 다르다); GREEN `make kit-check` exit 0. (S-45-9)

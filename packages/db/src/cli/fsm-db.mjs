@@ -18,6 +18,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { baseOptions, readFlags, runCommandLine } from '../../../compiler/src/cli/command-line.mjs';
 import { copy, run } from '../../../compiler/src/core/run.mjs';
 import { jsonStore } from '../../../compiler/src/store-json/store.mjs';
 import { mermaidStore } from '../../../compiler/src/store-mermaid/store.mjs';
@@ -29,7 +30,6 @@ const USAGE = 'usage: fsm-db check [--project <dir>]\n'
   + '       fsm-db lock [--project <dir>] [--rename machine.old=new]...\n'
   + '       fsm-db copy --to json|mermaid --root <dir> [--project <dir>]\n'
   + '       fsm-db copy --from json|mermaid --root <dir> [--project <dir>]';
-const RENAME = /^([^.=]+)\.([^.=]+)=([^.=]+)$/;
 
 const notConfigured = (at, message) => ({ code: 'E_STORE_NOT_CONFIGURED', machine: null, path: at, message });
 const isObject = value => typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -39,29 +39,14 @@ function parse(argv) {
   const [command, ...rest] = argv;
   if (!['install', 'check', 'lock', 'copy'].includes(command)) return { usage: `unknown command ${command ?? '(none)'}` };
   const allowed = { install: ['--project'], check: ['--project'], lock: ['--project', '--rename'], copy: ['--project', '--root', '--to', '--from'] }[command];
-  const options = {
-    command, project: process.cwd(), renames: [], to: undefined, from: undefined, root: undefined,
-  };
-  for (let index = 0; index < rest.length; index += 1) {
-    const flag = rest[index];
-    if (!allowed.includes(flag)) return { usage: `${flag ?? 'argument'} is not an option of ${command}` };
-    const value = rest[index + 1];
-    if (value === undefined || value.startsWith('--')) return { usage: `${flag} needs a value` };
-    index += 1;
-    if (flag === '--project') {
-      options.project = path.resolve(value);
-    } else if (flag === '--root') {
-      options.root = path.resolve(value);
-    } else if (flag === '--to' || flag === '--from') {
-      if (!['json', 'mermaid'].includes(value)) return { usage: `${flag} takes json or mermaid` };
-      if (options.to !== undefined || options.from !== undefined) return { usage: 'copy takes one of --to and --from' };
-      options[flag.slice(2)] = value;
-    } else {
-      const match = RENAME.exec(value);
-      if (match === null) return { usage: '--rename takes machine.old=new' };
-      options.renames.push({ machine: match[1], from: match[2], to: match[3] });
-    }
-  }
+  const options = { ...baseOptions(command), to: undefined, from: undefined };
+  const bad = readFlags(options, command, rest, allowed, (flag, value) => {
+    if (!['json', 'mermaid'].includes(value)) return { usage: `${flag} takes json or mermaid` };
+    if (options.to !== undefined || options.from !== undefined) return { usage: 'copy takes one of --to and --from' };
+    options[flag.slice(2)] = value;
+    return undefined;
+  });
+  if (bad !== undefined) return bad;
   if (command === 'copy' && ((options.to === undefined && options.from === undefined) || options.root === undefined)) {
     return { usage: 'copy needs --to json|mermaid or --from json|mermaid, and --root <dir>' };
   }
@@ -117,31 +102,4 @@ async function execute({
   }
 }
 
-/** Runs the command line and returns its exit code. */
-async function main(argv) {
-  const parsed = parse(argv);
-  if ('usage' in parsed) {
-    process.stderr.write(`[fsm-db] usage: ${parsed.usage}\n${USAGE}\n`);
-    return 2;
-  }
-  const findings = await execute(parsed);
-  if (findings.length > 0) {
-    for (const { code, machine, path: at, message } of findings) {
-      process.stderr.write(`[fsm-db] ${code} ${machine ?? '-'} ${at}: ${message}\n`);
-    }
-    return 1;
-  }
-  process.stdout.write(`[fsm-db] ${parsed.command}: ok\n`);
-  return 0;
-}
-
-main(process.argv.slice(2)).then(
-  code => {
-    process.exitCode = code;
-  },
-  error => {
-    // An unexpected rejection is never swallowed: it is printed and the command exits 1.
-    process.stderr.write(`[fsm-db] ${error instanceof Error ? error.stack : String(error)}\n`);
-    process.exitCode = 1;
-  },
-);
+runCommandLine('fsm-db', process.argv.slice(2), { usage: USAGE, parse, execute });

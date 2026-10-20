@@ -4,6 +4,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as lists from '../src/core/reserved.mjs';
+import { renameState } from '../src/core/lock.mjs';
 import { validate } from '../src/core/validate.mjs';
 
 /** A valid machine: draft (initial) -next-> paid -next-> done (final). */
@@ -21,17 +22,6 @@ function names(change) {
   const definition = base();
   change(definition);
   return shape([definition]);
-}
-
-/** Renames the state `from` of a machine, in its states and in its edges. */
-function renameState(definition, from, to) {
-  for (const state of definition.states) if (state.key === from) state.key = to;
-  for (const event of definition.events) {
-    for (const edge of event.edges) {
-      if (edge.from === from) edge.from = to;
-      if (edge.to === from) edge.to = to;
-    }
-  }
 }
 
 const at = (code, machine, path) => ({ code, machine, path });

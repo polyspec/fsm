@@ -22,6 +22,7 @@ import path from 'node:path';
 import { jsonText, writeAtomic } from '../io/files.mjs';
 import { KINDS } from '../backends/index.mjs';
 import { copy, run } from '../core/run.mjs';
+import { baseOptions, readFlags, runCommandLine } from './command-line.mjs';
 import { jsonStore } from '../store-json/store.mjs';
 import { mermaidStore } from '../store-mermaid/store.mjs';
 import { writeGenerated } from './write-generated.mjs';
@@ -31,7 +32,6 @@ const USAGE = 'usage: fsm-gen check [--project <dir>]\n'
   + '       fsm-gen copy --to json|mermaid --root <dir> [--project <dir>]\n'
   + '       fsm-gen vectors --out <file> [--project <dir>]\n'
   + `       fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]   (kind: ${KINDS.join(', ')})`;
-const RENAME = /^([^.=]+)\.([^.=]+)=([^.=]+)$/;
 const PHP_NAMESPACE = /^[A-Za-z][A-Za-z0-9]*(\\[A-Za-z][A-Za-z0-9]*)*$/;
 const PHP_EXTENSION = /^[a-z][a-z0-9_]*$/;
 const PHP_KINDS = ['php', 'php-ext'];
@@ -51,19 +51,10 @@ function parse(argv) {
     gen: ['--project', '--out', '--kind', '--go-module', '--php-namespace', '--php-ext-name'],
   }[command];
   const options = {
-    command, project: process.cwd(), renames: [], to: undefined, root: undefined, out: undefined, kind: undefined, goModule: undefined, phpNamespace: undefined, phpExtName: undefined,
+    ...baseOptions(command), to: undefined, out: undefined, kind: undefined, goModule: undefined, phpNamespace: undefined, phpExtName: undefined,
   };
-  for (let index = 0; index < rest.length; index += 1) {
-    const flag = rest[index];
-    if (!allowed.includes(flag)) return { usage: `${flag ?? 'argument'} is not an option of ${command}` };
-    const value = rest[index + 1];
-    if (value === undefined || value.startsWith('--')) return { usage: `${flag} needs a value` };
-    index += 1;
-    if (flag === '--project') {
-      options.project = path.resolve(value);
-    } else if (flag === '--root') {
-      options.root = path.resolve(value);
-    } else if (flag === '--out') {
+  const bad = readFlags(options, command, rest, allowed, (flag, value) => {
+    if (flag === '--out') {
       options.out = path.resolve(value);
     } else if (flag === '--kind') {
       if (!KINDS.includes(value)) return { usage: `--kind takes one of ${KINDS.join(', ')}` };
@@ -76,15 +67,13 @@ function parse(argv) {
     } else if (flag === '--php-ext-name') {
       if (!PHP_EXTENSION.test(value)) return { usage: '--php-ext-name takes lowercase letters, digits and underscores, starting with a letter, such as polyspec_fsm' };
       options.phpExtName = value;
-    } else if (flag === '--to') {
+    } else {
       if (!['json', 'mermaid'].includes(value)) return { usage: '--to takes json or mermaid' };
       options.to = value;
-    } else {
-      const match = RENAME.exec(value);
-      if (match === null) return { usage: '--rename takes machine.old=new' };
-      options.renames.push({ machine: match[1], from: match[2], to: match[3] });
     }
-  }
+    return undefined;
+  });
+  if (bad !== undefined) return bad;
   if (command === 'copy' && (options.to === undefined || options.root === undefined)) {
     return { usage: 'copy needs --to json|mermaid and --root <dir>' };
   }
@@ -152,31 +141,4 @@ async function execute({ command, project, renames, to, root, out, kind, goModul
   return (await run(command, configured.store, { renames })).findings;
 }
 
-/** Runs the command line and returns its exit code. */
-async function main(argv) {
-  const parsed = parse(argv);
-  if ('usage' in parsed) {
-    process.stderr.write(`[fsm-gen] usage: ${parsed.usage}\n${USAGE}\n`);
-    return 2;
-  }
-  const findings = await execute(parsed);
-  if (findings.length > 0) {
-    for (const { code, machine, path: at, message } of findings) {
-      process.stderr.write(`[fsm-gen] ${code} ${machine ?? '-'} ${at}: ${message}\n`);
-    }
-    return 1;
-  }
-  process.stdout.write(`[fsm-gen] ${parsed.command}: ok\n`);
-  return 0;
-}
-
-main(process.argv.slice(2)).then(
-  code => {
-    process.exitCode = code;
-  },
-  error => {
-    // An unexpected rejection is never swallowed: it is printed and the command exits 1.
-    process.stderr.write(`[fsm-gen] ${error instanceof Error ? error.stack : String(error)}\n`);
-    process.exitCode = 1;
-  },
-);
+runCommandLine('fsm-gen', process.argv.slice(2), { usage: USAGE, parse, execute });

@@ -88,7 +88,7 @@ export function canonicalLock(lock) {
 }
 
 /** Renames the state `from` to `to` in the states and in every edge of `definition`. */
-function renameState(definition, from, to) {
+export function renameState(definition, from, to) {
   for (const state of definition.states) if (state.key === from) state.key = to;
   for (const event of definition.events) {
     for (const edge of event.edges) {

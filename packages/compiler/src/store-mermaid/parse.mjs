@@ -6,6 +6,7 @@
 // definition is ever returned.
 
 import { KEY_PATTERN } from '../core/validate.mjs';
+import { canonicalState } from '../store-common/machine-files.mjs';
 
 const TITLE = /^title: (\S+)$/;
 const LABEL = /^ *state "([^"]*)" as (\S+)$/;
@@ -173,12 +174,7 @@ export function parseMermaid(text, fileMachine) {
     findings,
     definition: {
       machine: title[1],
-      states: states.map(state => {
-        const out = { key: state.key, code: state.code };
-        if (state.initial === true) out.initial = true;
-        if (state.final === true) out.final = true;
-        return out;
-      }),
+      states: states.map(canonicalState),
       events,
     },
   };
