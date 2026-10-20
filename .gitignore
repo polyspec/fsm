@@ -13,48 +13,25 @@
 /packages/python/**/__pycache__/
 /packages/python/.venv/
 /packages/python/src/*.egg-info/
-# The files that fsm-gen and orm-gen write (make fsm-gen; AGENTS.md, Generated files). The golden files of
-# packages/compiler/tests/golden are their tracked proof.
+# The files that fsm-gen and orm-gen write (make fsm-gen and make fsm-db-gen; AGENTS.md, Generated files). The golden files of
+# packages/compiler/tests/golden are their tracked proof. /packages/php-ext/src/ holds the phpize output too.
 /packages/db/src/models/
 /packages/go/src/
 /packages/go/examples/model/
 /packages/js/src/
 /packages/js/examples/model/
-/packages/python/src/polyspec_fsm/
-/packages/rust/src/
-/packages/python/examples/model/
 /packages/php/src/
 /packages/php/examples/model/
 /packages/php-ext/src/
 /packages/php-ext/tests/
 /packages/php-ext/examples/
+/packages/python/src/polyspec_fsm/
+/packages/python/examples/model/
+/packages/rust/src/
 /packages/gui/build/
 /packages/gui/public/assets/
 /packages/php*/.phpunit.result.cache
 /packages/php*/.phpunit.cache/
-# phpize output of the php-ext package, built in its src/ (docs/plans/fsm-v1/plan.md, C-1): config.m4 and the generated sources stay tracked.
-/packages/php-ext/src/Makefile
-/packages/php-ext/src/Makefile.fragments
-/packages/php-ext/src/Makefile.objects
-/packages/php-ext/src/*.dep
-/packages/php-ext/src/*.la
-/packages/php-ext/src/*.lo
-/packages/php-ext/src/*.o
-/packages/php-ext/src/.libs/
-/packages/php-ext/src/autom4te.cache/
-/packages/php-ext/src/build/
-/packages/php-ext/src/config.h
-/packages/php-ext/src/config.h.in
-/packages/php-ext/src/config.h.in~
-/packages/php-ext/src/config.log
-/packages/php-ext/src/config.nice
-/packages/php-ext/src/config.status
-/packages/php-ext/src/configure
-/packages/php-ext/src/configure.ac
-/packages/php-ext/src/configure~
-/packages/php-ext/src/libtool
-/packages/php-ext/src/modules/
-/packages/php-ext/src/run-tests.php
 
 # Generated files of the install, build, cache and test runs (AGENTS.md, Generated files)
 vendor/
