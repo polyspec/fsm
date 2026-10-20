@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: e3abb7663ea80f7dc6fa2d2e80439e00541a36aa0b5ca95b9b8b740389413224 -->
+<!-- source-sha256: 6df80f8d50b5c0eae4e221f5cb126599cfec38c6849f768f5eee5f0b604bae57 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -56,4 +56,5 @@
 | S-45-30 | hooks-check: .githooks/pre-commit은 kit이 쓰는 hook이다(kit K210은 stage된 generated file을 거부한다). make hooks가 쓰며, config/generated.json은 hook이 거부하는 fsm의 generated path(fsm-gen과 orm-gen의 출력, build, cache, test 출력, kit link의 go.work)를 선언한다 | .githooks/pre-commit, config/generated.json | `make hooks-check`, `make staged-generated-hook` | [o] |
 | S-45-28 | lint-go: go example의 Open은 errors.Join으로 database를 닫고, 오류를 _에 대입하지 않는다 | packages/go/examples/persist.go | `make lint-go` | [o] |
 | S-45-31 | lint-php (S2): php generator는 require만 하는 loader src/functions.php를 쓰지 않는다. composer autoload files는 generator가 밝히는 각 machine의 namespaced functions.php를 직접 나열한다(plan.md C-3 표, spec B-6) | packages/compiler/src/backends/php.mjs, packages/compiler/tests/php-backend.test.mjs, the php golden files, packages/php/composer.json, docs/plans/fsm-v1/plan.md, docs/spec/fsm.md and their Korean twins | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/php-backend.json --inputs packages/compiler -- packages/compiler/tests/php-backend.test.mjs`, `node node_modules/@polyspec/kit/dist/run-tests.mjs phpunit --cwd packages/php --results .results/php-conformance.json --inputs packages/php --inputs contracts/conformance/vectors.json -- tests/ConformanceTest.php` | [ ] |
+| S-45-32 | kit-check와 layout-check: kit 사본이 다시 일치하며 make kit-sync가 쓴다. kit K356의 config/layout.kit.yml은 root의 clippy.toml을 선언하고, kit K360의 scripts/kit/kit-bootstrap.mk는 npm ci 뒤에 저장소 옆 kit checkout의 link를 실행한다 | config/layout.kit.yml, scripts/kit/kit-bootstrap.mk | `make kit-check`, `make layout-check` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
