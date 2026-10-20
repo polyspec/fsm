@@ -252,21 +252,17 @@ function errorFile(ns) {
 
 /**
  * The loader src/functions.php: composer's autoload.files names this one file, because PSR-4 cannot load functions. It requires
- * the functions.php of every machine in definition order, so a new machine needs no edit of composer.json, and only when the
- * namespace of the machine has no initial function yet: with the extension loaded, the functions are the extension's (S10).
+ * the functions.php of every machine in definition order, so a new machine needs no edit of composer.json,
+ * with no test of the presence of another implementation (S10: the extension run loads none of the library sources).
  */
-function loaderFile(irs, phpNs) {
+function loaderFile(irs) {
   return text([
     '<?php',
     '',
     header(SHARED),
     'declare(strict_types=1);',
     '',
-    ...irs.flatMap(ir => [
-      `if (!function_exists(${literal(`${phpNs}\\${pascal(ir.machine)}\\initial`)})) {`,
-      `    require_once __DIR__ . '/${pascal(ir.machine)}/functions.php';`,
-      '}',
-    ]),
+    ...irs.map(ir => `require_once __DIR__ . '/${pascal(ir.machine)}/functions.php';`),
   ]);
 }
 
@@ -289,6 +285,6 @@ export function files(irs, lock, { phpNamespace } = {}) {
   }
   out.push({ path: 'Fsm/Code.php', content: codeFile(`${phpNs}\\Fsm`) });
   out.push({ path: 'Fsm/Error.php', content: errorFile(`${phpNs}\\Fsm`) });
-  out.push({ path: 'functions.php', content: loaderFile(irs, phpNs) });
+  out.push({ path: 'functions.php', content: loaderFile(irs) });
   return out;
 }
