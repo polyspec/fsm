@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b9909a190db95d4420c1d2baf4e774fab9455f62f40968a5f011725bed309d8a -->
+<!-- source-sha256: ade97e971f448e28d9de6062cb0408c744f46e93d455488f86f0a4c99060def4 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-30: `.githooks/pre-commit`은 K210 이후 kit이 쓰는 hook으로, `owner-validate`(`CHECK_TARGETS`에 남는다) 대신 `make staged-generated-hook`을 실행하며 `make hooks`가 쓴다. `config/generated.json`은 `.gitignore`가 kit의 segment 밖에서 적는 fsm의 generated path(fsm-gen과 orm-gen의 출력, `var/`, `.results/`, build, cache, test 출력, kit link의 `go.work`)를 선언하므로 hook이 그것을 거부한다(P34). RED `make hooks-check` exit 2, ".githooks/pre-commit differs from the hook of scripts/kit/git-hooks.mts", `make hooks` 뒤 `make staged-generated-hook` exit 2, "config/generated.json does not exist"; GREEN 둘 다 exit 0("no generated file is staged"), 강제로 stage한 `packages/go/src/order/order.go`는 거부된다("is a generated file"). (S-45-30)
 - S-45-29: rust test는 kit K334의 clippy가 `unwrap_or_else`로 보고하는 각 `Err`를 처리한다(P8). `tests/common/mod.rs`의 `persist_dsn`은 `FSM_TEST_DIALECT`가 없을 때만 sqlite를 쓰고, 전에는 sqlite로 바꾸던 unicode가 아닌 값에서 실패한다. `server_cases`는 poisoned lock을 복구하고 그 필요를 `#[allow(clippy::disallowed_methods, reason = ...)]`에 밝힌다(lock은 data를 지키지 않고, panic한 case는 자기 실패를 보고한다). case input의 parse(`tests/conformance/vectors.rs`의 `parsed`)와 vector file의 read와 parse는 closure가 하던 대로 `match`로 panic한다. RED `make lint-rust` exit 2, 9 errors "use of a disallowed method `core::result::Result::unwrap_or_else`"(7곳, `tests/common/mod.rs`는 두 test crate가 각각 셈); GREEN exit 0, conformance test 290 passed, persist test 4 passed. (S-45-29)
 - kit-check는 CHECK_TARGETS의 lint-rust와 kit 0.0.54의 사본으로 통과한다(S-45-27)
 - CHECK_TARGETS는 lint-rust를 실행하고 kit에서 동기화한 사본(clippy.toml, ruff.toml, .golangci.yml)이 최신이다(S-45-27)
