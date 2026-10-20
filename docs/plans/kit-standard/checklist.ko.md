@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: deab134e9379dc78a63ac4de990ef9a263dc27f852d7868b9a1297c224d0bdfd -->
+<!-- source-sha256: 13de8802573ba6a75ced936e4242ea10bd37204f981ba54ef79a5b394408db79 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -39,6 +39,7 @@
 | S-45-12 | kit-check: CHECK_TARGETS가 fsm의 runtime에 대한 kit-gates의 모든 gate를 실행하고, kit의 복사본이 같다(PRINCIPLES.md, PRINCIPLES.ko.md) | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-13 | dependency-policy-check: 저장소의 Composer platform은 두 composer.json과 config/dependency-policy.json에서 PHP 8.4.1 하나다(kit K282) | packages/php/composer.json, packages/php-ext/composer.json, config/dependency-policy.json | `make dependency-policy-check` | [o] |
 | S-45-14 | config/dependency-review.json을 [none matched] sentinel 없이 다시 기록하고, review 뒤에 바뀐 lock을 기록한다(kit K281) | config/dependency-review.json | `make dependency-policy-check` | [o] |
+| S-45-14-1 | dependency-policy-check: review 기록이 packages/php의 link lock과 다시 일치한다. S-45-31의 relink가 tracked lock을 link lock 위에 복사하여(kit link.mts:429) 그곳의 phpunit은 13.4.2이고 review는 13.4.3을 기록했다 | config/dependency-review.json | `make dependency-policy-check` | [o] |
 | S-45-15 | kit-check: kit의 복사본이 @polyspec/kit과 다시 같다(PRINCIPLES.md, PRINCIPLES.ko.md). make kit-sync가 쓴다 | PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-16 | php 적재기는 machine의 namespace에 함수가 아직 없을 때만 그 함수를 require하므로 library와 extension이 공존한다(S10, B-6) | docs/spec/fsm.md, docs/spec/fsm.ko.md, packages/compiler/src/backends/php.mjs, packages/compiler/tests/php-backend.test.mjs | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/php-backend.json --inputs packages/compiler -- packages/compiler/tests/php-backend.test.mjs` | [o] |
 | S-45-17 | make test-php-ext가 통과한다: extension의 enum은 library의 enum처럼 final이고(S10 선언), packages/php는 test 폴더를 이름 짓는 phpunit.xml.dist를 가진다 | packages/compiler/src/backends/php-ext.mjs, its golden files, packages/php/phpunit.xml.dist, config/layout.yml | `make test-php-ext CASES=Conformance` | [o] |
