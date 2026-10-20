@@ -12,7 +12,7 @@
 | S-45-4 | lint-php, lint-python: orm-gen 산출물(php examples/model/Item.php와 bootstrap.php, python examples/model/models.py)이 각 생태계 formatter를 통과한다. orm-gen에서 고친 뒤 여기서 다시 생성한다 | regenerated packages/php, packages/php-ext and packages/python examples/model | `make lint-php`, `make lint-python` | [ ] |
 | S-45-5 | lint-php-ext: php 라이브러리는 polyspec/fsm, 확장은 polyspec/fsm-php-ext이고 stub은 polyspec_fsm.stub.php이다 (S10) | packages/php and packages/php-ext names, stub and config.m4 | `make lint-php-ext` | [ ] |
 | S-45-6 | duplication-check: 추적되는 fixture와 golden 출력은 이유와 함께 config/duplication.json에서 제외하고, 코드 중복은 제거한다 | config/duplication.json, compiler backends, store-json, cli, db models | `make duplication-check` | [ ] |
-| S-45-6-1 | duplication-check: compiler backend의 golden 출력을 이유와 함께 config/duplication.json에서 제외한다 | config/duplication.json | `make duplication-check` | [ ] |
+| S-45-6-1 | duplication-check: compiler backend의 golden 출력을 이유와 함께 config/duplication.json에서 제외한다 | config/duplication.json | `make duplication-check` | [o] |
 | S-45-6-2 | duplication-check: compiler, db, gui와 그 test의 코드 중복을 각각 한 module로 옮긴다 | packages/compiler, packages/db, packages/gui sources and tests | `make duplication-check` | [ ] |
 | S-45-6-3 | duplication-check: orm-gen 산출물(packages/db/src/models/models.ts와 packages/*/examples/model)의 중복이 없다 | regenerated models of db, js, go, php, php-ext and python | `make duplication-check` | [!] 원인: orm-gen 산출물이며 orm에서 고친다 (KSTD-3); 재시도: 연결된 orm에서 orm의 generator가 format되고 중복 없는 산출물을 내놓은 뒤 |
 | S-45-7 | dependency-policy-check: 환경 문제가 아닌 finding은 kit 결함이 정리된 뒤 고친다 | config/dependency-review.json, config/dependency-policy.json | `make dependency-policy-check` | [ ] |

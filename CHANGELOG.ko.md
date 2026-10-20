@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-6-1: `config/duplication.json`이 backend의 추적되는 기대 출력 `packages/compiler/tests/golden/**`를 이유와 함께 제외한다. RED `make duplication-check` exit 2, 중복 213개; 이후 `make duplication-check` exit 2, 중복 183개이고 `tests/golden`에는 없다(남은 183개는 S-45-6-2 항목과 S-45-6-3의 생성 산출물이다). (S-45-6-1)
 - S-45-3: 손으로 쓴 php 파일(php의 tests/ConformanceCase.php, tests/PersistTest.php, examples/persist.php와 php-ext의 복사본)이 phpcs 표준의 120자 줄 길이를 지킨다. RED `make lint-php` exit 2, 경고 26개 중 각 package의 이 파일들에 줄 길이 경고 12개(ConformanceCase.php:3,7,57,99,107,109,122,168, PersistTest.php:119,132, persist.php:4); GREEN `make lint-php`은 orm-gen 산출물 examples/model의 finding 14개(S-45-4)로만 exit 2이고 손으로 쓴 파일에는 남은 것이 없으며, 두 package의 phpstan 통과, 세 파일의 `php -l` 통과. (S-45-3)
 - S-45-2: Go conformance test가 사용되지 않는 함수 `int32Of`를 제거한다. RED `make lint-go` exit 2, `packages/go/tests/conformance_test.go:112:6: func int32Of is unused (unused)`와 deadcode `unreachable func: int32Of`; GREEN `make lint-go` exit 0, golangci-lint 0 issues와 deadcode 통과, packages/go의 `go vet ./tests/` exit 0. (S-45-2)
 - S-45-1: Rust backend test는 Cargo.toml 문자열을 `"`의 불필요한 이스케이프 없이 쓴다. RED `make lint-ts` exit 2, `packages/compiler/tests/rust-backend.test.mjs:131:177: Unnecessary escape character`; GREEN `make lint-ts` exit 0, oxlint와 knip 통과, `node --test packages/compiler/tests/rust-backend.test.mjs` 10개 중 10개 통과. (S-45-1)
