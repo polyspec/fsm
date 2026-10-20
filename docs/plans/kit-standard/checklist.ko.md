@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 126aa5b75ab5cef3ec70de1bcac8bb6d6290f6ee1aedff4c4759a00272ad7259 -->
+<!-- source-sha256: 6b7752b9047f8fac42fb1a9f952a2de7be9efc0e013ae09c5881364958e2b356 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -43,6 +43,6 @@
 | S-45-16 | php 적재기는 machine의 namespace에 함수가 아직 없을 때만 그 함수를 require하므로 library와 extension이 공존한다(S10, B-6) | docs/spec/fsm.md, docs/spec/fsm.ko.md, packages/compiler/src/backends/php.mjs, packages/compiler/tests/php-backend.test.mjs | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/php-backend.json --inputs packages/compiler -- packages/compiler/tests/php-backend.test.mjs` | [o] |
 | S-45-17 | make test-php-ext가 통과한다: extension의 enum은 library의 enum처럼 final이고(S10 선언), packages/php는 test 폴더를 이름 짓는 phpunit.xml.dist를 가진다 | packages/compiler/src/backends/php-ext.mjs, its golden files, packages/php/phpunit.xml.dist, config/layout.yml | `make test-php-ext CASES=Conformance` | [o] |
 | S-45-18 | kit-check와 link-metadata-check: CHECK_TARGETS가 link-metadata-check(P30)를 실행하고 연결된 package의 설치된 metadata가 source와 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make link-metadata-check` | [o] |
-| S-45-19 | rules-check: AGENTS.md의 모든 rule은 Own: 또는 Refines <id>:로 시작한다(kit K300) | AGENTS.md, AGENTS.ko.md | `make rules-check` | [~] |
+| S-45-19 | rules-check: AGENTS.md의 모든 rule은 Own: 또는 Refines <id>:로 시작한다(kit K300) | AGENTS.md, AGENTS.ko.md | `make rules-check` | [o] |
 | S-45-20 | kit-check: CHECK_TARGETS가 link-state-check(kit K305-1이 말하는 P30)를 실행하고 PRINCIPLES 복사본이 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
