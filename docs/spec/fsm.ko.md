@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 2749e0dc1536d54d59da1b5d7a6acf3899c4f940d589f8c46d41819ba903c900 -->
+<!-- source-sha256: 5eb7cbfc4d572b7b2f9b140319bdb124a683934207905bf575f025d186764e2b -->
 # fsm 정의
 
 [English](fsm.md)
@@ -252,7 +252,7 @@ stateDiagram-v2
   - 이벤트가 없는 머신의 `Event`는 표현을 갖지 않는다. rust는 빈 enum `pub enum Event {}`에서 `#[repr(i32)]`를 생략한다. rustc가 variant가 없는 enum의 표현을 거부하기 때문이다(E0084). 이벤트가 있는 머신은 `#[repr(i32)]`를 유지한다.
 - `Step`의 필드는 `to: State`, `changed: bool`이다(variant 이름 없음). `Event` 값은 선언 순서 1부터의 번호다(이벤트는 저장되지 않음). 오류 코드 상수는 생성된 함수가 던지는 네 코드뿐이다: `E_CONFLICT`, `E_INVALID_TRANSITION`, `E_UNKNOWN_CODE`, `E_RESERVED_CODE`. 각각 `E_`를 뗀 이름을 언어의 상수 표기로 쓴다(go `CodeConflict`, rust `Code::Conflict`, npm/php `Code.Conflict`/`Code::Conflict`, python `Code.CONFLICT`). B-4에서 B-6까지의 나머지 코드(B-5의 finding, lock과 store의 코드)는 컴파일러와 store의 finding이며, 생성된 코드에는 상수가 없다.
 - 함수 시그니처는 모든 언어에서 같은 순서다: `apply(expected: State, event: Event, actual: State) → Step`, `target(expected: State, event: Event) → State`.
-- php는 enum을 PSR-4(`Order/State.php`…)로, 함수는 적재기 `functions.php`를 composer `autoload.files`로 싣고, 적재기가 모든 machine의 `Order/functions.php`를 require한다(PSR-4는 함수를 싣지 못하므로 composer는 적재기만 이름으로 든다). php-ext는 같은 namespace의 enum과 함수를 C로 등록하며, 모든 C 이름은 php namespace와 extension 이름에서 유도된다: include `php_<ext>.h`와 `<ext>_arginfo.h`, Error 클래스 심볼 `<namespace의 \를 _로 바꾼 것>_Fsm_Error`(`Acme\Tool`은 `Acme_Tool_Fsm_Error`).
+- php는 enum을 PSR-4(`Order/State.php`…)로, 함수는 적재기 `functions.php`를 composer `autoload.files`로 싣고, 적재기가 모든 machine의 `Order/functions.php`를 require하되 그 machine의 namespace에 `initial` 함수가 아직 없을 때만 하므로 library와 extension이 공존한다. extension을 로드하면 library의 PHPUnit 파일이 extension이 등록한 함수로 실행된다(S10)(PSR-4는 함수를 싣지 못하므로 composer는 적재기만 이름으로 든다). php-ext는 같은 namespace의 enum과 함수를 C로 등록하며, 모든 C 이름은 php namespace와 extension 이름에서 유도된다: include `php_<ext>.h`와 `<ext>_arginfo.h`, Error 클래스 심볼 `<namespace의 \를 _로 바꾼 것>_Fsm_Error`(`Acme\Tool`은 `Acme_Tool_Fsm_Error`).
 - 머신이 서로 다른 모듈에 들어가므로 머신 간 식별자 충돌은 생기지 않는다. 단 php namespace와 PSR-4 디렉터리는 대소문자를 구분하지 않으므로, `_`를 지웠을 때 같아지는 두 머신 key는 `E_DUPLICATE_KEY`로 거부한다. 남는 충돌은 생성 파일·package 이름, 언어 keyword, php의 대소문자 무시 이름이며, `E_KEY_RESERVED`와 `E_DUPLICATE_KEY`의 고정 목록으로 거부한다.
 - 오류는 `fsm.Error`로만 알리고 null을 반환하지 않는다.
 - 원시 값을 받는 진입점은 `from_code` 하나다. state 이름이 아니라 state code를 가진 호출자는 state 타입 함수 앞에서 `from_code`를 거친다: `code`, `key`, `is_final`과 `apply`(`expected`, `actual`)의 원시 code 인자는 거기서 검사되므로, 모든 구현이 잘못된 code를 같은 오류로 거부한다.

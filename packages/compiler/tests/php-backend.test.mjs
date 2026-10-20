@@ -53,15 +53,15 @@ test('every generated php file passes the php linter (php -l)', async (t) => {
   }
 });
 
-test('the loader src/functions.php requires the functions of every machine, in definition order', async () => {
+test('the loader src/functions.php requires the functions of every machine, in definition order, only when its namespace has no initial function yet', async () => {
   const { definitions, lock, findings } = await jsonStore(path.join(ROOT, 'contracts')).load();
   assert.deepEqual(findings, []);
   const irs = definitions.map(normalize);
   const loader = files(irs, lock, { phpNamespace: NAMESPACE }).find(file => file.path === 'functions.php').content;
   const pascal = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
   assert.deepEqual(
-    loader.split('\n').filter(line => line.startsWith('require_once')),
-    irs.map(ir => `require_once __DIR__ . '/${pascal(ir.machine)}/functions.php';`),
+    loader.split('\n').filter(line => line.startsWith('if (') || line.startsWith('    require_once')),
+    irs.flatMap(ir => [`if (!function_exists('${NAMESPACE.replaceAll('\\', '\\\\')}\\\\${pascal(ir.machine)}\\\\initial')) {`, `    require_once __DIR__ . '/${pascal(ir.machine)}/functions.php';`]),
   );
   assert.ok(irs.length > 1, 'the root holds several machines, so the loader is tested with more than one');
 });
