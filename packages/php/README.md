@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-# polyspec/fsm-php
+# polyspec/fsm
 
 [한국어](README.ko.md)
 

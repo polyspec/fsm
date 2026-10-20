@@ -97,7 +97,7 @@ $(DOCS_DEP): docs/package-lock.json
 FSM_GEN := $(NODE) packages/compiler/src/cli/fsm-gen.mjs
 GO_MODULE := github.com/polyspec/fsm/packages/go
 PHP_NAMESPACE := Polyspec\FsmTest
-PHP_EXT_NAME := polyspec_fsm_test
+PHP_EXT_NAME := polyspec_fsm
 PHP_EXT_MODULE := packages/php-ext/src/modules/$(PHP_EXT_NAME).so
 PY_VENV := packages/python/.venv
 # uv is the one of config/toolchain.json that install-tools installs (S-44-2), never a uv of PATH.
@@ -456,12 +456,12 @@ php-persist-test-mysql: $(PHP_DEP) fsm-php-gen
 php-ext-persist-test-postgres: $(PHP_EXT_DEP) fsm-php-ext-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	$(MAKE) fsm-php-ext-build
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension packages/php-ext/src/modules/polyspec_fsm_test.so --cwd packages/php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/php-ext --inputs packages/php/tests --inputs packages/php/examples --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ../php/tests --filter '/persist/i'
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/php-ext --inputs packages/php/tests --inputs packages/php/examples --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ../php/tests --filter '/persist/i'
 
 php-ext-persist-test-mysql: $(PHP_EXT_DEP) fsm-php-ext-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	$(MAKE) fsm-php-ext-build
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension packages/php-ext/src/modules/polyspec_fsm_test.so --cwd packages/php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/php-ext --inputs packages/php/tests --inputs packages/php/examples --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ../php/tests --filter '/persist/i'
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/php-ext --inputs packages/php/tests --inputs packages/php/examples --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ../php/tests --filter '/persist/i'
 
 python-persist-test-postgres: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)

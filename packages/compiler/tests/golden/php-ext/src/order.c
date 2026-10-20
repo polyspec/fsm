@@ -3,8 +3,8 @@
 # include "config.h"
 #endif
 
-#include "php_polyspec_fsm_test.h"
-#include "polyspec_fsm_test_arginfo.h"
+#include "php_polyspec_fsm.h"
+#include "polyspec_fsm_arginfo.h"
 
 static zend_class_entry *order_state_ce;
 static zend_class_entry *order_event_ce;

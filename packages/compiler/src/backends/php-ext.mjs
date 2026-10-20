@@ -45,7 +45,7 @@ function checkedNamespace(phpNamespace) {
 /** The extension name, which names the C module, the header and the stub: lowercase letters, digits and underscores. */
 function checkedExtension(phpExtName) {
   if (typeof phpExtName !== 'string' || !EXTENSION.test(phpExtName)) {
-    throw new Error(`php-ext: the php extension name must be lowercase letters, digits and underscores, starting with a letter, such as polyspec_fsm_test; it is ${JSON.stringify(phpExtName)}`);
+    throw new Error(`php-ext: the php extension name must be lowercase letters, digits and underscores, starting with a letter, such as polyspec_fsm; it is ${JSON.stringify(phpExtName)}`);
   }
   return phpExtName;
 }

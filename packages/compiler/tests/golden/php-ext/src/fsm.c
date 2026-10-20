@@ -3,8 +3,8 @@
 # include "config.h"
 #endif
 
-#include "php_polyspec_fsm_test.h"
-#include "polyspec_fsm_test_arginfo.h"
+#include "php_polyspec_fsm.h"
+#include "polyspec_fsm_arginfo.h"
 
 #include <string.h>
 
@@ -120,7 +120,7 @@ zend_result fsm_minit(void)
 	return SUCCESS;
 }
 
-PHP_MINIT_FUNCTION(polyspec_fsm_test)
+PHP_MINIT_FUNCTION(polyspec_fsm)
 {
 	if (fsm_minit() == FAILURE) {
 		return FAILURE;
@@ -131,22 +131,22 @@ PHP_MINIT_FUNCTION(polyspec_fsm_test)
 	return SUCCESS;
 }
 
-zend_module_entry polyspec_fsm_test_module_entry = {
+zend_module_entry polyspec_fsm_module_entry = {
 	STANDARD_MODULE_HEADER,
-	"polyspec_fsm_test",
+	"polyspec_fsm",
 	NULL,
-	PHP_MINIT(polyspec_fsm_test),
-	NULL,
-	NULL,
+	PHP_MINIT(polyspec_fsm),
 	NULL,
 	NULL,
-	PHP_POLYSPEC_FSM_TEST_VERSION,
+	NULL,
+	NULL,
+	PHP_POLYSPEC_FSM_VERSION,
 	STANDARD_MODULE_PROPERTIES
 };
 
-#ifdef COMPILE_DL_POLYSPEC_FSM_TEST
+#ifdef COMPILE_DL_POLYSPEC_FSM
 # ifdef ZTS
 	ZEND_TSRMLS_CACHE_DEFINE()
 # endif
-ZEND_GET_MODULE(polyspec_fsm_test)
+ZEND_GET_MODULE(polyspec_fsm)
 #endif

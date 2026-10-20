@@ -6,7 +6,7 @@
     { "name": "npm", "runner": "node", "roots": ["packages/js"], "tests": ["packages/js/tests/conformance.test.mjs"] },
     { "name": "php", "runner": "php", "roots": ["packages/php"], "tests": ["packages/php/tests/ConformanceTest.php"] },
     { "name": "php-ext", "runner": "php", "roots": ["packages/php-ext", "packages/php"], "tests": ["packages/php/tests/ConformanceTest.php"],
-      "args": ["-d", "extension=packages/php-ext/src/modules/polyspec_fsm_test.so"] },
+      "args": ["-d", "extension=packages/php-ext/src/modules/polyspec_fsm.so"] },
     { "name": "python", "runner": "python", "roots": ["packages/python"], "tests": ["packages/python/tests/test_conformance.py"],
       "command": "packages/python/.venv/bin/python" },
     { "name": "rust", "runner": "cargo", "roots": ["packages/rust"], "tests": ["packages/rust/tests/conformance/main.rs"],

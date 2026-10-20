@@ -1,6 +1,6 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: bcc902a8a276fac770eadb2c7f4612fccc64bbc96ce695c2f51dda2499791e92 -->
-# polyspec/fsm-php
+<!-- source-sha256: c00a65f9d4e8af8f92b9bd17287095db0f38995c81e1e138e8dd02bf741516e7 -->
+# polyspec/fsm
 
 [English](README.md)
 

@@ -4,7 +4,7 @@
     "type": "php-ext",
     "license": "MIT",
     "php-ext": {
-        "extension-name": "polyspec_fsm_test",
+        "extension-name": "polyspec_fsm",
         "build-path": "src"
     },
     "require": {

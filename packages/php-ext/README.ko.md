@@ -1,11 +1,11 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: 38308146032646a3a166b071fa16955aea50b7ded3a1a16bd7bedf3dfb65edba -->
+<!-- source-sha256: 9350d349db09ff87dc8eefa00d3e9197ea588bc327c2c8629f1a9c158ebfb002 -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
 
 fsm의 PHP extension 종류(`docs/plans/fsm-v1/plan.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의의 생성된 상태
-기계를 `polyspec_fsm_test`라는 PHP extension 하나로 빌드하고, 그 extension을 php 패키지와 같은 conformance vector로 검사한다. 공개 API는
+기계를 `polyspec_fsm`라는 PHP extension 하나로 빌드하고, 그 extension을 php 패키지와 같은 conformance vector로 검사한다. 공개 API는
 php 종류의 API다. namespace `Polyspec\FsmTest`, 기계마다 하위 namespace(예: `Polyspec\FsmTest\Order`)에 enum `State`와 `Event`, class
 `Step`, 함수 `initial`, `code`, `key`, `fromCode`, `isFinal`, `eventsFrom`, `target`, `apply`를 둔다. 공유 `Polyspec\FsmTest\Fsm`은 enum
 `Code`와 예외 `Error`를 가진다. 함수는 C로 쓰여 namespace에 등록되므로, 소비자는 php 종류와 같이 호출한다.

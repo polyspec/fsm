@@ -6,7 +6,7 @@
 //   fsm-gen vectors --out <file> [--project <dir>]
 //   fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]
 //   (go only: --go-module, required for gen; php and php-ext: --php-namespace <ns>, required, such as Polyspec\FsmTest, for gen; php-ext only:
-//   --php-ext-name <name>, required for gen, such as polyspec_fsm_test)
+//   --php-ext-name <name>, required for gen, such as polyspec_fsm)
 // --project is the project root, the directory whose fsm.config.json names the store (default: the current directory).
 // For copy, the project store is the source and --root is the target directory, which is required. For vectors, --out is the
 // file that receives { machines: [{ machine, cases }] } for every machine, one suite for the parity check, and it is required.
@@ -74,7 +74,7 @@ function parse(argv) {
       if (!PHP_NAMESPACE.test(value)) return { usage: '--php-namespace takes letters and digits separated by single backslashes, such as Polyspec\\FsmTest' };
       options.phpNamespace = value;
     } else if (flag === '--php-ext-name') {
-      if (!PHP_EXTENSION.test(value)) return { usage: '--php-ext-name takes lowercase letters, digits and underscores, starting with a letter, such as polyspec_fsm_test' };
+      if (!PHP_EXTENSION.test(value)) return { usage: '--php-ext-name takes lowercase letters, digits and underscores, starting with a letter, such as polyspec_fsm' };
       options.phpExtName = value;
     } else if (flag === '--to') {
       if (!['json', 'mermaid'].includes(value)) return { usage: '--to takes json or mermaid' };
@@ -103,7 +103,7 @@ function parse(argv) {
   }
   if (options.phpExtName !== undefined && options.kind !== 'php-ext') return { usage: '--php-ext-name is an option of gen --kind php-ext' };
   if (command === 'gen' && options.kind === 'php-ext' && options.phpExtName === undefined) {
-    return { usage: 'gen --kind php-ext needs --php-ext-name <name>, the name of the extension, such as polyspec_fsm_test' };
+    return { usage: 'gen --kind php-ext needs --php-ext-name <name>, the name of the extension, such as polyspec_fsm' };
   }
   return options;
 }

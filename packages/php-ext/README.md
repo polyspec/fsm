@@ -4,7 +4,7 @@
 [한국어](README.ko.md)
 
 The PHP extension kind of fsm (`docs/plans/fsm-v1/plan.md`, C-2). The package is private and is a test bed: it is not published. It
-builds the generated state machines of a fsm definition as one PHP extension, `polyspec_fsm_test`, and checks that extension
+builds the generated state machines of a fsm definition as one PHP extension, `polyspec_fsm`, and checks that extension
 against the same conformance vectors as the php package. Its public API is the API of the php kind: the namespace
 `Polyspec\FsmTest`, a sub-namespace per machine (such as `Polyspec\FsmTest\Order`) with the enums `State` and `Event`, the
 class `Step`, and the functions `initial`, `code`, `key`, `fromCode`, `isFinal`, `eventsFrom`, `target` and `apply`. The shared

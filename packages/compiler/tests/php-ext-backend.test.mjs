@@ -21,13 +21,13 @@ import { ORDER_PROJECT } from './order-project.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GOLDEN = path.join(HERE, 'golden/php-ext');
 const NAMESPACE = 'Polyspec\\FsmTest';
-const EXT = 'polyspec_fsm_test';
+const EXT = 'polyspec_fsm';
 const NAMES = [
   'order.c',
   'fsm.c',
-  'php_polyspec_fsm_test.h',
-  'polyspec_fsm_test_arginfo.h',
-  'polyspec_fsm_test.stub.php',
+  'php_polyspec_fsm.h',
+  'polyspec_fsm_arginfo.h',
+  'polyspec_fsm.stub.php',
   'config.m4',
 ];
 
