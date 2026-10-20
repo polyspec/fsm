@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-2: Go conformance test가 사용되지 않는 함수 `int32Of`를 제거한다. RED `make lint-go` exit 2, `packages/go/tests/conformance_test.go:112:6: func int32Of is unused (unused)`와 deadcode `unreachable func: int32Of`; GREEN `make lint-go` exit 0, golangci-lint 0 issues와 deadcode 통과, packages/go의 `go vet ./tests/` exit 0. (S-45-2)
 - S-45-1: Rust backend test는 Cargo.toml 문자열을 `"`의 불필요한 이스케이프 없이 쓴다. RED `make lint-ts` exit 2, `packages/compiler/tests/rust-backend.test.mjs:131:177: Unnecessary escape character`; GREEN `make lint-ts` exit 0, oxlint와 knip 통과, `node --test packages/compiler/tests/rust-backend.test.mjs` 10개 중 10개 통과. (S-45-1)
 - S-44-23: AGENTS.md가 kit `docs/plans/local-links.md`를 가리킨다. polyspec 버전이 0.0.x인 동안 개발 checkout은 설치된 polyspec package를 그 source에 link하며, link는 commit하지 않는다.
 - S-44-22: 공유 도구가 kit 0.0.53이다. 그 release proof는 release가 각 sibling wheel의 asset을 나열하는지 검사한다.

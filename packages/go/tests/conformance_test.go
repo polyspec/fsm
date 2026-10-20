@@ -108,14 +108,6 @@ func TestConformance(t *testing.T) {
 	}
 }
 
-// int32Of returns a code as the 32-bit value of the state types; a value outside the 32-bit range is an error.
-func int32Of(code int64) (int32, error) {
-	if code != int64(int32(code)) {
-		return 0, fmt.Errorf("%d is outside the 32-bit range of the states", code)
-	}
-	return int32(code), nil
-}
-
 // lookup returns the constant of a key of the machine; a key that the machine does not have is an error.
 func lookup[T any](table map[string]T, what, key string) (T, error) {
 	value, ok := table[key]
