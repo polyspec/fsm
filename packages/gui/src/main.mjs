@@ -8,13 +8,11 @@
 
 import { mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { App, FileSessions } from '@polyspec/hyper-server';
-import { handlers } from './handlers.mjs';
+import { FileSessions } from '@polyspec/hyper-server';
+import { GUI, openApplication } from './application.mjs';
 import { openStore } from './store.mjs';
 
-const GUI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const USAGE = 'usage: fsm-gui [--project <dir>] [--port <n>]';
 
 /** Runs the server; returns the exit code. */
@@ -43,14 +41,7 @@ async function main(argv) {
 
   const sessions = path.join(project, 'var', 'sessions');
   mkdirSync(sessions, { recursive: true, mode: 0o700 });
-  const app = await App.open({
-    manifest: path.join(GUI, 'app', 'app.json'),
-    templates: { index: path.join(GUI, 'build', 'templates.index.json'), root: path.join(GUI, 'public') },
-    handlers,
-    timezone: 'UTC',
-  });
-  app.bind('store', () => opened.store);
-  app.bind('assets', () => JSON.parse(readFileSync(path.join(GUI, 'build', 'manifest.json'), 'utf8')));
+  const app = await openApplication(opened.store, () => JSON.parse(readFileSync(path.join(GUI, 'build', 'manifest.json'), 'utf8')));
 
   const server = app.server(new FileSessions({ directory: sessions }), { files: path.join(GUI, 'public') });
   const stop = () => {

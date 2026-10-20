@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 8674269559c142d045f3b4c7e07fb6a5a93c6ae17f387f7dc62b73cf554c9267 -->
+<!-- source-sha256: 8c038b42ea8a19bea316283b14ad6c3c0f63e22b71293e6338e5b9c43169ca60 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-6-2-3: `packages/gui`의 중복이 없다. `src/application.mjs`가 server와 test를 위해 hyper application을 열고, `handlers.mjs`는 request의 machine을 `projectOfMachine`과 `loadedMachine`에서 가져오며, test는 `startGui`, `orderProject`, `openAt`, `openEditing`, `postWithoutCanceled`, `assertChecked`, `seededDbProject`를 `helpers.mjs`와 `edit-support.mjs`에서 가져온다. `packages/gui/tests`의 test 241개는 전과 같이 통과한다. RED `make duplication-check` 중복 19개 중 15개가 `packages/gui`에 경로가 있다(source 4, test 11); GREEN 중복 6개이며 `packages/gui`에는 없다; `make lint-ts` exit 0. (S-45-6-2-3)
 - S-45-6-2-2: `packages/compiler/tests`의 중복이 없다. `backend-support.mjs`는 모든 backend가 가진 test 넷(kind 등록, golden 파일, header, 결정성)을, `cli-support.mjs`는 임시 디렉터리, project, fsm-gen 실행을, `order-machines.mjs`는 단위 test의 order 기계와 lock을, `store-asserts.mjs`는 두 store의 단언을 담고, `fsm-gen.test.mjs`, `lock.test.mjs`, `write-generated.test.mjs`에서 반복되던 case는 지역 helper가 되었다. `packages/db/tests/cli.test.mjs`는 order 기계를 `order-machines.mjs`에서 가져온다. test는 같고 340개가 통과한다(모든 backend가 kind 등록 test를 가지므로 4개 늘었다). RED `make duplication-check` 이 항목 전 중복 67개(K287 전의 kit), 그중 46개가 `packages/compiler/tests`에 경로가 있다; GREEN 중복 19개(kit K287이 파일 header 줄을 건너뛴다)이며 `packages/compiler`에는 없다; `make lint-ts` exit 0; packages/db의 `db-store`와 `cli` test(29) 통과. (S-45-6-2-2)
 - S-45-6-2-1: `packages/compiler/src`의 중복이 없다. backend는 `SHARED`, `pascal`, `text`, `header`를 새 `backends/common.mjs`에서 가져오고, json store와 mermaid store는 machine file의 load와 save, canonical state를 새 `store-common/machine-files.mjs`에서 가져오며, `fsm-gen`과 `fsm-db`는 flag, 공통 option, command 실행을 새 `cli/command-line.mjs`에서 가져오고, `lock.mjs`의 `renameState`는 name test가 쓴다. 동작은 바뀌지 않는다: `packages/compiler/tests`의 336개 test, packages/db의 `db-store`, `cli`, `command` test(30), `make lint-ts`가 통과한다. RED `make duplication-check` exit 2, 중복 77개 중 10개가 `packages/compiler/src`와 `packages/db/src`에 있다(backend 블록 3, store 블록 3, command line 블록 4); GREEN exit 2, 중복 67개이며 그 두 폴더에는 없다. (S-45-6-2-1)
 - S-45-10: 예약된 machine key `examples`, `vectors`, `machines`, `expectation`, `lookup`을 docs/spec/fsm.md B-5와 `reserved.mjs`(`GO_TEST_NAMES`)에서 없앤다. 이 key들은 생성되던 go test 파일의 식별자 이름이었고 fsm-gen은 더 이상 test 파일을 쓰지 않는다(S-45-8-7). keyword, go 사전 선언 식별자, `internal`, `init`, `testdata`, `vendor`는 이유와 함께 남는다. RED `validate-names.test.mjs` exit 1, 23 통과 1 실패(`vectors`라는 machine은 E_KEY_RESERVED); GREEN exit 0, 24 통과, packages/compiler/tests의 test 471개와 mermaid parse test 통과, `make lint-ts` exit 0. (S-45-10)

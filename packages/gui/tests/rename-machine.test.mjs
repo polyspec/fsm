@@ -3,17 +3,10 @@
 // keeps its code and moves its edges (core run lock with renames); a refused rename writes nothing and shows its finding on the
 // new key of the state it names; and a rename needs the CSRF token of its page.
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import { openApp } from './helpers.mjs';
-import {
-  KINDS, ORDER_STATES, csrfOf, newSession, openProject, page, post,
-} from './edit-support.mjs';
+import { KINDS, ORDER_STATES, csrfOf, newSession, openProject, page, post, assertChecked } from './edit-support.mjs';
 
-const GUI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FSM_GEN = path.join(GUI, '..', 'compiler', 'src', 'cli', 'fsm-gen.mjs');
 
 /** The fields of the rename form: each stored state posts its key and the new key in `to` (empty when it keeps its key). */
 function renamePairs(renames = {}) {
@@ -54,10 +47,7 @@ for (const kind of KINDS) {
     assert.equal(order.events.find(event => event.key === 'next').edges[0].to, 'confirmed');
     assert.equal(loaded.lock.order.codes['2'], 'confirmed');
     assert.deepEqual(loaded.lock.order.reserved, []);
-    if (kind !== 'db') {
-      const check = spawnSync(process.execPath, [FSM_GEN, 'check', '--project', project.root], { encoding: 'utf8' });
-      assert.equal(check.status, 0, check.stderr);
-    }
+    assertChecked(kind, project);
   });
 
   test(`${kind}: a rename to an invalid or taken key is refused with the finding on its new key and writes nothing`, async t => {

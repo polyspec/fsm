@@ -5,9 +5,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { openApp } from './helpers.mjs';
-import {
-  KINDS, csrfOf, editPairs, newSession, openProject, orderRows, page, post,
-} from './edit-support.mjs';
+import { KINDS, editPairs, newSession, openProject, orderRows, page, post, openEditing, postWithoutCanceled } from './edit-support.mjs';
 
 /** The embedded form state of an edit page, parsed: the JSON of its fsm-form-state script element. */
 function formStateOf(html) {
@@ -27,16 +25,8 @@ for (const kind of KINDS) {
   });
 
   test(`${kind}: after a state is deleted, the edit page embeds a next code past the reserved code`, async t => {
-    const project = await openProject(kind);
-    t.after(() => project.close());
-    const app = await openApp(project.store);
-    const session = newSession();
-    const csrf = csrfOf((await page(app, '/machines/order/edit', session)).body);
-    const rows = orderRows();
-    const response = await post(app, '/machines/order/edit', [['_csrf', csrf], ...editPairs({
-      states: rows.states.filter(state => state.key !== 'canceled'),
-      events: rows.events.filter(event => event.key !== 'cancel'),
-    })], session);
+    const { project, app, session, csrf } = await openEditing(kind, t);
+    const response = await postWithoutCanceled(app, session, csrf);
     assert.equal(response.status, 303);
     assert.deepEqual((await project.store.load()).lock.order.reserved, [5]);
     const after = await page(app, '/machines/order/edit', session);
@@ -44,11 +34,7 @@ for (const kind of KINDS) {
   });
 
   test(`${kind}: a refused save shows the page with the same next code in its form state`, async t => {
-    const project = await openProject(kind);
-    t.after(() => project.close());
-    const app = await openApp(project.store);
-    const session = newSession();
-    const csrf = csrfOf((await page(app, '/machines/order/edit', session)).body);
+    const { app, session, csrf } = await openEditing(kind, t);
     const rows = orderRows();
     rows.states.push({ key: 'Archived', code: '', final: true, persisted: false, rk: '__0000000000006__' });
     const response = await post(app, '/machines/order/edit', [['_csrf', csrf], ...editPairs(rows)], session);
@@ -59,11 +45,7 @@ for (const kind of KINDS) {
 
 for (const kind of KINDS) {
   test(`${kind}: a next code above 2147483647 is refused, and the edit page shows E_CODE_RANGE with no next code`, async t => {
-    const project = await openProject(kind);
-    t.after(() => project.close());
-    const app = await openApp(project.store);
-    const session = newSession();
-    const csrf = csrfOf((await page(app, '/machines/order/edit', session)).body);
+    const { app, session, csrf } = await openEditing(kind, t);
     // A state takes the largest code (2147483647, B-3), so the next code is 2147483648 and nextCode refuses it (E_CODE_RANGE).
     const rows = orderRows();
     rows.states.push({ key: 'archived', code: '2147483647', final: true, persisted: false, rk: '__0000000000006__' });

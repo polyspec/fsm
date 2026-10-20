@@ -34,16 +34,31 @@ async function project(store) {
   return { definitions: loaded.definitions, lock: loaded.lock, findings: checked.findings };
 }
 
+/** The machine of the request, its definition and the project of the store; a machine that the store does not have is not found. */
+async function projectOfMachine(request, services) {
+  const machine = request.param('machine') ?? '';
+  const projected = await project(services.get('store'));
+  const definition = projected.definitions.find(item => item.machine === machine);
+  if (definition === undefined) throw new NotFound();
+  return { machine, definition, ...projected };
+}
+
+/** The machine of the request, the store and what it loads; a machine that the store does not have is not found. */
+async function loadedMachine(request, services) {
+  const machine = request.param('machine') ?? '';
+  const store = services.get('store');
+  const loaded = await store.load();
+  if (!loaded.definitions.some(item => item.machine === machine)) throw new NotFound();
+  return { machine, store, loaded };
+}
+
 export const handlers = {
   shared: ({ services }) => ({ assets: services.get('assets') }),
 
   routes: {
     'machines.rename': {
       load: async ({ request, services }) => {
-        const machine = request.param('machine') ?? '';
-        const { definitions, findings } = await project(services.get('store'));
-        const definition = definitions.find(item => item.machine === machine);
-        if (definition === undefined) throw new NotFound();
+        const { machine, definition, findings } = await projectOfMachine(request, services);
         return {
           machine,
           form: renderRename(machine, renameData(definition), { csrf: request.csrfToken() }),
@@ -52,10 +67,7 @@ export const handlers = {
         };
       },
       post: async ({ request, services }) => {
-        const machine = request.param('machine') ?? '';
-        const store = services.get('store');
-        const loaded = await store.load();
-        if (!loaded.definitions.some(item => item.machine === machine)) throw new NotFound();
+        const { machine, store } = await loadedMachine(request, services);
         const data = parseFormFields(request.form());
         const { renames, rows } = renamesOf(machine, data);
         const result = await run('lock', store, { renames });
@@ -71,10 +83,7 @@ export const handlers = {
     },
     'machines.edit': {
       load: async ({ request, services }) => {
-        const machine = request.param('machine') ?? '';
-        const { definitions, lock, findings } = await project(services.get('store'));
-        const definition = definitions.find(item => item.machine === machine);
-        if (definition === undefined) throw new NotFound();
+        const { machine, definition, definitions, lock, findings } = await projectOfMachine(request, services);
         const data = editData(definition);
         const next = nextCodeOf(machine, definitions, lock);
         const formErrors = nextCodeErrors(next);
@@ -87,10 +96,7 @@ export const handlers = {
         };
       },
       post: async ({ request, services }) => {
-        const machine = request.param('machine') ?? '';
-        const store = services.get('store');
-        const loaded = await store.load();
-        if (!loaded.definitions.some(item => item.machine === machine)) throw new NotFound();
+        const { machine, store, loaded } = await loadedMachine(request, services);
         // A malformed body is a BadRequest here, before any rule runs; the rules are the core's.
         const data = parseFormFields(request.form());
         const { definition, rows } = definitionOf(machine, data);
@@ -159,10 +165,7 @@ export const handlers = {
         throw new NotFound();
       },
       post: async ({ request, services }) => {
-        const machine = request.param('machine') ?? '';
-        const store = services.get('store');
-        const loaded = await store.load();
-        if (!loaded.definitions.some(item => item.machine === machine)) throw new NotFound();
+        const { machine, store, loaded } = await loadedMachine(request, services);
         // A delete is a save without the machine: the core moves its codes to the lock's reserved list.
         const definitions = loaded.definitions.filter(item => item.machine !== machine);
         const saved = await run('save', store, { definitions });
@@ -177,10 +180,7 @@ export const handlers = {
 
     'machines.show': {
       load: async ({ request, services }) => {
-        const machine = request.param('machine') ?? '';
-        const { definitions, findings } = await project(services.get('store'));
-        const definition = definitions.find(item => item.machine === machine);
-        if (definition === undefined) throw new NotFound();
+        const { machine, definition, findings } = await projectOfMachine(request, services);
         // The diagram is the canonical text of the machine. A machine with a finding of its own is not written as a diagram,
         // because the canonical form of an invalid machine does not exist; its findings are shown instead.
         const withErrors = findings.some(finding => finding.machine === machine);

@@ -2,13 +2,12 @@
 // 2, a configuration finding exits 1 and prints the finding, and the server answers the machine list over HTTP with the
 // sessions directory created in the project.
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { ORDER_JSON_TEXT, ORDER_LOCK_TEXT } from './canonical.mjs';
-import { tempProject } from './helpers.mjs';
+import { orderProject, startGui, tempProject } from './helpers.mjs';
 
 const GUI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MAIN = path.join(GUI, 'src', 'main.mjs');
@@ -33,27 +32,9 @@ test('a project whose configuration names the db store without a DSN exits 1 and
 });
 
 test('the server answers the machine list over HTTP and creates the sessions directory in the project', async t => {
-  const root = tempProject({
-    'fsm.config.json': '{"store":"json"}\n',
-    'machines/order.fsm.json': ORDER_JSON_TEXT,
-    'fsm.lock.json': ORDER_LOCK_TEXT,
-  });
-  const child = spawn(process.execPath, [MAIN, '--project', root, '--port', '0'], { stdio: ['ignore', 'pipe', 'pipe'] });
+  const root = orderProject();
+  const { child, url } = await startGui(root);
   t.after(() => child.kill('SIGTERM'));
-  const url = await new Promise((resolve, reject) => {
-    let out = '';
-    let err = '';
-    child.stdout.on('data', chunk => {
-      out += chunk;
-      const match = /http:\/\/127\.0\.0\.1:(\d+)/.exec(out);
-      if (match !== null) resolve(`http://127.0.0.1:${match[1]}`);
-    });
-    child.stderr.on('data', chunk => {
-      err += chunk;
-    });
-    child.on('exit', code => reject(new Error(`the server exited with ${code}: ${err}`)));
-    setTimeout(() => reject(new Error(`no listening line: ${out} ${err}`)), 30000).unref();
-  });
   const response = await fetch(`${url}/`, { headers: { Accept: 'text/html' } });
   assert.equal(response.status, 200);
   assert.match(await response.text(), /<a href="\/machines\/order">order<\/a>/);

@@ -4,18 +4,11 @@
 // deleting a machine is a save without it, after which its codes are reserved in the lock; a deleted machine that is added
 // again starts after its reserved codes; and a delete needs the CSRF token of its page.
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import { openApp, tempProject } from './helpers.mjs';
 import { openStore } from '../src/store.mjs';
-import {
-  KINDS, csrfOf, newSession, openProject, page, post,
-} from './edit-support.mjs';
+import { KINDS, csrfOf, newSession, openProject, page, post, assertChecked, openAt } from './edit-support.mjs';
 
-const GUI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FSM_GEN = path.join(GUI, '..', 'compiler', 'src', 'cli', 'fsm-gen.mjs');
 
 test('the new machine page shows the findings of the project, as every page does', async t => {
   const root = tempProject({
@@ -46,18 +39,11 @@ for (const kind of KINDS) {
     const track = loaded.definitions.find(definition => definition.machine === 'track');
     assert.deepEqual(track, { machine: 'track', states: [{ key: 'only', code: 1, initial: true, final: true }], events: [] });
     assert.deepEqual(loaded.lock.track, { codes: { 1: 'only' }, reserved: [] });
-    if (kind !== 'db') {
-      const check = spawnSync(process.execPath, [FSM_GEN, 'check', '--project', project.root], { encoding: 'utf8' });
-      assert.equal(check.status, 0, check.stderr);
-    }
+    assertChecked(kind, project);
   });
 
   test(`${kind}: a new machine with an invalid key is refused with the finding on its machine field and writes nothing`, async t => {
-    const project = await openProject(kind);
-    t.after(() => project.close());
-    const app = await openApp(project.store);
-    const session = newSession();
-    const csrf = csrfOf((await page(app, '/new', session)).body);
+    const { project, app, session, csrf } = await openAt(kind, t, '/new');
     const before = JSON.stringify(await project.store.load());
     const response = await post(app, '/new', [['_csrf', csrf], ['form[machine]', 'Track'], ['form[state]', 'only']], session);
     assert.equal(response.status, 422);
@@ -69,29 +55,18 @@ for (const kind of KINDS) {
   });
 
   test(`${kind}: deleting a machine is a save without it: its codes move to the lock's reserved list`, async t => {
-    const project = await openProject(kind);
-    t.after(() => project.close());
-    const app = await openApp(project.store);
-    const session = newSession();
-    const csrf = csrfOf((await page(app, '/machines/order', session)).body);
+    const { project, app, session, csrf } = await openAt(kind, t, '/machines/order');
     const response = await post(app, '/machines/order/delete', [['_csrf', csrf]], session);
     assert.equal(response.status, 303);
     assert.equal(response.headers.Location, '/');
     const loaded = await project.store.load();
     assert.equal(loaded.definitions.some(definition => definition.machine === 'order'), false);
     assert.deepEqual(loaded.lock.order, { codes: {}, reserved: [1, 2, 3, 4, 5] });
-    if (kind !== 'db') {
-      const check = spawnSync(process.execPath, [FSM_GEN, 'check', '--project', project.root], { encoding: 'utf8' });
-      assert.equal(check.status, 0, check.stderr);
-    }
+    assertChecked(kind, project);
   });
 
   test(`${kind}: a deleted machine that is added again starts after its reserved codes`, async t => {
-    const project = await openProject(kind);
-    t.after(() => project.close());
-    const app = await openApp(project.store);
-    const session = newSession();
-    const csrf = csrfOf((await page(app, '/machines/order', session)).body);
+    const { project, app, session, csrf } = await openAt(kind, t, '/machines/order');
     assert.equal((await post(app, '/machines/order/delete', [['_csrf', csrf]], session)).status, 303);
     const again = csrfOf((await page(app, '/new', session)).body);
     const response = await post(app, '/new', [['_csrf', again], ['form[machine]', 'order'], ['form[state]', 'draft']], session);
@@ -101,11 +76,7 @@ for (const kind of KINDS) {
   });
 
   test(`${kind}: a new machine whose key is taken is refused with E_DUPLICATE_KEY on its machine field`, async t => {
-    const project = await openProject(kind);
-    t.after(() => project.close());
-    const app = await openApp(project.store);
-    const session = newSession();
-    const csrf = csrfOf((await page(app, '/new', session)).body);
+    const { project, app, session, csrf } = await openAt(kind, t, '/new');
     const before = JSON.stringify(await project.store.load());
     const response = await post(app, '/new', [['_csrf', csrf], ['form[machine]', 'order'], ['form[state]', 'draft']], session);
     assert.equal(response.status, 422);

@@ -4,18 +4,11 @@
 // nothing and shows its finding on the field of the finding; an edited code or key of a stored state is refused by the core;
 // and every save needs the CSRF token of its page.
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import { openApp, tempProject } from './helpers.mjs';
 import { openStore } from '../src/store.mjs';
-import {
-  KINDS, csrfOf, editPairs, newSession, openProject, orderRows, page, post, rowKey,
-} from './edit-support.mjs';
+import { KINDS, csrfOf, editPairs, newSession, openProject, orderRows, page, post, rowKey, assertChecked } from './edit-support.mjs';
 
-const GUI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FSM_GEN = path.join(GUI, '..', 'compiler', 'src', 'cli', 'fsm-gen.mjs');
 
 /** Opens the order example of `kind` and the application over its store, and the session of one browser. */
 async function editing(t, kind) {
@@ -139,10 +132,7 @@ for (const kind of KINDS) {
     const archived = order.states.find(state => state.key === 'archived');
     assert.deepEqual(archived, { key: 'archived', code: 6, final: true });
     assert.equal(loaded.lock.order.codes['6'], 'archived');
-    if (kind !== 'db') {
-      const check = spawnSync(process.execPath, [FSM_GEN, 'check', '--project', project.root], { encoding: 'utf8' });
-      assert.equal(check.status, 0, check.stderr);
-    }
+    assertChecked(kind, project);
     const again = await page(app, '/machines/order', newSession());
     assert.equal(again.status, 200);
   });

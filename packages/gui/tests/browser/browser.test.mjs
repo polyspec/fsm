@@ -5,17 +5,15 @@
 // can see that a click changes the rows, so this test is the owner of the form behavior (make gui-browser-test).
 // The browser is installed by make gui-browsers, which downloads it (ONLINE).
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { after, before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import { tempProject } from '../helpers.mjs';
+import { startGui, tempProject } from '../helpers.mjs';
 
 const GUI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ROOT = path.resolve(GUI, '..', '..');
-const MAIN = path.join(GUI, 'src', 'main.mjs');
 
 /** The state rows of the states collection of the edit form, and the edge rows of an event row. */
 const STATE_ROWS = '[data-field-path="states"] > .crudui-node__body > .crudui-node--row';
@@ -32,24 +30,6 @@ let page;
 let root;
 let url;
 let pageErrors = [];
-
-/** Starts the GUI on `project` with port 0 and resolves with its address, from the line that the server prints. */
-function startGui(project) {
-  const child = spawn(process.execPath, [MAIN, '--project', project, '--port', '0'], { stdio: ['ignore', 'pipe', 'pipe'] });
-  return new Promise((resolve, reject) => {
-    let out = '';
-    let err = '';
-    child.stdout.on('data', chunk => {
-      out += chunk;
-      const match = /http:\/\/127\.0\.0\.1:(\d+)/.exec(out);
-      if (match !== null) resolve({ child, url: `http://127.0.0.1:${match[1]}` });
-    });
-    child.stderr.on('data', chunk => {
-      err += chunk;
-    });
-    child.on('exit', code => reject(new Error(`the GUI server exited with ${code}: ${err}`)));
-  });
-}
 
 const readJson = file => JSON.parse(readFileSync(path.join(root, file), 'utf8'));
 

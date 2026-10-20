@@ -2,6 +2,8 @@
 // token of the page that the same session rendered; the form body that a browser posts for a machine; and the three stores
 // (json, mermaid and db) of a project that holds the order example. A test calls openProject(kind) and gets the store of the
 // project as fsm.config.json names it, so the store selection is the one the GUI uses.
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { MemorySessionStore, Request } from '@polyspec/hyper-server';
 import { dbStore } from '../../db/src/db-store.mjs';
@@ -9,7 +11,10 @@ import { SCHEMA, connect } from '../../db/src/models/models.ts';
 import { jsonStore } from '../../compiler/src/store-json/store.mjs';
 import { openStore } from '../src/store.mjs';
 import { ORDER_JSON_TEXT, ORDER_LOCK_TEXT, ORDER_MERMAID_TEXT } from './canonical.mjs';
-import { tempProject } from './helpers.mjs';
+import { GUI } from '../src/application.mjs';
+import { openApp, tempProject } from './helpers.mjs';
+
+const FSM_GEN = path.join(GUI, '..', 'compiler', 'src', 'cli', 'fsm-gen.mjs');
 
 /** The three stores that the GUI edit screens run on. */
 export const KINDS = ['json', 'mermaid', 'db'];
@@ -114,6 +119,14 @@ export async function openProject(kind) {
     return { root, env: {}, store: (await openStore(root, {})).store, close: async () => {} };
   }
   if (kind !== 'db') throw new Error(`unknown store kind ${kind}`);
+  const { root, dsn } = await seededDbProject();
+  const env = { FSM_DSN: dsn };
+  const opened = await openStore(root, env);
+  return { root, env, store: opened.store, close: opened.close };
+}
+
+/** A project directory whose fsm.config.json names the db store, and the DSN of its SQLite database that holds the order example. */
+export async function seededDbProject() {
   const root = tempProject({
     'fsm.config.json': '{"store":"db","dsnEnv":"FSM_DSN"}\n',
     'machines/order.fsm.json': ORDER_JSON_TEXT,
@@ -124,7 +137,34 @@ export async function openProject(kind) {
   await seed.utils().schema().install(SCHEMA);
   await dbStore(seed).save(await jsonStore(root).load());
   await seed.close();
-  const env = { FSM_DSN: dsn };
-  const opened = await openStore(root, env);
-  return { root, env, store: opened.store, close: opened.close };
+  return { root, dsn };
+}
+
+/** Opens the project of the store `kind` and the application on it, closes the project when the test `t` ends, and opens the page `target`. */
+export async function openAt(kind, t, target) {
+  const project = await openProject(kind);
+  t.after(() => project.close());
+  const app = await openApp(project.store);
+  const session = newSession();
+  const csrf = csrfOf((await page(app, target, session)).body);
+  return { project, app, session, csrf };
+}
+
+/** Opens the edit page of order in the project of the store `kind`. */
+export const openEditing = (kind, t) => openAt(kind, t, '/machines/order/edit');
+
+/** Asserts that fsm-gen check passes on a project of the json or the mermaid store; the db store has no files to check. */
+export function assertChecked(kind, project) {
+  if (kind === 'db') return;
+  const check = spawnSync(process.execPath, [FSM_GEN, 'check', '--project', project.root], { encoding: 'utf8' });
+  assert.equal(check.status, 0, check.stderr);
+}
+
+/** Posts the edit form of order without the state canceled and the event cancel, and returns the response. */
+export function postWithoutCanceled(app, session, csrf) {
+  const rows = orderRows();
+  return post(app, '/machines/order/edit', [['_csrf', csrf], ...editPairs({
+    states: rows.states.filter(state => state.key !== 'canceled'),
+    events: rows.events.filter(event => event.key !== 'cancel'),
+  })], session);
 }
