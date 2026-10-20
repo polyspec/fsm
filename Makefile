@@ -298,23 +298,30 @@ compiler-test:
 # (FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_ADMIN_DSN) creates and drops (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md,
 # S-37-2). The files share the server, so they run one after the other.
 DB_DIALECT_TESTS := packages/db/tests/db-store.test.mjs packages/db/tests/store-contract-all.test.mjs packages/db/tests/cli.test.mjs packages/db/tests/command.test.mjs
-db-test-postgres: $(DB_DEP)
+db-test-postgres: $(DB_DEP) fsm-db-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	@$(call require_dsn,FSM_TEST_PG_ADMIN_DSN)
 	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
-db-test-mysql: $(DB_DEP)
+db-test-mysql: $(DB_DEP) fsm-db-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	@$(call require_dsn,FSM_TEST_MYSQL_ADMIN_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 $(DB_DIALECT_TESTS)
 
+# fsm-db-gen writes the models of packages/db/src/models with the orm-gen of its package (npm run gen): they are generated output, and
+# no checkout tracks them (AGENTS.md, Generated files). The db store, its tests, the GUI and the dialect helper of the npm persist
+# tests import them, so every target that runs one of those depends on it.
+.PHONY: fsm-db-gen
+fsm-db-gen: $(DB_DEP)
+	cd packages/db && $(NPM) run gen
+
 # db-deps installs the packages of packages/db (orm and ordered-json from their release tarballs, pinned in its
 # package-lock.json). db-test runs the tests of packages/db: the DB store against the store contract, the round trips
-# of json and db, the atomicity of save, the CLI, and the generated models, which orm-gen must reproduce from packages/db/schema/fsm.dbs
+# of json and db, the atomicity of save, the CLI, on the models that fsm-db-gen writes from packages/db/schema/fsm.dbs
 # (docs/plans/fsm-v1/plan.md, C-6).
 db-deps: $(DB_DEP)
 
-db-test: $(DB_DEP)
+db-test: $(DB_DEP) fsm-db-gen
 	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- packages/db/tests
 
 # gui-deps installs the packages of packages/gui (hyper v0.0.13, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
@@ -332,7 +339,7 @@ gui-build: $(GUI_DEP)
 # gui-test runs the tests of packages/gui (docs/plans/fsm-v1/plan.md, C-7): the handlers and the server entry through the
 # built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI. The
 # browser test is in tests/browser and runs with gui-browser-test, so gui-test takes the test files of tests/ only.
-gui-test: gui-build $(DB_DEP)
+gui-test: gui-build $(DB_DEP) fsm-db-gen
 	$(RUN_TESTS) node --results .results/gui-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- $(wildcard packages/gui/tests/*.test.mjs)
 
 # GUI_BROWSERS is the stamp of the Chromium that the GUI browser test drives, keyed on the Playwright version that
@@ -354,7 +361,7 @@ gui-browsers: $(GUI_BROWSERS)
 
 # gui-browser-test runs the tests of tests/browser (browser.test.mjs, diagram.test.mjs; S-38 adds the drawn diagram) of packages/gui: the GUI forms in a headless Chromium on a temporary project
 # (docs/plans/fsm-v1/checklist.md, S-22-1 and S-22-2). It needs the browser of gui-browsers and the built assets of gui-build.
-gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP)
+gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP) fsm-db-gen
 	$(RUN_TESTS) node --timeout 120 --results .results/gui-browser-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
 
 # packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1/plan.md, Verification). It refuses an empty kind list,
@@ -372,14 +379,14 @@ test-js: fsm-js-test
 # The three targets run them on each dialect: sqlite (a temporary file), postgres (FSM_TEST_PG_DSN) and mysql (FSM_TEST_MYSQL_DSN).
 # The two files run one after the other: on a server dialect they share the persist table, which each case clears.
 NPM_PERSIST_TESTS := --test-concurrency=1 --test-name-pattern=persist packages/js/tests/conformance.test.mjs packages/js/tests/persist.test.mjs
-npm-persist-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen
+npm-persist-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
-npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP) fsm-js-gen
+npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
-npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP) fsm-js-gen
+npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 

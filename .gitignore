@@ -15,6 +15,7 @@
 /packages/python/src/*.egg-info/
 # The files that fsm-gen and orm-gen write (make fsm-gen; AGENTS.md, Generated files). The golden files of
 # packages/compiler/tests/golden are their tracked proof.
+/packages/db/src/models/
 /packages/go/src/
 /packages/go/examples/model/
 /packages/js/src/

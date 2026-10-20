@@ -2,7 +2,6 @@
 // round trips json -> db -> json, E_STORE_NOT_EMPTY, and the atomicity of save. Every case opens its own SQLite database
 // file in a temporary directory, installs the schema of schema/fsm.dbs and closes the connection afterwards.
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -191,14 +190,6 @@ test('a save on the database refuses a swap of the stored codes and changes no r
     { code: 'E_CODE_CHANGED', machine: 'order', path: '$.states[1].code' },
   ]);
   assert.equal(await snapshot(), before);
-});
-
-test('the generated models are the ones orm-gen produces from the schema and the scan of src', () => {
-  const packageDir = new URL('..', import.meta.url).pathname;
-  const out = tempDir();
-  const result = spawnSync(path.join(packageDir, 'node_modules/.bin/orm-gen'), ['gen', '--set', 'schema/dbspec-set.json', '--out', out, '--scan', 'src'], { cwd: packageDir, encoding: 'utf8' });
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(readFileSync(path.join(out, 'models.ts'), 'utf8'), readFileSync(path.join(packageDir, 'src/models/models.ts'), 'utf8'));
 });
 
 /** The bytes of a JSON checkout, as the JSON store tests read them. */

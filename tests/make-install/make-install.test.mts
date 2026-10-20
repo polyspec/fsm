@@ -260,6 +260,22 @@ test('each target generates the files of its kind after the install and before i
   }
 });
 
+test('the targets that read the models of packages/db generate them after the install of db and before their recipe', (t) => {
+  const dir = sandbox(t);
+  const targets = [
+    { target: 'db-test', line: /db-test\.json/ },
+    { target: 'gui-test', line: /gui-test\.json/ },
+    { target: 'npm-persist-test', line: /npm-persist-test\.json/ },
+  ];
+  for (const { target, line } of targets) {
+    const out = dryRun(dir, target);
+    const run = lineIndex(out, line);
+    const gen = lineIndex(out, /cd packages\/db && .*npm run gen/);
+    assert.ok(gen >= 0 && gen < run, `${target} does not generate the models of packages/db before its recipe:\n${out}`);
+    assert.ok(lineIndex(out, installLine('db')) < gen, `${target} generates the models before the install of db:\n${out}`);
+  }
+});
+
 test('the gates that read generated files generate the files of every kind first', (t) => {
   const dir = sandbox(t);
   for (const gate of ['layout-check', 'parity-declarations-check', 'parity-check UNITS=vectors']) {
