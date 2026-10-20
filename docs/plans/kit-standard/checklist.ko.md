@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 4131456aca1958bcf4eb364970c5c1c7eef8cf58bf91e3bb67d17649340ac01c -->
+<!-- source-sha256: ae6ed83cecc2efefbe7756b1a0c209d3ab0aad6a8190c33a063da1d62fe19656 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -11,7 +11,7 @@
 | S-45-3-1 | S-45-3 뒤에 ConformanceCase.php의 PHP conformance case가 green으로 실행된다 | packages/php/tests/ConformanceCase.php and its copy in packages/php-ext | `node node_modules/@polyspec/kit/dist/run-tests.mjs phpunit --cwd packages/php --results .results/php-conformance.json --inputs packages/php --inputs contracts/schema/dbspec-set.json -- tests/ConformanceTest.php` | [o] |
 | S-45-4 | lint-php, lint-python: orm-gen 산출물(php examples/model/Item.php와 bootstrap.php, python examples/model/models.py)이 각 생태계 formatter를 통과한다. orm-gen에서 고친 뒤 여기서 다시 생성한다 | regenerated packages/php, packages/php-ext and packages/python examples/model | `make lint-php`, `make lint-python` | [o] |
 | S-45-5 | lint-php-ext: php 라이브러리는 polyspec/fsm, 확장은 polyspec/fsm-php-ext이고 stub은 polyspec_fsm.stub.php이다 (S10) | packages/php and packages/php-ext names, stub and config.m4 | `make lint-php-ext` | [!] 원인: kit php-extension.mts:63-77과 :118이 config.m4, stub, arginfo header를 추적하는 파일로만 읽는데 packages/php-ext/src는 생성되며 추적하지 않는다(S-45-8). php와 php-ext의 Composer vendor는 PHP 8.4에서 ">= 8.5.0"에서 멈춘다(S-45-7); 재시도: kit이 extension의 생성 파일을 읽게 되고 S-45-7이 Composer package를 PHP 8.4.1로 다시 lock한 뒤 |
-| S-45-5-1 | php-ext는 추적하는 설정의 상대 경로 없이 PHP package의 PHPUnit 파일을 실행한다(autoload-dev ../php, Makefile의 ../php/tests 인자) | packages/php-ext/composer.json, Makefile | `make lint-php-ext` | [!] 원인: kit K285: php-ext의 test root가 packages/php/tests임을 kit이 알아야 설정에 상대 경로가 필요 없다; 재시도: K285가 연결된 kit에 들어온 뒤 |
+| S-45-5-1 | php-ext는 추적하는 설정의 상대 경로 없이 PHP package의 PHPUnit 파일을 실행한다(autoload-dev ../php, Makefile의 ../php/tests 인자) | packages/php-ext/composer.json, Makefile | `make lint-php-ext` | [!] 원인: kit php-extension.mts가 추적하는 파일로 extension을 읽고 빌드하는데 packages/php-ext/src는 생성되며 추적하지 않는다(S-45-8). Composer vendor는 PHP 8.4에서 platform 검사에서 멈춘다(S-45-7); 재시도: kit이 extension의 생성 source를 읽게 되고 S-45-7이 Composer package를 kit의 PHP platform으로 다시 lock한 뒤 |
 | S-45-6 | duplication-check: 추적되는 fixture와 golden 출력은 이유와 함께 config/duplication.json에서 제외하고, 코드 중복은 제거한다 | config/duplication.json, compiler backends, store-json, cli, db models | `make duplication-check` | [o] |
 | S-45-6-1 | duplication-check: compiler backend의 golden 출력을 이유와 함께 config/duplication.json에서 제외한다 | config/duplication.json | `make duplication-check` | [o] |
 | S-45-6-2 | duplication-check: compiler, db, gui와 그 test의 코드 중복을 각각 한 module로 옮긴다 | packages/compiler, packages/db, packages/gui sources and tests | `make duplication-check` | [o] |

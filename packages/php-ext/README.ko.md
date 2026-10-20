@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: 9350d349db09ff87dc8eefa00d3e9197ea588bc327c2c8629f1a9c158ebfb002 -->
+<!-- source-sha256: f5deeaab46ed76e8649d413f9eea2e5962ab16b10957778b633f98bb554867ba -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
@@ -91,7 +91,7 @@ checkout에서 실행한다:
 
 ```sh
 make fsm-php-ext-install   # composer install: the same packages as the php package (composer.lock)
-make fsm-php-ext-test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
+make test-php-ext          # kit: builds the extension (phpize, ./configure, make), then PHPUnit of packages/php with --php-extension
 make test-php-ext                      # the same from the root
 make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

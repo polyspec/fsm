@@ -94,7 +94,7 @@ From the checkout:
 
 ```sh
 make fsm-php-ext-install   # composer install: the same packages as the php package (composer.lock)
-make fsm-php-ext-test      # builds the extension (phpize, ./configure, make), then PHPUnit with --php-extension
+make test-php-ext          # kit: builds the extension (phpize, ./configure, make), then PHPUnit of packages/php with --php-extension
 make test-php-ext                      # the same from the root
 make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)

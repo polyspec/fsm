@@ -77,7 +77,7 @@ const TARGETS = [
   { target: 'fsm-js-test', line: /--results \.results\/npm\.json/, needs: ['npm'] },
   { target: 'test-go', line: /go --cwd packages\/go/, needs: ['go'] },
   { target: 'test-php', line: /phpunit --cwd packages\/php --results/, needs: ['php'] },
-  { target: 'test-php-ext', line: /phpunit --php-extension/, needs: ['php-ext'] },
+  { target: 'test-php-ext', line: /php-extension\.mjs test/, needs: ['php-ext'] },
   { target: 'test-python', line: /run-tests\.mjs python --venv/, needs: ['python'] },
   { target: 'test-rust', line: /--results \.results\/rust\.json/, needs: ['rust'] },
   { target: 'db-test', line: /db-test\.json/, needs: ['db'] },

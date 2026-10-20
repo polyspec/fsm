@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 19cdc064b357fb7a66c8e96cfc947a200992d93cc9af7769140d2a26b5279baa -->
+<!-- source-sha256: f2368365e6035cb02e4fe57470ccf10fa7ac7afb0eb48216d55f606072277653 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-5-1: kit K285는 extension을 로드해 packages/php의 PHPUnit 파일을 실행하므로 상대 경로가 없어졌다. `packages/php-ext/composer.json`에는 `autoload-dev`가 없고, `config/parity.json`은 php-ext에 자기 root만 주며(kit이 layout으로 packages/php의 root를 인정한다), Makefile에는 `fsm-php-ext-test`, `fsm-php-ext-build`, `fsm-php-ext-clean`이 없고(kit이 `var/php-ext`에서 빌드한다. `test-php-ext`와 `build-php-ext`는 `fsm-php-ext-gen`에 의존한다), php-ext persist target은 `var/php-ext`의 extension으로 `packages/php`를 실행한다. RED `grep -rn "\.\./php" packages/php-ext/composer.json Makefile config` 6줄; GREEN 0줄이고 `make parity-declarations-check` exit 0. `make test-php-ext`는 여기서 아직 실행되지 않는다: kit `scripts/kit/php-extension.mts:62-77`과 `:112-123`이 추적하는 파일로 검사하고 빌드하는데 `packages/php-ext/src`는 생성되며 추적하지 않으므로(S-45-8) `build-php-ext`가 "the stub of the extension is missing"으로 멈추고, Composer vendor도 PHP 8.4에서 platform 검사에서 멈춘다(S-45-7). (S-45-5-1)
 - S-45-6: `make duplication-check` exit 0: golden 출력은 이유와 함께 제외하고(S-45-6-1), 코드 중복은 각각 한 module에 있으며(S-45-6-2), orm-gen 산출물은 추적하지 않는다(S-45-6-3). RED exit 2, 중복 213개; GREEN exit 0. (S-45-6)
 - S-45-6-2: fsm의 모든 코드 중복을 한 module로 옮겼다. 항목 S-45-6-2-1부터 S-45-6-2-5가 compiler source, compiler test, GUI, db와 rust test, 루트 script와 test를 덮는다. RED `make duplication-check` exit 2, S-45-6 항목을 시작할 때 중복 213개; GREEN exit 0, "no piece of code exists twice". (S-45-6-2)
 - S-45-6-2-5: 루트 script와 test의 중복이 없다. `scripts/root-option.mts`가 `check-name`과 `check-readmes`의 `--root`를 읽고, `tests/support/make-sandbox.mts`가 `make-install`과 `python-tools`의 `make -n` test가 쓰는 Makefile 파일 복사, make 환경, 줄 검색을 담는다. test는 같다: 16 + 9 + 15 + 7개가 통과하고 `make lint-ts`가 exit 0이며 `check-name`은 알 수 없는 option에 여전히 usage 줄과 함께 exit 2다. RED `make duplication-check` 이 파일들에 중복 3개; GREEN exit 0, 중복 없음. (S-45-6-2-5)

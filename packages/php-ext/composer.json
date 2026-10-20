@@ -20,15 +20,6 @@
             "url": "../../var/composer-artifacts"
         }
     ],
-    "autoload-dev": {
-        "psr-4": {
-            "Polyspec\\FsmTest\\Tests\\": "../php/tests/",
-            "Polyspec\\FsmTest\\Model\\": "../php/examples/model/"
-        },
-        "files": [
-            "../php/examples/persist.php"
-        ]
-    },
     "config": {
         "platform": {
             "php": "8.4.0"

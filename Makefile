@@ -98,7 +98,7 @@ FSM_GEN := $(NODE) packages/compiler/src/cli/fsm-gen.mjs
 GO_MODULE := github.com/polyspec/fsm/packages/go
 PHP_NAMESPACE := Polyspec\FsmTest
 PHP_EXT_NAME := polyspec_fsm
-PHP_EXT_MODULE := packages/php-ext/src/modules/$(PHP_EXT_NAME).so
+PHP_EXT_MODULE := var/php-ext/$(PHP_EXT_NAME).so
 PY_VENV := packages/python/.venv
 # uv is the one of config/toolchain.json that install-tools installs (S-44-2), never a uv of PATH.
 UV := var/tools/mise/shims/uv
@@ -153,32 +153,18 @@ fsm-php-test: $(PHP_DEP) fsm-php-gen
 	$(RUN_TESTS) phpunit --cwd packages/php --results .results/php.json --inputs packages/php --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests
 
 # fsm-php-ext-install is the install of the extension: the same Composer packages as packages/php (composer.lock).
-.PHONY: fsm-php-ext-install fsm-php-ext-gen fsm-php-ext-build fsm-php-ext-test fsm-php-ext-clean
+.PHONY: fsm-php-ext-install fsm-php-ext-gen
 fsm-php-ext-install:
 	$(MAKE) release-assets-fetch
 	cd packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
 
-# fsm-php-ext-gen writes the generated files of the extension (src/). The extension has no test of its own: the PHPUnit files of
-# packages/php test it, and its autoload-dev (composer.json) reaches the tests, the model and the persist example of packages/php,
-# so the model of the php package is generated first.
+# fsm-php-ext-gen writes the generated files of the extension (src/). The extension has no test of its own: kit's test-php-ext runs the
+# PHPUnit files of packages/php with the extension that kit's build-php-ext built from src/, so the model of the php package is
+# generated first.
 fsm-php-ext-gen: $(PHP_EXT_DEP) fsm-php-gen
 fsm-php-ext-gen:
 	mkdir -p packages/php-ext/src
 	$(FSM_GEN) gen --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --php-ext-name $(PHP_EXT_NAME) --out packages/php-ext/src
-
-# fsm-php-ext-build compiles the extension in packages/php-ext/src with phpize, ./configure and make; the module is $(PHP_EXT_MODULE).
-fsm-php-ext-build: fsm-php-ext-gen
-	cd packages/php-ext/src && phpize && ./configure && make
-
-# fsm-php-ext-test builds the extension and runs the PHPUnit files of packages/php (the conformance cases and the persist example)
-# with the built module loaded, in the package of the extension (its autoload has no PHP source of the machines).
-fsm-php-ext-test: $(PHP_EXT_DEP) fsm-php-ext-gen
-	$(MAKE) fsm-php-ext-build
-	$(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php-ext --results .results/php-ext.json --inputs packages/php-ext --inputs packages/php/tests --inputs packages/php/examples --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ../php/tests
-
-# fsm-php-ext-clean removes the phpize output of src/ (the generated files and config.m4 stay).
-fsm-php-ext-clean:
-	cd packages/php-ext/src && phpize --clean
 
 # fsm-python-install makes the venv .venv with the Python of the checkout, var/tools/mise/shims/python3, which install-tools
 # installs with uv. The venv is made by kit's python-venv, and uv fills it with --link-mode copy: the locked packages of pylock.toml
@@ -419,7 +405,8 @@ python-tools-test:
 test-python: fsm-python-test
 
 # test-php-ext is the fixed task of kit; the tests of packages/php-ext are its prerequisite (K246-2).
-test-php-ext: fsm-php-ext-test
+test-php-ext: fsm-php-ext-gen
+build-php-ext: fsm-php-ext-gen
 
 # ---- Persist cases on the server dialects (docs/spec/fsm.md, B-4; docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-37-1)
 # Each kind runs its persist cases on PostgreSQL and MySQL with the DSN variables of npm (FSM_TEST_PG_DSN, FSM_TEST_MYSQL_DSN). The
@@ -453,15 +440,13 @@ php-persist-test-mysql: $(PHP_DEP) fsm-php-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-mysql.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
-php-ext-persist-test-postgres: $(PHP_EXT_DEP) fsm-php-ext-gen
+php-ext-persist-test-postgres: $(PHP_EXT_DEP) fsm-php-gen build-php-ext
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	$(MAKE) fsm-php-ext-build
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php-ext --results .results/php-ext-persist-test-postgres.json --inputs packages/php-ext --inputs packages/php/tests --inputs packages/php/examples --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ../php/tests --filter '/persist/i'
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php --results .results/php-ext-persist-test-postgres.json --inputs packages/php --inputs var/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
-php-ext-persist-test-mysql: $(PHP_EXT_DEP) fsm-php-ext-gen
+php-ext-persist-test-mysql: $(PHP_EXT_DEP) fsm-php-gen build-php-ext
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	$(MAKE) fsm-php-ext-build
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php-ext --results .results/php-ext-persist-test-mysql.json --inputs packages/php-ext --inputs packages/php/tests --inputs packages/php/examples --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ../php/tests --filter '/persist/i'
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php --results .results/php-ext-persist-test-mysql.json --inputs packages/php --inputs var/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
 python-persist-test-postgres: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
