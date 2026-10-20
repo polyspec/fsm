@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 4be8945135d1039ed16163f25f50b9e3021dbd22841d8ff4eaa2803ceab23d4b -->
+<!-- source-sha256: 5c78a7c6a07d5c1603df889211593839d827d7985a63a6d8fdfdef31298fc8b3 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -36,4 +36,5 @@
 | S-45-10 | 예약된 machine key examples, vectors, machines, expectation, lookup을 없앤다: 생성된 go test 파일이 더 이상 이를 import하거나 선언하지 않는다(docs/spec/fsm.md B-5, reserved.mjs) | docs/spec/fsm.md, docs/spec/fsm.ko.md, packages/compiler/src/core/reserved.mjs, packages/compiler/src/core/validate.mjs, packages/compiler/tests/validate-names.test.mjs | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/validate-names.json --inputs packages/compiler -- packages/compiler/tests/validate-names.test.mjs` | [o] |
 | S-45-11 | rebuild-check: config/rebuild.json에 paths가 없고(kit K286이 layout으로 tool source를 찾는다) 모든 tool source를 분류한다 | config/rebuild.json | `make rebuild-check` | [o] |
 | S-45-12 | kit-check: CHECK_TARGETS가 fsm의 runtime에 대한 kit-gates의 모든 gate를 실행하고, kit의 복사본이 같다(PRINCIPLES.md, PRINCIPLES.ko.md) | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
+| S-45-13 | dependency-policy-check: 저장소의 Composer platform은 두 composer.json과 config/dependency-policy.json에서 PHP 8.4.1 하나다(kit K282) | packages/php/composer.json, packages/php-ext/composer.json, config/dependency-policy.json | `make dependency-policy-check` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [!] 원인: from_code는 모든 구현에서 디코드된 값을 받고 원시 code는 그것을 거친다. go, npm, python, rust는 벡터 290개와 persist id 4개를 통과한다(make parity-check UNITS=...). 그러나 php와 php-ext는 이 환경에서 실행되지 않는다: composer vendor를 GitHub에서 받을 수 없으므로, 그들의 290개 case는 작성되고 php -l로만 검사되었으며 실행되지 않았다; 재시도: CI에서, 또는 php와 php-ext의 composer vendor를 설치한 뒤 여섯 구현 모두에 대해 make parity-check UNITS="vectors persist_concurrent_same_event persist_concurrent_conflict persist_retry_on_deadlock persist_no_retry_on_other_error"가 통과하고, 전체 검사는 CI에서 실행되며, docs/plans/fsm-v1/plan.md C-4가 모든 종류 규칙으로 갱신된다 |
