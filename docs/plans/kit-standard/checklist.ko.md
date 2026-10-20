@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 17d7b0f50676d6893a5ce620880ecf162585bc1a2ef855e268b9ef9bf1dabe47 -->
+<!-- source-sha256: c94c4ef4b3f76f3f3125e724e91dbd1a6862c0953c05cb74263b9f5b30b6c8fb -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -16,7 +16,7 @@
 | S-45-6-1 | duplication-check: compiler backend의 golden 출력을 이유와 함께 config/duplication.json에서 제외한다 | config/duplication.json | `make duplication-check` | [o] |
 | S-45-6-2 | duplication-check: compiler, db, gui와 그 test의 코드 중복을 각각 한 module로 옮긴다 | packages/compiler, packages/db, packages/gui sources and tests | `make duplication-check` | [ ] |
 | S-45-6-2-1 | duplication-check: packages/compiler/src의 코드 중복과 packages/db/src와 공유하는 command line의 중복을 각각 한 module로 옮긴다 | packages/compiler/src, packages/db/src/cli | `make duplication-check` | [o] |
-| S-45-6-2-2 | duplication-check: packages/compiler/tests의 코드 중복을 각각 helper 하나로 옮긴다 | packages/compiler/tests | `make duplication-check` | [ ] |
+| S-45-6-2-2 | duplication-check: packages/compiler/tests의 코드 중복을 각각 helper 하나로 옮긴다 | packages/compiler/tests | `make duplication-check` | [o] |
 | S-45-6-2-3 | duplication-check: packages/gui/src와 packages/gui/tests의 코드 중복을 각각 한 module로 옮긴다 | packages/gui | `make duplication-check` | [ ] |
 | S-45-6-2-4 | duplication-check: packages/db/tests와 packages/rust/tests의 코드 중복을 각각 한 module로 옮긴다 | packages/db/tests, packages/rust/tests | `make duplication-check` | [ ] |
 | S-45-6-2-5 | duplication-check: tests/make-install과 scripts/check-name.mts의 코드 중복을 각각 함수 하나로 옮긴다 | tests/make-install, scripts/check-name.mts | `make duplication-check` | [ ] |

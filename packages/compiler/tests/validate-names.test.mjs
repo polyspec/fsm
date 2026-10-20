@@ -6,13 +6,7 @@ import test from 'node:test';
 import * as lists from '../src/core/reserved.mjs';
 import { renameState } from '../src/core/lock.mjs';
 import { validate } from '../src/core/validate.mjs';
-
-/** A valid machine: draft (initial) -next-> paid -next-> done (final). */
-const base = () => ({
-  machine: 'order',
-  states: [{ key: 'draft', code: 1, initial: true }, { key: 'paid', code: 2 }, { key: 'done', code: 3, final: true }],
-  events: [{ key: 'next', edges: [{ from: 'draft', to: 'paid' }, { from: 'paid', to: 'done' }] }],
-});
+import { threeStateOrder as base } from './order-machines.mjs';
 
 /** The findings of `definitions` as `{code, machine, path}`, in order. */
 const shape = definitions => validate(definitions).map(({ code, machine, path }) => ({ code, machine, path }));

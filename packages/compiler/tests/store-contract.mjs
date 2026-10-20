@@ -5,15 +5,12 @@
 // load() and save() are async: every case checks that the call returns a Promise and awaits it.
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { twoStateOrder } from './order-machines.mjs';
 
 /** Two machines in name order: order (draft -next-> done) and track (one state that is initial and final). */
 const sample = () => ({
   definitions: [
-    {
-      machine: 'order',
-      states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
-      events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
-    },
+    twoStateOrder(),
     { machine: 'track', states: [{ key: 'only', code: 1, initial: true, final: true }], events: [] },
   ],
   lock: {

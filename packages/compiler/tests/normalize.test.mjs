@@ -3,21 +3,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { normalize } from '../src/core/normalize.mjs';
-
-/** The order example of docs/spec/fsm.md, B-1. */
-const order = () => ({
-  machine: 'order',
-  states: [
-    { key: 'draft', code: 1, initial: true }, { key: 'paid', code: 2 },
-    { key: 'shipped', code: 3 }, { key: 'done', code: 4, final: true },
-    { key: 'canceled', code: 5, final: true },
-  ],
-  events: [
-    { key: 'next', edges: [{ from: 'draft', to: 'paid' }, { from: 'paid', to: 'shipped' }, { from: 'shipped', to: 'done' }] },
-    { key: 'prev', edges: [{ from: 'paid', to: 'draft' }, { from: 'shipped', to: 'paid' }] },
-    { key: 'cancel', edges: [{ from: 'draft', to: 'canceled' }, { from: 'paid', to: 'canceled' }] },
-  ],
-});
+import { fiveStateOrder as order } from './order-machines.mjs';
 
 test('the IR of the order example has the exact states, events and transitions', () => {
   assert.deepEqual(normalize(order()), {

@@ -4,24 +4,13 @@
 // in a temporary directory that is removed when the file's tests end.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import test, { after } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import test, {  } from 'node:test';
+import { HERE, gen, tempDir } from './cli-support.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const CLI = path.resolve(HERE, '../src/cli/fsm-gen.mjs');
 const GOLDEN = path.join(HERE, 'golden/npm');
-const roots = [];
-
-/** A new temporary directory, removed when the file's tests end. */
-function tempDir() {
-  const root = mkdtempSync(path.join(tmpdir(), 'fsm-gen-ignored-'));
-  roots.push(root);
-  return root;
-}
 
 /** A new temporary git repository whose output directory is `src/` (created). */
 function gitRepo(ignore) {
@@ -34,18 +23,17 @@ function gitRepo(ignore) {
   return { root, out };
 }
 
-/** Runs the command line of fsm-gen with `args` and returns its status, stdout and stderr. */
-function gen(args) {
-  const result = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
-  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
-}
-
 const genNpm = out => gen(['gen', '--project', ORDER_PROJECT, '--kind', 'npm', '--out', out]);
 const golden = name => readFileSync(path.join(GOLDEN, 'src', name), 'utf8');
 
-after(() => {
-  for (const root of roots) rmSync(root, { recursive: true, force: true });
-});
+/** Asserts that gen into `out` is refused for the hand-written order.js: E_NOT_GENERATED, exit 1, the file kept, nothing else written. */
+function assertRefusesHandWritten(out) {
+  const result = genNpm(out);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /^\[fsm-gen\] E_NOT_GENERATED - order\.js: /m);
+  assert.equal(readFileSync(path.join(out, 'order.js'), 'utf8'), 'export const hand = 1;\n');
+  assert.equal(existsSync(path.join(out, 'fsm.js')), false);
+}
 
 test('gen in a git work tree writes the generated files and leaves an ignored file without the header untouched', () => {
   const { out } = gitRepo('src/build.o\n');
@@ -60,11 +48,7 @@ test('gen in a git work tree writes the generated files and leaves an ignored fi
 test('gen still refuses a non-ignored hand-written file: E_NOT_GENERATED, exit 1, and nothing written', () => {
   const { out } = gitRepo('src/build.o\n');
   writeFileSync(path.join(out, 'order.js'), 'export const hand = 1;\n');
-  const result = genNpm(out);
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /^\[fsm-gen\] E_NOT_GENERATED - order\.js: /m);
-  assert.equal(readFileSync(path.join(out, 'order.js'), 'utf8'), 'export const hand = 1;\n');
-  assert.equal(existsSync(path.join(out, 'fsm.js')), false);
+  assertRefusesHandWritten(out);
 });
 
 test('gen still refuses a tracked file, even when a pattern of .gitignore names it', () => {
@@ -72,11 +56,7 @@ test('gen still refuses a tracked file, even when a pattern of .gitignore names 
   writeFileSync(path.join(out, 'order.js'), 'export const hand = 1;\n');
   const add = spawnSync('git', ['-C', root, 'add', '-f', 'src/order.js'], { encoding: 'utf8' });
   assert.equal(add.status, 0, add.stderr);
-  const result = genNpm(out);
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /^\[fsm-gen\] E_NOT_GENERATED - order\.js: /m);
-  assert.equal(readFileSync(path.join(out, 'order.js'), 'utf8'), 'export const hand = 1;\n');
-  assert.equal(existsSync(path.join(out, 'fsm.js')), false);
+  assertRefusesHandWritten(out);
 });
 
 test('gen does not remove an ignored file as stale, even one that carries the generated header', () => {

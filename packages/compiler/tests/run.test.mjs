@@ -5,6 +5,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { copy, run } from '../src/core/run.mjs';
+import { shapeFindings as shape, threeStateLock as orderLock, threeStateOrder as order } from './order-machines.mjs';
 
 /** A store in memory. `writes` lists every save, in order. `baseline` is the committed lock (B-3); it defaults to the lock. */
 function memory({ definitions = [], lock = {}, findings = [], baseline = lock } = {}) {
@@ -32,25 +33,12 @@ async function copyOf(...args) {
   return pending;
 }
 
-/** A valid machine: draft (initial) -next-> paid -next-> done (final). */
-const order = () => ({
-  machine: 'order',
-  states: [{ key: 'draft', code: 1, initial: true }, { key: 'paid', code: 2 }, { key: 'done', code: 3, final: true }],
-  events: [{ key: 'next', edges: [{ from: 'draft', to: 'paid' }, { from: 'paid', to: 'done' }] }],
-});
-
-/** The lock that matches the order machine above. */
-const orderLock = () => ({ order: { codes: { 1: 'draft', 2: 'paid', 3: 'done' }, reserved: [] } });
-
 /** The order machine without paid: draft -next-> done. */
 const shortOrder = () => ({
   machine: 'order',
   states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 3, final: true }],
   events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
 });
-
-/** The findings as {code, machine, path}. */
-const shape = findings => findings.map(({ code, machine, path }) => ({ code, machine, path }));
 
 const loadFinding = {
   code: 'E_SCHEMA', machine: 'order', path: '$.machine', message: 'the file name is not order.fsm.json',

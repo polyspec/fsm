@@ -4,19 +4,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { lockMismatch, nextCode, nextLock } from '../src/core/lock.mjs';
+import { shapeFindings as shape, threeStateLock as orderLock, threeStateOrder as order } from './order-machines.mjs';
 
-/** A valid machine: draft (initial) -next-> paid -next-> done (final). */
-const order = () => ({
+/** The order machine whose state paid has the code `code` and comes after done in the declaration. */
+const orderWithPaidAt = code => ({
   machine: 'order',
-  states: [{ key: 'draft', code: 1, initial: true }, { key: 'paid', code: 2 }, { key: 'done', code: 3, final: true }],
+  states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 3, final: true }, { key: 'paid', code }],
   events: [{ key: 'next', edges: [{ from: 'draft', to: 'paid' }, { from: 'paid', to: 'done' }] }],
 });
-
-/** The lock that matches the order machine above. */
-const orderLock = () => ({ order: { codes: { 1: 'draft', 2: 'paid', 3: 'done' }, reserved: [] } });
-
-/** The findings as {code, machine, path}. */
-const shape = findings => findings.map(({ code, machine, path }) => ({ code, machine, path }));
 
 test('a lock that matches the definitions has no mismatch', () => {
   assert.deepEqual(lockMismatch([order()], orderLock()), []);
@@ -169,33 +164,13 @@ test('a key that the lock maps to a code and that gets another code is refused w
 });
 
 test('a key deleted from the lock codes and re-added with another code is refused with E_CODE_CHANGED', () => {
-  const definition = {
-    machine: 'order',
-    states: [
-      { key: 'draft', code: 1, initial: true },
-      { key: 'done', code: 3, final: true },
-      { key: 'paid', code: 5 },
-    ],
-    events: [
-      { key: 'next', edges: [{ from: 'draft', to: 'paid' }, { from: 'paid', to: 'done' }] },
-    ],
-  };
+  const definition = orderWithPaidAt(5);
   const result = nextLock([definition], orderLock(), { renames: [] });
   assert.deepEqual(shape(result.findings), [{ code: 'E_CODE_CHANGED', machine: 'order', path: '$.states[2].code' }]);
 });
 
 test('a key that the lock has only as reserved history takes a new code without a finding', () => {
-  const definition = {
-    machine: 'order',
-    states: [
-      { key: 'draft', code: 1, initial: true },
-      { key: 'done', code: 3, final: true },
-      { key: 'paid', code: 4 },
-    ],
-    events: [
-      { key: 'next', edges: [{ from: 'draft', to: 'paid' }, { from: 'paid', to: 'done' }] },
-    ],
-  };
+  const definition = orderWithPaidAt(4);
   const lock = { order: { codes: { 1: 'draft', 3: 'done' }, reserved: [2] } };
   const result = nextLock([definition], lock, { renames: [] });
   assert.deepEqual(result.findings, []);

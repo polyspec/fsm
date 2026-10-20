@@ -3,42 +3,20 @@
 // fsm-gen header (it is reported as a finding; nothing is written or removed). Every case writes into a temporary
 // directory that is removed when the file's tests end.
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import test, { after } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import test, {  } from 'node:test';
 import { run } from '../src/core/run.mjs';
 import { jsonStore } from '../src/store-json/store.mjs';
+import { HERE, gen, tempDir } from './cli-support.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
-const CLI = path.resolve(HERE, '../src/cli/fsm-gen.mjs');
 const GOLDEN = path.join(HERE, 'golden/npm');
 const GOLDEN_PHP = path.join(HERE, 'golden/php');
-const roots = [];
-
-/** A new temporary directory, removed when the file's tests end. */
-function tempDir() {
-  const root = mkdtempSync(path.join(tmpdir(), 'fsm-gen-npm-'));
-  roots.push(root);
-  return root;
-}
-
-/** Runs the command line of fsm-gen with `args` and returns its status, stdout and stderr. */
-function gen(args) {
-  const result = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
-  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
-}
 
 const golden = name => readFileSync(path.join(GOLDEN, name), 'utf8');
 const GOLDEN_SRC = ['order.js', 'order.d.ts', 'fsm.js', 'fsm.d.ts', 'index.js', 'index.d.ts'];
-
-after(() => {
-  for (const root of roots) rmSync(root, { recursive: true, force: true });
-});
 
 test('run gen refuses an unknown kind with an Error and reads nothing', async () => {
   await assert.rejects(run('gen', jsonStore(path.join(ROOT, 'contracts')), { kind: 'ruby' }), /unknown kind ruby/);

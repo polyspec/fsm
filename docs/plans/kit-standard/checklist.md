@@ -15,7 +15,7 @@
 | S-45-6-1 | duplication-check: the golden outputs of the compiler backends are excluded in config/duplication.json with their reason | config/duplication.json | `make duplication-check` | [o] |
 | S-45-6-2 | duplication-check: the code clones of the compiler, db, gui and their tests are moved into one module each | packages/compiler, packages/db, packages/gui sources and tests | `make duplication-check` | [ ] |
 | S-45-6-2-1 | duplication-check: the code clones of packages/compiler/src and of the command line shared with packages/db/src are moved into one module each | packages/compiler/src, packages/db/src/cli | `make duplication-check` | [o] |
-| S-45-6-2-2 | duplication-check: the code clones of packages/compiler/tests are moved into one helper each | packages/compiler/tests | `make duplication-check` | [ ] |
+| S-45-6-2-2 | duplication-check: the code clones of packages/compiler/tests are moved into one helper each | packages/compiler/tests | `make duplication-check` | [o] |
 | S-45-6-2-3 | duplication-check: the code clones of packages/gui/src and packages/gui/tests are moved into one module each | packages/gui | `make duplication-check` | [ ] |
 | S-45-6-2-4 | duplication-check: the code clones of packages/db/tests and packages/rust/tests are moved into one module each | packages/db/tests, packages/rust/tests | `make duplication-check` | [ ] |
 | S-45-6-2-5 | duplication-check: the code clones of tests/make-install and scripts/check-name.mts are moved into one function each | tests/make-install, scripts/check-name.mts | `make duplication-check` | [ ] |

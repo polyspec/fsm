@@ -5,34 +5,15 @@
 // the directory itself, so the cases never touch the repository of the checkout.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import test, { after } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import test, {  } from 'node:test';
 import { ORDER_LOCK_TEXT, ORDER_MMD_TEXT, ORDER_TEXT } from './canonical-texts.mjs';
+import { gen, project } from './cli-support.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const CLI = path.resolve(HERE, '../src/cli/fsm-gen.mjs');
 const JSON_CONFIG = '{ "store": "json" }\n';
 const MERMAID_CONFIG = '{ "store": "mermaid" }\n';
 const LOCK_PATH = 'fsm.lock.json';
-const roots = [];
-
-after(() => {
-  for (const root of roots) rmSync(root, { recursive: true, force: true });
-});
-
-/** A new temporary directory with the files of `files` (path -> text), removed when the file's tests end. */
-function project(files = {}) {
-  const root = mkdtempSync(path.join(tmpdir(), 'fsm-lock-baseline-'));
-  roots.push(root);
-  for (const [relative, text] of Object.entries(files)) {
-    mkdirSync(path.dirname(path.join(root, relative)), { recursive: true });
-    writeFileSync(path.join(root, relative), text);
-  }
-  return root;
-}
 
 /** Runs git with `args` in `root` and returns its exit code and output. */
 function git(root, ...args) {
@@ -46,12 +27,6 @@ function commitAll(root) {
   git(root, 'add', '-A');
   const committed = git(root, 'commit', '-q', '-m', 'committed state');
   assert.equal(committed.status, 0, committed.stderr);
-}
-
-/** Runs fsm-gen with `args` in `cwd` and returns its exit code, stdout and stderr. */
-function gen(args, cwd = HERE) {
-  const result = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', cwd });
-  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 }
 
 /** The order machine of ORDER_TEXT with the codes of draft and paid swapped. */

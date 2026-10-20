@@ -3,45 +3,58 @@
 // --project <dir> (the project root, default the current directory). copy takes the source from --project and the target
 // directory from --root, which is required. Every case runs in temporary directories that are removed when the file's tests end.
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import test, { after } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import test, {  } from 'node:test';
 import { jsonStore } from '../src/store-json/store.mjs';
 import { mermaidStore } from '../src/store-mermaid/store.mjs';
 import {
   LOCK_TEXT, ORDER_LOCK_TEXT, ORDER_MMD_TEXT, ORDER_TEXT, TRACK_MMD_TEXT, TRACK_TEXT,
 } from './canonical-texts.mjs';
 import { filesOf } from './checkout.mjs';
+import { gen, project } from './cli-support.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const CLI = path.resolve(HERE, '../src/cli/fsm-gen.mjs');
 const CONFIG_JSON = '{ "store": "json" }\n';
 const MERMAID_CONFIG = '{ "store": "mermaid" }\n';
-const roots = [];
 
-/** A new temporary directory with the files of `files` (path -> text), removed when the file's tests end. */
-function project(files = {}) {
-  const root = mkdtempSync(path.join(tmpdir(), 'fsm-gen-'));
-  roots.push(root);
-  for (const [relative, text] of Object.entries(files)) {
-    mkdirSync(path.dirname(path.join(root, relative)), { recursive: true });
-    writeFileSync(path.join(root, relative), text);
-  }
-  return root;
+/** A project of the store `store` (json or mermaid) with the machines order and track and their lock. */
+function twoMachineProject(store) {
+  const json = store === 'json';
+  return project({
+    'fsm.config.json': json ? CONFIG_JSON : MERMAID_CONFIG,
+    [`machines/order.fsm.${json ? 'json' : 'mmd'}`]: json ? ORDER_TEXT : ORDER_MMD_TEXT,
+    [`machines/track.fsm.${json ? 'json' : 'mmd'}`]: json ? TRACK_TEXT : TRACK_MMD_TEXT,
+    'fsm.lock.json': LOCK_TEXT,
+  });
 }
 
-/** Runs fsm-gen with `args` in `cwd` and returns its status, stdout and stderr. */
-function gen(args, cwd = HERE) {
-  const result = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', cwd });
-  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
+/** Copies `source` into a new empty directory in the store `to`, asserts that the copy is ok, and returns the directory. */
+function copyIntoEmpty(to, source) {
+  const target = path.join(project(), 'empty-target');
+  assert.deepEqual(gen(['copy', '--to', to, '--project', source, '--root', target]), {
+    status: 0,
+    stdout: '[fsm-gen] copy: ok\n',
+    stderr: '',
+  });
+  return target;
 }
 
-after(() => {
-  for (const root of roots) rmSync(root, { recursive: true, force: true });
-});
+/** Asserts that copying `source` into the non-empty `target` is refused with E_STORE_NOT_EMPTY and leaves the files `before`. */
+function assertNotEmpty(to, source, target, before) {
+  const result = gen(['copy', '--to', to, '--project', source, '--root', target]);
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr.startsWith('[fsm-gen] E_STORE_NOT_EMPTY - $: '), true, result.stderr);
+  assert.deepEqual(filesOf(target), before);
+}
+
+/** Asserts that the command line `args` is a usage error: exit 2, nothing on stdout, a usage line on stderr. */
+function assertUsage(args) {
+  const result = gen(args);
+  assert.equal(result.status, 2, JSON.stringify(args));
+  assert.equal(result.stdout, '', JSON.stringify(args));
+  assert.equal(result.stderr.startsWith('[fsm-gen] usage: '), true, JSON.stringify(args));
+}
 
 test('check of a canonical project exits 0 with a one-line summary', () => {
   const root = project({ 'fsm.config.json': CONFIG_JSON, 'machines/order.fsm.json': ORDER_TEXT, 'fsm.lock.json': ORDER_LOCK_TEXT });
@@ -156,27 +169,12 @@ test('usage errors exit 2 with a usage line on stderr and nothing on stdout', ()
     ['copy', '--to', 'json'],
     ['copy', '--to', 'xml', '--root', root],
   ];
-  for (const args of cases) {
-    const result = gen(args);
-    assert.equal(result.status, 2, JSON.stringify(args));
-    assert.equal(result.stdout, '', JSON.stringify(args));
-    assert.equal(result.stderr.startsWith('[fsm-gen] usage: '), true, JSON.stringify(args));
-  }
+  for (const args of cases) assertUsage(args);
 });
 
 test('copy --to json into an empty target writes byte-identical machine files and lock', () => {
-  const source = project({
-    'fsm.config.json': CONFIG_JSON,
-    'machines/order.fsm.json': ORDER_TEXT,
-    'machines/track.fsm.json': TRACK_TEXT,
-    'fsm.lock.json': LOCK_TEXT,
-  });
-  const target = path.join(project(), 'empty-target');
-  assert.deepEqual(gen(['copy', '--to', 'json', '--project', source, '--root', target]), {
-    status: 0,
-    stdout: '[fsm-gen] copy: ok\n',
-    stderr: '',
-  });
+  const source = twoMachineProject('json');
+  const target = copyIntoEmpty('json', source);
   assert.deepEqual(filesOf(target), filesOf(source));
   assert.equal(readFileSync(path.join(target, 'fsm.lock.json'), 'utf8'), LOCK_TEXT);
 });
@@ -189,26 +187,12 @@ test('copy --to json into a non-empty target exits 1 with E_STORE_NOT_EMPTY and 
   });
   const target = project({ 'machines/order.fsm.json': ORDER_TEXT, 'fsm.lock.json': ORDER_LOCK_TEXT });
   const before = filesOf(target);
-  const result = gen(['copy', '--to', 'json', '--project', source, '--root', target]);
-  assert.equal(result.status, 1);
-  assert.equal(result.stdout, '');
-  assert.equal(result.stderr.startsWith('[fsm-gen] E_STORE_NOT_EMPTY - $: '), true, result.stderr);
-  assert.deepEqual(filesOf(target), before);
+  assertNotEmpty('json', source, target, before);
 });
 
 test('copy --to mermaid into an empty target writes the files that the mermaid store writes for the same definitions', async () => {
-  const source = project({
-    'fsm.config.json': CONFIG_JSON,
-    'machines/order.fsm.json': ORDER_TEXT,
-    'machines/track.fsm.json': TRACK_TEXT,
-    'fsm.lock.json': LOCK_TEXT,
-  });
-  const target = path.join(project(), 'empty-target');
-  assert.deepEqual(gen(['copy', '--to', 'mermaid', '--project', source, '--root', target]), {
-    status: 0,
-    stdout: '[fsm-gen] copy: ok\n',
-    stderr: '',
-  });
+  const source = twoMachineProject('json');
+  const target = copyIntoEmpty('mermaid', source);
   const expected = project();
   const loaded = await jsonStore(source).load();
   await mermaidStore(expected).save({ definitions: loaded.definitions, lock: loaded.lock });
@@ -224,26 +208,12 @@ test('copy --to mermaid into a non-empty target exits 1 with E_STORE_NOT_EMPTY a
   const source = project({ 'fsm.config.json': CONFIG_JSON, 'machines/order.fsm.json': ORDER_TEXT, 'fsm.lock.json': ORDER_LOCK_TEXT });
   const target = project({ 'machines/order.fsm.mmd': ORDER_MMD_TEXT });
   const before = filesOf(target);
-  const result = gen(['copy', '--to', 'mermaid', '--project', source, '--root', target]);
-  assert.equal(result.status, 1);
-  assert.equal(result.stdout, '');
-  assert.equal(result.stderr.startsWith('[fsm-gen] E_STORE_NOT_EMPTY - $: '), true, result.stderr);
-  assert.deepEqual(filesOf(target), before);
+  assertNotEmpty('mermaid', source, target, before);
 });
 
 test('copy --to json from a mermaid project into an empty target writes the files that the json store writes for the same definitions', async () => {
-  const source = project({
-    'fsm.config.json': MERMAID_CONFIG,
-    'machines/order.fsm.mmd': ORDER_MMD_TEXT,
-    'machines/track.fsm.mmd': TRACK_MMD_TEXT,
-    'fsm.lock.json': LOCK_TEXT,
-  });
-  const target = path.join(project(), 'empty-target');
-  assert.deepEqual(gen(['copy', '--to', 'json', '--project', source, '--root', target]), {
-    status: 0,
-    stdout: '[fsm-gen] copy: ok\n',
-    stderr: '',
-  });
+  const source = twoMachineProject('mermaid');
+  const target = copyIntoEmpty('json', source);
   const expected = project();
   const loaded = await mermaidStore(source).load();
   await jsonStore(expected).save({ definitions: loaded.definitions, lock: loaded.lock });
@@ -283,12 +253,7 @@ test('vectors gives each case the feature, id and name that the parity checks re
 
 test('vectors without --out exits 2 with a usage line', () => {
   const root = project({ 'fsm.config.json': CONFIG_JSON, 'machines/order.fsm.json': ORDER_TEXT, 'fsm.lock.json': ORDER_LOCK_TEXT });
-  for (const args of [['vectors', '--project', root], ['vectors', '--out']]) {
-    const result = gen(args);
-    assert.equal(result.status, 2, JSON.stringify(args));
-    assert.equal(result.stdout, '', JSON.stringify(args));
-    assert.equal(result.stderr.startsWith('[fsm-gen] usage: '), true, JSON.stringify(args));
-  }
+  for (const args of [['vectors', '--project', root], ['vectors', '--out']]) assertUsage(args);
 });
 
 test('vectors refused by a lock rule exits 1 and writes no vector file', () => {

@@ -3,13 +3,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { validate } from '../src/core/validate.mjs';
-
-/** A valid machine of two states and one event; every case changes a copy of it. */
-const base = () => ({
-  machine: 'order',
-  states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
-  events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
-});
+import { twoStateOrder as base } from './order-machines.mjs';
 
 /** The findings of `definitions` as `{code, machine, path}`, without the messages. */
 const shape = definitions => validate(definitions).map(({ code, machine, path }) => ({ code, machine, path }));

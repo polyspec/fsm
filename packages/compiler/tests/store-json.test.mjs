@@ -9,11 +9,10 @@ import { jsonStore } from '../src/store-json/store.mjs';
 import { LOCK_TEXT, ORDER_LOCK_TEXT, ORDER_TEXT, TRACK_TEXT } from './canonical-texts.mjs';
 import { bytesOf, removeRoots, tempRoot, write } from './checkout.mjs';
 import { storeContract } from './store-contract.mjs';
+import { assertLoadsOneMachine, assertSaveKeepsBytes } from './store-asserts.mjs';
+import { shapeFindings as shape } from './order-machines.mjs';
 
 after(removeRoots);
-
-/** The findings as {code, machine, path}. */
-const shape = findings => findings.map(({ code, machine, path }) => ({ code, machine, path }));
 
 storeContract('json', () => {
   const root = tempRoot();
@@ -23,10 +22,7 @@ storeContract('json', () => {
 test('json store: a missing lock file is the empty lock', async () => {
   const root = tempRoot();
   write(root, 'machines/order.fsm.json', ORDER_TEXT);
-  const loaded = await jsonStore(root).load();
-  assert.deepEqual(loaded.lock, {});
-  assert.deepEqual(shape(loaded.findings), []);
-  assert.equal(loaded.definitions.length, 1);
+  await assertLoadsOneMachine(jsonStore(root));
 });
 
 test('json store: load strips the top-level $schema', async () => {
@@ -109,12 +105,7 @@ test('json store: a canonical checkout changes no byte on save(load())', async (
   write(root, 'machines/order.fsm.json', ORDER_TEXT);
   write(root, 'machines/track.fsm.json', TRACK_TEXT);
   write(root, 'fsm.lock.json', LOCK_TEXT);
-  const before = bytesOf(root);
-  const store = jsonStore(root);
-  const loaded = await store.load();
-  assert.deepEqual(shape(loaded.findings), []);
-  await store.save({ definitions: loaded.definitions, lock: loaded.lock });
-  assert.equal(bytesOf(root), before);
+  await assertSaveKeepsBytes(jsonStore(root), root);
 });
 
 test('json store: the lock of a single machine is written as ORDER_LOCK_TEXT', async () => {

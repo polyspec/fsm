@@ -14,6 +14,7 @@ import { mermaidStore } from '../../compiler/src/store-mermaid/store.mjs';
 import { dbStore } from '../src/db-store.mjs';
 import { SCHEMA, connect } from '../src/models/models.ts';
 import { dialectOf, emptyDatabase, runStatement } from './dialect.mjs';
+import { twoStateOrder } from '../../compiler/tests/order-machines.mjs';
 
 const CLI = new URL('../src/cli/fsm-db.mjs', import.meta.url).pathname;
 const DIALECT = dialectOf();
@@ -59,20 +60,19 @@ function cli(args, { dir, dsn }, env = { FSM_DSN: dsn }) {
   return { status: result.status, stdout: result.stdout, stderr: stripVTControlCharacters(result.stderr) };
 }
 
-/** A canonical JSON checkout with one machine, written by the JSON store, and its root. */
-async function checkout(name = 'order') {
-  const root = mkdtempSync(path.join(tmpdir(), 'fsm-db-json-'));
+/** A canonical checkout with one machine, written by `store` (the JSON or the mermaid store) into a new directory, and its root. */
+async function canonicalCheckout(store, prefix, name) {
+  const root = mkdtempSync(path.join(tmpdir(), prefix));
   temp.push(root);
-  await jsonStore(root).save({
-    definitions: [{
-      machine: name,
-      states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
-      events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
-    }],
+  await store(root).save({
+    definitions: [{ ...twoStateOrder(), machine: name }],
     lock: { [name]: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },
   });
   return root;
 }
+
+/** A canonical JSON checkout with one machine, written by the JSON store, and its root. */
+const checkout = (name = 'order') => canonicalCheckout(jsonStore, 'fsm-db-json-', name);
 
 test('no command and an unknown command exit 2 with the usage line', async () => {
   const p = await project();
@@ -199,19 +199,7 @@ async function rowsOf(dsn) {
 }
 
 /** A canonical mermaid checkout with the same machine as checkout(), written by the mermaid store, and its root. */
-async function mermaidCheckout(name = 'order') {
-  const root = mkdtempSync(path.join(tmpdir(), 'fsm-db-mmd-'));
-  temp.push(root);
-  await mermaidStore(root).save({
-    definitions: [{
-      machine: name,
-      states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
-      events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
-    }],
-    lock: { [name]: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },
-  });
-  return root;
-}
+const mermaidCheckout = (name = 'order') => canonicalCheckout(mermaidStore, 'fsm-db-mmd-', name);
 
 test('lock --rename renames the state in the rows and keeps its code: the output is ok and the rows after hold the new key', async () => {
   const p = await project();
@@ -266,11 +254,7 @@ test('copy --from mermaid --root fills the empty database; a second copy is E_ST
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, '[fsm-db] copy: ok\n');
   assert.deepEqual(await rowsOf(p.dsn), {
-    definitions: [{
-      machine: 'order',
-      states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
-      events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
-    }],
+    definitions: [twoStateOrder()],
     lock: { order: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },
     // The baseline of the db store is the stored lock rows (spec B-3), so after the copy it equals the lock.
     baseline: { order: { codes: { 1: 'draft', 2: 'done' }, reserved: [] } },

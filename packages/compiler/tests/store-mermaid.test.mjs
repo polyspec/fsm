@@ -14,24 +14,16 @@ import {
 } from './canonical-texts.mjs';
 import { bytesOf, filesOf, removeRoots, tempRoot, write } from './checkout.mjs';
 import { storeContract } from './store-contract.mjs';
+import { assertLoadsOneMachine, assertSaveKeepsBytes } from './store-asserts.mjs';
+import { shapeFindings as shape, twoStateOrder as order } from './order-machines.mjs';
 
 after(removeRoots);
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, 'fixtures/valid');
 
-/** The findings as {code, machine, path}. */
-const shape = findings => findings.map(({ code, machine, path }) => ({ code, machine, path }));
-
 /** The line number that a finding message gives first: `line <n> ...`. */
 const lineOf = message => Number(/^line (\d+) /.exec(message)[1]);
-
-/** The order definition of docs/spec/fsm.md with two states: draft (initial) -next-> done (final). */
-const order = () => ({
-  machine: 'order',
-  states: [{ key: 'draft', code: 1, initial: true }, { key: 'done', code: 2, final: true }],
-  events: [{ key: 'next', edges: [{ from: 'draft', to: 'done' }] }],
-});
 
 /** The track definition: one state that is initial and final, and no event. */
 const track = () => ({ machine: 'track', states: [{ key: 'only', code: 1, initial: true, final: true }], events: [] });
@@ -61,10 +53,7 @@ storeContract('mermaid', () => {
 test('mermaid store: a missing lock file is the empty lock', async () => {
   const root = tempRoot();
   write(root, 'machines/order.fsm.mmd', ORDER_MMD_TEXT);
-  const loaded = await mermaidStore(root).load();
-  assert.deepEqual(loaded.lock, {});
-  assert.deepEqual(shape(loaded.findings), []);
-  assert.equal(loaded.definitions.length, 1);
+  await assertLoadsOneMachine(mermaidStore(root));
 });
 
 test('mermaid store: load reads the Mermaid files in name order, and the lock of the canonical lock file', async () => {
@@ -102,12 +91,7 @@ test('mermaid store: a canonical checkout changes no byte on save(load())', asyn
   write(root, 'machines/order.fsm.mmd', ORDER_MMD_TEXT);
   write(root, 'machines/track.fsm.mmd', TRACK_MMD_TEXT);
   write(root, 'fsm.lock.json', LOCK_TEXT);
-  const before = bytesOf(root);
-  const store = mermaidStore(root);
-  const loaded = await store.load();
-  assert.deepEqual(shape(loaded.findings), []);
-  await store.save({ definitions: loaded.definitions, lock: loaded.lock });
-  assert.equal(bytesOf(root), before);
+  await assertSaveKeepsBytes(mermaidStore(root), root);
 });
 
 test('mermaid store: save deletes the Mermaid files that are no longer defined and leaves the JSON files alone', async () => {
