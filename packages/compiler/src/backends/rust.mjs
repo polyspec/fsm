@@ -1,19 +1,13 @@
 // The rust backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated files of the rust package
-// `src/` and the native vector module `tests/conformance/vectors.rs`. It takes the IRs of the machines (normalize.mjs), in definition order,
+// `src/`. It takes the IRs of the machines (normalize.mjs), in definition order,
 // and the lock, and returns the text of every file; it writes nothing. The output is deterministic: declaration order, four
 // spaces of indentation and a final line break. The core imports nothing from node:, and the generated code has no runtime
 // dependency.
 //
-// The language difference of this kind is the vector module: `tests/conformance/vectors.rs` is one #[test] per case in the module of the
-// conformance test crate (tests/conformance/main.rs), which calls the check functions of that crate (check_value, check_slice,
-// check_result and check_persist). The machine functions return Result with fsm::Error, so a case compares the value or the
-// error code of the function it names.
-
-import { forKind } from '../core/vectors.mjs';
+// The machine functions return Result with fsm::Error, so a case of the conformance test compares the value or the error code of
+// the function it names.
 
 const SHARED = 'fsm';
-const CRATE = 'fsm_rust';
-const KIND = 'rust';
 
 /** The variant name of a key: the pascal notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
 const pascal = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
@@ -228,128 +222,4 @@ export function files(irs, lock) {
   out.push({ path: `${SHARED}.rs`, content: FSM_RS });
   out.push({ path: 'lib.rs', content: libRs(irs) });
   return out;
-}
-
-/** The expression of a state of `machine` by its key, such as order::State::Draft. */
-const stateExpr = (machine, key) => `${machine}::State::${pascal(key)}`;
-
-/** The expression of an event of `machine` by its key, such as order::Event::Next. */
-const eventExpr = (machine, key) => `${machine}::Event::${pascal(key)}`;
-
-/** The Code variant of an error code of docs/spec/fsm.md, such as E_CONFLICT to Conflict. */
-function errorVariant(error) {
-  const variant = {
-    E_CONFLICT: 'Conflict',
-    E_INVALID_TRANSITION: 'InvalidTransition',
-    E_UNKNOWN_CODE: 'UnknownCode',
-    E_RESERVED_CODE: 'ReservedCode',
-  }[error];
-  if (variant === undefined) throw new Error(`rust: ${error} is no error code of fsm.Error`);
-  return variant;
-}
-
-/** The Rust literal of the expected error of an error case: its code and the fields of fsm.Error (null is None, docs/spec/fsm.md, B-6). */
-function expectedOf(expect) {
-  const option = value => (value === null ? 'None' : `Some(${value})`);
-  return `crate::Expected { code: Code::${errorVariant(expect.error)}, expected: ${option(expect.expected)}, actual: ${option(expect.actual)}, event: ${option(expect.event)} }`;
-}
-
-/** The body lines of the test of one vector case `c` of `machine`: the check of its feature with the expected value or error code. */
-function bodyOf(machine, c) {
-  const state = key => stateExpr(machine, key);
-  const event = key => eventExpr(machine, key);
-  // The raw code of a state, for the persist cases: the code function of the machine on the state.
-  const code = key => `${machine}::code(${state(key)})`;
-  // A raw code goes through from_code, which rejects an invalid one (docs/spec/fsm.md, B-6): the JSON value of the case, as serde_json holds it.
-  const raw = value => `${machine}::from_code(${jsonOf(value)})`;
-  // The Result of a state argument: the state of its key, or what from_code gives its raw code.
-  const stateResult = (field, rawField) => (c[rawField] !== undefined ? raw(c[rawField]) : `Ok(${state(c[field])})`);
-  switch (c.feature) {
-    case 'initial':
-      return [`crate::check_value(${machine}::initial(), ${state(c.expect.state)});`];
-    case 'code':
-      return c.value !== undefined
-        ? [`crate::check_result(${raw(c.value)}.map(${machine}::code), Err(${expectedOf(c.expect)}));`]
-        : [`crate::check_value(${machine}::code(${state(c.state)}), ${c.expect});`];
-    case 'key':
-      return c.expect.error !== undefined
-        ? [`crate::check_result(${raw(c.code)}.map(${machine}::key), Err(${expectedOf(c.expect)}));`]
-        : [`crate::check_result(${raw(c.code)}.map(${machine}::key), Ok("${c.expect}"));`];
-    case 'from_code': {
-      const input = c.input_type === 'string' ? `serde_json::json!(${JSON.stringify(c.input)})` : jsonOf(c.input);
-      return c.expect.error !== undefined
-        ? [`crate::check_result(${machine}::from_code(${input}), Err(${expectedOf(c.expect)}));`]
-        : [`crate::check_result(${machine}::from_code(${input}), Ok(${state(c.expect.state)}));`];
-    }
-    case 'is_final':
-      return c.value !== undefined
-        ? [`crate::check_result(${raw(c.value)}.map(${machine}::is_final), Err(${expectedOf(c.expect)}));`]
-        : [`crate::check_value(${machine}::is_final(${state(c.state)}), ${c.expect});`];
-    case 'events_from':
-      return [`crate::check_slice(${machine}::events_from(${state(c.state)}), &[${c.expect.map(event).join(', ')}]);`];
-    case 'target':
-      return c.expect.error !== undefined
-        ? [`crate::check_result(${machine}::target(${state(c.state)}, ${event(c.event)}), Err(${expectedOf(c.expect)}));`]
-        : [`crate::check_result(${machine}::target(${state(c.state)}, ${event(c.event)}), Ok(${state(c.expect.state)}));`];
-    case 'apply': {
-      const call = `${stateResult('expected', 'expected_value')}.and_then(|expected| ${stateResult('actual', 'actual_value')}`
-        + `.and_then(|actual| ${machine}::apply(expected, ${event(c.event)}, actual)))`;
-      return c.expect.error !== undefined
-        ? [`crate::check_result(${call}, Err(${expectedOf(c.expect)}));`]
-        : [`crate::check_result(${call}, Ok(${machine}::Step { to: ${state(c.expect.to)}, changed: ${c.expect.changed} }));`];
-    }
-    case 'persist': {
-      const outcome = c.expect.error !== undefined
-        ? `Err(${expectedOf(c.expect)})`
-        : `Ok((${code(c.expect.stored_after)}, ${c.expect.changed}))`;
-      return [
-        'crate::check_persist(',
-        `    ${code(c.stored)},`,
-        '    |stored| {',
-        `        let actual = ${machine}::from_code(serde_json::json!(stored))?;`,
-        `        let step = ${machine}::apply(${state(c.expected)}, ${event(c.event)}, actual)?;`,
-        `        Ok((${machine}::code(step.to), step.changed))`,
-        '    },',
-        `    ${outcome},`,
-        `    ${code(c.expect.stored_after)},`,
-        ').await;',
-      ];
-    }
-    default:
-      throw new Error(`rust: no test for the feature ${c.feature}; the vectors and conformance.rs must agree`);
-  }
-}
-
-/** The serde_json value of a literal of the vectors: an integer is an i64 (json! would read a bare one as an i32). */
-function jsonOf(literal) {
-  return /^-?[0-9]+$/.test(literal) ? `serde_json::json!(${literal}i64)` : `serde_json::json!(${literal})`;
-}
-
-/** The #[test] (or #[tokio::test] for a persist case) of one vector case `c` of `machine`, as lines. */
-function testOf(machine, c) {
-  const persist = c.feature === 'persist';
-  return [
-    persist ? '#[tokio::test]' : '#[test]',
-    `${persist ? 'async ' : ''}fn ${c.name}() {`,
-    ...bodyOf(machine, c).map(line => `    ${line}`),
-    '}',
-  ];
-}
-
-/**
- * The native vector module tests/conformance/vectors.rs of `vectorList`, the vectors of every machine in order: one #[test] per case that
- * calls the check functions of tests/conformance/main.rs (the crate root `crate::`). The persist cases are #[tokio::test].
- */
-export function vectorsFile(list) {
-  const vectorList = forKind(list, KIND);
-  const tests = vectorList.flatMap(({ machine, cases }) => cases.map(c => testOf(machine, c)));
-  return text([
-    header(SHARED),
-    '#![allow(non_snake_case, reason = "each test is named by the name of its case in the vector file, which the parity check of kit matches")]',
-    '',
-    `use ${CRATE}::fsm::Code;`,
-    ...vectorList.map(({ machine }) => `use ${CRATE}::${machine};`),
-    '',
-    tests.map(lines => lines.join('\n')).join('\n\n'),
-  ]);
 }

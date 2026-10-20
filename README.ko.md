@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: bcc267a69ecf5092fc6f6fc95f346269399f15b4f3f028c40bc338e4ea8b7413 -->
+<!-- source-sha256: 8edc6d44bd5440a11a9fd2121fadc45f9ecead0af941e4ffcedc71ea08f26719 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -324,9 +324,8 @@ $ fsm-gen copy --to mermaid --root ./order-mermaid --project ./order-machines
 
 ### vectors
 
-conformance vector, 즉 모든 기계의 모든 연산의 기대 결과를 쓴다(`docs/plans/fsm-v1/plan.md`, C-4). `--kind` 없이 `--out <file>`은 모든 기계의
-suite 하나 `{ machines: [{ machine, cases }] }`를 받는다. `--kind <kind>`일 때 `--out`은 그 종류의 native test module 파일 이름이다. php와 php-ext 종류는
-`--php-namespace`도 필요하다.
+conformance vector, 즉 모든 기계의 모든 연산의 기대 결과를 쓴다(`docs/plans/fsm-v1/plan.md`, C-4). `--out <file>`은 모든 기계의
+suite 하나 `{ machines: [{ machine, cases }] }`를 받는다. 언어 package는 이 파일을 자기 test에서 읽으며, compiler는 test를 쓰지 않는다.
 
 ```sh
 $ fsm-gen vectors --project ./order-machines --out ./vectors
@@ -343,7 +342,7 @@ git 무시 파일은 빌드 결과물이므로 건너뛴다.
 | 옵션 | 필요한 경우 | 뜻 |
 |---|---|---|
 | `--go-module <module path>` | `go` | package의 module 경로. 생성된 기계는 `<module>/src/fsm`을 import하므로, `--out`은 그 module의 `src` 디렉터리다 |
-| `--php-namespace <ns>` | `php`, `php-ext`(이 종류의 `vectors`도) | `Acme\Fsm`처럼 글자와 숫자를 한 개의 역슬래시로 나눈 namespace |
+| `--php-namespace <ns>` | `php`, `php-ext` | `Acme\Fsm`처럼 글자와 숫자를 한 개의 역슬래시로 나눈 namespace |
 | `--php-ext-name <name>` | `php-ext` | extension 이름: 소문자, 숫자, 밑줄이며 글자로 시작한다. 예: `acme_fsm` |
 
 ```sh
@@ -369,7 +368,7 @@ $ fsm-gen gen --project ./order-machines --kind go --out ./app/src
 usage: fsm-gen check [--project <dir>]
        fsm-gen lock [--project <dir>] [--rename machine.old=new]...
        fsm-gen copy --to json|mermaid --root <dir> [--project <dir>]
-       fsm-gen vectors [--kind <kind>] --out <file> [--project <dir>] [--php-namespace <ns>]
+       fsm-gen vectors --out <file> [--project <dir>]
        fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]   (kind: go, npm, php, php-ext, python, rust)
 ```
 

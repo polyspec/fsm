@@ -4,14 +4,13 @@
 //   fsm-gen lock  [--project <dir>] [--rename machine.old=new]...
 //   fsm-gen copy  --to json|mermaid --root <dir> [--project <dir>]
 //   fsm-gen vectors --out <file> [--project <dir>]
-//   fsm-gen vectors --kind <kind> --out <file> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>]
 //   fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]
-//   (go only: --go-module, required for gen and for vectors --kind go; php and php-ext: --php-namespace <ns>, required, such as Polyspec\FsmTest, for gen and
-//   vectors --kind php or php-ext; php-ext only: --php-ext-name <name>, required for gen, such as polyspec_fsm_test)
+//   (go only: --go-module, required for gen; php and php-ext: --php-namespace <ns>, required, such as Polyspec\FsmTest, for gen; php-ext only:
+//   --php-ext-name <name>, required for gen, such as polyspec_fsm_test)
 // --project is the project root, the directory whose fsm.config.json names the store (default: the current directory).
 // For copy, the project store is the source and --root is the target directory, which is required. For vectors, --out is the
-// file that receives { machines: [{ machine, cases }] } for every machine, one suite for the parity check, and it is required;
-// with --kind it is the file of the kind's native vector module. For gen, --kind names a backend (backends/index.mjs) and --out is the directory of its generated files; the
+// file that receives { machines: [{ machine, cases }] } for every machine, one suite for the parity check, and it is required.
+// A language package reads that file in a test of its own; the compiler writes no test. For gen, --kind names a backend (backends/index.mjs) and --out is the directory of its generated files; the
 // stale generated files there are removed, and a file without the generated header is a finding (write-generated.mjs). A finding
 // prints as `[fsm-gen] <code> <machine> <path>: <message>` on stderr and exits 1. A usage error exits 2. Otherwise the command
 // exits 0 with a one-line summary on stdout. The json and mermaid stores are the ones this version handles (fsm.config.json).
@@ -21,16 +20,16 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { jsonText, writeAtomic } from '../io/files.mjs';
-import { KINDS, backendOf } from '../backends/index.mjs';
+import { KINDS } from '../backends/index.mjs';
 import { copy, run } from '../core/run.mjs';
 import { jsonStore } from '../store-json/store.mjs';
 import { mermaidStore } from '../store-mermaid/store.mjs';
-import { writeGenerated, writeGeneratedFile } from './write-generated.mjs';
+import { writeGenerated } from './write-generated.mjs';
 
 const USAGE = 'usage: fsm-gen check [--project <dir>]\n'
   + '       fsm-gen lock [--project <dir>] [--rename machine.old=new]...\n'
   + '       fsm-gen copy --to json|mermaid --root <dir> [--project <dir>]\n'
-  + '       fsm-gen vectors [--kind <kind>] --out <file> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>]\n'
+  + '       fsm-gen vectors --out <file> [--project <dir>]\n'
   + `       fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]   (kind: ${KINDS.join(', ')})`;
 const RENAME = /^([^.=]+)\.([^.=]+)=([^.=]+)$/;
 const PHP_NAMESPACE = /^[A-Za-z][A-Za-z0-9]*(\\[A-Za-z][A-Za-z0-9]*)*$/;
@@ -48,7 +47,7 @@ function parse(argv) {
     check: ['--project'],
     lock: ['--project', '--rename'],
     copy: ['--project', '--root', '--to'],
-    vectors: ['--project', '--out', '--kind', '--go-module', '--php-namespace'],
+    vectors: ['--project', '--out'],
     gen: ['--project', '--out', '--kind', '--go-module', '--php-namespace', '--php-ext-name'],
   }[command];
   const options = {
@@ -93,13 +92,13 @@ function parse(argv) {
   if (command === 'gen' && (options.kind === undefined || options.out === undefined)) {
     return { usage: 'gen needs --kind <kind> and --out <dir>' };
   }
-  if ((command === 'gen' || command === 'vectors') && options.kind === 'go' && options.goModule === undefined) {
-    return { usage: `${command} --kind go needs --go-module <module path>, the module of the package` };
+  if (command === 'gen' && options.kind === 'go' && options.goModule === undefined) {
+    return { usage: 'gen --kind go needs --go-module <module path>, the module of the package' };
   }
-  if (options.goModule !== undefined && options.kind !== 'go') return { usage: '--go-module is an option of gen and vectors --kind go' };
-  if (command === 'gen' || command === 'vectors') {
+  if (options.goModule !== undefined && options.kind !== 'go') return { usage: '--go-module is an option of gen --kind go' };
+  if (command === 'gen') {
     const usesNamespace = PHP_KINDS.includes(options.kind);
-    if (usesNamespace && options.phpNamespace === undefined) return { usage: `${command} needs --php-namespace for the ${options.kind} kind` };
+    if (usesNamespace && options.phpNamespace === undefined) return { usage: `gen needs --php-namespace for the ${options.kind} kind` };
     if (!usesNamespace && options.phpNamespace !== undefined) return { usage: '--php-namespace is an option of the php and php-ext kinds' };
   }
   if (options.phpExtName !== undefined && options.kind !== 'php-ext') return { usage: '--php-ext-name is an option of gen --kind php-ext' };
@@ -133,8 +132,7 @@ function storeOf(kind, root) {
 }
 
 /**
- * The findings of the command. vectors writes the vectors of every machine to the file <out>, or with --kind the native vector module
- * of the kind to <out>; gen writes the generated files of the kind under <out>. Nothing is written when there are findings.
+ * The findings of the command. vectors writes the vectors of every machine to the file <out>; gen writes the generated files of the kind under <out>. Nothing is written when there are findings.
  */
 async function execute({ command, project, renames, to, root, out, kind, goModule, phpNamespace, phpExtName }) {
   const configured = configuredStore(project);
@@ -143,7 +141,6 @@ async function execute({ command, project, renames, to, root, out, kind, goModul
   if (command === 'vectors') {
     const result = await run('vectors', configured.store, {});
     if (result.findings.length > 0) return result.findings;
-    if (kind !== undefined) return writeGeneratedFile(out, backendOf(kind).vectorsFile(result.vectors, { phpNamespace, module: goModule }));
     writeAtomic(out, jsonText({ machines: result.vectors }));
     return [];
   }

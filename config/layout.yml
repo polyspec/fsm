@@ -186,10 +186,9 @@ rules:
     level: error
     select: "packages/rust"
     require:
-      - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
-    message: "C-2: the rust package holds a file in each canonical folder (src, tests, examples)"
+    message: "C-2: the rust package holds a file in each canonical folder (tests, examples; src is generated and not tracked)"
 
   - id: layout-rust-files
     kind: file_absent
@@ -207,7 +206,6 @@ rules:
       # the dialect of the persist tests, the shared module of the test crates tests/conformance/ and tests/persist.rs (S-44-9)
       - "!packages/rust/tests/common/mod.rs"
       - "!packages/rust/examples/persist.rs"
-      - "!packages/rust/src/*.rs"
     message: "C-2: a file that the rust package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-python-required
@@ -284,7 +282,7 @@ rules:
       - "!packages/compiler/tests/golden/php-ext/src/*.stub.php"
 
   # The conformance suite of the rust package stays in the crate: Cargo's test target tests/conformance/main.rs and its
-  # module vectors.rs (written by fsm-gen) lie in packages/rust, the crate whose Cargo.toml names them, and build.rs and
+  # module vectors.rs lie in packages/rust, the crate whose Cargo.toml names them, and build.rs and
   # tests/common/mod.rs are shared with that crate; a suite outside the crate cannot be a target of its manifest.
   - id: suites-at-root
     paths:

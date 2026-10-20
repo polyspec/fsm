@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: 67abd61a57c7404d264d17ed21fa7078476d3f590cf69bea7a7d0a219dd16d3b -->
+<!-- source-sha256: 62d0e0d16d6a686f6d2445d63bf87c7323ae5f578ed54367fffccc3cf4c41a19 -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -15,7 +15,7 @@ conformance vector를 쓰고, 여섯 언어의 소스를 생성한다. 의존성
 | 부분 | 파일 | 역할 |
 |---|---|---|
 | core | `src/core/validate.mjs`, `normalize.mjs`, `lock.mjs`, `reserved.mjs`, `vectors.mjs`, `run.mjs` | `docs/spec/fsm.md`의 B-5, B-3, B-4 규칙. `validate`는 검사 결과를, `normalize`는 정의를 중간 형식으로, `lock`은 lock과 `nextCode`를, `vectors`는 conformance case의 oracle을, `run`과 `copy`는 명령을 만든다 |
-| backends | `src/backends/index.mjs`(종류), `go.mjs`, `npm.mjs`, `php.mjs`, `php-ext.mjs`, `python.mjs`, `rust.mjs` | 언어마다 한 파일: `files(irs, lock, options)`는 생성 파일을, `vectorsFile(...)`은 native vector module을 돌려준다 |
+| backends | `src/backends/index.mjs`(종류), `go.mjs`, `npm.mjs`, `php.mjs`, `php-ext.mjs`, `python.mjs`, `rust.mjs` | 언어마다 한 파일: `files(irs, lock, options)`는 생성 파일을 돌려준다 |
 | stores | `src/store-json/store.mjs`, `src/store-mermaid/store.mjs`와 `parse.mjs`, `write.mjs`, `src/store-lock/lock-file.mjs` | 파일 store: 파일과 core의 객체를 서로 바꾸고, 파일마다 원자적으로 쓴다 |
 | io | `src/io/files.mjs`, `src/io/git.mjs` | store와 cli가 쓰는 파일의 원자적 쓰기와 git 명령. `node:fs`와 `node:child_process` 위에 있다 |
 | cli | `src/cli/fsm-gen.mjs`, `src/cli/write-generated.mjs` | 명령 줄. `fsm.config.json`으로 store를 고르고, 검사 결과를 출력하고, 종료 코드를 정한다. `write-generated.mjs`는 생성 파일을 쓰고 header가 없는 파일을 거부한다 |
@@ -54,7 +54,7 @@ save({ definitions, lock }) → Promise<void>
 | `lock [--rename machine.old=new]...` | store | 정의와 lock | lock 규칙(`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`)으로 lock을 유도한다. 사라진 code는 `reserved`로 간다. `--rename`은 이름이 바뀐 상태의 code를 유지한다 |
 | `save` | `options.definitions` | 정의와 lock | GUI의 core 명령: `lock`과 같은 규칙, 저장마다 기계 하나. 명령 줄 형식은 없다 |
 | `copy --to json\|mermaid --root <dir>` | 프로젝트 store | `<dir>`의 대상 store | 대상은 비어 있어야 한다. lock은 그대로 복사한다 |
-| `vectors [--kind <kind>] --out <file>` | store | `{ machines: [{ machine, cases }] }`, 또는 한 종류의 native module | `check`의 검사 결과가 있으면 멈춘다 |
+| `vectors --out <file>` | store | `{ machines: [{ machine, cases }] }` | `check`의 검사 결과가 있으면 멈춘다 |
 | `gen --kind <kind> --out <dir>` | store | 한 종류의 생성 파일 | `check`의 검사 결과가 있으면 멈춘다. 출력 디렉터리는 루트 README의 설명대로 쓴다 |
 
 명령 줄은 `packages/compiler/src/cli/fsm-gen.mjs`다. `--project <dir>`의 기본값은 현재 디렉터리이며, store는
@@ -85,13 +85,12 @@ $ fsm-gen gen --project ./order-machines --kind rust --out ./app/src
 
 | 옵션 | 종류 | 규칙 | 이유 |
 |---|---|---|---|
-| `--kind <kind>` | `gen`, `vectors` | `go`, `npm`, `php`, `php-ext`, `python`, `rust` 중 하나(`backends/index.mjs`) | backend를 고른다 |
-| `--go-module <module path>` | `gen --kind go`, `vectors --kind go`(필수) | package의 module 경로 | 생성된 기계는 공유 `Error`와 code를 위해 `<module>/src/fsm`을 import한다. backend는 `go.mod`를 읽을 수 없으므로 module을 준다 |
-| `--php-namespace <ns>` | `php`, `php-ext`의 `gen`과 `vectors`(필수) | `Acme\Fsm`처럼 글자와 숫자를 한 개의 역슬래시로 나눈 것 | 기계 module의 namespace는 `<ns>\<Pascal machine key>`이고, 공유 `<ns>\Fsm`이 `Error`와 `Code`를 가진다 |
+| `--kind <kind>` | `gen` | `go`, `npm`, `php`, `php-ext`, `python`, `rust` 중 하나(`backends/index.mjs`) | backend를 고른다 |
+| `--go-module <module path>` | `gen --kind go`(필수) | package의 module 경로 | 생성된 기계는 공유 `Error`와 code를 위해 `<module>/src/fsm`을 import한다. backend는 `go.mod`를 읽을 수 없으므로 module을 준다 |
+| `--php-namespace <ns>` | `php`, `php-ext`의 `gen`(필수) | `Acme\Fsm`처럼 글자와 숫자를 한 개의 역슬래시로 나눈 것 | 기계 module의 namespace는 `<ns>\<Pascal machine key>`이고, 공유 `<ns>\Fsm`이 `Error`와 `Code`를 가진다 |
 | `--php-ext-name <name>` | `gen --kind php-ext`(필수) | 소문자, 숫자, 밑줄이며 글자로 시작한다. 예: `acme_fsm` | extension의 이름이다. `config.m4`, header, arginfo 파일에 쓰인다 |
 
-php-ext backend의 출력은 php backend의 vector와 test가 검증하는 것과 같은 규칙을 따른다. 같은 namespace로 `vectors --kind php-ext`는
-`vectors --kind php`와 같은 파일을 쓴다.
+php-ext backend의 출력은 extension을 로드한 php package의 PHPUnit 파일이 시험한다.
 
 ## vector
 
@@ -111,8 +110,8 @@ vector는 기계의 모든 연산의 기대 결과다. core가 정의와 lock으
   `key` 5, `from_code` 7, `is_final` 5, `events_from` 5, `target` 15, `apply` 43, `persist` 3이다.
 
 `fsm-gen vectors --out <file>`은 공통 형식, 모든 기계의 파일 하나를 쓴다(이 저장소에서는 `contracts/conformance/vectors.json`). 각 언어 패키지는
-자기 형식으로 읽는다: `vectors_test.go`(go, `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`(npm), `ConformanceTest.php`(php와 php-ext, case마다 method 하나),
-`vectors.py`(python), `vectors.rs`(rust). 패키지는 case마다 test 하나를 실행하며, kit의 parity 검사(`make parity-check`)는 case를 허용하는 모든 종류에서
+conformance test가 실행될 때 이 파일을 읽고 input을 자기 방식으로 해석한다(docs/spec/fsm.md, B-6). compiler는 test를 쓰지 않는다.
+패키지는 case마다 test 하나를 실행하며, kit의 parity 검사(`make parity-check`)는 case를 허용하는 모든 종류에서
 모든 case가 한 번씩 실행되어 통과할 것을 요구한다.
 
 ## 검사

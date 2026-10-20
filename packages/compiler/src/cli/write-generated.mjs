@@ -88,16 +88,3 @@ export function writeGenerated(dir, generated) {
   for (const file of generated) writeAtomic(path.join(dir, file.path), file.content);
   return [];
 }
-
-/**
- * Writes the one generated file `file` (the vector module), when it is absent, generated or ignored by Git; otherwise a finding.
- * An ignored file is a build output and is replaced.
- */
-export function writeGeneratedFile(file, content) {
-  if (existsSync(file) && !isGenerated(readFileSync(file, 'utf8'))
-    && !ignoredUnder(path.dirname(file)).has(path.basename(file))) {
-    return [notGenerated(path.basename(file), 'its first line lacks the generated header')];
-  }
-  writeAtomic(file, content);
-  return [];
-}

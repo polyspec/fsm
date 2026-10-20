@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 560c33e29469d4931d5b2974aeb15d93a38dcbdc2ba14cb761b08781f4833b24 -->
+<!-- source-sha256: c1fb7848c6183cc22512ff03857d568a069a9fef09df076804aceff4e4a49dda -->
 # fsm-rust
 
 [English](README.md)
@@ -31,8 +31,8 @@ edition = "2021"
 path = "src/lib.rs"
 ```
 
-정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --kind rust --out <file>`로 자신의 test 파일에 쓴다(test bed는
-`tests/conformance/vectors.rs`에 쓴다).
+정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --out <file>`로 쓴 JSON 파일 하나이며 자신의 test가 읽는다(test bed는
+`tests/conformance/main.rs`가 실행될 때 `contracts/conformance/vectors.json`을 읽는다).
 
 ## 생성 파일
 
@@ -61,13 +61,19 @@ module `order`의 함수(`src/order.rs`):
 
 `Step`은 `to: State`와 `changed: bool` 필드를 가진다. `from_code`는 `i64`를 받으므로, database가 돌려준 값을 줄이지 않고 그대로 넘긴다.
 
-완전한 `apply` 호출은 `packages/rust/tests/conformance/vectors.rs`에서 그대로 옮겼다. `apply` feature의 첫 case이며, 결과를 검사하는 test
-함수다:
+완전한 `apply` 호출은 `packages/rust/tests/conformance/vectors.rs`의 adapter macro에 있는 `decide` 함수이며, persist case가 이를
+`check_persist`에 넘긴다(`machine`은 machine의 module이고 order 예제에서는 `order`다):
 
 ```rust
-#[test]
-fn test_apply__order_apply_s0_e0_s0() {
-    crate::check_result(order::apply(order::State::Draft, order::Event::Next, order::State::Draft), Ok(order::Step { to: order::State::Paid, changed: true }));
+/// The decide function of a persist case: the machine's step on the stored code.
+fn decide(case: &Value) -> impl Fn(i64) -> Result<(i32, bool), fsm_rust::fsm::Error> {
+    let expected = state(&case["expected"]);
+    let event = event(&case["event"]);
+    move |stored| {
+        let actual = machine::from_code(Value::from(stored))?;
+        let step = machine::apply(expected, event, actual)?;
+        Ok((machine::code(step.to), step.changed))
+    }
 }
 ```
 
@@ -93,7 +99,7 @@ E_CONFLICT Some(1) Some(3) Some(1)
 
 `Error`는 `Display`(`E_CONFLICT: the stored state ...`)와 `std::error::Error`를 구현한다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/conformance/vectors.rs`의 vector가 이를 단언한다:
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `contracts/conformance/vectors.json`의 vector가 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -132,20 +138,7 @@ pub async fn transition_with_fault(
 }
 ```
 
-호출자의 closure가 `apply` 사용이다. `packages/rust/tests/conformance/vectors.rs`에서 옮겼다(draft 상태에서 `next` event의 영속화 case):
-
-```rust
-crate::check_persist(
-    order::code(order::State::Draft),
-    |stored| {
-        let actual = order::from_code(stored)?;
-        let step = order::apply(order::State::Draft, order::Event::Next, actual)?;
-        Ok((order::code(step.to), step.changed))
-    },
-    Ok((order::code(order::State::Paid), true)),
-    order::code(order::State::Paid),
-)
-```
+호출자의 closure는 위에서 보인 `decide` 함수이며, `apply` 사용이다.
 
 `examples/persist.rs`의 `open`, `seed`, `fsm_of`는 table을 만들고, row를 쓰고, 읽는다. 모델은 `build.rs`가 `contracts/schema/persist.dbs`에서
 `OUT_DIR`에 쓴다. 이 패턴을 쓰는 소비자는 이 package의 build script와 `polyspec-orm` crate가 필요하다.
@@ -162,6 +155,6 @@ make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과이며, crate 컴파일을 포함해 약 100초가 걸린다. `tests/conformance/vectors.rs`는 vector case마다 `#[test]` 하나를 가지며
-이름은 case 이름 `<feature>__<id>`다(`vectors::<feature>__<id>`). 각 test는 `tests/conformance/main.rs`의 검사 함수를 부른다. 영속화 case는 `#[tokio::test]`다. toolchain은
+실행 결과는 89개 case 중 89개 통과이며, crate 컴파일을 포함해 약 100초가 걸린다. `tests/conformance/main.rs`에는 libtest harness가 없다. libtest-mimic이
+`contracts/conformance/vectors.json`의 vector case마다 trial 하나를 실행하며 이름은 case 이름 `<feature>__<id>`다(`vectors::<feature>__<id>`). 각 trial은 `tests/conformance/vectors.rs`에 있는 자기 machine의 adapter를 거쳐 `main.rs`의 검사 함수를 부른다. 영속화 case는 자기 tokio runtime에서 실행된다. toolchain은
 루트의 `rust-toolchain.toml`(Rust 1.99.0)이다. 생성 파일은 추적하지 않는다. `make fsm-rust-gen`이 생성하며 `make test-rust`가 먼저 실행한다.

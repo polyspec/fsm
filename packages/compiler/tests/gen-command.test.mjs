@@ -83,17 +83,10 @@ test('gen with an unknown kind, or without --kind, is a usage error with exit 2 
   assert.equal(existsSync(out), false);
 });
 
-test('vectors --kind rust refuses to overwrite a file without the header', () => {
-  const file = path.join(tempDir(), 'vectors.rs');
-  writeFileSync(file, 'const VECTORS: [u8; 0] = [];\n');
-  const result = gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'rust', '--out', file]);
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /^\[fsm-gen\] E_NOT_GENERATED - vectors\.rs: /m);
-  assert.equal(readFileSync(file, 'utf8'), 'const VECTORS: [u8; 0] = [];\n');
-});
-
-test('vectors with an unknown kind is a usage error', () => {
-  assert.equal(gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'ruby', '--out', path.join(tempDir(), 'v.mjs')]).status, 2);
+test('vectors takes no --kind: the compiler writes no native test module, so --kind is a usage error', () => {
+  const result = gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'npm', '--out', path.join(tempDir(), 'v.json')]);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /--kind is not an option of vectors/);
 });
 
 const PHP_NAMESPACE = 'Polyspec\\FsmTest';

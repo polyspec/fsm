@@ -334,8 +334,8 @@ $ fsm-gen copy --to mermaid --root ./order-mermaid --project ./order-machines
 ### vectors
 
 Writes the conformance vectors, the expected result of every operation of every machine (`docs/plans/fsm-v1/plan.md`, C-4).
-Without `--kind`, `--out <file>` receives `{ machines: [{ machine, cases }] }`, one suite for every machine. With `--kind <kind>`, `--out` names the file of
-the native test module of that kind. The php and php-ext kinds also need `--php-namespace`.
+`--out <file>` receives `{ machines: [{ machine, cases }] }`, one suite for every machine. A language package reads that file in a test of
+its own; the compiler writes no test.
 
 ```sh
 $ fsm-gen vectors --project ./order-machines --out ./vectors
@@ -352,7 +352,7 @@ a hand-written file is never overwritten or removed. Git-ignored files of the ou
 | Option | Required for | Meaning |
 |---|---|---|
 | `--go-module <module path>` | `go` | the module path of the package; the generated machines import `<module>/src/fsm`, so `--out` is the `src` directory of that module |
-| `--php-namespace <ns>` | `php`, `php-ext` (also `vectors` for these kinds) | the namespace, such as `Acme\Fsm`: letters and digits separated by single backslashes |
+| `--php-namespace <ns>` | `php`, `php-ext` | the namespace, such as `Acme\Fsm`: letters and digits separated by single backslashes |
 | `--php-ext-name <name>` | `php-ext` | the extension name: lower-case letters, digits and underscores, starting with a letter, such as `acme_fsm` |
 
 ```sh
@@ -378,7 +378,7 @@ $ fsm-gen gen --project ./order-machines --kind go --out ./app/src
 usage: fsm-gen check [--project <dir>]
        fsm-gen lock [--project <dir>] [--rename machine.old=new]...
        fsm-gen copy --to json|mermaid --root <dir> [--project <dir>]
-       fsm-gen vectors [--kind <kind>] --out <file> [--project <dir>] [--php-namespace <ns>]
+       fsm-gen vectors --out <file> [--project <dir>]
        fsm-gen gen --kind <kind> --out <dir> [--project <dir>] [--go-module <module path>] [--php-namespace <ns>] [--php-ext-name <name>]   (kind: go, npm, php, php-ext, python, rust)
 ```
 

@@ -28,6 +28,8 @@ allow_attributes_without_reason = "deny"
 [[test]]
 name = "conformance"
 path = "tests/conformance/main.rs"
+# libtest-mimic runs one trial per case of contracts/conformance/vectors.json, which is read when the test runs.
+harness = false
 
 # tests/persist.rs holds the concurrency and retry tests of the persist example, the feature units of config/parity.json
 # beyond the vector cases (docs/spec/fsm.md, B-4).
@@ -46,3 +48,4 @@ serde_json = "1.0.151"
 [dev-dependencies]
 polyspec-orm = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.18" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+libtest-mimic = "0.8.2"

@@ -216,11 +216,10 @@ fsm-rust-install:
 # declared difference of rust.
 fsm-rust-gen:
 	$(FSM_GEN) gen --project contracts --kind rust --out packages/rust/src
-	$(FSM_GEN) vectors --project contracts --kind rust --out packages/rust/tests/conformance/vectors.rs
 
 # fsm-rust-test runs cargo on the conformance test of packages/rust through the kit reporter.
 fsm-rust-test: $(RUST_DEP) fsm-rust-gen
-	$(RUN_TESTS) cargo --results .results/rust.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance
+	$(RUN_TESTS) cargo --results .results/rust.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance
 
 # fsm-gen generates the files of every kind, which no checkout tracks: fsm-gen and orm-gen write them (AGENTS.md, Generated files). The
 # gates that read them (the layout, the parity declarations and the parity check) and every test of a kind depend on the gen of
@@ -402,7 +401,7 @@ test-rust: fsm-rust-test
 # rust-persist-test runs tests/persist.rs of packages/rust on sqlite: two transitions of one row at the same time, and a deadlock
 # runs the persistence transaction again while another database error does not (docs/spec/fsm.md, B-4; S-31, S-44-9).
 rust-persist-test: $(RUST_DEP) fsm-rust-gen
-	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test persist
+	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test persist
 # python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/mise/shims/python3
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
@@ -433,11 +432,11 @@ go-persist-test-mysql: $(GO_DEP) fsm-go-gen
 
 rust-persist-test-postgres: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
 
 rust-persist-test-mysql: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/rust --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
 
 php-persist-test-postgres: $(PHP_DEP) fsm-php-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)

@@ -7,7 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { normalize } from '../src/core/normalize.mjs';
-import { FEATURES, forKind, vectors } from '../src/core/vectors.mjs';
+import { FEATURES, vectors } from '../src/core/vectors.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
@@ -185,14 +185,10 @@ test('a machine without events has no invalid apply case, because the apply need
   assert.deepEqual(ids(generate(track)).filter(id => id.includes('_apply_')), []);
 });
 
-test('forKind gives every kind every case, and no case carries a kinds field (B-6)', () => {
-  const list = [generate(order())];
-  for (const kind of ['go', 'npm', 'php', 'php-ext', 'python', 'rust']) {
-    const cases = forKind(list, kind)[0].cases;
-    assert.equal(cases.length, list[0].cases.length, kind);
-    assert.ok(cases.some(entry => entry.value !== undefined), `${kind} runs the invalid state values`);
-    assert.ok(cases.every(entry => !('kinds' in entry)), kind);
-  }
+test('every implementation runs every case: no case carries a kinds field, and the invalid state values are cases (B-6)', () => {
+  const { cases } = generate(order());
+  assert.ok(cases.some(entry => entry.value !== undefined), 'the invalid state values are cases');
+  assert.ok(cases.every(entry => !('kinds' in entry)), 'no case names the kinds that run it');
 });
 
 test('from_code unknown is the smallest gap: codes 1 and 3 leave 2', () => {

@@ -8,16 +8,6 @@ export const FEATURES = Object.freeze([
 ]);
 
 /**
- * The cases of `vectorList` (the list of { machine, cases } of vectors) that the kind `kind` runs: every case, for every kind
- * (docs/spec/fsm.md, B-6, the same behavior in every implementation). The list is returned as it is, so each native module holds
- * all the cases of its machines.
- */
-export function forKind(vectorList, kind) {
-  void kind;
-  return vectorList.map(({ machine, cases }) => ({ machine, cases: cases.map(entry => ({ ...entry })) }));
-}
-
-/**
  * The vectors of `ir` (the IR of normalize) with `lock` (the lock of the machine, which holds its reserved codes):
  * { machine, cases: [{ feature, id, name, ...data, expect }] }. The cases follow docs/plans/fsm-v1/plan.md, C-4: initial; per state
  * code, key, from_code, is_final, events_from; the from_code errors; target for every (state, event); apply for every defined

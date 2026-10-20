@@ -1,8 +1,9 @@
-// The conformance tests of the rust package (docs/plans/fsm-v1/plan.md, C-4), the crate root of the test target conformance.
-// tests/conformance/vectors.rs, its module, is generated from the core oracle: one #[test] per vector case, named
-// test_<feature>__<id>, which calls the check functions below with the values of its case. The persist cases run the B-4
-// transaction through examples/persist.rs on the dialect of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1/plan.md, C-6). The
-// names follow docs/spec/fsm.md, B-6.
+// The conformance tests of the rust package (docs/plans/fsm-v1/plan.md, C-4), the crate root of the test target conformance, which
+// has no libtest harness: libtest-mimic runs one trial per vector case of contracts/conformance/vectors.json, read when the test
+// runs, named vectors::<feature>__<id>. The trial calls the check functions below with the values of its case through the adapter of
+// its machine (the macro adapter! of tests/conformance/vectors.rs, which maps the keys of the oracle to the variants of the machine
+// and calls its functions). The persist cases run the B-4 transaction through examples/persist.rs on the dialect of
+// FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1/plan.md, C-6). The names follow docs/spec/fsm.md, B-6.
 
 #[path = "../common/mod.rs"]
 mod common;
@@ -80,4 +81,9 @@ pub async fn check_persist(
     let row = persist::status_of(&db, 1).await.expect("read the row");
     assert_eq!(row, stored_after, "the stored code after the run");
     db.close().await;
+}
+
+fn main() {
+    let arguments = libtest_mimic::Arguments::from_args();
+    libtest_mimic::run(&arguments, vectors::trials()).exit();
 }

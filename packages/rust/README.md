@@ -30,8 +30,8 @@ edition = "2021"
 path = "src/lib.rs"
 ```
 
-Run the command again after every change of the definition. The vectors come from `fsm-gen vectors --kind rust --out <file>`,
-written into a test file of your own (the test bed writes `tests/conformance/vectors.rs`).
+Run the command again after every change of the definition. The vectors come from `fsm-gen vectors --out <file>`, one JSON
+file that a test of your own reads (the test bed reads `contracts/conformance/vectors.json` when `tests/conformance/main.rs` runs).
 
 ## Generated files
 
@@ -61,13 +61,19 @@ The functions of the module `order` (`src/order.rs`):
 `Step` has the fields `to: State` and `changed: bool`. `from_code` takes an `i64`, so a value that a database returns is passed
 without narrowing it.
 
-A complete `apply` call, copied from `packages/rust/tests/conformance/vectors.rs` (the first case of the `apply` feature, which is a test
-function that checks the result):
+A complete `apply` call is the `decide` function of the adapter macro in `packages/rust/tests/conformance/vectors.rs`, which the persist
+cases pass to `check_persist` (`machine` is the module of the machine, `order` for the order example):
 
 ```rust
-#[test]
-fn test_apply__order_apply_s0_e0_s0() {
-    crate::check_result(order::apply(order::State::Draft, order::Event::Next, order::State::Draft), Ok(order::Step { to: order::State::Paid, changed: true }));
+/// The decide function of a persist case: the machine's step on the stored code.
+fn decide(case: &Value) -> impl Fn(i64) -> Result<(i32, bool), fsm_rust::fsm::Error> {
+    let expected = state(&case["expected"]);
+    let event = event(&case["event"]);
+    move |stored| {
+        let actual = machine::from_code(Value::from(stored))?;
+        let step = machine::apply(expected, event, actual)?;
+        Ok((machine::code(step.to), step.changed))
+    }
 }
 ```
 
@@ -94,7 +100,7 @@ The functions return `Result<_, fsm::Error>`. `Error` (`src/fsm.rs`) is a struct
 
 `Error` implements `Display` (`E_CONFLICT: the stored state ...`) and `std::error::Error`.
 
-Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/conformance/vectors.rs` assert it:
+Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `contracts/conformance/vectors.json` assert it:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -134,21 +140,7 @@ pub async fn transition_with_fault(
 }
 ```
 
-The caller's closure is the `apply` use. It is copied from `packages/rust/tests/conformance/vectors.rs` (the persist case of the draft
-state with the `next` event):
-
-```rust
-crate::check_persist(
-    order::code(order::State::Draft),
-    |stored| {
-        let actual = order::from_code(stored)?;
-        let step = order::apply(order::State::Draft, order::Event::Next, actual)?;
-        Ok((order::code(step.to), step.changed))
-    },
-    Ok((order::code(order::State::Paid), true)),
-    order::code(order::State::Paid),
-)
-```
+The caller's closure is the `decide` function shown above, the `apply` use.
 
 `open`, `seed` and `fsm_of` in `examples/persist.rs` create the tables, write a row and read it. The models come from
 `contracts/schema/persist.dbs` through `build.rs`, which writes them into `OUT_DIR`; a consumer that uses this pattern needs the build
@@ -166,7 +158,7 @@ make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-The run passes 89 of 89 cases in about 100 seconds, which includes the compilation of the crate. `tests/conformance/vectors.rs` has one
-`#[test]` per vector case, named by its case name `<feature>__<id>` (`vectors::<feature>__<id>`), and each calls a check function of `tests/conformance/main.rs`; the persist
-cases are `#[tokio::test]`. The toolchain is `rust-toolchain.toml` at the root (Rust 1.99.0). The generated files are not
+The run passes 89 of 89 cases in about 100 seconds, which includes the compilation of the crate. `tests/conformance/main.rs` has no libtest harness: libtest-mimic runs one
+trial per vector case of `contracts/conformance/vectors.json`, named by its case name `<feature>__<id>` (`vectors::<feature>__<id>`), and each calls a
+check function of `main.rs` through the adapter of its machine in `tests/conformance/vectors.rs`; the persist cases run on a tokio runtime of their own. The toolchain is `rust-toolchain.toml` at the root (Rust 1.99.0). The generated files are not
 tracked: `make fsm-rust-gen` writes them, and `make test-rust` runs it first.

@@ -98,7 +98,7 @@ test('gen --kind go with --go-module writes the golden files', () => {
 test('--go-module is refused for another kind', () => {
   const result = spawnSync(process.execPath, [CLI, 'gen', '--project', ORDER_PROJECT, '--kind', 'npm', '--go-module', MODULE, '--out', path.join(ROOT, 'var/unused')], { encoding: 'utf8' });
   assert.equal(result.status, 2);
-  assert.match(result.stderr, /--go-module is an option of gen and vectors --kind go/);
+  assert.match(result.stderr, /--go-module is an option of gen --kind go/);
 });
 
 test('a reserved code is E_RESERVED_CODE in FromCode, and the order example has none', async () => {

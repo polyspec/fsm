@@ -15,7 +15,7 @@ The package has five parts. The core is the only part that holds the rules; the 
 | Part | Files | Role |
 |---|---|---|
 | core | `src/core/validate.mjs`, `normalize.mjs`, `lock.mjs`, `reserved.mjs`, `vectors.mjs`, `run.mjs` | the rules of `docs/spec/fsm.md`, B-5, B-3 and B-4: `validate` returns the findings, `normalize` turns a definition into the intermediate form, `lock` derives the lock and `nextCode`, `vectors` is the oracle of the conformance cases, and `run` and `copy` are the commands |
-| backends | `src/backends/index.mjs` (the kinds), `go.mjs`, `npm.mjs`, `php.mjs`, `php-ext.mjs`, `python.mjs`, `rust.mjs` | one file per language: `files(irs, lock, options)` returns the generated files and `vectorsFile(...)` the native vector module |
+| backends | `src/backends/index.mjs` (the kinds), `go.mjs`, `npm.mjs`, `php.mjs`, `php-ext.mjs`, `python.mjs`, `rust.mjs` | one file per language: `files(irs, lock, options)` returns the generated files |
 | stores | `src/store-json/store.mjs`, `src/store-mermaid/store.mjs` with `parse.mjs` and `write.mjs`, `src/store-lock/lock-file.mjs` | the file stores: they convert between files and the objects of the core, and write each file atomically |
 | io | `src/io/files.mjs`, `src/io/git.mjs` | the atomic write of a file and the git commands of the stores and the cli, on `node:fs` and `node:child_process` |
 | cli | `src/cli/fsm-gen.mjs`, `src/cli/write-generated.mjs` | the command line, which chooses the store from `fsm.config.json`, prints the findings and sets the exit code; `write-generated.mjs` writes the generated files and refuses files without the header |
@@ -57,7 +57,7 @@ and the lock of `from`, unchanged. Both functions return `{ findings }`; `vector
 | `lock [--rename machine.old=new]...` | the store | the definitions and the lock | derives the lock with the lock rules (`E_CODE_REUSED`, `E_CODE_KEY_CHANGED`, `E_CODE_CHANGED`); a vanished code moves to `reserved`; `--rename` keeps the code of the renamed state |
 | `save` | `options.definitions` | the definitions and the lock | the core command of the GUI: the same rules as `lock`, one machine per save; there is no command-line form |
 | `copy --to json\|mermaid --root <dir>` | the project store | the target store under `<dir>` | the target must be empty; the lock is copied unchanged |
-| `vectors [--kind <kind>] --out <file>` | the store | `{ machines: [{ machine, cases }] }`, or the native module of one kind | stops on any finding of `check` |
+| `vectors --out <file>` | the store | `{ machines: [{ machine, cases }] }` | stops on any finding of `check` |
 | `gen --kind <kind> --out <dir>` | the store | the generated files of one kind | stops on any finding of `check`; the output directory is written as described in the root README |
 
 The command line is `packages/compiler/src/cli/fsm-gen.mjs`. Its `--project <dir>` defaults to the current directory, and
@@ -88,13 +88,12 @@ The options are the ones of `gen` and `vectors` (the command line refuses an opt
 
 | Option | Kinds | Rule | Why |
 |---|---|---|---|
-| `--kind <kind>` | `gen`, `vectors` | one of `go`, `npm`, `php`, `php-ext`, `python`, `rust` (`backends/index.mjs`) | selects the backend |
-| `--go-module <module path>` | `gen --kind go`, `vectors --kind go` (required) | the module path of the package | a generated machine imports `<module>/src/fsm` for the shared `Error` and codes; the backend cannot read `go.mod`, so the module is given |
-| `--php-namespace <ns>` | `php`, `php-ext` for `gen` and `vectors` (required) | letters and digits separated by single backslashes, such as `Acme\Fsm` | the namespace of the machine modules is `<ns>\<Pascal machine key>`, and the shared `<ns>\Fsm` holds `Error` and `Code` |
+| `--kind <kind>` | `gen` | one of `go`, `npm`, `php`, `php-ext`, `python`, `rust` (`backends/index.mjs`) | selects the backend |
+| `--go-module <module path>` | `gen --kind go` (required) | the module path of the package | a generated machine imports `<module>/src/fsm` for the shared `Error` and codes; the backend cannot read `go.mod`, so the module is given |
+| `--php-namespace <ns>` | `php`, `php-ext` for `gen` (required) | letters and digits separated by single backslashes, such as `Acme\Fsm` | the namespace of the machine modules is `<ns>\<Pascal machine key>`, and the shared `<ns>\Fsm` holds `Error` and `Code` |
 | `--php-ext-name <name>` | `gen --kind php-ext` (required) | lower-case letters, digits and underscores, starting with a letter, such as `acme_fsm` | the name of the extension, its `config.m4` and its header and arginfo files |
 
-The php-ext backend's output is the one the php backend's vectors and tests run against, so `vectors --kind php-ext` writes the
-same file as `vectors --kind php` with the same namespace.
+The php-ext backend's output is the one the PHPUnit files of the php package run against, with the extension loaded.
 
 ## Vectors
 
@@ -114,9 +113,8 @@ The vectors are the expected result of every operation of a machine, computed by
   `initial` 1, `code` 5, `key` 5, `from_code` 7, `is_final` 5, `events_from` 5, `target` 15, `apply` 43 and `persist` 3.
 
 `fsm-gen vectors --out <file>` writes the common form, one file for every machine (`contracts/conformance/vectors.json` in this repository). Each
-language package consumes the vectors in its own form: `vectors_test.go` (go, from `fsm-gen vectors --kind go --go-module <module path>`), `vectors.mjs`
-(npm), `ConformanceTest.php` (php and php-ext, one method per case), `vectors.py` (python) and `vectors.rs` (rust). The package runs one test
-per case, and kit's parity check (`make parity-check`) requires every case to run once and pass in every kind that admits it.
+language package reads that file when its conformance test runs and decodes the inputs in its own way (docs/spec/fsm.md, B-6); the compiler writes
+no test. The package runs one test per case, and kit's parity check (`make parity-check`) requires every case to run once and pass in every kind that admits it.
 
 ## Checks
 
