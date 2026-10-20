@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d21fd177f8f8fa043cad735182eda44588f193356f453f9d2dd7630a8332dee2 -->
+<!-- source-sha256: 19cdc064b357fb7a66c8e96cfc947a200992d93cc9af7769140d2a26b5279baa -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-6: `make duplication-check` exit 0: golden 출력은 이유와 함께 제외하고(S-45-6-1), 코드 중복은 각각 한 module에 있으며(S-45-6-2), orm-gen 산출물은 추적하지 않는다(S-45-6-3). RED exit 2, 중복 213개; GREEN exit 0. (S-45-6)
 - S-45-6-2: fsm의 모든 코드 중복을 한 module로 옮겼다. 항목 S-45-6-2-1부터 S-45-6-2-5가 compiler source, compiler test, GUI, db와 rust test, 루트 script와 test를 덮는다. RED `make duplication-check` exit 2, S-45-6 항목을 시작할 때 중복 213개; GREEN exit 0, "no piece of code exists twice". (S-45-6-2)
 - S-45-6-2-5: 루트 script와 test의 중복이 없다. `scripts/root-option.mts`가 `check-name`과 `check-readmes`의 `--root`를 읽고, `tests/support/make-sandbox.mts`가 `make-install`과 `python-tools`의 `make -n` test가 쓰는 Makefile 파일 복사, make 환경, 줄 검색을 담는다. test는 같다: 16 + 9 + 15 + 7개가 통과하고 `make lint-ts`가 exit 0이며 `check-name`은 알 수 없는 option에 여전히 usage 줄과 함께 exit 2다. RED `make duplication-check` 이 파일들에 중복 3개; GREEN exit 0, 중복 없음. (S-45-6-2-5)
 - S-45-6-2-4: `packages/db/tests`와 `packages/rust/tests`의 중복이 없다. `packages/db/tests/dialect.mjs`의 `cleanupAfterTests`가 db store test와 npm persist test가 test 뒤에 닫는 임시 디렉터리와 database를 담고, `tests/conformance/vectors.rs`의 macro `state_lookup!`이 두 adapter arm의 state 표를 담는다. test는 같다: `db-store`와 `persist`의 test 16개와 rust conformance case 290개가 통과하고 `make lint-ts`와 `make lint-rust`가 exit 0이다. RED `make duplication-check` 중복 5개 중 2개가 이 package에 있다; GREEN 중복 3개이며 `packages/db`와 `packages/rust`에는 없다. (S-45-6-2-4)
