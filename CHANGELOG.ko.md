@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c8538c48dbf441a2b6cefef09d13b5cdcdd29d5e3bb7d9002f5d2db5f2531a48 -->
+<!-- source-sha256: 5e752a4074745994bda85d20cfeadc0525c52605076f0fb905cd0333102847e3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- CHECK_TARGETS는 lint-rust를 실행하고 kit에서 동기화한 사본(clippy.toml, ruff.toml, .golangci.yml)이 최신이다(S-45-27)
 - php와 php-ext의 link lock은 purrphp/yaml v1.0.0-p1을 해석하고 orm과 ordered-json은 path dist이며, link 파일에서 composer validate가 통과한다(S-45-24)
 - php와 php-ext의 composer.json은 purrphp/yaml fork의 vcs repository를 선언하고, link lock은 orm과 ordered-json을 path dist로, purrphp/yaml을 v1.0.0-p1로 해석한다(S-45-24)
 - .gitignore는 kit link가 Go module마다 쓰는 go.work와 go.work.sum을 무시한다(S-45-26)

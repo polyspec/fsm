@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: e3163dd8b296667528886f0c15bd38c460e4db4d8c1869382884f39760753d53 -->
+<!-- source-sha256: e21c19ba1277e6d3d5d5a837b67b4798b010dd158410a5aa12436769e997395f -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -51,4 +51,5 @@
 | S-45-24 | php와 php-ext의 composer.json이 polyspec/orm이 1.0.0-p1로 요구하는 purrphp/yaml fork의 vcs repository(https://github.com/min-0-max/yaml, no-api)를 선언한다 | packages/php/composer.json, packages/php-ext/composer.json | `composer validate --strict packages/php/composer.json` | [o] |
 | S-45-25 | php 적재기는 extension에 대한 guard를 갖지 않는다. extension 실행은 packages/php의 PHPUnit 파일을 싣고 그 소스는 싣지 않는다(kit K329) | spec B-6, packages/compiler/src/backends/php.mjs, packages/php/phpunit.xml.dist, the php golden files | `make divergence-check` and `make test-php-ext CASES=Conformance` | [o] |
 | S-45-26 | .gitignore는 kit link가 Go module마다 쓰는 go.work와 go.work.sum을 무시한다 | .gitignore | `git check-ignore packages/go/go.work packages/go/go.work.sum` | [o] |
+| S-45-27 | CHECK_TARGETS가 lint-rust를 실행하고, kit의 동기화 사본(clippy.toml, ruff.toml, .golangci.yml, kit-bootstrap.mk)이 최신이다 | Makefile, the synced copies | `make kit-check` | [~] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |

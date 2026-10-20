@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- CHECK_TARGETS runs lint-rust and the copies synced from kit (clippy.toml, ruff.toml, .golangci.yml) are current (S-45-27)
 - The link lock of php and php-ext resolves purrphp/yaml v1.0.0-p1 with orm and ordered-json as path dists, and composer validate passes on the link files (S-45-24)
 - The php and php-ext composer.json declare the vcs repository of the purrphp/yaml fork, and the link lock resolves purrphp/yaml v1.0.0-p1 with orm and ordered-json as path dists (S-45-24)
 - The .gitignore ignores go.work and go.work.sum, which kit link writes for each Go module (S-45-26)
