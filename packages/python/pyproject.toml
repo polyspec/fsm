@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==84.0.0"]
+requires = ["setuptools==84.2.0"]
 build-backend = "setuptools.build_meta"
 
 # The python consumer test bed of fsm (docs/plans/fsm-v1/plan.md, C-2). It is not published: the orm client is pinned to the wheel of its release
