@@ -2,6 +2,8 @@
 // the dialect: sqlite (the default, a new file of the caller's temporary directory), postgres or mysql. A server dialect takes its
 // DSN from FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN, and a missing DSN throws: the tests never skip a dialect. A test that needs a
 // database with no table takes one from emptyDatabase, which creates it through the admin DSN of the dialect (S-37-2).
+import { rmSync } from 'node:fs';
+import { after } from 'node:test';
 import { DatabaseSync } from 'node:sqlite';
 import { randomBytes } from 'node:crypto';
 import pg from 'pg';
@@ -135,4 +137,18 @@ async function withMysql(dsn, fn) {
   } finally {
     await conn.end();
   }
+}
+
+/**
+ * The temporary directories and the databases of a test file: the file's tests push to `temp` and `dbs`, and when the file's tests
+ * end the databases are closed and the directories removed.
+ */
+export function cleanupAfterTests() {
+  const temp = [];
+  const dbs = [];
+  after(async () => {
+    for (const db of dbs) await db.close();
+    for (const dir of temp) rmSync(dir, { recursive: true, force: true });
+  });
+  return { temp, dbs };
 }

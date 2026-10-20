@@ -2,24 +2,18 @@
 // round trips json -> db -> json, E_STORE_NOT_EMPTY, and the atomicity of save. Every case opens its own SQLite database
 // file in a temporary directory, installs the schema of schema/fsm.dbs and closes the connection afterwards.
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import test, { after } from 'node:test';
+import test from 'node:test';
 import { copy, run } from '../../compiler/src/core/run.mjs';
 import { jsonStore } from '../../compiler/src/store-json/store.mjs';
 import { storeContract } from '../../compiler/tests/store-contract.mjs';
 import { dbStore } from '../src/db-store.mjs';
 import { Edge, Event, LockCode, LockReserved, Machine, State } from '../src/models/models.ts';
-import { openDialectDb } from './dialect.mjs';
+import { cleanupAfterTests, openDialectDb } from './dialect.mjs';
 
-const temp = [];
-const dbs = [];
-
-after(async () => {
-  for (const db of dbs) await db.close();
-  for (const dir of temp) rmSync(dir, { recursive: true, force: true });
-});
+const { temp, dbs } = cleanupAfterTests();
 
 /** A new empty temporary directory, removed when the file's tests end. */
 function tempDir() {

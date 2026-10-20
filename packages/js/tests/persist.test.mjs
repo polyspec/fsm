@@ -6,26 +6,20 @@
 // the two transitions run at the same time. On sqlite they run one after the other: the sqlite driver is synchronous, so a second
 // BEGIN IMMEDIATE in the same process blocks the one thread that would commit the first (docs/plans/fsm-v1/plan.md, C-4).
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import test, { after } from 'node:test';
+import test from 'node:test';
 import { OrmError } from '@polyspec/orm';
 import * as api from '../src/index.js';
 import { Item, SCHEMA, connect } from '../examples/model/models.ts';
 import { seed, statusOf, transition } from '../examples/persist.mjs';
-import { dialectOf, serverDsn } from '../../db/tests/dialect.mjs';
+import { cleanupAfterTests, dialectOf, serverDsn } from '../../db/tests/dialect.mjs';
 import { inspect } from 'node:util';
 
 const { order } = api;
 const dialect = dialectOf();
-const temp = [];
-const dbs = [];
-
-after(async () => {
-  for (const db of dbs) await db.close();
-  for (const dir of temp) rmSync(dir, { recursive: true, force: true });
-});
+const { temp, dbs } = cleanupAfterTests();
 
 /** `count` connections to one database of the dialect, with the persist table installed and holding row 1 in the draft state. */
 async function connections(count) {

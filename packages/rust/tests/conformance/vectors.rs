@@ -102,6 +102,18 @@ macro_rules! common_features {
     };
 }
 
+/// The function state of an adapter module: the state of a key, by the table of the machine.
+macro_rules! state_lookup {
+    ($module:ident, $($skey:literal => $state:ident),*) => {
+        fn state(key: &Value) -> State {
+            match key.as_str().expect("a state is a key") {
+                $($skey => State::$state,)*
+                other => panic!("{other} is no state of {}", stringify!($module)),
+            }
+        }
+    };
+}
+
 /// The adapter of one machine module: its states and events by key (docs/spec/fsm.md, B-6) and the checks of the features of a
 /// case on its functions. The enums are closed, so a state argument that carries a raw code goes through from_code first.
 macro_rules! adapter {
@@ -110,12 +122,7 @@ macro_rules! adapter {
             use super::*;
             use fsm_rust::$module::{self as machine, Event, State, Step};
 
-            fn state(key: &Value) -> State {
-                match key.as_str().expect("a state is a key") {
-                    $($skey => State::$state,)*
-                    other => panic!("{other} is no state of {}", stringify!($module)),
-                }
-            }
+            state_lookup!($module, $($skey => $state),*);
 
             fn event(key: &Value) -> Event {
                 match key.as_str().expect("an event is a key") {
@@ -190,12 +197,7 @@ macro_rules! adapter {
             use super::*;
             use fsm_rust::$module::{self as machine, Event, State};
 
-            fn state(key: &Value) -> State {
-                match key.as_str().expect("a state is a key") {
-                    $($skey => State::$state,)*
-                    other => panic!("{other} is no state of {}", stringify!($module)),
-                }
-            }
+            state_lookup!($module, $($skey => $state),*);
 
             fn event(key: &Value) -> Event {
                 panic!("{} is no event of {}: it has none", key, stringify!($module))
