@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The link lock of php and php-ext resolves purrphp/yaml v1.0.0-p1 with orm and ordered-json as path dists, and composer validate passes on the link files (S-45-24)
 - The php and php-ext composer.json declare the vcs repository of the purrphp/yaml fork, and the link lock resolves purrphp/yaml v1.0.0-p1 with orm and ordered-json as path dists (S-45-24)
 - The .gitignore ignores go.work and go.work.sum, which kit link writes for each Go module (S-45-26)
 - The php loader functions.php requires the functions of every machine with no function_exists guard, and packages/php/phpunit.xml.dist names no bootstrap, so the extension run loads the PHPUnit files of the library and none of its sources (S-45-25)

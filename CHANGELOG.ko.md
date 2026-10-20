@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6a4900457616880e03c3f457d0a987ee6bd26eaf0c7725f2f4a20f77a37dc629 -->
+<!-- source-sha256: c8538c48dbf441a2b6cefef09d13b5cdcdd29d5e3bb7d9002f5d2db5f2531a48 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- php와 php-ext의 link lock은 purrphp/yaml v1.0.0-p1을 해석하고 orm과 ordered-json은 path dist이며, link 파일에서 composer validate가 통과한다(S-45-24)
 - php와 php-ext의 composer.json은 purrphp/yaml fork의 vcs repository를 선언하고, link lock은 orm과 ordered-json을 path dist로, purrphp/yaml을 v1.0.0-p1로 해석한다(S-45-24)
 - .gitignore는 kit link가 Go module마다 쓰는 go.work와 go.work.sum을 무시한다(S-45-26)
 - php 적재기 functions.php는 function_exists guard 없이 모든 machine의 함수를 require하고, packages/php/phpunit.xml.dist는 bootstrap을 두지 않으므로 extension 실행은 library의 PHPUnit 파일을 싣고 그 소스는 싣지 않는다(S-45-25)

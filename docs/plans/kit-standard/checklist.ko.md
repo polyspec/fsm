@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: e0ee62f2b2da84bf3989fc64059816050c05e9679f07396b55f206f021924fe9 -->
+<!-- source-sha256: dc4ffe6d702840bc5077cf7978174e094e0fd20ffdb758255f486157ce60ac26 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -48,7 +48,7 @@
 | S-45-21 | kit-check: CHECK_TARGETS가 bypass-check를 실행하고 kit의 복사본(PRINCIPLES, config/php-lint)이 같다 | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md, config/php-lint | `make kit-check` | [o] |
 | S-45-22 | kit-check: PRINCIPLES 복사본이 @polyspec/kit과 다시 같다 | PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-23 | divergence-check(kit K315, P32): config/duplication.json의 모든 예외와 config/parity.json의 tools는 kit의 kind로 시작하는 이유를 가진다. CHECK_TARGETS가 divergence-check를 실행한다 | config/duplication.json, config/parity.json, Makefile | `make divergence-check` | [o] |
-| S-45-24 | php와 php-ext의 composer.json이 polyspec/orm이 1.0.0-p1로 요구하는 purrphp/yaml fork의 vcs repository(https://github.com/min-0-max/yaml, no-api)를 선언한다 | packages/php/composer.json, packages/php-ext/composer.json | `composer validate --strict packages/php/composer.json` | [!] 원인: 선언은 추가했다. 해석은 link lock을 통해서만 보이는데 kit K304-2가 이를 PHP >=8.5를 요구하는 zip dist로 기록하므로 composer update --lock이 purrphp/yaml에 닿기 전에 그 요구에서 멈춘다; 재시도: K304-2 뒤: repository root에서 kit link, 이어 packages/php와 packages/php-ext의 composer update --lock이 vcs repository에서 purrphp/yaml 1.0.0-p1을 해석한다 |
+| S-45-24 | php와 php-ext의 composer.json이 polyspec/orm이 1.0.0-p1로 요구하는 purrphp/yaml fork의 vcs repository(https://github.com/min-0-max/yaml, no-api)를 선언한다 | packages/php/composer.json, packages/php-ext/composer.json | `composer validate --strict packages/php/composer.json` | [o] |
 | S-45-25 | php 적재기는 extension에 대한 guard를 갖지 않는다. extension 실행은 packages/php의 PHPUnit 파일을 싣고 그 소스는 싣지 않는다(kit K329) | spec B-6, packages/compiler/src/backends/php.mjs, packages/php/phpunit.xml.dist, the php golden files | `make divergence-check` and `make test-php-ext CASES=Conformance` | [o] |
 | S-45-26 | .gitignore는 kit link가 Go module마다 쓰는 go.work와 go.work.sum을 무시한다 | .gitignore | `git check-ignore packages/go/go.work packages/go/go.work.sum` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
