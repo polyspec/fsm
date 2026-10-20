@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mts) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-20T08:17:18.660Z",
+  "reviewed": "2026-10-20T10:04:47.711Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -166,7 +166,7 @@
       "ecosystem": "composer",
       "manifest": "packages/php/composer.json",
       "package": "phpunit/phpunit",
-      "version": "13.4.2",
+      "version": "13.4.3",
       "latest": "13.4.3"
     },
     {
@@ -180,7 +180,7 @@
       "ecosystem": "composer",
       "manifest": "packages/php-ext/composer.json",
       "package": "phpunit/phpunit",
-      "version": "13.4.2",
+      "version": "13.4.3",
       "latest": "13.4.3"
     },
     {

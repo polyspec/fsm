@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 6df80f8d50b5c0eae4e221f5cb126599cfec38c6849f768f5eee5f0b604bae57 -->
+<!-- source-sha256: bdc578ebc556811f14e1e4c1ef168e111b426fcc51dcc410bdb18a6cef16f7bc -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -38,7 +38,7 @@
 | S-45-11 | rebuild-check: config/rebuild.json에 paths가 없고(kit K286이 layout으로 tool source를 찾는다) 모든 tool source를 분류한다 | config/rebuild.json | `make rebuild-check` | [o] |
 | S-45-12 | kit-check: CHECK_TARGETS가 fsm의 runtime에 대한 kit-gates의 모든 gate를 실행하고, kit의 복사본이 같다(PRINCIPLES.md, PRINCIPLES.ko.md) | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-13 | dependency-policy-check: 저장소의 Composer platform은 두 composer.json과 config/dependency-policy.json에서 PHP 8.4.1 하나다(kit K282) | packages/php/composer.json, packages/php-ext/composer.json, config/dependency-policy.json | `make dependency-policy-check` | [o] |
-| S-45-14 | config/dependency-review.json을 [none matched] sentinel 없이 다시 기록하고, review 뒤에 바뀐 lock을 기록한다(kit K281) | config/dependency-review.json | `make dependency-policy-check` | [!] 원인: kit K365: kit K358 이후 dependency-policy-check의 유일한 발견은 review 기록이다(packages/php와 packages/php-ext에서 phpunit lock 13.4.3, 기록 13.4.2). make dependency-review RECORD=1은 아무것도 기록하지 않는다. kit.mk가 GOWORK=off로 실행하므로 govulncheck가 examples/model이 따르는 link된 orm이 아니라 go.mod의 orm으로 packages/go를 compile하기 때문이다; 재시도: kit K365 이후 make dependency-review RECORD=1과 make dependency-policy-check를 실행한다 |
+| S-45-14 | config/dependency-review.json을 [none matched] sentinel 없이 다시 기록하고, review 뒤에 바뀐 lock을 기록한다(kit K281) | config/dependency-review.json | `make dependency-policy-check` | [o] |
 | S-45-15 | kit-check: kit의 복사본이 @polyspec/kit과 다시 같다(PRINCIPLES.md, PRINCIPLES.ko.md). make kit-sync가 쓴다 | PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-16 | php 적재기는 machine의 namespace에 함수가 아직 없을 때만 그 함수를 require하므로 library와 extension이 공존한다(S10, B-6) | docs/spec/fsm.md, docs/spec/fsm.ko.md, packages/compiler/src/backends/php.mjs, packages/compiler/tests/php-backend.test.mjs | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/php-backend.json --inputs packages/compiler -- packages/compiler/tests/php-backend.test.mjs` | [o] |
 | S-45-17 | make test-php-ext가 통과한다: extension의 enum은 library의 enum처럼 final이고(S10 선언), packages/php는 test 폴더를 이름 짓는 phpunit.xml.dist를 가진다 | packages/compiler/src/backends/php-ext.mjs, its golden files, packages/php/phpunit.xml.dist, config/layout.yml | `make test-php-ext CASES=Conformance` | [o] |

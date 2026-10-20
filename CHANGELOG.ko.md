@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d4c2e899dfd4e67933a91532e4036368de47f3ecbdb842cff7cfbae12c6f0ccc -->
+<!-- source-sha256: 1cc7dd64599b373089941d02f9ea70b6fece626bdbbf1bbc8c5efa40f9e55b50 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-14: kit K365 이후 연결된 lock에 대해 `make dependency-review RECORD=1`로 config/dependency-review.json을 다시 기록한다(packages/php와 packages/php-ext의 phpunit 13.4.3). RED `make dependency-policy-check` exit 2, lock은 phpunit 13.4.3인데 기록은 두 package 모두 13.4.2; GREEN exit 0. (S-45-14)
 - S-45-32: `make kit-sync`가 kit 사본을 다시 썼다. kit K356의 `config/layout.kit.yml`은 root의 `clippy.toml`을 선언하고, kit K360의 `scripts/kit/kit-bootstrap.mk`는 `npm ci` 바로 뒤에 저장소 옆 kit checkout의 link를 실행한다. RED efa614b에서 `make kit-check` exit 2("config/layout.kit.yml: differs"), `make layout-check` exit 2("clippy.toml: a file at the root that the layout does not declare"); GREEN 둘 다 exit 0("all rules passed"). (S-45-32)
 - S-45-28: go example `packages/go/examples/persist.go`의 `Open`은 close 오류를 `_ =`로 버리지 않고 schema 오류와 close 오류를 `errors.Join`으로 반환한다(P8, kit K334 errcheck). RED HEAD 19595b6에서 `make lint-go` exit 2(make item-state가 기록, kit K357), `persist.go:29:3: Error return value of db.Close is not checked (errcheck)`; GREEN exit 0, "0 issues". (S-45-28)
 - S-45-30: `.githooks/pre-commit`은 K210 이후 kit이 쓰는 hook으로, `owner-validate`(`CHECK_TARGETS`에 남는다) 대신 `make staged-generated-hook`을 실행하며 `make hooks`가 쓴다. `config/generated.json`은 `.gitignore`가 kit의 segment 밖에서 적는 fsm의 generated path(fsm-gen과 orm-gen의 출력, `var/`, `.results/`, build, cache, test 출력, kit link의 `go.work`)를 선언하므로 hook이 그것을 거부한다(P34). RED `make hooks-check` exit 2, ".githooks/pre-commit differs from the hook of scripts/kit/git-hooks.mts", `make hooks` 뒤 `make staged-generated-hook` exit 2, "config/generated.json does not exist"; GREEN 둘 다 exit 0("no generated file is staged"), 강제로 stage한 `packages/go/src/order/order.go`는 거부된다("is a generated file"). (S-45-30)
