@@ -454,4 +454,4 @@ checks that the documents depend on can be run one at a time:
 CI (`.github/workflows/ci.yml`) installs kit (`make install-tools TOOLS=npm`, `make install-packages`) and runs `make install` and then `make check` on every push to main, with PostgreSQL and MySQL services. The documentation site is published to https://polyspec.github.io/fsm/ by `.github/workflows/pages.yml`.
 
 The conformance tests of each language package run the same vector cases, one test per case, named by the case name `<feature>__<id>` (php: the data set `<feature>__<id>` of the one method `testConformance`; python: the method `test_<feature>__<id>`), the name that kit's parity check (K33, `config/parity.json`) reads.
-`make gen-check` checks that the generated files of the packages are the ones that `fsm-gen` writes today.
+The generated files of the packages are not tracked: `make fsm-gen` writes them, and `make compiler-test` compares the output for the order example with the golden files of `packages/compiler/tests/golden`, byte for byte.

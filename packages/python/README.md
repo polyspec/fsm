@@ -141,7 +141,6 @@ make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_D
 ```
 
 The run passes 290 of 290 cases. `tests/test_conformance.py` generates one unittest method per vector case, named
-`test_<feature>__<id>`, and asserts the result of the generated function or its error code. The generated files are committed,
-so `test` needs no generator; `make fsm-python-gen` regenerates them, and the root `make gen-check` checks that they
-are current. `make parity-python` checks the result record of every case. `uv.lock` locks every package of the tree (exact versions, sha256
+`test_<feature>__<id>`, and asserts the result of the generated function or its error code. The generated files are not tracked:
+`make fsm-python-gen` writes them, and `make test-python` runs it first. `make parity-python` checks the result record of every case. `uv.lock` locks every package of the tree (exact versions, sha256
 hashes, git commits), and `make python-lock-check` checks it against `pyproject.toml`, and that `pylock.toml`, the PEP 751 export the kit gate reads, is its current export.

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: 14d8f8ac64f547eb7fa8fb3142dd4b9703ee688a44ca76ddb9ce1bcb22a9eb51 -->
+<!-- source-sha256: 35019abbfa5eadaf0b7bc40a1788bccbf8f6fed979bb590a1f815bfb82667277 -->
 # polyspec-fsm-python
 
 [English](README.md)
@@ -137,6 +137,6 @@ make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_D
 ```
 
 실행 결과는 290개 case 중 290개 통과다. `tests/test_conformance.py`는 vector case마다 unittest method 하나를 `test_<feature>__<id>`
-이름으로 만들고, 생성 함수나 오류 code의 결과를 단언한다. 생성 파일은 commit되어 있으므로 `test`는 생성기를 필요로 하지 않는다.
-`make fsm-python-gen`이 다시 생성하며, 루트의 `make gen-check`가 최신인지 검사한다. `make parity-python`은 모든 case의
+이름으로 만들고, 생성 함수나 오류 code의 결과를 단언한다. 생성 파일은 추적하지 않는다.
+`make fsm-python-gen`이 생성하며 `make test-python`이 먼저 실행한다. `make parity-python`은 모든 case의
 결과 기록을 검사한다. `uv.lock`이 트리의 모든 package를 잠근다(정확한 버전, sha256 hash, git commit). `make python-lock-check`가 이를 `pyproject.toml`과 대조하고, kit gate가 읽는 PEP 751 export `pylock.toml`이 현재 export인지 검사한다.

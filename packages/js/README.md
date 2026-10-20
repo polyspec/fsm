@@ -137,5 +137,5 @@ make fsm-js-test      # tests/conformance.test.mjs through kit's run-tests
 The run passes 89 of 89 cases. `tests/conformance.test.mjs` runs one test per vector case of `tests/vectors.mjs`, named
 by its case name `<feature>__<id>`; the persist cases run `examples/persist.mjs` on the dialect of `FSM_TEST_DIALECT`, SQLite by default. `tests/persist.test.mjs`
 runs two transitions of one row at the same time and the deadlock retry (`make npm-persist-test`). The root `tests/npm-types`
-checks the `.d.ts` files with the TypeScript compiler (`make npm-types`). The root `make gen-check` checks that the generated files are the ones
-`fsm-gen` writes today.
+checks the `.d.ts` files with the TypeScript compiler (`make npm-types`). The generated files are not tracked: `make fsm-js-gen`
+writes them, and `make test-js` and `make npm-types` run it first.

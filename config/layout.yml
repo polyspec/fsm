@@ -30,7 +30,7 @@ rules:
       - "!packages/db"
       - "!packages/gui"
 
-  # The tool tests of the root: the checks of scripts/ (check-name, check-readmes, gen-check), the documentation site, the
+  # The tool tests of the root: the checks of scripts/ (check-name, check-readmes), the documentation site, the
   # make targets of the package dependencies and of the Python toolchain, and the CI workflows.
   - id: layout-root-tests
     paths:
@@ -40,7 +40,6 @@ rules:
       - "!tests/support"
       - "!tests/check-readmes"
       - "!tests/docs-build"
-      - "!tests/gen-check"
       - "!tests/make-install"
       - "!tests/python-tools"
       - "!tests/workflows"

@@ -79,7 +79,6 @@ const TARGETS = [
   { target: 'test-php-ext', line: /phpunit --php-extension/, needs: ['php-ext'] },
   { target: 'test-python', line: /run-tests\.mjs python --venv/, needs: ['python'] },
   { target: 'test-rust', line: /--results \.results\/rust\.json/, needs: ['rust'] },
-  { target: 'gen-check', line: /scripts\/gen-check\.mts/, needs: ['npm', 'go', 'php', 'php-ext', 'python'] },
   { target: 'db-test', line: /db-test\.json/, needs: ['db'] },
   { target: 'gui-test', line: /gui-test\.json/, needs: ['gui', 'db'] },
   { target: 'docs-build', line: /vitepress\.js build/, needs: ['docs'] },
@@ -156,15 +155,6 @@ test('npm-types installs the npm dependencies before its test', (t) => {
   const run = lineIndex(out, /npm-types\.json/);
   assert.ok(install >= 0, `no install of the npm dependencies:\n${out}`);
   assert.ok(install < run, `the install comes after the test:\n${out}`);
-});
-
-test('gen-check installs the dependencies that generate the packages before it runs', (t) => {
-  const out = dryRun(sandbox(t), 'gen-check');
-  const run = lineIndex(out, /scripts\/gen-check\.mts/);
-  for (const kind of ['npm', 'go', 'php', 'php-ext', 'python']) {
-    const install = lineIndex(out, installLine(kind));
-    assert.ok(install >= 0 && install < run, `no install of ${kind} before gen-check:\n${out}`);
-  }
 });
 
 test('packages-test installs the dependencies of every kind', (t) => {

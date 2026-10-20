@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 2b63ed3ec245cc3be416334327b9c62f236b09147b8923e72282654995d81b21 -->
+<!-- source-sha256: 1838be93a0a0cb6eb0157058960fefa1b07fbac5318e25c40125324f770f4ea6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-8-2: `make gen-check`를 `scripts/gen-check.mts`, `tests/gen-check`, `config/gen-check.json`, 그것만 쓰던 gen target의 `DEST` 변수, owner check, knip entry, layout, plan, README의 관련 행과 함께 제거한다. `packages/compiler/tests/golden`의 golden 파일이 go, npm, php, php-ext, python, rust의 order 예제 `src/`와 vector 파일을 덮고, `packages/compiler/tests/vectors-file.test.mjs`가 `contracts/conformance/vectors.json`을 비교한다. RED `test ! -e scripts/gen-check.mts` exit 1; GREEN exit 0, 여섯 backend test의 `node --test --test-name-pattern=golden` 15개 중 15개 통과, `make kit-check`, `make owner-validate`, `make docs-check`, `make readme-check`, `make name-check` exit 0, `tests/make-install` 15개 중 15개 통과. (S-45-8-2)
 - S-45-8-1: 생성 파일을 읽는 모든 target(test, persist target, npm-types, php-ext build)은 자기 kind의 `fsm-<package>-gen` target에 의존하고, 각 gen target은 그것이 실행하는 도구의 install에 의존한다. `layout-check`, `parity-declarations-check`, `parity-check`는 모든 kind를 생성하는 새 `fsm-gen`에 의존하므로 생성 파일을 추적하지 않는 checkout은 읽을 파일을 생성한다. RED `tests/make-install/make-install.test.mts` exit 1, 14 통과 2 실패(`npm-types does not generate the npm files before its recipe`, `layout-check does not generate the go files`); GREEN 같은 명령 exit 0, 16 통과; `tests/python-tools` 9 통과, `make workflows-test` 14 통과, `make kit-check` exit 0. (S-45-8-1)
 - S-45-6-1: `config/duplication.json`이 backend의 추적되는 기대 출력 `packages/compiler/tests/golden/**`를 이유와 함께 제외한다. RED `make duplication-check` exit 2, 중복 213개; 이후 `make duplication-check` exit 2, 중복 183개이고 `tests/golden`에는 없다(남은 183개는 S-45-6-2 항목과 S-45-6-3의 생성 산출물이다). (S-45-6-1)
 - S-45-3: 손으로 쓴 php 파일(php의 tests/ConformanceCase.php, tests/PersistTest.php, examples/persist.php와 php-ext의 복사본)이 phpcs 표준의 120자 줄 길이를 지킨다. RED `make lint-php` exit 2, 경고 26개 중 각 package의 이 파일들에 줄 길이 경고 12개(ConformanceCase.php:3,7,57,99,107,109,122,168, PersistTest.php:119,132, persist.php:4); GREEN `make lint-php`은 orm-gen 산출물 examples/model의 finding 14개(S-45-4)로만 exit 2이고 손으로 쓴 파일에는 남은 것이 없으며, 두 package의 phpstan 통과, 세 파일의 `php -l` 통과. (S-45-3)

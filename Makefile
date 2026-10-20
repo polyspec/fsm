@@ -19,9 +19,9 @@ RUN_TESTS := node $(KIT)/run-tests.$(KIT_EXT)
 # kit's parity-check runs the vectors of every kind (S-42-1).
 KINDS := $(shell node -p "require('./config/parity.json').implementations.map(implementation => implementation.name).join(' ')")
 
-CHECK_TARGETS := kit-check owner-validate docs-check commits-check hooks-check toolchain-check dependency-policy-check layout-check lint-ts compiler-test gen-check-test gen-check db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-check workflows-test parity-declarations-check parity-check
+CHECK_TARGETS := kit-check owner-validate docs-check commits-check hooks-check toolchain-check dependency-policy-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-check workflows-test parity-declarations-check parity-check
 
-.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test gen-check-test gen-check name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-js test-go test-php test-rust rust-persist-test npm-types test-python test-php-ext gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
+.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-js test-go test-php test-rust rust-persist-test npm-types test-python test-php-ext gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
 
 
@@ -92,9 +92,8 @@ $(DOCS_DEP): docs/package-lock.json
 	cd docs && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
 
 # ---- Runtime packages (K245, S-44): the install, gen, build, clean and test of each runtime package are targets of this Makefile,
-# named fsm-<package>-<task> with the folder name of the package. gen writes the generated files into DEST, which names the package
-# by default; gen-check runs the gen targets with DEST in var/gen-check/<kind> (scripts/gen-check.mts). The fixed tasks of kit join
-# them by a prerequisite (test-go: fsm-go-test, K246-2).
+# named fsm-<package>-<task> with the folder name of the package. gen writes the generated files of the package, which no checkout tracks.
+# The fixed tasks of kit join them by a prerequisite (test-go: fsm-go-test, K246-2).
 FSM_GEN := $(NODE) packages/compiler/src/cli/fsm-gen.mjs
 GO_MODULE := github.com/polyspec/fsm/packages/go
 PHP_NAMESPACE := Polyspec\FsmTest
@@ -112,16 +111,13 @@ COMPOSER := $(CURDIR)/var/tools/mise/shims/composer
 fsm-go-install:
 	cd packages/go && $(GO) mod download
 
-fsm-go-gen: DEST ?= packages/go
 fsm-go-gen: $(GO_DEP)
 fsm-go-gen:
-	$(FSM_GEN) gen --project contracts --kind go --go-module $(GO_MODULE) --out $(DEST)/src
-	$(FSM_GEN) vectors --project contracts --kind go --go-module $(GO_MODULE) --out $(DEST)/tests/vectors_test.go
-	# orm-gen runs go in the module of its output directory, so the models are generated inside DEST. When DEST is another
-	# directory, it receives a copy of go.mod, go.sum and examples/persist.go, which the scan reads; its src/ is the one above.
-	mkdir -p $(DEST)/examples
-	if [ "$(abspath $(DEST))" != "$(abspath packages/go)" ]; then cp packages/go/go.mod packages/go/go.sum $(DEST)/ && cp packages/go/examples/persist.go $(DEST)/examples/; fi
-	cd $(DEST) && $(GO) tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...
+	$(FSM_GEN) gen --project contracts --kind go --go-module $(GO_MODULE) --out packages/go/src
+	$(FSM_GEN) vectors --project contracts --kind go --go-module $(GO_MODULE) --out packages/go/tests/vectors_test.go
+	# orm-gen runs go in the module of its output directory, so it runs in packages/go.
+	mkdir -p packages/go/examples
+	cd packages/go && $(GO) tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...
 
 # fsm-go-test runs the conformance cases and the persist example with GOPROXY=off, so that the modules must already be downloaded.
 fsm-go-test: $(GO_DEP) fsm-go-gen
@@ -132,12 +128,11 @@ fsm-go-test: $(GO_DEP) fsm-go-gen
 fsm-js-install:
 	cd packages/js && $(NPM) ci --allow-remote=root --no-audit --no-fund
 
-fsm-js-gen: DEST ?= packages/js
 fsm-js-gen: $(NPM_DEP)
 fsm-js-gen:
-	$(FSM_GEN) gen --project contracts --kind npm --out $(DEST)/src
-	$(FSM_GEN) vectors --project contracts --kind npm --out $(DEST)/tests/vectors.mjs
-	packages/js/node_modules/.bin/orm-gen gen --set contracts/schema/dbspec-set.json --out $(DEST)/examples/model
+	$(FSM_GEN) gen --project contracts --kind npm --out packages/js/src
+	$(FSM_GEN) vectors --project contracts --kind npm --out packages/js/tests/vectors.mjs
+	packages/js/node_modules/.bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/js/examples/model
 
 # fsm-js-test runs the conformance cases of the npm package; the kit reporter names every file from the checkout root.
 fsm-js-test: $(NPM_DEP) fsm-js-gen
@@ -150,12 +145,11 @@ fsm-php-install:
 	$(MAKE) release-assets-fetch
 	cd packages/php && $(COMPOSER) install --no-interaction --no-progress
 
-fsm-php-gen: DEST ?= packages/php
 fsm-php-gen: $(PHP_DEP)
 fsm-php-gen:
-	$(FSM_GEN) gen --project contracts --kind php --php-namespace '$(PHP_NAMESPACE)' --out $(DEST)/src
-	$(FSM_GEN) vectors --project contracts --kind php --php-namespace '$(PHP_NAMESPACE)' --out $(DEST)/tests/ConformanceTest.php
-	packages/php/vendor/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out $(DEST)/examples/model --namespace '$(PHP_NAMESPACE)\Model'
+	$(FSM_GEN) gen --project contracts --kind php --php-namespace '$(PHP_NAMESPACE)' --out packages/php/src
+	$(FSM_GEN) vectors --project contracts --kind php --php-namespace '$(PHP_NAMESPACE)' --out packages/php/tests/ConformanceTest.php
+	packages/php/vendor/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/php/examples/model --namespace '$(PHP_NAMESPACE)\Model'
 
 # fsm-php-test runs phpunit on the tests of packages/php (the conformance cases and the persist example).
 fsm-php-test: $(PHP_DEP) fsm-php-gen
@@ -168,17 +162,16 @@ fsm-php-ext-install:
 	cd packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
 
 # fsm-php-ext-gen writes the generated files of the extension (src/) and of the tests and the persist example, which are copies
-# of the php package's files, so gen-check proves that they are the same bytes.
-fsm-php-ext-gen: DEST ?= packages/php-ext
+# of the php package's files.
 fsm-php-ext-gen: $(PHP_EXT_DEP)
 fsm-php-ext-gen:
-	mkdir -p $(DEST)/src $(DEST)/tests $(DEST)/examples
-	$(FSM_GEN) gen --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --php-ext-name $(PHP_EXT_NAME) --out $(DEST)/src
-	$(FSM_GEN) vectors --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --out $(DEST)/tests/ConformanceTest.php
-	cp packages/php/tests/ConformanceCase.php $(DEST)/tests/ConformanceCase.php
-	cp packages/php/tests/PersistTest.php $(DEST)/tests/PersistTest.php
-	cp packages/php/examples/persist.php $(DEST)/examples/persist.php
-	packages/php-ext/vendor/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out $(DEST)/examples/model --namespace '$(PHP_NAMESPACE)\Model'
+	mkdir -p packages/php-ext/src packages/php-ext/tests packages/php-ext/examples
+	$(FSM_GEN) gen --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --php-ext-name $(PHP_EXT_NAME) --out packages/php-ext/src
+	$(FSM_GEN) vectors --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --out packages/php-ext/tests/ConformanceTest.php
+	cp packages/php/tests/ConformanceCase.php packages/php-ext/tests/ConformanceCase.php
+	cp packages/php/tests/PersistTest.php packages/php-ext/tests/PersistTest.php
+	cp packages/php/examples/persist.php packages/php-ext/examples/persist.php
+	packages/php-ext/vendor/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/php-ext/examples/model --namespace '$(PHP_NAMESPACE)\Model'
 
 # fsm-php-ext-build compiles the extension in packages/php-ext/src with phpize, ./configure and make; the module is $(PHP_EXT_MODULE).
 fsm-php-ext-build: fsm-php-ext-gen
@@ -206,13 +199,12 @@ fsm-python-install:
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps -e packages/python
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
-fsm-python-gen: DEST ?= packages/python
 fsm-python-gen: $(PYTHON_DEP)
 fsm-python-gen: export PYTHONDONTWRITEBYTECODE := 1
 fsm-python-gen:
-	$(FSM_GEN) gen --project contracts --kind python --out $(DEST)/src/polyspec_fsm
-	$(FSM_GEN) vectors --project contracts --kind python --out $(DEST)/tests/vectors.py
-	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out $(DEST)/examples/model
+	$(FSM_GEN) gen --project contracts --kind python --out packages/python/src/polyspec_fsm
+	$(FSM_GEN) vectors --project contracts --kind python --out packages/python/tests/vectors.py
+	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/python/examples/model
 
 # fsm-python-test runs the tests through the kit runner with --venv, which runs the venv interpreter only when pyvenv.cfg names the
 # install-tools Python; it runs from the checkout root with root-relative paths.
@@ -229,10 +221,9 @@ fsm-rust-install:
 
 # The orm models of contracts/schema/persist.dbs are written by build.rs into OUT_DIR, so gen writes no model directory: that is the
 # declared difference of rust.
-fsm-rust-gen: DEST ?= packages/rust
 fsm-rust-gen:
-	$(FSM_GEN) gen --project contracts --kind rust --out $(DEST)/src
-	$(FSM_GEN) vectors --project contracts --kind rust --out $(DEST)/tests/conformance/vectors.rs
+	$(FSM_GEN) gen --project contracts --kind rust --out packages/rust/src
+	$(FSM_GEN) vectors --project contracts --kind rust --out packages/rust/tests/conformance/vectors.rs
 
 # fsm-rust-test runs cargo on the conformance test of packages/rust through the kit reporter.
 fsm-rust-test: $(RUST_DEP) fsm-rust-gen
@@ -307,14 +298,6 @@ docs-build-test: $(DOCS_DEP)
 # with the editor schema contracts/schema/fsm.schema.json, which the tests check against the core.
 compiler-test:
 	$(RUN_TESTS) node --results .results/compiler-test.json --inputs packages/compiler --inputs contracts -- packages/compiler/tests
-
-# gen-check-test runs the tests of scripts/gen-check.mts; gen-check regenerates the generated files into var/gen-check and
-# requires them to equal the working tree (docs/plans/fsm-v1/plan.md, C-5).
-gen-check-test:
-	$(RUN_TESTS) node --results .results/gen-check-test.json --inputs scripts/gen-check.mts --inputs tests/gen-check -- tests/gen-check
-
-gen-check: $(NPM_DEP) $(GO_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP)
-	$(NODE) scripts/gen-check.mts
 
 # db-test-postgres and db-test-mysql run the DB store tests on the server dialects that the documents name (docs/plans/fsm-v1/plan.md, C-6):
 # db-store.test.mjs and store-contract-all.test.mjs, which open the database of FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN through the dialect

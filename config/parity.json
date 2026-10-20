@@ -19,7 +19,7 @@
     { "root": "packages/compiler", "reason": "the node tests of the compiler (fsm-gen): validation, stores and backends, one implementation that every kind's code comes from (plan C-5)" },
     { "root": "packages/db", "reason": "the node tests of the DB store and its CLI, a component of fsm, not a port of the spec (plan C-6)" },
     { "root": "packages/gui", "reason": "the node tests of the GUI, a component of fsm, not a port of the spec (plan C-7)" },
-    { "root": "tests", "reason": "the node tests of the root tools (check-name, check-readmes, gen-check, the documentation site, the make targets, the workflows and the type check of the npm declarations), which implement no contract" }
+    { "root": "tests", "reason": "the node tests of the root tools (check-name, check-readmes, the documentation site, the make targets, the workflows and the type check of the npm declarations), which implement no contract" }
   ],
   "testPatterns": [
     { "runner": "go", "globs": ["packages/*/tests/conformance_test.go"] },

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: 02037ad0d2fcdbb8a83b852ed9534ff7c0efec9b8aa9b48d797eac76ac6c13a6 -->
+<!-- source-sha256: dd99f5ec2ca048665943a009000d6d7da1c79249e709614f441baf87d534fa11 -->
 # @polyspec/fsm-npm
 
 [English](README.md)
@@ -137,5 +137,5 @@ make fsm-js-test      # tests/conformance.test.mjs through kit's run-tests
 실행 결과는 89개 case 중 89개 통과다. `tests/conformance.test.mjs`는 `tests/vectors.mjs`의 vector case마다 하나의 test를
 case 이름 `<feature>__<id>`로 실행한다. 영속화 case는 `FSM_TEST_DIALECT`의 dialect(기본은 SQLite)에서 `examples/persist.mjs`를 실행한다.
 `tests/persist.test.mjs`는 한 row의 두 전이를 동시에 실행하고 deadlock 재시도를 검사한다(`make npm-persist-test`). 루트의
-`tests/npm-types`는 TypeScript 컴파일러로 `.d.ts` 파일을 검사한다(`make npm-types`). 루트의 `make gen-check`는 생성 파일이 `fsm-gen`이 지금 쓰는 것과
-같은지 검사한다.
+`tests/npm-types`는 TypeScript 컴파일러로 `.d.ts` 파일을 검사한다(`make npm-types`). 생성 파일은 추적하지 않는다. `make fsm-js-gen`이
+생성하며 `make test-js`와 `make npm-types`가 먼저 실행한다.

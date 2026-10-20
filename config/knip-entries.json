@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "entries": {
-    "packages/compiler/src/cli/fsm-gen.mjs": "the command line of the compiler (bin fsm-gen), which the gen targets of the root Makefile, make gen-check and the tests of make compiler-test run by path",
+    "packages/compiler/src/cli/fsm-gen.mjs": "the command line of the compiler (bin fsm-gen), which the gen targets of the root Makefile and the tests of make compiler-test run by path",
     "packages/compiler/tests/golden/npm/**/*.{js,mjs,d.ts}": "the golden files of the npm kind, which gen-command.test.mjs of make compiler-test compares by path with the output of fsm-gen",
     "tests/npm-types/consumer.ts": "the consumer file that tsc of make npm-types compiles against the generated declarations"
   },
@@ -29,7 +29,7 @@
       "reason": "the npm consumer test bed of fsm: an npm project with its own package.json and lock, which make fsm-js-test, npm-types and npm-persist-test run",
       "entries": {
         "src/*.d.ts": "the generated declarations of the npm kind, which tsc of make npm-types compiles tests/npm-types/consumer.ts against",
-        "examples/model/models.ts": "the models that orm-gen generates (make fsm-js-gen, compared by make gen-check); MANIFEST_TEXT and MANIFEST_HASH are the documented API of a generated module of orm and stay exported by orm's design"
+        "examples/model/models.ts": "the models that orm-gen generates (make fsm-js-gen, never tracked); MANIFEST_TEXT and MANIFEST_HASH are the documented API of a generated module of orm and stay exported by orm's design"
       },
       "ignoreDependencies": {
         "@polyspec/ordered-json": "no JavaScript of the project imports it: the overrides of package.json pin it by \"$@polyspec/ordered-json\", which npm accepts only for a direct dependency, so that @polyspec/orm installs this release URL (npm 12 installs a URL dependency only when the root names it, --allow-remote=root)"
@@ -41,7 +41,7 @@
   },
   "binaries": {
     "go": "packages/compiler/tests/go-backend.test.mjs (make compiler-test) runs go vet on the generated Go package, and tests/workflows/workflows.test.mts reads the go directive of each go.mod with go mod edit -json.",
-    "make": "scripts/gen-check.mts (make gen-check) runs the gen target of each package (fsm-<package>-gen of the root Makefile), and the tests of the recipes (tests/make-install, tests/python-tools) run make -n on the root Makefile.",
+    "make": "The tests of the recipes (tests/make-install, tests/python-tools) run make -n on the root Makefile.",
     "php": "packages/compiler/tests/php-backend.test.mjs and php-ext-backend.test.mjs (make compiler-test) lint the generated PHP with php -l and run it, the extension with php -d extension."
   }
 }
