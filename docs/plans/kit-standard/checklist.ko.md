@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: fd86d180560541b78eb5f969f3041983e7654016673738fece83c1eee0c7b4c1 -->
+<!-- source-sha256: 553d49ec5ba0cfbe05465e7674aaf5b2cdb6587ec4898276fe20d84f932c1204 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -14,7 +14,7 @@
 | S-45-6 | duplication-check: 추적되는 fixture와 golden 출력은 이유와 함께 config/duplication.json에서 제외하고, 코드 중복은 제거한다 | config/duplication.json, compiler backends, store-json, cli, db models | `make duplication-check` | [ ] |
 | S-45-6-1 | duplication-check: compiler backend의 golden 출력을 이유와 함께 config/duplication.json에서 제외한다 | config/duplication.json | `make duplication-check` | [o] |
 | S-45-6-2 | duplication-check: compiler, db, gui와 그 test의 코드 중복을 각각 한 module로 옮긴다 | packages/compiler, packages/db, packages/gui sources and tests | `make duplication-check` | [ ] |
-| S-45-6-3 | duplication-check: orm-gen 산출물(packages/db/src/models/models.ts와 packages/*/examples/model)의 중복이 없다 | regenerated models of db, js, go, php, php-ext and python | `make duplication-check` | [!] 원인: orm-gen 산출물이며 orm에서 고친다 (KSTD-3); 재시도: 연결된 orm에서 orm의 generator가 format되고 중복 없는 산출물을 내놓은 뒤 |
+| S-45-6-3 | duplication-check: orm-gen 산출물(packages/db/src/models/models.ts와 packages/*/examples/model)의 중복이 없다 | regenerated models of db, js, go, php, php-ext and python | `make duplication-check` | [o] |
 | S-45-7 | dependency-policy-check: 환경 문제가 아닌 finding은 kit 결함이 정리된 뒤 고친다 | config/dependency-review.json, config/dependency-policy.json | `make dependency-policy-check` | [ ] |
 | S-45-8 | fsm-gen과 orm-gen 산출물은 추적하지 않고 make가 생성한다 | the .gitignore entries, the fsm-<package>-gen prerequisites of every target that reads the output, no gen-check, config/parity.json, config/layout.yml, docs/plans/fsm-v1/plan.md, the README excerpts | `git ls-files packages/go/src \| wc -l` prints 0 | [ ] |
 | S-45-8-1 | 생성된 산출물을 읽는 모든 target은 해당 fsm-<package>-gen target에 의존한다 | Makefile, tests/make-install | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts` | [o] |
