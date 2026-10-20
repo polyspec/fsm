@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "comment": "Written by make dependency-review RECORD=1 (scripts/kit/dependency-review.mts) from the registries; make dependency-policy-check compares the checkout with it without a network.",
-  "reviewed": "2026-10-19T14:58:20.822Z",
+  "reviewed": "2026-10-20T08:13:18.746Z",
   "locks": [
     {
       "lock": "docs/package-lock.json",
@@ -10,7 +10,7 @@
     },
     {
       "lock": "package-lock.json",
-      "sha256": "a35d4b6386ae8fdd357423efdb14cc2a74c0ed744c00212ececf0b58ef058629",
+      "sha256": "bc05f22de8630eb66acf2498fc6f39fd618c296296d151456ea2f7b6a6c30c86",
       "advisories": [
         {
           "package": "sprintf-js",
@@ -59,7 +59,7 @@
     },
     {
       "lock": "packages/rust/Cargo.lock",
-      "sha256": "c0b405ef5e8d6cbf9363b4f52977559ceca2dc6e5086e7a19e136e85ea1b6a80",
+      "sha256": "4c9e688c9e134345c88988a05c4c58a9c654255ba319f245513ce0a856f0b32a",
       "advisories": []
     }
   ],
@@ -160,28 +160,28 @@
       "manifest": "packages/php/composer.json",
       "package": "polyspec/orm",
       "version": "0.0.18",
-      "latest": "[none matched]"
+      "latest": "0.0.18"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/php/composer.json",
       "package": "phpunit/phpunit",
       "version": "13.4.2",
-      "latest": "12.5.40"
+      "latest": "13.4.3"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/php-ext/composer.json",
       "package": "polyspec/orm",
       "version": "0.0.18",
-      "latest": "[none matched]"
+      "latest": "0.0.18"
     },
     {
       "ecosystem": "composer",
       "manifest": "packages/php-ext/composer.json",
       "package": "phpunit/phpunit",
       "version": "13.4.2",
-      "latest": "12.5.40"
+      "latest": "13.4.3"
     },
     {
       "ecosystem": "pypi",
@@ -265,7 +265,7 @@
       "manifest": "packages/python/pyproject.toml",
       "package": "setuptools",
       "version": "84.0.0",
-      "latest": "84.0.0"
+      "latest": "84.2.0"
     },
     {
       "ecosystem": "pypi",

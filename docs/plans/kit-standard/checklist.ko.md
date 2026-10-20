@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 90fb6d4f867e02d35b3bcdd9458d0dbf43e08d52947ed5ebf93b33629b81e875 -->
+<!-- source-sha256: e3163dd8b296667528886f0c15bd38c460e4db4d8c1869382884f39760753d53 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -38,7 +38,7 @@
 | S-45-11 | rebuild-check: config/rebuild.json에 paths가 없고(kit K286이 layout으로 tool source를 찾는다) 모든 tool source를 분류한다 | config/rebuild.json | `make rebuild-check` | [o] |
 | S-45-12 | kit-check: CHECK_TARGETS가 fsm의 runtime에 대한 kit-gates의 모든 gate를 실행하고, kit의 복사본이 같다(PRINCIPLES.md, PRINCIPLES.ko.md) | Makefile, PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-13 | dependency-policy-check: 저장소의 Composer platform은 두 composer.json과 config/dependency-policy.json에서 PHP 8.4.1 하나다(kit K282) | packages/php/composer.json, packages/php-ext/composer.json, config/dependency-policy.json | `make dependency-policy-check` | [o] |
-| S-45-14 | config/dependency-review.json을 [none matched] sentinel 없이 다시 기록하고, review 뒤에 바뀐 lock을 기록한다(kit K281) | config/dependency-review.json | `make dependency-policy-check` | [!] 원인: kit dependency-review의 결함이다. php와 php-ext의 추적 lock에 composer require phpunit/phpunit:13.4.3을 실행하는데(dependency-review.mts:481), 그 lock은 polyspec/orm 0.0.18을 platform 8.4.1에서 PHP >=8.5를 요구하는 zip에서 해석하고, composer outdated --locked(dependency-review.mts:228)는 polyspec/orm의 어떤 version도 나열하지 않아 review를 기록할 수 없다; 재시도: kit가 연결된 프로젝트의 그 두 composer 명령을 link 파일에서 실행한 뒤 |
+| S-45-14 | config/dependency-review.json을 [none matched] sentinel 없이 다시 기록하고, review 뒤에 바뀐 lock을 기록한다(kit K281) | config/dependency-review.json | `make dependency-policy-check` | [!] 원인: review는 기록되었고(sentinel과 바뀐 lock은 사라졌다) dependency-policy-check에 3건이 남는다. phpunit 13.4.3이 있으나 UPDATE=1은 link lock에만 적용하므로 php와 php-ext의 추적 lock은 13.4.2에 머물고, 추적 lock은 platform 8.4.1에서 단독으로 해석되지 않는다(orm zip이 PHP >=8.5를 요구). setuptools 84.2.0은 upgrade batch의 pin이다. go.work가 있으면 dependency-policy-check가 Go module을 읽지 않는데(kit.mk:326은 dependency-review에는 GOWORK := off를 두고 dependency-policy-check에는 두지 않는다), GOWORK=off로 보면 이는 finding이 아니다; 재시도: 연결된 Composer 프로젝트의 추적 lock에 대한 kit 결정, setuptools의 batch upgrade, dependency-policy-check의 GOWORK := off 뒤 |
 | S-45-15 | kit-check: kit의 복사본이 @polyspec/kit과 다시 같다(PRINCIPLES.md, PRINCIPLES.ko.md). make kit-sync가 쓴다 | PRINCIPLES.md, PRINCIPLES.ko.md | `make kit-check` | [o] |
 | S-45-16 | php 적재기는 machine의 namespace에 함수가 아직 없을 때만 그 함수를 require하므로 library와 extension이 공존한다(S10, B-6) | docs/spec/fsm.md, docs/spec/fsm.ko.md, packages/compiler/src/backends/php.mjs, packages/compiler/tests/php-backend.test.mjs | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/php-backend.json --inputs packages/compiler -- packages/compiler/tests/php-backend.test.mjs` | [o] |
 | S-45-17 | make test-php-ext가 통과한다: extension의 enum은 library의 enum처럼 final이고(S10 선언), packages/php는 test 폴더를 이름 짓는 phpunit.xml.dist를 가진다 | packages/compiler/src/backends/php-ext.mjs, its golden files, packages/php/phpunit.xml.dist, config/layout.yml | `make test-php-ext CASES=Conformance` | [o] |
