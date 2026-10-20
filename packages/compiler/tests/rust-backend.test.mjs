@@ -128,7 +128,7 @@ test('the src files of a machine without events build with cargo', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'fsm-rust-noevents-'));
   roots.push(root);
   mkdirSync(path.join(root, 'src'));
-  writeFileSync(path.join(root, 'Cargo.toml'), '[package]\nname = "noevents"\nversion = "0.0.0"\nedition = "2021"\n\n[lib]\npath = "src/lib.rs"\n\n[dependencies]\nserde_json = \"1.0.151\"\n');
+  writeFileSync(path.join(root, 'Cargo.toml'), '[package]\nname = "noevents"\nversion = "0.0.0"\nedition = "2021"\n\n[lib]\npath = "src/lib.rs"\n\n[dependencies]\nserde_json = "1.0.151"\n');
   for (const file of files([normalize(NO_EVENTS)], NO_EVENTS_LOCK)) writeFileSync(path.join(root, 'src', file.path), file.content);
   const result = spawnSync('cargo', ['build', '--quiet', '--manifest-path', path.join(root, 'Cargo.toml')], { encoding: 'utf8' });
   assert.deepEqual([result.status, result.stderr], [0, ''], 'cargo build of a machine without events');

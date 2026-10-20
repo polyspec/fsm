@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-1: Rust backend test는 Cargo.toml 문자열을 `"`의 불필요한 이스케이프 없이 쓴다. RED `make lint-ts` exit 2, `packages/compiler/tests/rust-backend.test.mjs:131:177: Unnecessary escape character`; GREEN `make lint-ts` exit 0, oxlint와 knip 통과, `node --test packages/compiler/tests/rust-backend.test.mjs` 10개 중 10개 통과. (S-45-1)
 - S-44-23: AGENTS.md가 kit `docs/plans/local-links.md`를 가리킨다. polyspec 버전이 0.0.x인 동안 개발 checkout은 설치된 polyspec package를 그 source에 link하며, link는 commit하지 않는다.
 - S-44-22: 공유 도구가 kit 0.0.53이다. 그 release proof는 release가 각 sibling wheel의 asset을 나열하는지 검사한다.
 - S-44-21: 공유 도구가 kit 0.0.52다. 그 kit-check는 fsm의 `.php-version`을 요구하며, 그 release workflow는 release 단계 전에 kit-check를 실행한다.

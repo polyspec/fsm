@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-1: the Rust backend test writes its Cargo.toml string without the useless escapes of `"`. RED `make lint-ts` exit 2, `packages/compiler/tests/rust-backend.test.mjs:131:177: Unnecessary escape character`; GREEN `make lint-ts` exit 0, oxlint and knip passed, and `node --test packages/compiler/tests/rust-backend.test.mjs` 10 of 10. (S-45-1)
 - S-44-23: AGENTS.md points to kit `docs/plans/local-links.md`: while polyspec versions are 0.0.x, development checkouts link installed polyspec packages to their source, and links are never committed.
 - S-44-22: the shared tools are kit 0.0.53, whose release proof checks that a release lists the asset of each sibling wheel.
 - S-44-21: the shared tools are kit 0.0.52, whose kit-check requires the `.php-version` of fsm and whose release workflow runs kit-check before any release step.
