@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: 35019abbfa5eadaf0b7bc40a1788bccbf8f6fed979bb590a1f815bfb82667277 -->
+<!-- source-sha256: 2b18334a8a95302a27b2468de554f42388deca30880afb7179f4e0753ae608a5 -->
 # polyspec-fsm-python
 
 [English](README.md)
@@ -19,8 +19,8 @@ fsm-gen gen --project /path/to/order-machines --kind python --out ./app/order_fs
 [fsm-gen] gen: ok
 ```
 
-정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --kind python --out <file>`로 자신의 test module에 쓴다(test
-bed는 `tests/vectors.py`에 쓴다). 생성 코드는 Python 3.11 이상이 필요하다(`StrEnum`, `match`). checkout은 `config/toolchain.json`이
+정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --out <file>`로 쓴 JSON 파일 하나이며 자신의 test가 읽는다(test
+bed는 `tests/test_conformance.py`가 실행될 때 `contracts/conformance/vectors.json`을 읽는다). 생성 코드는 Python 3.11 이상이 필요하다(`StrEnum`, `match`). checkout은 `config/toolchain.json`이
 선언한 Python 3.14로 테스트를 실행한다.
 
 ## 생성 파일
@@ -84,7 +84,7 @@ E_CONFLICT 1 3 1
 
 메시지는 예외의 첫 인자이며 기계 이름을 담는다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/vectors.py`의 vector가 이를 단언한다:
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `contracts/conformance/vectors.json`의 vector가 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|

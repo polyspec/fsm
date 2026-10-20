@@ -83,13 +83,13 @@ test('gen with an unknown kind, or without --kind, is a usage error with exit 2 
   assert.equal(existsSync(out), false);
 });
 
-test('vectors --kind python refuses to overwrite a file without the header', () => {
-  const file = path.join(tempDir(), 'vectors.py');
-  writeFileSync(file, 'vectors = []\n');
-  const result = gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'python', '--out', file]);
+test('vectors --kind rust refuses to overwrite a file without the header', () => {
+  const file = path.join(tempDir(), 'vectors.rs');
+  writeFileSync(file, 'const VECTORS: [u8; 0] = [];\n');
+  const result = gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'rust', '--out', file]);
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /^\[fsm-gen\] E_NOT_GENERATED - vectors\.py: /m);
-  assert.equal(readFileSync(file, 'utf8'), 'vectors = []\n');
+  assert.match(result.stderr, /^\[fsm-gen\] E_NOT_GENERATED - vectors\.rs: /m);
+  assert.equal(readFileSync(file, 'utf8'), 'const VECTORS: [u8; 0] = [];\n');
 });
 
 test('vectors with an unknown kind is a usage error', () => {

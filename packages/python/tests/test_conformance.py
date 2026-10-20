@@ -1,15 +1,18 @@
 """The conformance tests of the python package (docs/plans/fsm-v1/plan.md, C-4).
 
-Every vector case of tests/vectors.py (generated from the core oracle) is one unittest method named test_<feature>__<id>. It calls
+Every vector case of contracts/conformance/vectors.json (written from the core oracle), read when the test runs, is one unittest
+method named test_<feature>__<id>. It calls
 the generated function of src/polyspec_fsm and asserts the expected value or the error code. The persist cases run the B-4
 example (examples/persist.py) on the dialect of FSM_TEST_DIALECT (sqlite by default; docs/plans/fsm-v1/plan.md, C-6) and assert the
 stored value after the run. The names follow docs/spec/fsm.md, B-6: a key becomes a member in upper case, so the state DRAFT of the
 key draft.
 """
 
+import json
 import os
 import tempfile
 import unittest
+from pathlib import Path
 
 import polyspec_fsm
 from polyspec_fsm_examples.persist import (
@@ -20,7 +23,39 @@ from polyspec_fsm_examples.persist import (
     transition,
 )
 from polyspec_fsm.fsm import Error
-from vectors import vectors
+
+
+def vectors_file():
+    """The vector file of the oracle: contracts/conformance/vectors.json, found in the nearest parent folder that holds it."""
+    for directory in Path(__file__).resolve().parents:
+        candidate = directory / "contracts" / "conformance" / "vectors.json"
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(
+        "no parent folder of the test holds contracts/conformance/vectors.json"
+    )
+
+
+with open(vectors_file(), encoding="utf-8") as handle:
+    vectors = json.load(handle)["machines"]
+
+
+def input_of(case):
+    """The input of a from_code case as the python kind decodes it (docs/spec/fsm.md, B-6).
+
+    The oracle gives it as a decimal string: an int, or a float, a string or a bool by the input_type of the case.
+    """
+    text = case["input"]
+    kind = case.get("input_type")
+    if kind is None:
+        return int(text)
+    if kind == "float":
+        return float(text)
+    if kind == "string":
+        return text
+    if kind == "bool":
+        return text == "true"
+    raise AssertionError(f"the input type {kind!r} of {case['id']} is not known")
 
 
 def member(key):
@@ -78,15 +113,17 @@ def check(test, machine, case):
             test.assertEqual(machine.code(state_of(machine, case["state"])), expect)
     elif feature == "key":
         if failed(expect):
-            assert_error(test, lambda: machine.key(machine.from_code(case["code"])), expect)
+            assert_error(
+                test, lambda: machine.key(machine.from_code(case["code"])), expect
+            )
         else:
             test.assertEqual(machine.key(machine.from_code(case["code"])), expect)
     elif feature == "from_code":
         if failed(expect):
-            assert_error(test, lambda: machine.from_code(case["input"]), expect)
+            assert_error(test, lambda: machine.from_code(input_of(case)), expect)
         else:
             test.assertEqual(
-                machine.from_code(case["input"]), state_of(machine, expect["state"])
+                machine.from_code(input_of(case)), state_of(machine, expect["state"])
             )
     elif feature == "is_final":
         if failed(expect):

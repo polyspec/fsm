@@ -1,7 +1,6 @@
 // Tests of the python backend (packages/compiler/src/backends/python.mjs, docs/spec/fsm.md, B-4 and B-6): the files of
-// the order example are the golden files under tests/golden/python, byte for byte, in the order the backend returns them, and the
-// vector module is the golden tests/vectors.py. The golden files were written by the generator once, after a review of its output
-// against B-6 (docs/plans/fsm-v1/plan.md, C-5). The CLI writes the same files, and a generated file keeps the python header.
+// the order example are the golden files under tests/golden/python, byte for byte, in the order the backend returns them. The golden
+// files were written by the generator once, after a review of its output against B-6 (docs/plans/fsm-v1/plan.md, C-5). The CLI writes the same files, and a generated file keeps the python header.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -9,10 +8,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { files, vectorsFile } from '../src/backends/python.mjs';
+import { files } from '../src/backends/python.mjs';
 import { backendOf, KINDS } from '../src/backends/index.mjs';
 import { normalize } from '../src/core/normalize.mjs';
-import { vectors } from '../src/core/vectors.mjs';
 import { jsonStore } from '../src/store-json/store.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
@@ -32,7 +30,6 @@ async function orderIrs() {
 test('python is a registered kind whose backend is the python module', () => {
   assert.ok(KINDS.includes('python'));
   assert.equal(backendOf('python').files, files);
-  assert.equal(backendOf('python').vectorsFile, vectorsFile);
 });
 
 test('the files of the order example are the golden files, byte for byte, in the backend order', async () => {
@@ -54,12 +51,6 @@ test('every generated file starts with the fsm-gen header of its machine or of f
   }
 });
 
-test('the vector module of the order example is the golden tests/vectors.py, byte for byte', async () => {
-  const { irs, lock } = await orderIrs();
-  const generated = irs.map(ir => vectors(ir, lock));
-  assert.equal(vectorsFile(generated), readFileSync(path.join(GOLDEN, 'vectors.py'), 'utf8'));
-});
-
 test('the backend is deterministic: the same input gives the same files', async () => {
   const { irs, lock } = await orderIrs();
   assert.deepEqual(files(irs, lock), files(irs, lock));
@@ -70,17 +61,13 @@ test('a machine without a lock entry is an Error, and nothing is generated for i
   assert.throws(() => files(irs, {}), /the lock has no entry for machine order/);
 });
 
-test('gen --kind python writes the golden files and exits 0, and vectors --kind python writes the golden module', () => {
+test('gen --kind python writes the golden files and exits 0', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'fsm-gen-python-'));
   try {
     const out = path.join(root, 'src');
     const gen = spawnSync(process.execPath, [CLI, 'gen', '--project', ORDER_PROJECT, '--kind', 'python', '--out', out], { encoding: 'utf8' });
     assert.deepEqual([gen.status, gen.stdout, gen.stderr], [0, '[fsm-gen] gen: ok\n', '']);
     for (const name of NAMES) assert.equal(readFileSync(path.join(out, name), 'utf8'), readFileSync(path.join(GOLDEN, 'src', name), 'utf8'), name);
-    const file = path.join(root, 'tests', 'vectors.py');
-    const vec = spawnSync(process.execPath, [CLI, 'vectors', '--project', ORDER_PROJECT, '--kind', 'python', '--out', file], { encoding: 'utf8' });
-    assert.deepEqual([vec.status, vec.stdout, vec.stderr], [0, '[fsm-gen] vectors: ok\n', '']);
-    assert.equal(readFileSync(file, 'utf8'), readFileSync(path.join(GOLDEN, 'vectors.py'), 'utf8'));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

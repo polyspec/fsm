@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 1212b204a51649b3f38395ec05180ba994b616168a105adfac8d20f8dbc44fd1 -->
+<!-- source-sha256: bca8a98e6215519e726ddac1ce54ad3e3c1d0510ab3b32205ed9839cee4cc40a -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -178,7 +178,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts`(`export * as order`) | `conformance.test.mjs`(`contracts/conformance/vectors.json`을 읽는다) |
 | php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceCase.php`(손으로 쓴 검사), `ConformanceTest.php`(생성, case마다 method 하나) |
 | php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c`(공용 `<ns>\Fsm\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | php와 **바이트 동일**한 테스트. `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
-| python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py`(케이스 이름 그대로의 메서드 생성), `vectors.py` |
+| python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py`(`contracts/conformance/vectors.json`을 읽고 케이스 이름 그대로의 메서드 생성) |
 | rust | Cargo.toml(`autotests=false`, `autoexamples=false`, `[[test]] conformance`, build-dep `polyspec-orm-build`, dev-dep `tokio`) + `build.rs` | `lib.rs`(`pub mod order; pub mod fsm;`), `order.rs`, `fsm.rs` | `conformance.rs`(`mod vectors;`, `#[path="../examples/persist.rs"] mod persist;`), persist 케이스는 `#[tokio::test]`, 생성 `tests/vectors.rs`는 `#![allow(non_snake_case)]`로 시작 |
 
 - `make layout-check`(kit, `config/layout.yml`과 `config/layout.kit.yml`의 공통 규칙을 alint로 검사)가 실패하는 경우(S-44):

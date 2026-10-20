@@ -17,6 +17,8 @@
 # packages/compiler/tests/golden are their tracked proof.
 /packages/js/src/
 /packages/js/examples/model/
+/packages/python/src/polyspec_fsm/
+/packages/python/examples/model/
 /packages/gui/build/
 /packages/gui/public/assets/
 /packages/php*/.phpunit.result.cache

@@ -227,7 +227,6 @@ rules:
       - { kind: file_exists, paths: "{path}/constraints.txt" }
       - { kind: file_exists, paths: "{path}/pylock.toml" }
       - { kind: file_exists, paths: "{path}/tests/test_conformance.py" }
-      - { kind: file_exists, paths: "{path}/tests/vectors.py" }
       - { kind: file_exists, paths: "{path}/tests/test_persist.py" }
       - { kind: file_exists, paths: "{path}/examples/persist.py" }
     message: "C-2: the python package holds the canonical files and the required files of its kind"
@@ -237,10 +236,9 @@ rules:
     level: error
     select: "packages/python"
     require:
-      - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
-    message: "C-2: the python package holds a file in each canonical folder (src, tests, examples)"
+    message: "C-2: the python package holds a file in each canonical folder (tests, examples; src is generated and not tracked)"
 
   - id: layout-python-files
     kind: file_absent
@@ -253,13 +251,10 @@ rules:
       - "!packages/python/constraints.txt"
       - "!packages/python/pylock.toml"
       - "!packages/python/tests/test_conformance.py"
-      - "!packages/python/tests/vectors.py"
       - "!packages/python/tests/test_persist.py"
       - "!packages/python/examples/persist.py"
       # the package of the examples (S3): an empty package file that makes examples an installed package, polyspec_fsm_examples
       - "!packages/python/examples/__init__.py"
-      - "!packages/python/src/polyspec_fsm/*.py"
-      - "!packages/python/examples/model/**"
     message: "C-2: a file that the python package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-ext-required

@@ -1,6 +1,5 @@
 // The python backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated files of the python package
-// `src/polyspec_fsm/` (<machine>.py for every machine, fsm.py and __init__.py) and the native vector module
-// `tests/vectors.py`. It takes the IRs of the machines (normalize.mjs), in definition order, and the lock, and returns the text of
+// `src/polyspec_fsm/` (<machine>.py for every machine, fsm.py and __init__.py). It takes the IRs of the machines (normalize.mjs), in definition order, and the lock, and returns the text of
 // every file; it writes nothing. The output is deterministic: declaration order, four spaces of indentation, double quotes and a
 // final line break. The generated code has no runtime dependency: it uses the standard library only (enum, dataclasses).
 //
@@ -8,10 +7,7 @@
 // dataclass with the fields to and changed; Code is a StrEnum whose members are the error codes without E_ (Code.CONFLICT), whose
 // values keep the E_ prefix. The functions take the state and event values in the order of B-6 and raise fsm.Error only.
 
-import { forKind } from '../core/vectors.mjs';
-
 const SHARED = 'fsm';
-const KIND = 'python';
 
 /** The member name of a key: the upper notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
 const upper = key => key.toUpperCase();
@@ -217,55 +213,6 @@ function machinePy(ir, lock) {
     '    )',
   ];
   return text(lines);
-}
-
-/** The native data module tests/vectors.py of `vectorList`, the vectors of every machine in order: `vectors = [...]`. */
-/** The Python int literal of a decimal string of the oracle; a value that is no decimal string is an Error. */
-function digits(value) {
-  if (typeof value !== 'string' || !/^-?[0-9]+$/.test(value)) throw new Error(`python: the input ${JSON.stringify(value)} is not a decimal string`);
-  return value;
-}
-
-/**
- * The Python literal of a typed input of the oracle (input_type: string, bool or float; docs/spec/fsm.md, B-6). An input without a
- * type is a decimal string written as the int it names (digits).
- */
-function inputOf(text, type) {
-  if (type === undefined) return digits(text);
-  if (type === 'string') return JSON.stringify(text);
-  if (type === 'bool' && (text === 'true' || text === 'false')) return text === 'true' ? 'True' : 'False';
-  if (type === 'float' && /^-?[0-9]+\.[0-9]+$/.test(text)) return text;
-  throw new Error(`python: the input ${JSON.stringify(text)} of type ${JSON.stringify(type)} is not a string, bool or float literal`);
-}
-
-/** The native test module tests/vectors.py of `list`: the cases of the python kind (forKind), as Python literals. */
-export function vectorsFile(list) {
-  const vectorList = forKind(list, KIND);
-  const literal = (value, indent) => {
-    const inner = `${indent}    `;
-    if (value === null) return 'None';
-    if (value === true) return 'True';
-    if (value === false) return 'False';
-    if (typeof value === 'number') return String(value);
-    if (typeof value === 'string') return JSON.stringify(value);
-    if (Array.isArray(value)) {
-      if (value.length === 0) return '[]';
-      return `[\n${value.map(item => `${inner}${literal(item, inner)},\n`).join('')}${indent}]`;
-    }
-    const entries = Object.entries(value);
-    if (entries.length === 0) return '{}';
-    // An input is a decimal string of the oracle, which is written as the Python int it names (the 64-bit range stays exact); a typed
-    // input is written as its literal. The input_type of a case is read by its input and is not written.
-    const shown = entries.filter(([name]) => name !== 'input_type');
-    const item = ([name, entryValue]) => (name === 'input' ? inputOf(entryValue, value.input_type) : literal(entryValue, inner));
-    return `{\n${shown.map(entry => `${inner}${JSON.stringify(entry[0])}: ${item(entry)},\n`).join('')}${indent}}`;
-  };
-  return text([
-    header(SHARED),
-    '"""The conformance vectors of every machine (conformance/vectors, docs/plans/fsm-v1/plan.md, C-4)."""',
-    '',
-    `vectors = ${literal(vectorList, '')}`,
-  ]);
 }
 
 /**

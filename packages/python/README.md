@@ -20,8 +20,8 @@ fsm-gen gen --project /path/to/order-machines --kind python --out ./app/order_fs
 [fsm-gen] gen: ok
 ```
 
-Run the command again after every change of the definition. The vectors come from `fsm-gen vectors --kind python --out <file>`,
-written into a test module of your own (the test bed writes `tests/vectors.py`). The generated code needs Python 3.11 or later
+Run the command again after every change of the definition. The vectors come from `fsm-gen vectors --out <file>`, one JSON
+file that a test of your own reads (the test bed reads `contracts/conformance/vectors.json` when `tests/test_conformance.py` runs). The generated code needs Python 3.11 or later
 (`StrEnum`, `match`); the checkout runs its tests with Python 3.14, which `config/toolchain.json` declares.
 
 ## Generated files
@@ -87,7 +87,7 @@ The functions raise `fsm.Error` (`fsm.py`), an `Exception`:
 
 The message is the first argument of the exception and names the machine.
 
-Which attributes a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/vectors.py` assert it:
+Which attributes a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `contracts/conformance/vectors.json` assert it:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
