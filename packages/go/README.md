@@ -23,22 +23,10 @@ fsm-gen gen --project /path/to/order-machines --kind go --go-module example.com/
 
 The generated files are not edited by hand. Run the command again after every change of the definition.
 
-The vectors are written by `fsm-gen vectors --kind go`, which takes the module path of the package too (`--go-module` is
-required, as for `gen`):
-
-```sh
-fsm-gen vectors --project /path/to/order-machines --kind go --go-module example.com/app --out ./tests/vectors_test.go
-```
-
-```text
-[fsm-gen] vectors: ok
-```
-
-The file `tests/vectors_test.go` is in the package `tests`. It holds the key tables of every machine, one `vectorCase` literal
-per case, and one adapter per machine that maps the keys of a case to the constants of the machine. Its only imports are the
-machine packages `<module>/src/<machine>`, named by your module path, so the file builds in your module as it is. The
-persistence example is the test bed's own: `decide` returns the function type that `Decide` names, so the file needs no
-`examples` import (plan C-2, S-26-1-1).
+The vectors come from `fsm-gen vectors --out <file>`, one JSON file that a test of your own reads. The test bed reads
+`contracts/conformance/vectors.json` when `tests/vectors_test.go` loads it, decodes the input of a from_code case itself
+(B-6), and runs each case through the adapter of its machine: the functions and the constants of the machine package
+`<module>/src/<machine>`. The persistence example is the test bed's own (plan C-2).
 
 ## Generated files
 
@@ -101,7 +89,7 @@ Every error is `error`; the concrete value is `*fsm.Error` (`src/fsm/fsm.go`):
 Use `errors.As` to read the fields. `Code` values are constants of `fsm`: `fsm.CodeConflict` and so on. A zero field means
 unset, because a state code is at least 1 and an event position starts at 1.
 
-Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/vectors_test.go` assert it:
+Which fields a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `contracts/conformance/vectors.json` assert it:
 
 | Code | `Expected` | `Actual` | `Event` |
 |---|---|---|---|
@@ -118,30 +106,30 @@ The message of every code names the machine, and the value of `E_UNKNOWN_CODE` o
 row. `Transition` runs one attempt in one transaction: it reads the row under its lock, passes the stored code to `decide`, and
 writes the row only when `decide` reports a change. `Decide` is `func(stored int64) (to int32, changed bool, err error)`, so
 the file serves every machine: a machine's `decide` is the `Apply` of the observed state and the event on the `FromCode` of the
-stored code. The `decide` of each machine is written in `tests/vectors_test.go`; the one of the order machine is:
+stored code. The `decide` of every machine is written once, in `tests/vectors_test.go`, over the key tables of the machine:
 
 ```go
-// packages/go/tests/vectors_test.go, orderMachine.decide
-func (m orderMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
+// packages/go/tests/vectors_test.go, machine.decide
+func (m machine[S, E]) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
-		from, err := lookup(orderStates, "state", expected)
+		from, err := lookup(m.states, "state", expected)
 		if err != nil {
 			return 0, false, err
 		}
-		value, err := lookup(orderEvents, "event", event)
+		value, err := lookup(m.events, "event", event)
 		if err != nil {
 			return 0, false, err
 		}
-		observed, err := order.FromCode(stored)
+		observed, err := m.fromCodeOf(stored)
 		if err != nil {
 			return 0, false, err
 		}
-		step, err := order.Apply(from, value, observed)
+		to, changed, err := m.applyOf(from, value, observed)
 		if err != nil {
 			return 0, false, err
 		}
-		code, err := order.Code(step.To)
-		return code, step.Changed, err
+		code, err := m.codeOf(to)
+		return code, changed, err
 	}
 }
 ```
@@ -198,6 +186,6 @@ make go-persist-test-postgres     # the persist cases on PostgreSQL (FSM_TEST_PG
 make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-The run passes 89 of 89 cases: `tests/conformance_test.go` runs one subtest per vector case of `tests/vectors_test.go`, named
+The run passes 89 of 89 cases: `tests/conformance_test.go` runs one subtest per vector case of `contracts/conformance/vectors.json`, named
 by its case name `<feature>__<id>`. The generated files are not tracked: `make fsm-go-gen` writes them, and `make test-go` runs it first. The go
 release is the go line of `packages/go/go.mod` (`go 1.27.2`, the Go pin of kit).

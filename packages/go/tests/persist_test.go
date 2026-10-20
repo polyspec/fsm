@@ -36,7 +36,7 @@ func twoConnections(t *testing.T) (*orm.DB, *orm.DB) {
 // orderCode is the code of the order state key.
 func orderCode(t *testing.T, key string) int32 {
 	t.Helper()
-	code, err := orderMachine{}.code(keyArg(key))
+	code, err := machines["order"].code(keyArg(key))
 	assertNoError(t, err)
 	return code
 }
@@ -63,7 +63,7 @@ func together(first, second *orm.DB, decideFirst, decideSecond examples.Decide) 
 // FSM-B4-1: two transitions of one (expected, event) at the same time: one Changed, one Unchanged (the row lock).
 func TestPersistConcurrentSameEvent(t *testing.T) {
 	first, second := twoConnections(t)
-	next := orderMachine{}.decide("draft", "next")
+	next := machines["order"].decide("draft", "next")
 	outcomes := together(first, second, next, next)
 	paid := orderCode(t, "paid")
 	for _, o := range outcomes {
@@ -83,7 +83,7 @@ func TestPersistConcurrentSameEvent(t *testing.T) {
 // FSM-B4-2: two transitions from one expected state with different events at the same time: one Changed, one E_CONFLICT.
 func TestPersistConcurrentConflict(t *testing.T) {
 	first, second := twoConnections(t)
-	outcomes := together(first, second, orderMachine{}.decide("draft", "next"), orderMachine{}.decide("draft", "cancel"))
+	outcomes := together(first, second, machines["order"].decide("draft", "next"), machines["order"].decide("draft", "cancel"))
 	var changed, failed []outcome
 	for _, o := range outcomes {
 		if o.err == nil {
@@ -111,7 +111,7 @@ func TestPersistConcurrentConflict(t *testing.T) {
 func TestPersistRetryOnDeadlock(t *testing.T) {
 	db := openPersistDB(t)
 	assertNoError(t, examples.Seed(db, 1, orderCode(t, "draft")))
-	next := orderMachine{}.decide("draft", "next")
+	next := machines["order"].decide("draft", "next")
 	attempts := 0
 	to, changed, err := examples.Transition(db, 1, func(stored int64) (int32, bool, error) {
 		attempts++

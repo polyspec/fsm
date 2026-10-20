@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 6b66f7ac6b1022db113d01ca3e07f604171b69cc222198acb941018469073079 -->
+<!-- source-sha256: e517969fa82a13b11dbc0fde70546755b49e0293214676226653f5e2d2b13943 -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -174,7 +174,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 
 | kind | manifest | src | tests 비고 |
 |---|---|---|---|
-| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`(일반형: 각 case를 그 machine의 adapter로 실행), `vectors_test.go`(생성: vector case, 모든 machine의 key 표, machine마다 `conformance_test.go`의 interface를 구현하는 adapter 하나; import는 `<module>/src/<machine>` machine package뿐이므로 `vectors --kind go`는 `--go-module`을 받는다. persistence 예제는 test bed의 것이라 import하지 않으며, `decide`가 `examples.Decide`가 이름 붙이던 함수 타입을 반환한다(S-26-1-1)) |
+| go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`(일반형: 각 case를 그 machine의 adapter로 실행), `vectors_test.go`(손으로 씀: 테스트가 실행될 때 `contracts/conformance/vectors.json`을 읽고, machine마다 adapter 하나를 두며 adapter는 machine package `<module>/src/<machine>`의 함수와 상수다) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts`(`export * as order`) | `conformance.test.mjs`(`contracts/conformance/vectors.json`을 읽는다) |
 | php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceCase.php`(손으로 쓴 검사), `ConformanceTest.php`(`contracts/conformance/vectors.json`을 읽고 case마다 data set 하나) |
 | php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c`(공용 `<ns>\Fsm\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | 자체 테스트 없음: php 패키지의 PHPUnit 파일이 extension을 로드해 실행됨(`composer.json`의 `autoload-dev`). `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
@@ -205,7 +205,7 @@ kit의 parity 검사(`make parity-check`, kit 0.0.26의 K33, `config/parity.json
 
 `make parity-declarations-check`는 아무것도 실행하지 않고 선언을 검사한다. feature 커버리지(contracts/features.json의 모든 feature가 case를 가진다)는 compiler 테스트 `vectors-file.test.mjs`가 단언한다. `.results/<kind>.json` 기록은 run-tests의 출력으로 남으며, fsm 도구는 읽지 않는다.
 
-선언은 kit K75의 parity schema를 따른다(S-44-3): 어떤 implementation도 `PYTHONPATH`를 두지 않는다(python conformance 테스트가 `src/`, `examples/`와 함께 자기 `tests/` 디렉터리를 module 경로에 넣는다). go의 생성 파일 `vectors_test.go`와 php-ext의 생성 `*_test` stub과 header는 테스트를 담지 않는 `support` 파일이다. compiler, DB store, GUI, 루트 도구의 node 테스트는 계약을 구현하지 않는 단일 언어 테스트이므로 `tools` root다. fsm은 모든 kind의 profile 하나만 선언하므로 `spec` anchor가 필요한 profile이 없고, 아직 `symbols`를 선언한 kind도 없다.
+선언은 kit K75의 parity schema를 따른다(S-44-3): 어떤 implementation도 `PYTHONPATH`를 두지 않는다(python conformance 테스트가 `src/`, `examples/`와 함께 자기 `tests/` 디렉터리를 module 경로에 넣는다). go의 `vectors_test.go`는 테스트를 담지 않는 `support` 파일이다. compiler, DB store, GUI, 루트 도구의 node 테스트는 계약을 구현하지 않는 단일 언어 테스트이므로 `tools` root다. fsm은 모든 kind의 profile 하나만 선언하므로 `spec` anchor가 필요한 profile이 없고, 아직 `symbols`를 선언한 kind도 없다.
 
 `contracts/features.json` = `{schema: 1, features: [initial, code, key, from_code, is_final, events_from, target, apply, persist]}`. vector 파일은 `contracts/conformance/vectors.json` = `{machines: [{machine, cases: [{feature, id, name, …}]}]}`이며 kit parity 검사의 suite 하나다. 케이스 이름은 `name` = `<feature>__<id>`다.
 

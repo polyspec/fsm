@@ -1,6 +1,7 @@
-// Package tests holds the conformance tests of the go package (docs/plans/fsm-v1/plan.md, C-4). Every vector case of vectors_test.go
-// (generated from the core oracle) is one subtest named test_<feature>__<id>. The case is run through the adapter of its machine
-// in vectors_test.go, which maps the keys of the oracle to the constants of the machine and calls its generated functions. The
+// Package tests holds the conformance tests of the go package (docs/plans/fsm-v1/plan.md, C-4). Every vector case of
+// contracts/conformance/vectors.json (written from the core oracle), which vectors_test.go reads when the test runs, is one subtest
+// named <feature>__<id>. The case is run through the adapter of its machine in vectors_test.go, which maps the keys of the oracle
+// to the constants of the machine and calls its generated functions. The
 // persist cases run the B-4 example (examples/persist.go) on the dialect of FSM_TEST_DIALECT and assert the stored code after the
 // run (docs/plans/fsm-v1/plan.md, C-6).
 package tests
@@ -19,8 +20,9 @@ import (
 	"github.com/polyspec/orm/packages/go/orm"
 )
 
-// machineVectors and vectorCase are the shape of the data of vectors_test.go. A case keeps the keys of the oracle: state, event,
-// expected and actual are keys, input and code are numbers, and want holds the expectation of its feature.
+// machineVectors and vectorCase are the shape of the vectors of contracts/conformance/vectors.json after loadVectors decodes them.
+// A case keeps the keys of the oracle: state, event, expected and actual are keys, input and code are numbers, and want holds the
+// expectation of its feature.
 type machineVectors struct {
 	machine string
 	cases   []vectorCase
@@ -95,7 +97,7 @@ type machineUnderTest interface {
 // TestConformance runs every vector case as the subtest test_<feature>__<id> of this test, through the adapter of its machine.
 // FSM-B4-5: every apply case of the vector file gives the result of the B-4 table.
 func TestConformance(t *testing.T) {
-	for _, machine := range vectors {
+	for _, machine := range loadVectors(t) {
 		adapter, ok := machines[machine.machine]
 		if !ok {
 			t.Fatalf("no adapter for the machine %s; vectors_test.go must hold one", machine.machine)

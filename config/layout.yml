@@ -70,10 +70,9 @@ rules:
     level: error
     select: "packages/go"
     require:
-      - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
-    message: "C-2: the go package holds a file in each canonical folder (src, tests, examples)"
+    message: "C-2: the go package holds a file in each canonical folder (tests, examples; src is generated and not tracked)"
 
   - id: layout-go-files
     kind: file_absent
@@ -88,8 +87,6 @@ rules:
       - "!packages/go/tests/vectors_test.go"
       - "!packages/go/tests/persist_test.go"
       - "!packages/go/examples/persist.go"
-      - "!packages/go/src/**/*.go"
-      - "!packages/go/examples/model/**"
     message: "C-2: a file that the go package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-npm-required

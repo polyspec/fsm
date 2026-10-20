@@ -114,14 +114,13 @@ fsm-go-install:
 fsm-go-gen: $(GO_DEP)
 fsm-go-gen:
 	$(FSM_GEN) gen --project contracts --kind go --go-module $(GO_MODULE) --out packages/go/src
-	$(FSM_GEN) vectors --project contracts --kind go --go-module $(GO_MODULE) --out packages/go/tests/vectors_test.go
 	# orm-gen runs go in the module of its output directory, so it runs in packages/go.
 	mkdir -p packages/go/examples
 	cd packages/go && $(GO) tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...
 
 # fsm-go-test runs the conformance cases and the persist example with GOPROXY=off, so that the modules must already be downloaded.
 fsm-go-test: $(GO_DEP) fsm-go-gen
-	GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests
+	GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests
 
 # fsm-js-install installs the dependencies of package-lock.json (the orm release); gen and test need them.
 .PHONY: fsm-js-install fsm-js-gen fsm-js-test
@@ -426,11 +425,11 @@ endef
 
 go-persist-test-postgres: $(GO_DEP) fsm-go-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-postgres.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
+	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-postgres.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
 
 go-persist-test-mysql: $(GO_DEP) fsm-go-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-mysql.json --inputs packages/go --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
+	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-mysql.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
 
 rust-persist-test-postgres: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)

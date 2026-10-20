@@ -1,19 +1,18 @@
 // Tests of the go backend (packages/compiler/src/backends/go.mjs, docs/spec/fsm.md, B-4 and B-6): the files of the
-// order example are the golden files under tests/golden/go, byte for byte, in the order the backend returns them, and the
-// vector file is the golden tests/vectors_test.go. The golden files were written by the generator once, after a review of its
+// order example are the golden files under tests/golden/go, byte for byte, in the order the backend returns them. The golden
+// files were written by the generator once, after a review of its
 // output against B-6 (docs/plans/fsm-v1/plan.md, C-5). The generated machine packages import the shared package by the module
 // path, so the module path is an input: the backend refuses to run without it, and gen --kind go needs --go-module.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { files, vectorsFile } from '../src/backends/go.mjs';
+import { files } from '../src/backends/go.mjs';
 import { backendOf, KINDS } from '../src/backends/index.mjs';
 import { normalize } from '../src/core/normalize.mjs';
-import { vectors } from '../src/core/vectors.mjs';
 import { jsonStore } from '../src/store-json/store.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
@@ -66,27 +65,6 @@ test('the backend refuses a missing module path', async () => {
   const { irs, lock } = await orderIrs();
   assert.throws(() => files(irs, lock), /the module path of the package is required/);
   assert.throws(() => files(irs, lock, { module: '' }), /the module path of the package is required/);
-  const generated = irs.map(ir => vectors(ir, lock));
-  assert.throws(() => vectorsFile(generated), /the module path of the package is required/);
-});
-
-test('vectors --kind go without --go-module is a usage error and writes nothing', () => {
-  const dir = mkdtempSync(path.join(tmpdir(), 'fsm-gen-go-'));
-  try {
-    const out = path.join(dir, 'vectors_test.go');
-    const result = spawnSync(process.execPath, [CLI, 'vectors', '--project', ORDER_PROJECT, '--kind', 'go', '--out', out], { encoding: 'utf8' });
-    assert.equal(result.status, 2);
-    assert.match(result.stderr, /vectors --kind go needs --go-module <module path>/);
-    assert.equal(existsSync(out), false);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test('the vector file of the order example is the golden tests/vectors_test.go, byte for byte', async () => {
-  const { irs, lock } = await orderIrs();
-  const generated = irs.map(ir => vectors(ir, lock));
-  assert.equal(vectorsFile(generated, { module: MODULE }), readFileSync(path.join(GOLDEN, 'vectors_test.go'), 'utf8'));
 });
 
 test('the backend is deterministic: the same input gives the same files', async () => {
@@ -132,113 +110,31 @@ test('a reserved code is E_RESERVED_CODE in FromCode, and the order example has 
   assert.doesNotMatch(none, /CodeReservedCode, Message/);
 });
 
-/**
- * The hand-written declarations that a consumer's tests/ package holds next to the generated vectors file: the shapes of the
- * vector data and the helpers the adapters call (the same declarations as the test bed's tests/conformance_test.go). The
- * consumer does not get the persist example, so the file holds no import of the test bed.
- */
+/** The test of a consumer package: it imports the generated src by the module path of the consumer, and nothing of the test bed. */
 const CONSUMER_FIXTURE = `package tests
 
 import (
-	"fmt"
 	"testing"
+
+	"example.com/consumer/src/order"
 )
 
-type machineVectors struct {
-	machine string
-	cases   []vectorCase
-}
-
-type vectorCase struct {
-	feature         string
-	id              string
-	name            string
-	state           string
-	event           string
-	expected        string
-	actual          string
-	stored          string
-	scenario        string
-	value           int64
-	hasValue        bool
-	expectedValue   int64
-	expectedIsValue bool
-	actualValue     int64
-	actualIsValue   bool
-	input           int64
-	code            int64
-	want            expectation
-}
-
-type expectation struct {
-	state       string
-	to          string
-	error       string
-	changed     bool
-	storedAfter string
-	code        int64
-	key         string
-	final       bool
-	events      []string
-	expected    int32
-	actual      int32
-	event       int32
-}
-
-type stateArg struct {
-	key     string
-	value   int64
-	isValue bool
-}
-
-type machineUnderTest interface {
-	initial() (string, error)
-	code(state stateArg) (int32, error)
-	key(code int64) (string, error)
-	fromCode(code int64) (string, error)
-	isFinal(state stateArg) (bool, error)
-	eventsFrom(state string) ([]string, error)
-	target(expected, event string) (string, error)
-	apply(expected stateArg, event string, actual stateArg) (string, bool, error)
-	decide(expected, event string) func(stored int64) (int32, bool, error)
-}
-
-func int32Of(code int64) (int32, error) {
-	if code != int64(int32(code)) {
-		return 0, fmt.Errorf("%d is outside the 32-bit range of the states", code)
+func TestOrder(t *testing.T) {
+	key, err := order.Key(order.Initial())
+	if err != nil || key != "draft" {
+		t.Fatalf("Key(Initial()) = %q, %v, want draft", key, err)
 	}
-	return int32(code), nil
-}
-
-func lookup[T any](table map[string]T, what, key string) (T, error) {
-	value, ok := table[key]
-	if !ok {
-		var zero T
-		return zero, fmt.Errorf("%q is no %s of the machine", key, what)
+	code, err := order.Code(order.StatePaid)
+	if err != nil || code != 2 {
+		t.Fatalf("Code(StatePaid) = %d, %v, want 2", code, err)
 	}
-	return value, nil
-}
-
-func keyOf[T comparable](table map[string]T, what string, value T) (string, error) {
-	for key, candidate := range table {
-		if candidate == value {
-			return key, nil
-		}
-	}
-	return "", fmt.Errorf("the %s %v has no key in the machine", what, value)
-}
-
-// TestMachines checks that every machine of the vectors has its adapter, the check the test bed's TestConformance starts with.
-func TestMachines(t *testing.T) {
-	for _, machine := range vectors {
-		if _, ok := machines[machine.machine]; !ok {
-			t.Fatalf("no adapter for the machine %s", machine.machine)
-		}
+	if _, err := order.FromCode(99); err == nil {
+		t.Fatal("FromCode(99) must be E_UNKNOWN_CODE")
 	}
 }
 `;
 
-test('a consumer module vets its vectors file with the generated src and no import of the test bed', async () => {
+test('a consumer module tests the generated src with no import of the test bed', async () => {
   const { irs, lock } = await orderIrs();
   const consumer = 'example.com/consumer';
   const dir = mkdtempSync(path.join(tmpdir(), 'fsm-go-consumer-'));
@@ -250,9 +146,8 @@ test('a consumer module vets its vectors file with the generated src and no impo
       writeFileSync(target, file.content);
     }
     mkdirSync(path.join(dir, 'tests'));
-    writeFileSync(path.join(dir, 'tests/vectors_test.go'), vectorsFile(irs.map(ir => vectors(ir, lock)), { module: consumer }));
     writeFileSync(path.join(dir, 'tests/consumer_test.go'), CONSUMER_FIXTURE);
-    const result = spawnSync('go', ['vet', './...'], { cwd: dir, encoding: 'utf8', env: { ...process.env, GOPROXY: 'off' } });
+    const result = spawnSync('go', ['test', './...'], { cwd: dir, encoding: 'utf8', env: { ...process.env, GOPROXY: 'off' } });
     assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
   } finally {
     rmSync(dir, { recursive: true, force: true });

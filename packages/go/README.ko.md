@@ -1,5 +1,5 @@
 <!-- doc-id: readme-go -->
-<!-- source-sha256: 8f772e0ceb87e4c102d679a9246e5e092181133428952cbd21cd42436f4dd05d -->
+<!-- source-sha256: e9acb8397ff7367fb54e43664b021fd37055f1e40dc646e081e92eba272f0ae6 -->
 # github.com/polyspec/fsm/packages/go
 
 [English](README.md)
@@ -24,20 +24,9 @@ fsm-gen gen --project /path/to/order-machines --kind go --go-module example.com/
 
 생성된 파일은 손으로 고치지 않는다. 정의를 바꿀 때마다 명령을 다시 실행한다.
 
-vector는 `fsm-gen vectors --kind go`로 쓴다. 이 명령도 package의 module 경로를 받는다(`gen`과 같이 `--go-module`이 필요하다):
-
-```sh
-fsm-gen vectors --project /path/to/order-machines --kind go --go-module example.com/app --out ./tests/vectors_test.go
-```
-
-```text
-[fsm-gen] vectors: ok
-```
-
-파일 `tests/vectors_test.go`는 package `tests`에 속한다. 기계마다 key 표, case마다 `vectorCase` literal 하나, 그리고 case의 key를
-기계의 상수에 대응시키는 adapter 하나를 담는다. 이 파일의 import는 `<module>/src/<machine>` machine package뿐이며 사용자 module
-경로로 이름이 붙으므로, 파일은 사용자 module에서 그대로 빌드된다. persistence 예제는 test bed의 것이다: `decide`는 `Decide`가
-이름 붙이던 함수 타입을 반환하므로 파일에 `examples` import가 필요 없다(plan C-2, S-26-1-1).
+vector는 `fsm-gen vectors --out <file>`로 쓴 JSON 파일 하나이며 자신의 test가 읽는다. test bed는 `tests/vectors_test.go`가 읽어 올릴 때
+`contracts/conformance/vectors.json`을 읽고, from_code case의 input을 스스로 해석하며(B-6), 각 case를 그 기계의 adapter로 실행한다.
+adapter는 machine package `<module>/src/<machine>`의 함수와 상수다. persistence 예제는 test bed의 것이다(plan C-2).
 
 ## 생성 파일
 
@@ -99,7 +88,7 @@ E_CONFLICT 1 3 1
 필드는 `errors.As`로 읽는다. `Code` 값은 `fsm`의 상수다: `fsm.CodeConflict` 등. 0인 필드는 설정되지 않은 값이다. 상태 code는 최소 1이고
 event 위치는 1부터 시작하기 때문이다.
 
-필드가 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/vectors_test.go`의 vector가 이를 단언한다:
+필드가 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `contracts/conformance/vectors.json`의 vector가 이를 단언한다:
 
 | Code | `Expected` | `Actual` | `Event` |
 |---|---|---|---|
@@ -115,31 +104,31 @@ Go에는 null이 없으므로 0 값이 설정되지 않은 필드다.
 `packages/go/examples/persist.go`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다.
 `Transition`은 한 transaction 안에서 시도 한 번을 실행한다. row를 잠금 아래 읽고, 저장된 code를 `decide`에 넘기며, `decide`가 변경을
 알릴 때만 row를 쓴다. `Decide`는 `func(stored int64) (to int32, changed bool, err error)`이므로 이 파일은 모든 기계에 쓰인다. 기계의
-`decide`는 관찰한 상태와 event에 대한 `Apply`를 저장된 code의 `FromCode`에 적용하는 것이다. 기계마다의 `decide`는
-`tests/vectors_test.go`에 쓰인다. order 기계의 것은 다음과 같다:
+`decide`는 관찰한 상태와 event에 대한 `Apply`를 저장된 code의 `FromCode`에 적용하는 것이다. 모든 기계의 `decide`는 기계의 key 표 위에서
+`tests/vectors_test.go`에 한 번 쓰인다:
 
 ```go
-// packages/go/tests/vectors_test.go, orderMachine.decide
-func (m orderMachine) decide(expected, event string) func(stored int64) (int32, bool, error) {
+// packages/go/tests/vectors_test.go, machine.decide
+func (m machine[S, E]) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
-		from, err := lookup(orderStates, "state", expected)
+		from, err := lookup(m.states, "state", expected)
 		if err != nil {
 			return 0, false, err
 		}
-		value, err := lookup(orderEvents, "event", event)
+		value, err := lookup(m.events, "event", event)
 		if err != nil {
 			return 0, false, err
 		}
-		observed, err := order.FromCode(stored)
+		observed, err := m.fromCodeOf(stored)
 		if err != nil {
 			return 0, false, err
 		}
-		step, err := order.Apply(from, value, observed)
+		to, changed, err := m.applyOf(from, value, observed)
 		if err != nil {
 			return 0, false, err
 		}
-		code, err := order.Code(step.To)
-		return code, step.Changed, err
+		code, err := m.codeOf(to)
+		return code, changed, err
 	}
 }
 ```
@@ -195,6 +184,6 @@ make go-persist-test-postgres     # the persist cases on PostgreSQL (FSM_TEST_PG
 make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `tests/conformance_test.go`는 `tests/vectors_test.go`의 vector case마다 하나의 subtest를
+실행 결과는 89개 case 중 89개 통과다. `tests/conformance_test.go`는 `contracts/conformance/vectors.json`의 vector case마다 하나의 subtest를
 case 이름 `<feature>__<id>`로 실행한다. 생성 파일은 추적하지 않는다. `make fsm-go-gen`이 생성하며 `make test-go`가 먼저 실행한다. go
 release는 `packages/go/go.mod`의 go 줄(`go 1.27.2`, kit의 Go pin)이다.
