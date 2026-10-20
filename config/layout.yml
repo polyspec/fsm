@@ -102,7 +102,6 @@ rules:
       - { kind: file_exists, paths: "{path}/package.json" }
       - { kind: file_exists, paths: "{path}/package-lock.json" }
       - { kind: file_exists, paths: "{path}/tests/conformance.test.mjs" }
-      - { kind: file_exists, paths: "{path}/tests/vectors.mjs" }
       - { kind: file_exists, paths: "{path}/tests/persist.test.mjs" }
       - { kind: file_exists, paths: "{path}/examples/persist.mjs" }
     message: "C-2: the npm package holds the canonical files and the required files of its kind"
@@ -112,10 +111,9 @@ rules:
     level: error
     select: "packages/js"
     require:
-      - { kind: file_exists, paths: "{path}/src/**" }
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
-    message: "C-2: the npm package holds a file in each canonical folder (src, tests, examples)"
+    message: "C-2: the npm package holds a file in each canonical folder (tests, examples; src is generated and not tracked)"
 
   - id: layout-npm-files
     kind: file_absent
@@ -127,12 +125,8 @@ rules:
       - "!packages/js/package.json"
       - "!packages/js/package-lock.json"
       - "!packages/js/tests/conformance.test.mjs"
-      - "!packages/js/tests/vectors.mjs"
       - "!packages/js/tests/persist.test.mjs"
       - "!packages/js/examples/persist.mjs"
-      - "!packages/js/src/*.js"
-      - "!packages/js/src/*.d.ts"
-      - "!packages/js/examples/model/**"
     message: "C-2: a file that the npm package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-required
@@ -377,8 +371,6 @@ rules:
       - "packages/**/CHANGELOG*.md"
       - "packages/**/Makefile"
 
-  # The example model of the js package is generated TypeScript: orm-gen writes packages/js/examples/model/models.ts from
-  # contracts/schema/persist.dbs (the fsm-js-gen target of the root Makefile), so the file is generated output, not a js source that is written by hand.
   - id: runtime-language
     paths:
       - "packages/js/**/*.{ts,mts,cts,tsx}"
@@ -386,4 +378,3 @@ rules:
       - "!packages/**/*.d.ts"
       - "!packages/**/*.d.mts"
       - "!packages/**/*.d.cts"
-      - "!packages/js/examples/model/models.ts"

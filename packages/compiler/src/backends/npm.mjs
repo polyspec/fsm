@@ -1,13 +1,10 @@
 // The npm backend (docs/spec/fsm.md, B-4 and B-6; docs/plans/fsm-v1/plan.md, C-2): the generated files of the npm package
-// `src/` and the native vector module `tests/vectors.mjs`. It takes the IRs of the machines (normalize.mjs), in definition
+// `src/`. It takes the IRs of the machines (normalize.mjs), in definition
 // order, and the lock, and returns the text of every file; it writes nothing. The output is deterministic: declaration order,
 // two spaces of indentation and a final line break. The core imports nothing from node:, and the generated code has no runtime
 // dependency.
 
-import { forKind } from '../core/vectors.mjs';
-
 const SHARED = 'fsm';
-const KIND = 'npm';
 
 /** The member name of a key: the pascal notation of B-6. Keys match ^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$, so this is one-to-one. */
 const pascal = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
@@ -247,24 +244,4 @@ export function files(irs, lock) {
   out.push({ path: 'index.js', content: indexJs(irs) });
   out.push({ path: 'index.d.ts', content: indexJs(irs) });
   return out;
-}
-
-/**
- * The native data module tests/vectors.mjs of `vectorList`, the vectors of every machine in order: `export const vectors = [...]`.
- * The cases of the npm kind (forKind) are written with their integers as numbers: a decimal string of the oracle becomes the
- * number nearest to it, which is an unsafe integer above 2^53, so from_code classes it as E_UNKNOWN_CODE (docs/spec/fsm.md, B-6).
- */
-export function vectorsFile(list) {
-  const vectorList = forKind(list, KIND).map(({ machine, cases }) => ({
-    machine,
-    cases: cases.map(({ input_type: inputType, ...entry }) => {
-      // The decoded input: an integer or a float is a number, a string stays a string and a bool is a boolean (docs/spec/fsm.md, B-6).
-      if (entry.input === undefined) return entry;
-      if (inputType === undefined || inputType === 'float') return { ...entry, input: Number(entry.input) };
-      if (inputType === 'string') return entry;
-      if (inputType === 'bool') return { ...entry, input: entry.input === 'true' };
-      throw new Error(`npm: the input type ${JSON.stringify(inputType)} of ${entry.id} is not known`);
-    }),
-  }));
-  return text([header(SHARED), '', `export const vectors = ${JSON.stringify(vectorList, null, 2)};`]);
 }

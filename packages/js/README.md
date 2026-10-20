@@ -20,8 +20,8 @@ fsm-gen gen --project /path/to/order-machines --kind npm --out ./src
 [fsm-gen] gen: ok
 ```
 
-Run the command again after every change of the definition. The vectors come from `fsm-gen vectors --kind npm --out <file>`,
-written into a test file of your own (the test bed writes `tests/vectors.mjs`).
+Run the command again after every change of the definition. The vectors come from `fsm-gen vectors --out <file>`, one JSON
+file that a test of your own reads (the test bed reads `contracts/conformance/vectors.json` when `tests/conformance.test.mjs` runs).
 
 ## Generated files
 
@@ -92,7 +92,7 @@ The functions throw `fsm.Error` (`src/fsm.js`), a subclass of `Error`:
 
 Check it with `error instanceof fsm.Error` and read `error.code`.
 
-Which properties a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `tests/vectors.mjs` assert it:
+Which properties a code sets is the rule of spec B-6 (`docs/spec/fsm.md`), and the vectors of `contracts/conformance/vectors.json` assert it:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -134,7 +134,7 @@ make fsm-js-install   # npm ci: the pinned orm release and the TypeScript compil
 make fsm-js-test      # tests/conformance.test.mjs through kit's run-tests
 ```
 
-The run passes 89 of 89 cases. `tests/conformance.test.mjs` runs one test per vector case of `tests/vectors.mjs`, named
+The run passes 89 of 89 cases. `tests/conformance.test.mjs` runs one test per vector case of `contracts/conformance/vectors.json`, named
 by its case name `<feature>__<id>`; the persist cases run `examples/persist.mjs` on the dialect of `FSM_TEST_DIALECT`, SQLite by default. `tests/persist.test.mjs`
 runs two transitions of one row at the same time and the deadlock retry (`make npm-persist-test`). The root `tests/npm-types`
 checks the `.d.ts` files with the TypeScript compiler (`make npm-types`). The generated files are not tracked: `make fsm-js-gen`

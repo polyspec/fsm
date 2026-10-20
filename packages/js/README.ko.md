@@ -1,5 +1,5 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: dd99f5ec2ca048665943a009000d6d7da1c79249e709614f441baf87d534fa11 -->
+<!-- source-sha256: 133e7a7b94067714da81647b80c2a6a89a6da3024e87d9e8ccddc50ea3088af3 -->
 # @polyspec/fsm-npm
 
 [English](README.md)
@@ -21,8 +21,8 @@ fsm-gen gen --project /path/to/order-machines --kind npm --out ./src
 [fsm-gen] gen: ok
 ```
 
-정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --kind npm --out <file>`로 자신의 test 파일에 쓴다(test bed는
-`tests/vectors.mjs`에 쓴다).
+정의를 바꿀 때마다 명령을 다시 실행한다. vector는 `fsm-gen vectors --out <file>`로 쓴 JSON 파일 하나이며 자신의 test가 읽는다(test bed는
+`tests/conformance.test.mjs`가 실행될 때 `contracts/conformance/vectors.json`을 읽는다).
 
 ## 생성 파일
 
@@ -93,7 +93,7 @@ true E_CONFLICT 1 3 1
 
 `error instanceof fsm.Error`로 검사하고 `error.code`를 읽는다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `tests/vectors.mjs`의 vector가 이를 단언한다:
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `contracts/conformance/vectors.json`의 vector가 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -134,7 +134,7 @@ make fsm-js-install   # npm ci: the pinned orm release and the TypeScript compil
 make fsm-js-test      # tests/conformance.test.mjs through kit's run-tests
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `tests/conformance.test.mjs`는 `tests/vectors.mjs`의 vector case마다 하나의 test를
+실행 결과는 89개 case 중 89개 통과다. `tests/conformance.test.mjs`는 `contracts/conformance/vectors.json`의 vector case마다 하나의 test를
 case 이름 `<feature>__<id>`로 실행한다. 영속화 case는 `FSM_TEST_DIALECT`의 dialect(기본은 SQLite)에서 `examples/persist.mjs`를 실행한다.
 `tests/persist.test.mjs`는 한 row의 두 전이를 동시에 실행하고 deadlock 재시도를 검사한다(`make npm-persist-test`). 루트의
 `tests/npm-types`는 TypeScript 컴파일러로 `.d.ts` 파일을 검사한다(`make npm-types`). 생성 파일은 추적하지 않는다. `make fsm-js-gen`이

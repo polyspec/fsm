@@ -1,12 +1,12 @@
-// The conformance tests of the npm package (docs/plans/fsm-v1/plan.md, C-4). Every vector case of tests/vectors.mjs (generated from
-// the core oracle) is one node:test test named test_<feature>__<id>: it calls the generated function of src/ and asserts the
+// The conformance tests of the npm package (docs/plans/fsm-v1/plan.md, C-4). Every vector case of contracts/conformance/vectors.json
+// (written from the core oracle), read when the test runs, is one node:test test named <feature>__<id>: it calls the generated function of src/ and asserts the
 // expected value and, for an error, the code and the fields of fsm.Error (docs/spec/fsm.md, B-4 and B-6; a field that does not
 // apply is null in the vector and undefined in the error). The persist cases run the B-4 example (examples/persist.mjs) on the
 // dialect of FSM_TEST_DIALECT (sqlite by default, through the dialect helper of the fsm-db tests) and assert the stored value
 // after the run. The names are the notation of docs/spec/fsm.md, B-6: a key becomes a member by pascal
 // case. A state argument is a key, or the raw code of the case, which goes through fromCode first (docs/spec/fsm.md, B-6).
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -14,8 +14,23 @@ import * as api from '../src/index.js';
 import { open, seed, statusOf, transition } from '../examples/persist.mjs';
 import { Item } from '../examples/model/models.ts';
 import { dialectOf, serverDsn } from '../../db/tests/dialect.mjs';
-import { vectors } from './vectors.mjs';
 import { inspect } from 'node:util';
+
+/** The vectors of every machine: the file of the oracle, read when the test runs. */
+const { machines: vectors } = JSON.parse(readFileSync(new URL('../../../contracts/conformance/vectors.json', import.meta.url), 'utf8'));
+
+/**
+ * The input of a from_code case as the npm kind decodes it (docs/spec/fsm.md, B-6): the oracle gives it as a decimal string, which
+ * is the number nearest to it for an integer or a float (an unsafe integer above 2^53 is then E_UNKNOWN_CODE), the string itself
+ * for a string, and a boolean for a bool.
+ */
+function inputOf(c) {
+  if (c.input === undefined) return undefined;
+  if (c.input_type === undefined || c.input_type === 'float') return Number(c.input);
+  if (c.input_type === 'string') return c.input;
+  if (c.input_type === 'bool') return c.input === 'true';
+  throw new Error(`the input type ${JSON.stringify(c.input_type)} of ${c.id} is not known`);
+}
 
 /** The member of a key: its pascal notation (docs/spec/fsm.md, B-6). */
 const member = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
@@ -108,8 +123,8 @@ async function check(machine, c) {
       else assert.equal(machine.key(machine.fromCode(c.code)), c.expect);
       return;
     case 'from_code':
-      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.fromCode(c.input)), c.expect);
-      else assert.equal(machine.fromCode(c.input), stateOf(machine, c.expect.state));
+      if (c.expect.error !== undefined) assertFields(errorOf(() => machine.fromCode(inputOf(c))), c.expect);
+      else assert.equal(machine.fromCode(inputOf(c)), stateOf(machine, c.expect.state));
       return;
     case 'is_final':
       if (c.expect.error !== undefined) assertFields(errorOf(() => machine.isFinal(stateArg(machine, c.state, c.value))), c.expect);

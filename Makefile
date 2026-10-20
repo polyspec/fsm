@@ -131,12 +131,11 @@ fsm-js-install:
 fsm-js-gen: $(NPM_DEP)
 fsm-js-gen:
 	$(FSM_GEN) gen --project contracts --kind npm --out packages/js/src
-	$(FSM_GEN) vectors --project contracts --kind npm --out packages/js/tests/vectors.mjs
 	packages/js/node_modules/.bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/js/examples/model
 
 # fsm-js-test runs the conformance cases of the npm package; the kit reporter names every file from the checkout root.
 fsm-js-test: $(NPM_DEP) fsm-js-gen
-	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- packages/js/tests/conformance.test.mjs
+	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- packages/js/tests/conformance.test.mjs
 
 # fsm-php-install downloads the release zips of orm and ordered-json into var/composer-artifacts, the artifact repository of
 # composer.json, with make release-assets-fetch of kit (K140), then installs the dependencies of composer.lock.
@@ -381,15 +380,15 @@ test-js: fsm-js-test
 # The two files run one after the other: on a server dialect they share the persist table, which each case clears.
 NPM_PERSIST_TESTS := --test-concurrency=1 --test-name-pattern=persist packages/js/tests/conformance.test.mjs packages/js/tests/persist.test.mjs
 npm-persist-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen
-	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
 npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP) fsm-js-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
 npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP) fsm-js-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs --inputs packages/db/src/models -- $(NPM_PERSIST_TESTS)
 
 # npm-types runs tests/npm-types: tsc compiles tests/npm-types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/fsm-v1/checklist.md, S-09-2). It is a tool test with

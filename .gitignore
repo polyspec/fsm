@@ -13,6 +13,10 @@
 /packages/python/**/__pycache__/
 /packages/python/.venv/
 /packages/python/src/*.egg-info/
+# The files that fsm-gen and orm-gen write (make fsm-gen; AGENTS.md, Generated files). The golden files of
+# packages/compiler/tests/golden are their tracked proof.
+/packages/js/src/
+/packages/js/examples/model/
 /packages/gui/build/
 /packages/gui/public/assets/
 /packages/php*/.phpunit.result.cache

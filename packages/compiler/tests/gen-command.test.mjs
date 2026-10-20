@@ -83,19 +83,13 @@ test('gen with an unknown kind, or without --kind, is a usage error with exit 2 
   assert.equal(existsSync(out), false);
 });
 
-test('vectors --kind npm writes the golden tests/vectors.mjs to the --out file', () => {
-  const file = path.join(tempDir(), 'tests', 'vectors.mjs');
-  assert.deepEqual(gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'npm', '--out', file]), { status: 0, stdout: '[fsm-gen] vectors: ok\n', stderr: '' });
-  assert.equal(readFileSync(file, 'utf8'), golden('vectors.mjs'));
-});
-
-test('vectors --kind npm refuses to overwrite a file without the header', () => {
-  const file = path.join(tempDir(), 'vectors.mjs');
-  writeFileSync(file, 'export const vectors = [];\n');
-  const result = gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'npm', '--out', file]);
+test('vectors --kind python refuses to overwrite a file without the header', () => {
+  const file = path.join(tempDir(), 'vectors.py');
+  writeFileSync(file, 'vectors = []\n');
+  const result = gen(['vectors', '--project', ORDER_PROJECT, '--kind', 'python', '--out', file]);
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /^\[fsm-gen\] E_NOT_GENERATED - vectors\.mjs: /m);
-  assert.equal(readFileSync(file, 'utf8'), 'export const vectors = [];\n');
+  assert.match(result.stderr, /^\[fsm-gen\] E_NOT_GENERATED - vectors\.py: /m);
+  assert.equal(readFileSync(file, 'utf8'), 'vectors = []\n');
 });
 
 test('vectors with an unknown kind is a usage error', () => {

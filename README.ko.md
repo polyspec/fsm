@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 0672fb4a938894c4f569d03d3a99d9541a1340cfe7a64a7280b29ff405f6c04e -->
+<!-- source-sha256: bcc267a69ecf5092fc6f6fc95f346269399f15b4f3f028c40bc338e4ea8b7413 -->
 # polyspec/fsm
 
 [English](README.md)
@@ -330,8 +330,6 @@ suite 하나 `{ machines: [{ machine, cases }] }`를 받는다. `--kind <kind>`�
 
 ```sh
 $ fsm-gen vectors --project ./order-machines --out ./vectors
-[fsm-gen] vectors: ok
-$ fsm-gen vectors --kind npm --project ./order-machines --out ./tests/vectors.mjs
 [fsm-gen] vectors: ok
 ```
 

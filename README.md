@@ -340,8 +340,6 @@ the native test module of that kind. The php and php-ext kinds also need `--php-
 ```sh
 $ fsm-gen vectors --project ./order-machines --out ./vectors
 [fsm-gen] vectors: ok
-$ fsm-gen vectors --kind npm --project ./order-machines --out ./tests/vectors.mjs
-[fsm-gen] vectors: ok
 ```
 
 ### gen
