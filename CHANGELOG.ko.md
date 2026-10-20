@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 1fcb25b7f715906f89782d312f3318ee71ec08a49d9c1a8ef11aee559eb1d76e -->
+<!-- source-sha256: c87c689cd8104013337ab2d55a8fadd5cc7292e4c00dd29de4e61864be798754 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,7 @@
 ## Unreleased
 
 - S-45-14-1: `make dependency-review UPDATE=1`은 S-45-31의 relink가 tracked lock을 link lock 위에 복사한 뒤 packages/php의 최신 stable phpunit 13.4.3을 link lock에 기록한다(kit link.mts:429). RED `make dependency-policy-check` exit 2, "packages/php/composer.json phpunit/phpunit: the lock holds 13.4.2, the review ... recorded 13.4.3"; update 뒤 GREEN exit 0. (S-45-14-1)
+- S-44-18: gui는 edit form의 render options를 link로 연결한 crudui의 `decodeFormRenderOptions`로 decode한다(crudui 0.0.8을 기다리지 않는다). 로컬 decoder `decodeRenderOptions`와 그 rebuild record `docs/rebuild/crudui-render-options.md`는 없어졌고, `config/rebuild.json`은 `form-state.ts`를 더 분류하지 않는다. gui form-state test는 전후 모두 통과한다(43 passed, 0 failed). `make lint-ts`, `make rebuild-check`, `make docs-check`는 exit 0. (S-44-18)
 - S-45-34: `fsm-php-install`과 `fsm-php-ext-install`은 `composer install` 바로 뒤에 `make link`를 실행한다(P30). 그래서 tracked lock에서 설치한 vendor가 link를 대신하지 않는다. RED `tests/make-install/make-install.test.mts`의 `node --test` exit 1, "no make link right after the composer install of fsm-php-install"(16 passed, 1 failed); GREEN exit 0, 17 passed, 0 failed; `make link-state-check` exit 0; `make kit-check` exit 0. (S-45-34)
 - S-45-31: php generator는 require만 하는 loader `src/functions.php`를 쓰지 않는다. composer `autoload.files`는 기계마다 namespace가 있는 `src/<Machine>/functions.php`를 정의 순서대로 든다(kit S2, B-6). coercion test는 `Order`의 생성된 함수를 손으로 require한다. RED `packages/compiler/tests/php-backend.test.mjs`의 `node --test` exit 1, "no file is the loader src/functions.php"(7 passed, 1 failed); GREEN exit 0, 8 passed, 0 failed; ConformanceTest OK(290 tests, 843 assertions); `make lint-php` exit 0. (S-45-31)
 - S-45: 저장소는 kit standard 0.0.54를 따른다. 하위 항목은 완료되었고, make-install test, `make docs-check`, `make kit-check layout-check rules-check language-check test-markers-check lint-go`가 통과한다. (S-45)
