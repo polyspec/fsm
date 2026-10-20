@@ -17,7 +17,7 @@ import { backendTests, orderIrs } from './backend-support.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
 const NAMESPACE = 'Polyspec\\FsmTest';
-const NAMES = ['Order/State.php', 'Order/Event.php', 'Order/Step.php', 'Order/functions.php', 'Fsm/Code.php', 'Fsm/Error.php', 'functions.php'];
+const NAMES = ['Order/State.php', 'Order/Event.php', 'Order/Step.php', 'Order/functions.php', 'Fsm/Code.php', 'Fsm/Error.php'];
 
 backendTests({
   kind: 'php',
@@ -53,17 +53,19 @@ test('every generated php file passes the php linter (php -l)', async (t) => {
   }
 });
 
-test('the loader src/functions.php requires the functions of every machine, in definition order, with no test of another implementation', async () => {
+test('no require-only loader is generated: every functions.php is the namespaced functions of one machine (S2, B-6)', async () => {
   const { definitions, lock, findings } = await jsonStore(path.join(ROOT, 'contracts')).load();
   assert.deepEqual(findings, []);
   const irs = definitions.map(normalize);
-  const loader = files(irs, lock, { phpNamespace: NAMESPACE }).find(file => file.path === 'functions.php').content;
+  const generated = files(irs, lock, { phpNamespace: NAMESPACE });
   const pascal = key => key.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join('');
-  assert.deepEqual(
-    loader.split('\n').filter(line => line.startsWith('require_once') || line.includes('function_exists')),
-    irs.map(ir => `require_once __DIR__ . '/${pascal(ir.machine)}/functions.php';`),
-  );
-  assert.ok(irs.length > 1, 'the root holds several machines, so the loader is tested with more than one');
+  assert.ok(!generated.some(file => file.path === 'functions.php'), 'no file is the loader src/functions.php');
+  const functionFiles = generated.filter(file => file.path.endsWith('/functions.php'));
+  assert.deepEqual(functionFiles.map(file => file.path), irs.map(ir => `${pascal(ir.machine)}/functions.php`));
+  for (const file of functionFiles) {
+    assert.ok(file.content.split('\n').some(line => line.startsWith('namespace ')), `${file.path}: no namespace line`);
+  }
+  assert.ok(irs.length > 1, 'the root holds several machines, so the functions are tested with more than one');
 });
 
 test('a caller without strict_types gets E_UNKNOWN_CODE for a value that is not an int, never a converted code (B-6)', async (t) => {
@@ -75,7 +77,7 @@ test('a caller without strict_types gets E_UNKNOWN_CODE for a value that is not 
     writeFileSync(target, file.content);
   }
   // The script has no declare(strict_types=1), so its calls are in coercive mode, as the calls of an application that does not
-  // declare it. The loader is required by hand, and the classes are autoloaded from the generated files.
+  // declare it. The functions of the machine are required by hand, and the classes are autoloaded from the generated files.
   const script = path.join(dir, 'caller.php');
   writeFileSync(script, String.raw`<?php
 $root = $argv[1];
@@ -85,7 +87,7 @@ spl_autoload_register(static function (string $class) use ($root): void {
     $file = $root . '/src/' . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
     if (is_file($file)) require $file;
 });
-require $root . '/src/functions.php';
+require $root . '/src/Order/functions.php';
 foreach (['string' => '2', 'float' => 2.0, 'fraction' => 2.5, 'bool' => true, 'null' => null, 'int' => 2] as $name => $value) {
     try {
         $state = \Polyspec\FsmTest\Order\fromCode($value);

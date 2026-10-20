@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 2d14b65c8622267f99d302dc3f13ae9ef5428ea034ab3d95fe6afe6bf08cd5a1 -->
+<!-- source-sha256: 740b57a4532d94d850c20f24c476c21f741fb9bec4e8546606573337fd0ff9ff -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -175,7 +175,7 @@ packages/<folder>/   # the first root of the kind in config/parity.json
 |---|---|---|---|
 | go | go.mod | `src/order/order.go`, `src/fsm/fsm.go` (Go는 package = 디렉터리) | `conformance_test.go`(일반형: 각 case를 그 machine의 adapter로 실행), `vectors_test.go`(손으로 씀: 테스트가 실행될 때 `contracts/conformance/vectors.json`을 읽고, machine마다 adapter 하나를 두며 adapter는 machine package `<module>/src/<machine>`의 함수와 상수다) |
 | npm | package.json | `order.js/.d.ts`, `fsm.js/.d.ts`, `index.js/.d.ts`(`export * as order`) | `conformance.test.mjs`(`contracts/conformance/vectors.json`을 읽는다) |
-| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`, 그리고 적재기 `functions.php`(모든 machine의 `Order/functions.php`를 require한다; PSR-4가 함수를 싣지 못하므로 composer `autoload.files`는 이 파일만 이름으로 든다) | `ConformanceCase.php`(손으로 쓴 검사), `ConformanceTest.php`(`contracts/conformance/vectors.json`을 읽고 case마다 data set 하나) |
+| php | composer.json | `Order/{State,Event,Step}.php`, `Order/functions.php`, `Fsm/Code.php` (error code enum, its own file for PSR-4), `Fsm/Error.php`; composer `autoload.files`는 모든 machine의 `Order/functions.php`를 든다(PSR-4가 함수를 싣지 못하므로) | `ConformanceCase.php`(손으로 쓴 검사), `ConformanceTest.php`(`contracts/conformance/vectors.json`을 읽고 case마다 data set 하나) |
 | php-ext | composer.json(`type: php-ext`, `extension-name`, `build-path: src`) | `config.m4`, `order.c`, `fsm.c`(공용 `<ns>\Fsm\Error`와 오류 코드 상수), `php_<ext>.h`, `<ext>.stub.php`, `<ext>_arginfo.h` | 자체 테스트 없음: php 패키지의 PHPUnit 파일이 extension을 로드해 실행됨(`composer.json`의 `autoload-dev`). `make test`가 phpize로 빌드한 뒤 `--php-extension <.so>`로 실행. gen에 `--php-namespace`·`--php-ext-name` 필수 |
 | python | pyproject.toml | `polyspec_fsm/{__init__,order,fsm}.py` | `test_conformance.py`(`contracts/conformance/vectors.json`을 읽고 케이스 이름 그대로의 메서드 생성) |
 | rust | Cargo.toml(`autotests=false`, `autoexamples=false`, `[[test]] conformance`(`harness = false`), build-dep `polyspec-orm-build`, dev-dep `tokio`와 `libtest-mimic`) + `build.rs` | `lib.rs`(`pub mod order; pub mod fsm;`), `order.rs`, `fsm.rs` | `tests/conformance/main.rs`(`mod vectors;`, `#[path="../../examples/persist.rs"] mod persist;`, `fn main`이 `contracts/conformance/vectors.json`의 case마다 libtest-mimic trial 하나를 `vectors::<name>`으로 실행하며 손으로 쓴 `tests/conformance/vectors.rs`의 adapter를 거친다), persist 케이스는 자기 tokio runtime에서 실행 |

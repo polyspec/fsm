@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-31: the php generator writes no require-only loader `src/functions.php`; composer `autoload.files` lists each machine's namespaced `src/<Machine>/functions.php` in definition order (kit S2, B-6), and the generated functions of `Order` are required by hand in the coercion test. RED `node --test` of `packages/compiler/tests/php-backend.test.mjs` exit 1, "no file is the loader src/functions.php" (7 passed, 1 failed); GREEN exit 0, 8 passed, 0 failed; ConformanceTest OK (290 tests, 843 assertions); `make lint-php` exit 0. (S-45-31)
 - S-45: the repository follows the kit standard 0.0.54: its sub-items are done, and the make-install test, `make docs-check` and `make kit-check layout-check rules-check language-check test-markers-check lint-go` pass. (S-45)
 - S-45-33: `make kit-sync` wrote scripts/kit/kit-bootstrap.mk of kit K360-1, which links after the tools are installed. RED `make kit-check` exit 2 ("scripts/kit/kit-bootstrap.mk: differs"); GREEN exit 0. (S-45-33)
 - S-45-7: the lock item closes with S-45-14: the locks of php and php-ext are judged on their link locks (kit K326, K326-1), and the one remaining finding, the review record, was re-recorded in S-45-14. GREEN `make dependency-policy-check` exit 0. (S-45-7)

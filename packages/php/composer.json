@@ -26,7 +26,11 @@
             "Polyspec\\FsmTest\\": "src/"
         },
         "files": [
-            "src/functions.php"
+            "src/InReview/functions.php",
+            "src/Limits/functions.php",
+            "src/Order/functions.php",
+            "src/Standby/functions.php",
+            "src/Ticket/functions.php"
         ]
     },
     "autoload-dev": {

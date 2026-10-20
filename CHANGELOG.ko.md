@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 86838183db42e38c26fcd6c4c992e45891f2b7e338040342ff8fa77c708ddb0b -->
+<!-- source-sha256: 3f4636ff03b2df1d2bbfda11c7546ecce13838761c7fa4ceeab047a969be863d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-31: php generator는 require만 하는 loader `src/functions.php`를 쓰지 않는다. composer `autoload.files`는 기계마다 namespace가 있는 `src/<Machine>/functions.php`를 정의 순서대로 든다(kit S2, B-6). coercion test는 `Order`의 생성된 함수를 손으로 require한다. RED `packages/compiler/tests/php-backend.test.mjs`의 `node --test` exit 1, "no file is the loader src/functions.php"(7 passed, 1 failed); GREEN exit 0, 8 passed, 0 failed; ConformanceTest OK(290 tests, 843 assertions); `make lint-php` exit 0. (S-45-31)
 - S-45: 저장소는 kit standard 0.0.54를 따른다. 하위 항목은 완료되었고, make-install test, `make docs-check`, `make kit-check layout-check rules-check language-check test-markers-check lint-go`가 통과한다. (S-45)
 - S-45-33: `make kit-sync`가 tool을 설치한 뒤에 link하는 kit K360-1의 scripts/kit/kit-bootstrap.mk를 썼다. RED `make kit-check` exit 2("scripts/kit/kit-bootstrap.mk: differs"); GREEN exit 0. (S-45-33)
 - S-45-7: lock 항목은 S-45-14와 함께 닫힌다. php와 php-ext의 lock은 link lock으로 판정하며(kit K326, K326-1), 남은 한 finding인 review 기록은 S-45-14에서 다시 기록했다. GREEN `make dependency-policy-check` exit 0. (S-45-7)

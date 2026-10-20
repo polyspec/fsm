@@ -251,25 +251,9 @@ function errorFile(ns) {
 }
 
 /**
- * The loader src/functions.php: composer's autoload.files names this one file, because PSR-4 cannot load functions. It requires
- * the functions.php of every machine in definition order, so a new machine needs no edit of composer.json,
- * with no test of the presence of another implementation (S10: the extension run loads none of the library sources).
- */
-function loaderFile(irs) {
-  return text([
-    '<?php',
-    '',
-    header(SHARED),
-    'declare(strict_types=1);',
-    '',
-    ...irs.map(ir => `require_once __DIR__ . '/${pascal(ir.machine)}/functions.php';`),
-  ]);
-}
-
-/**
  * The files of the php package `src/` for the machines `irs` (their IRs in definition order), the lock and the options
  * { phpNamespace }: <Pascal>/State.php, Event.php, Step.php and functions.php per machine, then Fsm/Code.php and
- * Fsm/Error.php, and the loader functions.php. Each file is { path, content }.
+ * Fsm/Error.php. Each file is { path, content }.
  */
 export function files(irs, lock, { phpNamespace } = {}) {
   const phpNs = checkedNamespace(phpNamespace);
@@ -285,6 +269,5 @@ export function files(irs, lock, { phpNamespace } = {}) {
   }
   out.push({ path: 'Fsm/Code.php', content: codeFile(`${phpNs}\\Fsm`) });
   out.push({ path: 'Fsm/Error.php', content: errorFile(`${phpNs}\\Fsm`) });
-  out.push({ path: 'functions.php', content: loaderFile(irs) });
   return out;
 }
