@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: ae3fbc8ad545c6f918662682483e6f177e009090d66f9fda688a9b13e981787b -->
+<!-- source-sha256: 85812471564c8d68597dd2d2c23bc51d1e72e1d00fa43233d708eaaea65a5464 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -63,10 +63,10 @@
 | S-45-35 | fsm은 74d2e87a의 kit 사본을 받는다(K348 K385 K384 K383 K380 K382 K375): make kit-sync와 make hooks를 실행하며, kit의 commit-msg hook이 fsm의 hook을 대신한다(K380) | the copies of kit, .githooks | `make kit-check` | [o] |
 | S-45-36 | kit의 commit-msg hook(K380)은 kit의 commit-msg-hook을 실행하므로, 더 이상 어떤 hook이나 recipe도 부르지 않는 fsm Makefile의 commit-msg-check target을 지운다 | Makefile | `make hooks-check`, node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
-| S-47 | packages/db/package-lock.json이 @polyspec/ordered-json과 @polyspec/orm을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/db/package-lock.json | `make link-state-check` | [ ] |
-| S-48 | packages/gui/package-lock.json이 @polyspec crudui, hyper, template 패키지를 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/gui/package-lock.json | `make link-state-check` | [ ] |
-| S-49 | packages/js/package-lock.json이 @polyspec/ordered-json과 @polyspec/orm을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/js/package-lock.json | `make link-state-check` | [ ] |
-| S-50 | package-lock.json이 @polyspec/kit을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | package-lock.json | `make link-state-check` | [ ] |
+| S-47 | packages/db/package-lock.json이 @polyspec/ordered-json과 @polyspec/orm을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/db/package-lock.json | `make npm-install DIR=packages/db`, `make link-state-check` | [ ] |
+| S-48 | packages/gui/package-lock.json이 @polyspec crudui, hyper, template 패키지를 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/gui/package-lock.json | `make npm-install DIR=packages/gui`, `make link-state-check` | [ ] |
+| S-49 | packages/js/package-lock.json이 @polyspec/ordered-json과 @polyspec/orm을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/js/package-lock.json | `make npm-install DIR=packages/js`, `make link-state-check` | [ ] |
+| S-50 | package-lock.json이 @polyspec/kit을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | package-lock.json | `make npm-install DIR=.`, `make link-state-check` | [ ] |
 | S-51 | packages/php/composer.lock이 polyspec/ordered-json과 polyspec/orm을 release zip artifact로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/php/composer.lock | `make link-state-check` | [ ] |
 | S-52 | packages/php-ext/composer.lock이 polyspec/ordered-json과 polyspec/orm을 release zip artifact로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/php-ext/composer.lock | `make link-state-check` | [ ] |
 | S-53 | packages/rust/Cargo.lock이 polyspec-ordered-json과 polyspec-orm을 저장소의 git tag로 고정하는 대신 형제 checkout을 가리키는 cargo [patch] 경로를 쓴다; kit의 cargo 링크 행(cargo의 [patch] 경로, cargo 고유 링크)을 기다리며, kit이 등록하면 그 id를 적는다 | packages/rust/Cargo.lock | `make text-absent FILE=packages/rust/Cargo.lock TEXT=git+https://github.com/polyspec/` | [ ] |
