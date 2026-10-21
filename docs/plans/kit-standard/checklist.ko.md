@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 85812471564c8d68597dd2d2c23bc51d1e72e1d00fa43233d708eaaea65a5464 -->
+<!-- source-sha256: 683de6ebdfa7fc370d8fe3603d2ec60def7f613112f1bcdf27caaf6ec5f30276 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -70,3 +70,4 @@
 | S-51 | packages/php/composer.lock이 polyspec/ordered-json과 polyspec/orm을 release zip artifact로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/php/composer.lock | `make link-state-check` | [ ] |
 | S-52 | packages/php-ext/composer.lock이 polyspec/ordered-json과 polyspec/orm을 release zip artifact로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/php-ext/composer.lock | `make link-state-check` | [ ] |
 | S-53 | packages/rust/Cargo.lock이 polyspec-ordered-json과 polyspec-orm을 저장소의 git tag로 고정하는 대신 형제 checkout을 가리키는 cargo [patch] 경로를 쓴다; kit의 cargo 링크 행(cargo의 [patch] 경로, cargo 고유 링크)을 기다리며, kit이 등록하면 그 id를 적는다 | packages/rust/Cargo.lock | `make text-absent FILE=packages/rust/Cargo.lock TEXT=git+https://github.com/polyspec/` | [ ] |
+| S-54 | make fsm-python-install은 형제 polyspec checkout을 처음부터 링크하고 release wheel을 설치하지 않는다(S-54). 원인: fsm-python-install은 packages/python/pylock.toml을 설치하는데, 이 파일은 GitHub release wheel polyspec-ordered-json 0.0.9와 polyspec-orm 0.0.18을 고정하고, packages/python/pyproject.toml도 polyspec-orm 0.0.18 release URL을 적는다. link는 그 뒤에 이것들을 바꾸므로, 0.0.x에서는 release를 소비하지 않는다는 규칙에도 release가 소비된다. 근거: pylock.toml이 두 package를 github.com release URL에 고정한다. 완료 기준: 형제가 제공하는 polyspec package마다 kit link 도구로 처음부터 링크하고, release wheel을 내려받거나 설치하지 않으며, 제3자 package는 lock에서 설치하고, release 고정이 pylock.toml과 pyproject.toml에서 빠진다. S-45-38의 하위 항목이 아니다. S-45-38은 링크 단계 하나만 다룬다. 현재 빨간 상태: 새 worktree의 make fsm-python-install이 release wheel을 내려받는다. | `Makefile`, `packages/python/pylock.toml`, `packages/python/pyproject.toml` | `node node_modules/@polyspec/kit/dist/run-tests.mjs node -- tests/make-install/make-install.test.mts` | [ ] |
