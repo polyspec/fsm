@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-57 is done (S-57): make kit-sync removes the kit lint configuration copies (K514) and writes the copies that changed in kit, and config/toolchain.json declares the php symbol extractor of lint-php; red: make kit-check reported 17 findings, green after the sync.
 - S-45-41 is done: `CHECK_TARGETS` runs `suppression-check` and the Rust suppression states its reason (S-45-41), landed as 72fae38 with the red and green of its Verification.
 - S-45-41: `CHECK_TARGETS` runs `suppression-check`, and the Rust suppression of `packages/rust/tests/common/mod.rs` states its reason on the attribute line (P8). RED: `make suppression-check` fails on main, `packages/rust/tests/common/mod.rs:62` has no reason. GREEN: the same command passes (S-45-41).
 - S-54 is done: the python install links the sibling checkouts and installs no release wheel, the test runs directly, red on HEAD and green on c5838e1 (S-54).

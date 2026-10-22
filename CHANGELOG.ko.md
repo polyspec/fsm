@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 3c110e911b83d711913bad65767046673c8005fe53eab0c5239e82f23473c774 -->
+<!-- source-sha256: 9c59f4f3279a898258761cab00fa46b95bf49d54e619beea45624d7ef3988147 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-57 완료(S-57): make kit-sync가 kit lint 설정 사본(K514)을 지우고 kit에서 바뀐 사본을 쓰며, config/toolchain.json이 lint-php의 php symbol extractor를 선언한다. red: make kit-check가 17개 finding을 보고했고, sync 뒤 green.
 - S-45-41 완료: `CHECK_TARGETS`가 `suppression-check`를 실행하고 Rust suppression이 reason을 적는다 (S-45-41). 72fae38로 land되었고, Verification의 red와 green을 기록했다.
 - S-45-41: `CHECK_TARGETS`가 `suppression-check`를 실행하고, `packages/rust/tests/common/mod.rs`의 Rust suppression은 attribute 줄에 reason을 적는다(P8). RED: main에서 `make suppression-check`가 실패한다, `packages/rust/tests/common/mod.rs:62`에 reason이 없다. GREEN: 같은 명령이 통과한다 (S-45-41).
 - S-54 완료: 파이썬 설치는 sibling 체크아웃을 링크하고 release wheel을 설치하지 않으며, 테스트는 직접 실행한다. HEAD에서 red, c5838e1에서 green (S-54).
