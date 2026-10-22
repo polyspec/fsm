@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 2d4b5efac5e3b3bcba416a2de7de27bd4a2f56369112653490a58fc4bb84f0ea -->
+<!-- source-sha256: 5c96e22522a5e9f1757e8895bd57d903ca35bd28ef0a97da88781cee5829e119 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -64,7 +64,7 @@
 | S-45-36 | kit의 commit-msg hook(K380)은 kit의 commit-msg-hook을 실행하므로, 더 이상 어떤 hook이나 recipe도 부르지 않는 fsm Makefile의 commit-msg-check target을 지운다 | Makefile | `make hooks-check`, node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
 | S-47 | 로컬 설치는 lock의 sibling 패키지를 처음부터 link한다(make npm-install). make link-state-check가 통과하며, 추적 package-lock.json은 규칙상 release source를 유지한다. | packages/db/package-lock.json | `make npm-install DIR=packages/db`, `make link-state-check` | [-] 원인: 추적 lock은 규칙상 release를 기록하고, 로컬 설치는 K448-7 이후 sibling 패키지를 link하며, link-state-check가 통과한다. K448-7이 이를 전달했다 |
-| S-48 | packages/gui/package-lock.json이 @polyspec crudui, hyper, template 패키지를 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/gui/package-lock.json | `make npm-install DIR=packages/gui`, `make link-state-check` | [ ] |
+| S-48 | 로컬 설치는 lock의 sibling 패키지를 처음부터 link한다(make npm-install). make link-state-check가 통과하며, 추적 package-lock.json은 규칙상 release source를 유지한다. | packages/gui/package-lock.json | `make npm-install DIR=packages/gui`, `make link-state-check` | [-] 원인: 추적 lock은 규칙상 release를 기록하고, 로컬 설치는 K448-7 이후 sibling 패키지를 link하며, link-state-check가 통과한다. K448-7이 이를 전달했다 |
 | S-49 | packages/js/package-lock.json이 @polyspec/ordered-json과 @polyspec/orm을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/js/package-lock.json | `make npm-install DIR=packages/js`, `make link-state-check` | [ ] |
 | S-50 | 로컬 설치는 @polyspec/kit sibling 패키지를 처음부터 link한다(make npm-install DIR=.). make link-state-check가 통과하며, 추적 package-lock.json은 규칙상 release source를 유지한다. | package-lock.json | `make npm-install DIR=.`, `make link-state-check` | [-] 원인: 추적 lock은 규칙상 release를 기록하고, 로컬 설치는 K448-2와 K448-7 이후 sibling을 link하며, link-state-check가 통과한다. K448-7이 이를 전달했다 |
 | S-51 | packages/php/composer.lock이 polyspec/ordered-json과 polyspec/orm을 release zip artifact로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/php/composer.lock | `make link-state-check` | [ ] |
