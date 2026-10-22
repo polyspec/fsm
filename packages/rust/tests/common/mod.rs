@@ -58,11 +58,10 @@ pub fn persist_dsn(scratch: &Scratch) -> (String, String) {
 /// Serializes the persist cases of a server dialect: they share one table, and each case clears it before it seeds its row.
 static SERVER_CASES: Mutex<()> = Mutex::new(());
 
+// The lock guards no data. A case that panics poisons it, and that case reports its own failure, so the next case takes the
+// guard and runs instead of failing for the poison.
 /// The guard that serializes a persist case on a server dialect while it lives; none on sqlite, whose case has its own file.
-#[allow(
-    clippy::disallowed_methods,
-    reason = "a case that panics poisons the lock; the lock guards no data and that case reports its own failure, so the next case takes the guard and runs instead of failing for it"
-)]
+#[allow(clippy::disallowed_methods, reason = "the lock guards no data; poison is harmless")]
 pub fn server_cases(dialect: &str) -> Option<MutexGuard<'static, ()>> {
     if dialect == "sqlite" {
         None

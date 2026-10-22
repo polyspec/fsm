@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-41: `CHECK_TARGETS` runs `suppression-check`, and the Rust suppression of `packages/rust/tests/common/mod.rs` states its reason on the attribute line (P8). RED: `make suppression-check` fails on main, `packages/rust/tests/common/mod.rs:62` has no reason. GREEN: the same command passes (S-45-41).
 - S-54 is done: the python install links the sibling checkouts and installs no release wheel, the test runs directly, red on HEAD and green on c5838e1 (S-54).
 - S-54: `fsm-python-install` no longer installs the release wheels of polyspec-orm and polyspec-ordered-json from pylock.toml; it links the sibling checkouts (`make link`) and the project editable, and the tracked pylock.toml stays unchanged. RED: on the HEAD Makefile `node --test --test-name-pattern=S-54 tests/make-install/make-install.test.mts` fails: `fsm-python-install still installs pylock.toml`. GREEN: the same command passes (1 test), the make-install test reads the recipe from the Makefile and runs no install (S-54).
 - S-45-36: the Makefile drops the `commit-msg-check` target: since K380 the commit-msg hook runs kit's `make commit-msg-hook`, and no hook or recipe calls the fsm target any more. RED `git grep -n "commit-msg-check"` lists its definition (Makefile:232-237) and no caller; GREEN the grep prints nothing, `make hooks-check`, `make kit-check` and `make lint-ts` exit 0, and the make-install test passes 17 of 17. (S-45-36)
