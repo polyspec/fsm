@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: f4096afc3f6d86dac2d71bb5958085edc2e0ef9b4806ecc5a859890ce0072868 -->
+<!-- source-sha256: cc393d749f6e9aa4cf55939df22fd979125f03c2ff5907dc50b9e066dee8c88a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-54 완료: 파이썬 설치는 sibling 체크아웃을 링크하고 release wheel을 설치하지 않으며, 테스트는 직접 실행한다. HEAD에서 red, c5838e1에서 green (S-54).
 - S-54: `fsm-python-install`은 pylock.toml에서 polyspec-orm과 polyspec-ordered-json의 release wheel을 더 이상 설치하지 않는다; sibling 체크아웃을 링크(`make link`)하고 프로젝트를 editable로 설치하며, 추적되는 pylock.toml은 그대로 둔다. RED: HEAD Makefile에서 `node --test --test-name-pattern=S-54 tests/make-install/make-install.test.mts`가 실패한다: `fsm-python-install still installs pylock.toml`. GREEN: 같은 명령이 통과하고(1 test), make-install test는 Makefile의 레시피를 읽으며 설치를 실행하지 않는다 (S-54).
 - S-45-36: Makefile은 `commit-msg-check` target을 지운다. K380 이후 commit-msg hook은 kit의 `make commit-msg-hook`을 실행하며, 어떤 hook이나 recipe도 fsm의 target을 부르지 않는다. RED `git grep -n "commit-msg-check"`는 정의(Makefile:232-237)를 보이고 호출은 없다. GREEN grep은 아무것도 출력하지 않고, `make hooks-check`, `make kit-check`, `make lint-ts`는 exit 0이며, make-install test는 17개 중 17개가 통과한다. (S-45-36)
 - S-45-35: `make kit-sync`와 `make hooks`는 kit 74d2e87a의 사본을 받는다(K380). `.githooks/commit-msg`는 이제 `make commit-msg-hook`을 실행하며, 메시지 검사는 kit의 것이다(`check-commits.mts --message`, 이전과 같은 스크립트). RED 커밋된 `.githooks/commit-msg`가 `make hooks`가 쓰는 hook과 다르다. GREEN `make kit-check`, `make hooks-check`, `make layout-check`, `make docs-check` exit 0. (S-45-35)
