@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 1c0d6daedb3cc9e18df657c758941ab74918265c64baaea1088a56bc96a64649 -->
+<!-- source-sha256: ca19ba40965344cb9a0c37f88e7c1ccfebb362e553d6f84b668effc13d789c1c -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -75,3 +75,4 @@
 | S-55 | fsm의 Go 툴체인은 govulncheck가 GO-2026-6809(crypto/x509가 침해된 중간 인증서를 불신)로 보고하는 stdlib에 있다; mise.toml의 Go 툴체인을 수정된 릴리스로 올리고 dependency review가 이를 기록해 dependency-policy-check가 stdlib에 대해 통과한다 (S-45-40의 블로커) | mise.toml, config/dependency-review.json, packages/go/go.sum | `make dependency-policy-check` | [-] 원인: 사용자 결정 2026-10-22: fsm은 커밋된 Go pin(go 1.27.2)을 유지하고, S-55는 드롭한다. GO-2026-6809는 fsm의 dependency-review에 열린 advisory finding으로 남는다 |
 | S-56 | 모든 다른 행이 닫힌 뒤 main의 최종 커밋에서 전체 테스트 실행(CI gates.yml)이 통과한다; 실행은 main의 최종 백업 push로 시작된다 | docs/plans/kit-standard/checklist.md, docs/plans/kit-standard/checklist.ko.md | `gh run view --exit-status $(gh run list --branch main --workflow gates.yml --limit 1 --json databaseId --jq '.[0].databaseId')` | [ ] |
 | S-57 | kit-sync가 kit lint 설정 사본을 지우고(K514) kit에서 바뀐 사본을 쓴다. 원인: K514 이후 kit은 ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, .oxlintrc.json, knip.json, config/api-extractor.kit.json을 자기 패키지에서 읽으므로 fsm의 사본은 낡았고, kit-check는 그것과 마지막 sync 뒤 바뀐 사본을 이름 붙인다. 인수 조건: make kit-sync를 실행해 낡은 사본이 사라지고, make kit-check와 lint target이 통과한다. red fixture: 지금 make kit-check가 낡은 사본으로 실패한다. | the copies of kit | `make kit-check suppression-check lint-ts lint-python lint-php lint-go lint-rust` | [o] |
+| S-58 | kit-sync가 S-57 이후 kit에서 바뀐 사본을 가져오고, fsm의 owner 규칙은 lint가 kit-gates의 gate인 언어의 각 source 경로를 그 lint와 duplication-check로 보내며 S-57이 지운 파일을 이름 붙이지 않는다(S-57 후속). 원인: kit은 K532에서 scripts/kit/bootstrap/install-mise.mts를 바꾸었고, K534 이후 kit-check는 owner가 각 언어의 lint를 선택하는지 확인하는데 fsm의 규칙은 그렇지 않으며, 그 규칙은 S-57이 지운 ruff.toml 외 다섯 파일을 아직 이름 붙여 owner-validate가 거부한다. 인수 조건: make kit-check, make owner-validate와 lint가 통과한다. red fixture: 지금 make kit-check와 make owner-validate가 실패한다. | `config/owner-checks.json`, the copies of kit | `make kit-check owner-validate lint-ts lint-python lint-php lint-go lint-rust` | [ ] |
