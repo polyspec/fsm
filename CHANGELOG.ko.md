@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 673274eeb28f31b3db5f29a7f3a708dcda51dc72ff2b5060943af50631163e73 -->
+<!-- source-sha256: 3c110e911b83d711913bad65767046673c8005fe53eab0c5239e82f23473c774 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-45-41 완료: `CHECK_TARGETS`가 `suppression-check`를 실행하고 Rust suppression이 reason을 적는다 (S-45-41). 72fae38로 land되었고, Verification의 red와 green을 기록했다.
 - S-45-41: `CHECK_TARGETS`가 `suppression-check`를 실행하고, `packages/rust/tests/common/mod.rs`의 Rust suppression은 attribute 줄에 reason을 적는다(P8). RED: main에서 `make suppression-check`가 실패한다, `packages/rust/tests/common/mod.rs:62`에 reason이 없다. GREEN: 같은 명령이 통과한다 (S-45-41).
 - S-54 완료: 파이썬 설치는 sibling 체크아웃을 링크하고 release wheel을 설치하지 않으며, 테스트는 직접 실행한다. HEAD에서 red, c5838e1에서 green (S-54).
 - S-54: `fsm-python-install`은 pylock.toml에서 polyspec-orm과 polyspec-ordered-json의 release wheel을 더 이상 설치하지 않는다; sibling 체크아웃을 링크(`make link`)하고 프로젝트를 editable로 설치하며, 추적되는 pylock.toml은 그대로 둔다. RED: HEAD Makefile에서 `node --test --test-name-pattern=S-54 tests/make-install/make-install.test.mts`가 실패한다: `fsm-python-install still installs pylock.toml`. GREEN: 같은 명령이 통과하고(1 test), make-install test는 Makefile의 레시피를 읽으며 설치를 실행하지 않는다 (S-54).

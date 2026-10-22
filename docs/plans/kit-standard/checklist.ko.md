@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 422b8d9657a2f00d4bca9ca8cd42d160832c2f9f0dcdee71684b998258b295a7 -->
+<!-- source-sha256: 54e910c2e18cb143c4618d2ae2badaeadf66bf1459f67282f8610884b141c580 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -62,7 +62,7 @@
 | S-45-34 | P30: fsm-php-install과 fsm-php-ext-install은 composer install 바로 뒤에 make link를 실행하므로, tracked lock에서 설치한 vendor가 link를 대신하지 않는다(kit link-state-check는 $(COMPOSER) install을 놓쳤다) | Makefile, tests/make-install/make-install.test.mts | `node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts` | [o] |
 | S-45-35 | fsm은 74d2e87a의 kit 사본을 받는다(K348 K385 K384 K383 K380 K382 K375): make kit-sync와 make hooks를 실행하며, kit의 commit-msg hook이 fsm의 hook을 대신한다(K380) | the copies of kit, .githooks | `make kit-check` | [o] |
 | S-45-36 | kit의 commit-msg hook(K380)은 kit의 commit-msg-hook을 실행하므로, 더 이상 어떤 hook이나 recipe도 부르지 않는 fsm Makefile의 commit-msg-check target을 지운다 | Makefile | `make hooks-check`, node node_modules/@polyspec/kit/dist/run-tests.mjs node --results .results/make-install-test.json --inputs Makefile --inputs tests/make-install -- tests/make-install/make-install.test.mts | [o] |
-| S-45-41 | CHECK_TARGETS는 kit-gates의 suppression-check gate를 실행하며, packages/rust/tests/common/mod.rs의 Rust suppression은 attribute 줄에 reason을 적는다(P8, K334) | Makefile, packages/rust/tests/common/mod.rs | `make suppression-check` | [~] |
+| S-45-41 | CHECK_TARGETS는 kit-gates의 suppression-check gate를 실행하며, packages/rust/tests/common/mod.rs의 Rust suppression은 attribute 줄에 reason을 적는다(P8, K334) | Makefile, packages/rust/tests/common/mod.rs | `make suppression-check` | [o] |
 | S-46 | config/parity.json의 모든 unit은 모든 구현에서 성립하고, test가 이름으로 적은 spec requirement를 인용한다 (kit K273, K275, K276) | config/parity.json, docs/spec, the tests of every implementation | `make parity-declarations-check` | [o] |
 | S-47 | 로컬 설치는 lock의 sibling 패키지를 처음부터 link한다(make npm-install). make link-state-check가 통과하며, 추적 package-lock.json은 규칙상 release source를 유지한다. | packages/db/package-lock.json | `make npm-install DIR=packages/db`, `make link-state-check` | [-] 원인: 추적 lock은 규칙상 release를 기록하고, 로컬 설치는 K448-7 이후 sibling 패키지를 link하며, link-state-check가 통과한다. K448-7이 이를 전달했다 |
 | S-48 | 로컬 설치는 lock의 sibling 패키지를 처음부터 link한다(make npm-install). make link-state-check가 통과하며, 추적 package-lock.json은 규칙상 release source를 유지한다. | packages/gui/package-lock.json | `make npm-install DIR=packages/gui`, `make link-state-check` | [-] 원인: 추적 lock은 규칙상 release를 기록하고, 로컬 설치는 K448-7 이후 sibling 패키지를 link하며, link-state-check가 통과한다. K448-7이 이를 전달했다 |
