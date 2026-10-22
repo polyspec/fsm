@@ -180,7 +180,7 @@ fsm-python-install:
 	@$(PYTHON_BIN) -c 'import sys; sys.exit(0 if sys.version_info[:2] == (3, 14) else "PYTHON must be Python 3.14, it is " + sys.version.split()[0])' || { echo "fsm-python-install: run make install-tools at the root first"; exit 1; }
 	rm -rf $(PY_VENV)
 	$(MAKE) python-venv DIR=$(PY_VENV)
-	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy -r packages/python/pylock.toml
+	$(MAKE) link
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps -e packages/python
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.

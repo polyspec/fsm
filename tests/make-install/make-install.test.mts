@@ -5,7 +5,7 @@
 // of each dependency and, per case, the installed stamps. No dependency is installed and no network is used: make only prints the recipes.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { utimesSync } from 'node:fs';
+import { readFileSync, utimesSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -310,4 +310,13 @@ test('make check runs make lint-ts (S-44-15)', () => {
   assert.equal(result.status, 0, result.stderr);
   const targets = checkTargets(result.stdout);
   assert.ok(targets.includes('lint-ts'), 'CHECK_TARGETS does not run lint-ts');
+});
+
+// S-54: the python install links the sibling polyspec checkouts from the start and installs no release wheel of pylock.toml. The
+// recipe is read from the Makefile, not run: make -n runs the recursive $(MAKE) lines, which would create the venv.
+test('fsm-python-install installs no pylock.toml and links the siblings (S-54)', () => {
+  const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
+  const recipe = makefile.slice(makefile.indexOf('\nfsm-python-install:'), makefile.indexOf('\n# No bytecode'));
+  assert.ok(!/pip install[^\n]*pylock\.toml/.test(recipe), `fsm-python-install still installs pylock.toml:\n${recipe}`);
+  assert.ok(/\$\(MAKE\) link\b/.test(recipe), `fsm-python-install does not link the siblings:\n${recipe}`);
 });
