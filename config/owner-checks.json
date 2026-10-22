@@ -27,12 +27,6 @@
         "package-lock.json",
         "PRINCIPLES.md",
         "PRINCIPLES.ko.md",
-        "ruff.toml",
-        "phpcs.xml.dist",
-        "phpstan.dist.neon",
-        ".golangci.yml",
-        ".oxlintrc.json",
-        "knip.json",
         ".editorconfig",
         "config/**",
         "Makefile",
@@ -202,12 +196,6 @@
         "package-lock.json",
         "PRINCIPLES.md",
         "PRINCIPLES.ko.md",
-        "ruff.toml",
-        "phpcs.xml.dist",
-        "phpstan.dist.neon",
-        ".golangci.yml",
-        ".oxlintrc.json",
-        "knip.json",
         ".editorconfig",
         "config/**",
         "Makefile",
@@ -389,6 +377,63 @@
         "readme-test",
         "make-install-test",
         "python-tools-test"
+      ]
+    },
+    {
+      "paths": [
+        "**/*.ts",
+        "**/*.mts",
+        "**/*.js",
+        "**/*.mjs"
+      ],
+      "targets": [
+        "lint-ts",
+        "duplication-check"
+      ]
+    },
+    {
+      "paths": [
+        "**/*.py"
+      ],
+      "targets": [
+        "lint-python",
+        "duplication-check"
+      ]
+    },
+    {
+      "paths": [
+        "**/*.php"
+      ],
+      "targets": [
+        "lint-php",
+        "duplication-check"
+      ]
+    },
+    {
+      "paths": [
+        "**/*.go"
+      ],
+      "targets": [
+        "lint-go",
+        "duplication-check"
+      ]
+    },
+    {
+      "paths": [
+        "**/*.rs"
+      ],
+      "targets": [
+        "lint-rust",
+        "duplication-check"
+      ]
+    },
+    {
+      "paths": [
+        "packages/php-ext/**"
+      ],
+      "targets": [
+        "lint-php-ext",
+        "duplication-check"
       ]
     }
   ]
