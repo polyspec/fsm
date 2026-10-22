@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 11c4302e1b450d46e21cbdec9bb640ec22d891b2f9bf9e6a85c10fd92c256439 -->
+<!-- source-sha256: a278196a141ede6ec923b23da94b09202a4556835f2e953c2a94ace4917cc77e -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -66,7 +66,7 @@
 | S-47 | packages/db/package-lock.json이 @polyspec/ordered-json과 @polyspec/orm을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/db/package-lock.json | `make npm-install DIR=packages/db`, `make link-state-check` | [ ] |
 | S-48 | packages/gui/package-lock.json이 @polyspec crudui, hyper, template 패키지를 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/gui/package-lock.json | `make npm-install DIR=packages/gui`, `make link-state-check` | [ ] |
 | S-49 | packages/js/package-lock.json이 @polyspec/ordered-json과 @polyspec/orm을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/js/package-lock.json | `make npm-install DIR=packages/js`, `make link-state-check` | [ ] |
-| S-50 | package-lock.json이 @polyspec/kit을 GitHub release tarball로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | package-lock.json | `make npm-install DIR=.`, `make link-state-check` | [ ] |
+| S-50 | 로컬 설치는 @polyspec/kit sibling 패키지를 처음부터 link한다(make npm-install DIR=.). make link-state-check가 통과하며, 추적 package-lock.json은 규칙상 release source를 유지한다. | package-lock.json | `make npm-install DIR=.`, `make link-state-check` | [-] 원인: 추적 lock은 규칙상 release를 기록하고, 로컬 설치는 K448-2와 K448-7 이후 sibling을 link하며, link-state-check가 통과한다. K448-7이 이를 전달했다 |
 | S-51 | packages/php/composer.lock이 polyspec/ordered-json과 polyspec/orm을 release zip artifact로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/php/composer.lock | `make link-state-check` | [ ] |
 | S-52 | packages/php-ext/composer.lock이 polyspec/ordered-json과 polyspec/orm을 release zip artifact로 고정한다 대신 형제 checkout을 쓴다; 레시피가 그 원천에서 설치하므로 사용자 규칙(로컬 릴리즈 설치 금지)에 어긋난다;  기다린다 | packages/php-ext/composer.lock | `make link-state-check` | [ ] |
 | S-53 | packages/rust/Cargo.lock이 polyspec-ordered-json과 polyspec-orm을 저장소의 git tag로 고정하는 대신 형제 checkout을 가리키는 cargo [patch] 경로를 쓴다; kit의 cargo 링크 행(cargo의 [patch] 경로, cargo 고유 링크)을 기다리며, kit이 등록하면 그 id를 적는다 | packages/rust/Cargo.lock | `make text-absent FILE=packages/rust/Cargo.lock TEXT=git+https://github.com/polyspec/` | [ ] |
