@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-311: the row is recorded as done; its change is on main (89a746d) (S-311)
 - S-309: the row is recorded as done; its change is on main (1232f4a): PHP 8.5 in .php-version and config/toolchain.json (S-309)
 - S-305: the row is recorded as done; its change is on main (6a2be85): the K614 layout adoption (S-305)
 - S-309: .php-version declares PHP 8.5, which the releases require (S-309)

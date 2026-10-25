@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d1ecaf01bd96e75df2577324549d032e400f633636db1b10aac0c427c7f943e3 -->
+<!-- source-sha256: bc969613a56f9bb21e433d5ea91845991011a1385f27f60e509fccdad392fa80 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-311: 행을 완료로 기록한다. 변경은 main의 89a746d에 있다 (S-311)
 - S-309: 행을 완료로 기록한다. 변경은 main의 1232f4a에 있다: PHP 8.5 in .php-version and config/toolchain.json (S-309)
 - S-305: 행을 완료로 기록한다. 변경은 main의 6a2be85에 있다: the K614 layout adoption (S-305)
 - S-309: .php-version은 릴리스가 요구하는 PHP 8.5를 선언한다 (S-309)
