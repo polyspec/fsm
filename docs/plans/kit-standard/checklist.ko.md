@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 1f5c7703471e39b2627588e25f34536b1ee783206533fd7a1bd4cf7644d1d213 -->
+<!-- source-sha256: 087340718f681c8561eede50827e61a15a861371ab60579ceaa7bdd48dbfd249 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -77,4 +77,4 @@
 | S-57 | kit-sync가 kit lint 설정 사본을 지우고(K514) kit에서 바뀐 사본을 쓴다. 원인: K514 이후 kit은 ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, .oxlintrc.json, knip.json, config/api-extractor.kit.json을 자기 패키지에서 읽으므로 fsm의 사본은 낡았고, kit-check는 그것과 마지막 sync 뒤 바뀐 사본을 이름 붙인다. 인수 조건: make kit-sync를 실행해 낡은 사본이 사라지고, make kit-check와 lint target이 통과한다. red fixture: 지금 make kit-check가 낡은 사본으로 실패한다. | the copies of kit | `make kit-check suppression-check lint-ts lint-python lint-php lint-go lint-rust` | [o] |
 | S-58 | kit-sync가 S-57 이후 kit에서 바뀐 사본을 가져오고, fsm의 owner 규칙은 lint가 kit-gates의 gate인 언어의 각 source 경로를 그 lint와 duplication-check로 보내며 S-57이 지운 파일을 이름 붙이지 않는다(S-57 후속). 원인: kit은 K532에서 scripts/kit/bootstrap/install-mise.mts를 바꾸었고, K534 이후 kit-check는 owner가 각 언어의 lint를 선택하는지 확인하는데 fsm의 규칙은 그렇지 않으며, 그 규칙은 S-57이 지운 ruff.toml 외 다섯 파일을 아직 이름 붙여 owner-validate가 거부한다. 인수 조건: make kit-check, make owner-validate와 lint가 통과한다. red fixture: 지금 make kit-check와 make owner-validate가 실패한다. | `config/owner-checks.json`, the copies of kit | `make kit-check owner-validate lint-ts lint-python lint-php lint-go lint-rust` | [o] |
 | S-300 | make hooks가 PRINCIPLES.md가 명명하는 pre-merge-commit 훅을 쓰고, rules-check가 통과한다 | .githooks/pre-merge-commit | `make rules-check` | [o] |
-| S-302 | packages/go/examples/persist.go는 (int32, error)를 반환하는 GetStatus의 오류를 처리해서 Go 타입 검사가 통과한다 | packages/go/examples/persist.go | `make lint-go` | [ ] |
+| S-302 | packages/go/examples/persist.go는 (int32, error)를 반환하는 GetStatus의 오류를 처리해서 Go 타입 검사가 통과한다 | packages/go/examples/persist.go | `make lint-go` | [-] 원인: 무시되는 생성물이 오래되었다: main의 examples/model은 이전 orm 생성기의 산출물이었다. 연결된 orm-gen으로 다시 만들면 persist.go가 컴파일되고 lint-go가 통과한다. 추적되는 결함은 없다. |
