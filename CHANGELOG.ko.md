@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b7957dfd2579f59af955bfb953c18c2f5d39c08690227a20570c09c102974069 -->
+<!-- source-sha256: 0b4a3c83a7e55ba9372d89684026c251c78f3c126b901c5cd4f2bfd3a175573e -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-308: packages/compiler/tests/golden/**는 config/generated.json의 예외다. 추적되는 골든 테스트 출력이다 (S-308)
 - S-304: make build-go는 컴파일 전에 무시되는 examples/model을 examples-model로 생성하고, 도구는 $(KIT_TOOLS)의 것이라 worktree에서도 build된다 (S-304)
 - S-303: examples/persist.go는 현재 orm의 GetStatus가 돌려주는 error를 처리해서 lint-go가 통과한다. S-302는 잘못 닫혔다 (S-303)
 - S-300: 행을 완료로 기록한다. 착지한 변경은 이 커밋 앞의 커밋이다 (S-300)

@@ -35,5 +35,7 @@
     "**/go.work",
     "**/go.work.sum"
   ],
-  "exceptions": []
+  "exceptions": [
+    "packages/compiler/tests/golden/**"
+  ]
 }
