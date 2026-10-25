@@ -5,7 +5,7 @@
 # gate. scripts/kit/kit-bootstrap.mk is a copy of the package @polyspec/kit (make kit-sync); it includes the kit.mk of the
 # installed package, which runs its built tools ($(KIT)/<tool>.$(KIT_EXT)), and before the package is installed it runs only
 # make install-tools TOOLS=npm and make install-packages (S-44). The tools read the configuration in config/*.json.
-include scripts/kit/kit-bootstrap.mk
+include ../kit/scripts/kit/kit-bootstrap.mk
 export PATH := $(KIT_TOOLS)/bin:$(PATH)
 
 # The test runner of kit: every test target runs its tool through it (AGENTS.md, Rules).

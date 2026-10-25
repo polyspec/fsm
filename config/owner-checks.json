@@ -22,7 +22,6 @@
     },
     {
       "paths": [
-        "scripts/kit/**",
         "package.json",
         "package-lock.json",
         "PRINCIPLES.md",
@@ -191,7 +190,6 @@
     },
     {
       "paths": [
-        "scripts/kit/**",
         "package.json",
         "package-lock.json",
         "PRINCIPLES.md",
