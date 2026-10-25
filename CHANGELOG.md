@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-303: examples/persist.go handles the error that GetStatus of the current orm returns, so lint-go passes; S-302 was dropped by mistake (S-303)
 - S-300: the row is recorded as done; its landed change is the commit before this one (S-300)
 - S-300: make hooks writes .githooks/pre-merge-commit, which PRINCIPLES.md names, so rules-check passes (S-300)
 

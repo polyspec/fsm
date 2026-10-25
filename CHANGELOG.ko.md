@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 160a319f43ffa031a3d438f453402de51d8f257eca315ad75adc99e3852087fd -->
+<!-- source-sha256: e1ff5b1a28e2ded3f901b5e3072fc7c3c629d6328b5f84b1a460de751c26eda5 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-303: examples/persist.go는 현재 orm의 GetStatus가 돌려주는 error를 처리해서 lint-go가 통과한다. S-302는 잘못 닫혔다 (S-303)
 - S-300: 행을 완료로 기록한다. 착지한 변경은 이 커밋 앞의 커밋이다 (S-300)
 - S-300: make hooks가 PRINCIPLES.md가 명명하는 .githooks/pre-merge-commit을 쓰고, rules-check가 통과한다 (S-300)
 
