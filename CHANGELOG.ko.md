@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 195d543ff8905797cac0713e4433660a0c9a80d85078c48a5d3d0007174be812 -->
+<!-- source-sha256: 160a319f43ffa031a3d438f453402de51d8f257eca315ad75adc99e3852087fd -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-300: 행을 완료로 기록한다. 착지한 변경은 이 커밋 앞의 커밋이다 (S-300)
 - S-300: make hooks가 PRINCIPLES.md가 명명하는 .githooks/pre-merge-commit을 쓰고, rules-check가 통과한다 (S-300)
 
 - S-58 완료(S-58): make kit-sync가 install-mise.mts(kit K532)를 가져오고, owner 규칙이 각 언어의 source를 그 lint와 duplication-check로 보내며(kit K534) 지워진 파일을 이름 붙이지 않는다. red: make kit-check와 make owner-validate가 실패했고, 변경 뒤 green.

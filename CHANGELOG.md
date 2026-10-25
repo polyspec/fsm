@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-300: the row is recorded as done; its landed change is the commit before this one (S-300)
 - S-300: make hooks writes .githooks/pre-merge-commit, which PRINCIPLES.md names, so rules-check passes (S-300)
 
 - S-58 is done (S-58): make kit-sync brings install-mise.mts (kit K532), and the owner rules route the sources of each language to its lint and duplication-check (kit K534) and name no removed file; red: make kit-check and make owner-validate failed, green after the change.
