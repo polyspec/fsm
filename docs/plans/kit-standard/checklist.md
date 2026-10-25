@@ -78,3 +78,4 @@
 | S-300 | make hooks writes the pre-merge-commit hook that PRINCIPLES.md names, so rules-check passes | .githooks/pre-merge-commit | `make rules-check` | [o] |
 | S-302 | packages/go/examples/persist.go handles the error of GetStatus, which returns (int32, error), so the Go typecheck passes | packages/go/examples/persist.go | `make lint-go` | [-] cause: stale ignored generated output: examples/model on main came from an older orm generator; regenerated with the linked orm-gen, persist.go compiles and lint-go passes; no tracked defect. |
 | S-303 | packages/go/examples/persist.go handles the error of GetStatus, which returns (int32, error) in the current orm, so the Go typecheck passes | packages/go/examples/persist.go | `make lint-go` | [ ] |
+| S-304 | make build-go generates examples/model before it compiles, so a fresh worktree builds without a leftover from an earlier run | Makefile | `make build-go` | [ ] |

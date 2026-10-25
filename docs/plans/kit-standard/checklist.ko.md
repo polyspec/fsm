@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 57a09e542d70415eda1e832b85f444bfabb82c087519cf81f50481c71940e9f3 -->
+<!-- source-sha256: 48b259c5b33730aca0325e6c5bc8719b89d4efdad56169611c83cf85eef863e2 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -79,3 +79,4 @@
 | S-300 | make hooks가 PRINCIPLES.md가 명명하는 pre-merge-commit 훅을 쓰고, rules-check가 통과한다 | .githooks/pre-merge-commit | `make rules-check` | [o] |
 | S-302 | packages/go/examples/persist.go는 (int32, error)를 반환하는 GetStatus의 오류를 처리해서 Go 타입 검사가 통과한다 | packages/go/examples/persist.go | `make lint-go` | [-] 원인: 무시되는 생성물이 오래되었다: main의 examples/model은 이전 orm 생성기의 산출물이었다. 연결된 orm-gen으로 다시 만들면 persist.go가 컴파일되고 lint-go가 통과한다. 추적되는 결함은 없다. |
 | S-303 | packages/go/examples/persist.go는 현재 orm의 (int32, error)를 반환하는 GetStatus 오류를 처리해서 Go 타입 검사가 통과한다 | packages/go/examples/persist.go | `make lint-go` | [ ] |
+| S-304 | make build-go는 컴파일 전에 examples/model을 생성해서, 새 worktree가 이전 실행의 잔여물 없이 빌드된다 | Makefile | `make build-go` | [ ] |
