@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 4585003c4f11748266d94f36f258ff9f2b33b4cc80c9d60027e3d03765cbe6eb -->
+<!-- source-sha256: cbfb5a23be84f7d633534938f1c8c72fb3e53112b2c7bc20e319932dde468aa9 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -84,3 +84,4 @@
 | S-306 | Python 설치 스탬프는 pylock.toml의 sha256으로 판정해서, 링크된 venv가 이미 맞는 새 worktree는 아무것도 하지 않는다 | Makefile | `make packages/python/.venv/.installed` in a fresh worktree | [o] |
 | S-308 | config/generated.json이 packages/compiler/tests/golden/**를 예외로 선언해서, 추적되는 골든 테스트 출력이 layout-check를 통과한다 | config/generated.json | `make layout-check` | [o] |
 | S-309 | .php-version이 릴리스가 요구하는 PHP 8.5를 선언해서, lint-php의 Composer 플랫폼 검사가 통과한다 | .php-version | `make toolchain-check` | [o] |
+| S-311 | make-sandbox copies only the Makefile and parity.json and links the sibling kit (kit K613) | tests/support/make-sandbox.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |

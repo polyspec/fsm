@@ -83,3 +83,4 @@
 | S-306 | the Python install stamp is judged by the sha256 of pylock.toml, so a fresh worktree whose linked venv already matches does nothing | Makefile | `make packages/python/.venv/.installed` in a fresh worktree | [o] |
 | S-308 | config/generated.json declares packages/compiler/tests/golden/** an exception, so the tracked golden test outputs pass layout-check | config/generated.json | `make layout-check` | [o] |
 | S-309 | .php-version declares PHP 8.5, which the releases require, so the Composer platform check of lint-php passes | .php-version | `make toolchain-check` | [o] |
+| S-311 | make-sandbox copies only the Makefile and parity.json and links the sibling kit (kit K613) | tests/support/make-sandbox.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |
