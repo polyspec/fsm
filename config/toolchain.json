@@ -2,7 +2,7 @@
   "schema": 1,
   "comment": "The toolchains of fsm that no other file declares (S-44-2). Node.js is node of mise.toml and Rust rust-toolchain.toml. The php kind runs on PHP 8.4, whose dependencies resolve for config.platform.php of each composer.json. mise is the release that make install-tools TOOLS=npm installs; mise.toml declares the tools it installs at the pins of kit (Go, Python with uv, govulncheck of the dependency review, cargo-audit of the Cargo locks, Composer, alint of make layout-check) and mise.lock locks them. The repository publishes no wheel, so it declares no pythonBackend.",
   "php": [
-    "8.4"
+    "8.5"
   ],
   "exceptions": [],
   "mise": {

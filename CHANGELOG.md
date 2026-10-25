@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-309: .php-version declares PHP 8.5, which the releases require (S-309)
 
 - S-308: the row is recorded as done; its change is on main (commit e078d9b or earlier) (S-308)
 - S-306: the row is recorded as done; its change is on main (commit e078d9b or earlier) (S-306)

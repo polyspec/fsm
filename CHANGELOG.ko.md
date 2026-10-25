@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e12dad0f7d748c2a36158448ed78c073fef5822c0c82a234e4525613dc034840 -->
+<!-- source-sha256: c3f0681dd0d343265c2218e347a2abeb85552b72e78770eb825ac13f364e547b -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-309: .php-version은 릴리스가 요구하는 PHP 8.5를 선언한다 (S-309)
 
 - S-308: 행을 완료로 기록한다. 변경은 main에 있다 (e078d9b 이전 커밋) (S-308)
 - S-306: 행을 완료로 기록한다. 변경은 main에 있다 (e078d9b 이전 커밋) (S-306)
