@@ -1,13 +1,12 @@
 # The tools of every run are the releases that the tracked declaration files name: Node.js in mise.toml, which the bootstrap
 # installs into var/tools and recipes start by $(NODE) of kit.mk (kit K171). Each language
 # package item adds the declaration of its toolchain (config/toolchain.json).
-export PATH := $(CURDIR)/var/tools/bin:$(PATH)
-
 # The shared targets of kit: the gates, the document, owner and commit checks, the toolchains, the layout check and the dependency
 # gate. scripts/kit/kit-bootstrap.mk is a copy of the package @polyspec/kit (make kit-sync); it includes the kit.mk of the
 # installed package, which runs its built tools ($(KIT)/<tool>.$(KIT_EXT)), and before the package is installed it runs only
 # make install-tools TOOLS=npm and make install-packages (S-44). The tools read the configuration in config/*.json.
 include scripts/kit/kit-bootstrap.mk
+export PATH := $(KIT_TOOLS)/bin:$(PATH)
 
 # The test runner of kit: every test target runs its tool through it (AGENTS.md, Rules).
 RUN_TESTS := node $(KIT)/run-tests.$(KIT_EXT)
@@ -38,7 +37,7 @@ CHECK_TARGETS := kit-check owner-validate docs-check commits-check hooks-check t
 NPM_DEP := packages/js/node_modules/.package-lock.json
 PHP_DEP := packages/php/vendor/composer/installed.json
 PHP_EXT_DEP := packages/php-ext/vendor/composer/installed.json
-PYTHON_BIN := var/tools/mise/shims/python3
+PYTHON_BIN := $(KIT_TOOLS)/mise/shims/python3
 PYTHON_DEP := packages/python/.venv/.installed
 PYTHON_LOCK := packages/python/pylock.toml
 GO_DEP := var/deps/go
@@ -101,10 +100,10 @@ PHP_EXT_NAME := polyspec_fsm
 PHP_EXT_MODULE := var/php-ext/$(PHP_EXT_NAME).so
 PY_VENV := packages/python/.venv
 # uv is the one of config/toolchain.json that install-tools installs (S-44-2), never a uv of PATH.
-UV := var/tools/mise/shims/uv
+UV := $(KIT_TOOLS)/mise/shims/uv
 # The tools of the packages, by the absolute path of their shims: kit-check requires a recipe to start a tool by such a path.
-GO := $(CURDIR)/var/tools/mise/shims/go
-COMPOSER := $(CURDIR)/var/tools/mise/shims/composer
+GO := $(KIT_TOOLS)/mise/shims/go
+COMPOSER := $(KIT_TOOLS)/mise/shims/composer
 
 # fsm-go-install downloads the modules that go.mod and go.sum name (the orm release and orm-gen); gen and test need them.
 .PHONY: fsm-go-install fsm-go-gen fsm-go-test
@@ -453,3 +452,11 @@ python-persist-test-postgres: $(PYTHON_DEP) fsm-python-gen
 python-persist-test-mysql: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	FSM_TEST_DIALECT=mysql $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-mysql.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
+
+# examples-model generates the ignored examples/model of the Go examples before build-go compiles them (S-304): the build does not
+# depend on a leftover of an earlier run. It runs the orm-gen of packages/go with the Go of the checkout's tools, as fsm-go-gen does.
+build-go: examples-model
+.PHONY: examples-model
+examples-model:
+	mkdir -p packages/go/examples
+	cd packages/go && $(KIT_TOOLS)/mise/shims/go tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...

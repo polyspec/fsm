@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 77a0f7928cbcfa706c39b184faabfc0b908e9444aabd494f773b00166697daec -->
+<!-- source-sha256: ba2aca9621e561a9de4d5bba1c51a50645d07b1a5f3858b96784fc6a13a37995 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -79,7 +79,7 @@
 | S-300 | make hooks가 PRINCIPLES.md가 명명하는 pre-merge-commit 훅을 쓰고, rules-check가 통과한다 | .githooks/pre-merge-commit | `make rules-check` | [o] |
 | S-302 | packages/go/examples/persist.go는 (int32, error)를 반환하는 GetStatus의 오류를 처리해서 Go 타입 검사가 통과한다 | packages/go/examples/persist.go | `make lint-go` | [-] 원인: 무시되는 생성물이 오래되었다: main의 examples/model은 이전 orm 생성기의 산출물이었다. 연결된 orm-gen으로 다시 만들면 persist.go가 컴파일되고 lint-go가 통과한다. 추적되는 결함은 없다. |
 | S-303 | packages/go/examples/persist.go는 현재 orm의 (int32, error)를 반환하는 GetStatus 오류를 처리해서 Go 타입 검사가 통과한다 | packages/go/examples/persist.go | `make lint-go` | [o] |
-| S-304 | make build-go는 컴파일 전에 examples/model을 생성해서, 새 worktree가 이전 실행의 잔여물 없이 빌드된다 | Makefile | `make build-go` | [~] |
+| S-304 | make build-go는 컴파일 전에 examples/model을 생성해서, 새 worktree가 이전 실행의 잔여물 없이 빌드된다 | Makefile | `make build-go` | [o] |
 | S-305 | K614: Makefile은 ../kit/scripts/kit/kit-bootstrap.mk를 include하고, make kit-sync가 kit-sync 사본을 지우며, config/php-lint는 없고, 공유 루트 파일은 ../kit 링크이며, 지워진 경로의 owner glob은 없다 | Makefile, config/owner-checks.json, PRINCIPLES.md, PRINCIPLES.ko.md, .editorconfig, .claude/settings.json, config/php-lint | `make kit-check` | [ ] |
 | S-306 | Python 설치 스탬프는 pylock.toml의 sha256으로 판정해서, 링크된 venv가 이미 맞는 새 worktree는 아무것도 하지 않는다 | Makefile | `make packages/python/.venv/.installed` in a fresh worktree | [ ] |
 | S-308 | config/generated.json이 packages/compiler/tests/golden/**를 예외로 선언해서, 추적되는 골든 테스트 출력이 layout-check를 통과한다 | config/generated.json | `make layout-check` | [ ] |

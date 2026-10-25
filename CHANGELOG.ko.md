@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e1ff5b1a28e2ded3f901b5e3072fc7c3c629d6328b5f84b1a460de751c26eda5 -->
+<!-- source-sha256: b7957dfd2579f59af955bfb953c18c2f5d39c08690227a20570c09c102974069 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-304: make build-go는 컴파일 전에 무시되는 examples/model을 examples-model로 생성하고, 도구는 $(KIT_TOOLS)의 것이라 worktree에서도 build된다 (S-304)
 - S-303: examples/persist.go는 현재 orm의 GetStatus가 돌려주는 error를 처리해서 lint-go가 통과한다. S-302는 잘못 닫혔다 (S-303)
 - S-300: 행을 완료로 기록한다. 착지한 변경은 이 커밋 앞의 커밋이다 (S-300)
 - S-300: make hooks가 PRINCIPLES.md가 명명하는 .githooks/pre-merge-commit을 쓰고, rules-check가 통과한다 (S-300)
