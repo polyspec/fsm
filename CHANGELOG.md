@@ -5,13 +5,14 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-308: the row is recorded as done; its change is on main (commit e078d9b or earlier) (S-308)
 - S-306: the row is recorded as done; its change is on main (commit e078d9b or earlier) (S-306)
 - S-308: packages/compiler/tests/golden/** is an exception of config/generated.json, the tracked golden test outputs (S-308)
 - S-304: make build-go generates the ignored examples/model through examples-model before it compiles, and the tools are the ones of $(KIT_TOOLS), so a worktree builds (S-304)
 - S-303: examples/persist.go handles the error that GetStatus of the current orm returns, so lint-go passes; S-302 was dropped by mistake (S-303)
 - S-300: the row is recorded as done; its landed change is the commit before this one (S-300)
 - S-300: make hooks writes .githooks/pre-merge-commit, which PRINCIPLES.md names, so rules-check passes (S-300)
-
 - S-58 is done (S-58): make kit-sync brings install-mise.mts (kit K532), and the owner rules route the sources of each language to its lint and duplication-check (kit K534) and name no removed file; red: make kit-check and make owner-validate failed, green after the change.
 - S-57 is done (S-57): make kit-sync removes the kit lint configuration copies (K514) and writes the copies that changed in kit, and config/toolchain.json declares the php symbol extractor of lint-php; red: make kit-check reported 17 findings, green after the sync.
 - S-45-41 is done: `CHECK_TARGETS` runs `suppression-check` and the Rust suppression states its reason (S-45-41), landed as 72fae38 with the red and green of its Verification.

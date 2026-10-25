@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: fa74207b16b2d9f0cfa4e157f0060a68fa6496165a9dbd6b677ebb5188b2ac35 -->
+<!-- source-sha256: 229a1350842f0dddc707d09b703f6b059db771ec1e1b6c3be8d197adac787380 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -82,4 +82,4 @@
 | S-304 | make build-go는 컴파일 전에 examples/model을 생성해서, 새 worktree가 이전 실행의 잔여물 없이 빌드된다 | Makefile | `make build-go` | [o] |
 | S-305 | K614: Makefile은 ../kit/scripts/kit/kit-bootstrap.mk를 include하고, make kit-sync가 kit-sync 사본을 지우며, config/php-lint는 없고, 공유 루트 파일은 ../kit 링크이며, 지워진 경로의 owner glob은 없다 | Makefile, config/owner-checks.json, PRINCIPLES.md, PRINCIPLES.ko.md, .editorconfig, .claude/settings.json, config/php-lint | `make kit-check` | [~] |
 | S-306 | Python 설치 스탬프는 pylock.toml의 sha256으로 판정해서, 링크된 venv가 이미 맞는 새 worktree는 아무것도 하지 않는다 | Makefile | `make packages/python/.venv/.installed` in a fresh worktree | [o] |
-| S-308 | config/generated.json이 packages/compiler/tests/golden/**를 예외로 선언해서, 추적되는 골든 테스트 출력이 layout-check를 통과한다 | config/generated.json | `make layout-check` | [~] |
+| S-308 | config/generated.json이 packages/compiler/tests/golden/**를 예외로 선언해서, 추적되는 골든 테스트 출력이 layout-check를 통과한다 | config/generated.json | `make layout-check` | [o] |

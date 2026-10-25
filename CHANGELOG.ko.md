@@ -1,18 +1,19 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 333c07b90d8ec864d70c49228f64057052f4c29376cdf7baf6ebed61550e7643 -->
+<!-- source-sha256: e12dad0f7d748c2a36158448ed78c073fef5822c0c82a234e4525613dc034840 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-308: 행을 완료로 기록한다. 변경은 main에 있다 (e078d9b 이전 커밋) (S-308)
 - S-306: 행을 완료로 기록한다. 변경은 main에 있다 (e078d9b 이전 커밋) (S-306)
 - S-308: packages/compiler/tests/golden/**는 config/generated.json의 예외다. 추적되는 골든 테스트 출력이다 (S-308)
 - S-304: make build-go는 컴파일 전에 무시되는 examples/model을 examples-model로 생성하고, 도구는 $(KIT_TOOLS)의 것이라 worktree에서도 build된다 (S-304)
 - S-303: examples/persist.go는 현재 orm의 GetStatus가 돌려주는 error를 처리해서 lint-go가 통과한다. S-302는 잘못 닫혔다 (S-303)
 - S-300: 행을 완료로 기록한다. 착지한 변경은 이 커밋 앞의 커밋이다 (S-300)
 - S-300: make hooks가 PRINCIPLES.md가 명명하는 .githooks/pre-merge-commit을 쓰고, rules-check가 통과한다 (S-300)
-
 - S-58 완료(S-58): make kit-sync가 install-mise.mts(kit K532)를 가져오고, owner 규칙이 각 언어의 source를 그 lint와 duplication-check로 보내며(kit K534) 지워진 파일을 이름 붙이지 않는다. red: make kit-check와 make owner-validate가 실패했고, 변경 뒤 green.
 - S-57 완료(S-57): make kit-sync가 kit lint 설정 사본(K514)을 지우고 kit에서 바뀐 사본을 쓰며, config/toolchain.json이 lint-php의 php symbol extractor를 선언한다. red: make kit-check가 17개 finding을 보고했고, sync 뒤 green.
 - S-45-41 완료: `CHECK_TARGETS`가 `suppression-check`를 실행하고 Rust suppression이 reason을 적는다 (S-45-41). 72fae38로 land되었고, Verification의 red와 green을 기록했다.
@@ -156,7 +157,6 @@
 - S-30: 커밋된 code는 lock을 잃어도 의미가 바뀌지 않는다(R1, 명세 B-3·B-5). 모든 store의 `load()`는 커밋된 lock을 `baseline`으로 돌려준다(json·mermaid는 git HEAD의 `fsm.lock.json`, db는 저장된 행). `check`, `gen`, `vectors`, `lock`, `save`, `copy`는 커밋된 code를 잃거나, 커밋된 reserved code를 상태에 주거나, 커밋된 key를 다른 code로 옮기는 lock을 `E_LOCK_REGRESSED`로 거부한다. 이름 변경은 커밋 전에도 받아들인다. 감사 사례(code 두 개를 바꾸고 `fsm.lock.json`을 비운 뒤 `lock`)는 `lock: ok`를 출력했으나 이제 거부된다. git 밖이나 추적되지 않는 lock은 커밋된 것이 없으므로 저장된 lock만 판정한다. db store에서 SQL로 바뀐 행은 감지하지 못한다. `lock`은 커밋된 code를 유지할 때만 삭제된 lock을 복구한다.
 - S-22-2: GUI 폼을 쓸 수 있다. `make gui-build`가 crudui stylesheet `@polyspec/crudui-generator-core/styles/crudui.css`를 `public/assets/crudui.css`로 복사해 `hyper-build-assets --static`에 넘기고, layout은 `/assets/crudui.css`를 링크하므로 행 버튼이 아이콘과 크기를 보인다. 상태 행의 새 field는 `New key`로 label을 붙인다(저장된 key는 `Key` 그대로다). 한 행의 두 field가 label을 공유하지 않는다. `public/favicon.ico`(`scripts/make-favicon.mjs`가 쓰는 ICO)가 `/favicon.ico`에 404 대신 200으로 응답하며, layout이 이를 링크한다. 브라우저 테스트가 세 가지를 모두 확인한다.
 - S-22-1: GUI 폼이 행 변경 뒤 다시 렌더링한다. 편집 폼(`packages/fsm-gui/client/main.ts`)은 crudui instance를 구독하고, `patchContent(host, renderForm(instance, render))`로 다시 렌더링한 뒤 `connection.sync()`를 호출한다. `connectForm`의 계약이다. 수정 전에는 행의 add·remove 버튼 클릭이 instance만 바꾸고 페이지는 바꾸지 않았다. `render`는 페이지의 crudui render 옵션(action, `_csrf` token, 오류)이며 페이지 state에 실리고, 폼은 `#fsm-form` host 요소 안에 있다. `packages/fsm-gui/tests/browser/browser.test.mjs`(`make gui-browser-test`)는 고정된 Playwright 1.64.0(정확한 버전 devDependency, `make gui-browsers`가 브라우저를 내려받음)의 headless Chromium으로 폼을 조작하며 add, save, remove, 제안 code를 확인한다. `make gui-test`는 최상위 테스트만 실행한다. 수정 전 첫 브라우저 단정은 `5 !== 6`으로 실패했다.
-
 - S-36: fsm-db CLI를 README가 문서화한 모든 명령에 대해 process로 테스트한다. `packages/fsm-db/tests/cli.test.mjs`는 출력, 종료 코드, 이후의 행을 단언한다. `lock --rename order.draft=created`는 `[fsm-db] lock: ok`를 출력하고, 이름이 바뀐 state의 code를 유지하며, 새 key를 행에 쓴다. 알 수 없는 rename은 README의 `E_UNKNOWN_STATE_REF` 줄을 출력하고 행을 쓰지 않는다. `copy --to mermaid --root <dir>`는 정규형 `.fsm.mmd` 파일과 lock을 쓴다. `copy --from mermaid --root <dir>`는 빈 database를 채우고, 두 번째 복사는 README의 `E_STORE_NOT_EMPTY` 줄을 출력하며 아무것도 쓰지 않는다. RED: process 케이스가 없었고, 기대 출력을 바꾸면 rename 케이스가 실패한다. README는 명령과 일치했으므로 틀린 README 문장은 없었다. 대신 `copy --to mermaid` 예시가 추가되었다(en, ko).
 - S-28: spec B-2의 store 계약을 세 store에서 증명한다. `packages/fsm-db/tests/store-contract-all.test.mjs`(컴파일러에 의존하는 fsm-db 패키지가 소유하며 `make db-test`에서 실행)는 `packages/fsm-compiler/tests/fixtures/valid`의 모든 valid fixture를 각각, 그리고 전부 함께 json → db → mermaid → json으로 왕복시키고 파일을 바이트로 비교한다. 또한 필수 옵션을 준 모든 kind의 `run` gen과 `vectors`(모든 kind의 vectors 파일 포함)가 json, mermaid, db store에서 바이트 동일한 출력을 내는지 확인한다. RED: save에서 `final`을 버리는 db store는 네 개의 동등성 케이스에서 실패한다. core가 `E_DEAD_END`로 왕복을 거부하거나 바이트가 달라지며, 탐지 케이스도 같은 것을 증명한다. 실제 store는 통과하므로 store 결함은 발견되지 않았다. spec B-2(en, ko)가 파일을 명시한다.
 - S-20: 문서 사이트(R11, 계획 C-8). `docs/.vitepress/config.mts`는 저장소 문서를 제자리에서 VitePress 1.6.4로 빌드한다(`make docs-build`, 패키지는 `docs-deps`가 `docs/package-lock.json`으로 설치): 루트와 패키지 README(영어와 한국어), 명세, 계획, 검증 페이지, changelog. README.md는 자기 디렉터리의 index 페이지이며, 사이트 페이지가 아닌 저장소 파일로 가는 링크는 공개 저장소를 가리키고, dead link는 빌드를 실패시킨다. `make docs-build-test`(tests/docs-build)는 dead link의 실패와 실제 빌드를 확인한다. `docs/package.json`은 vite를 6.4.4로 override한다. vitepress 1.6.4가 moderate 및 high advisory가 있는 5.4.x 줄을 고정하기 때문이다. 계획은 자리표시자 `<major>`를 코드 스팬에 쓴다. 사이트가 이를 Vue 마크업으로 컴파일하기 때문이다. `config/documents.json`은 `siteLinks`를 설정한다.
