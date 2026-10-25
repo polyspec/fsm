@@ -1,17 +1,22 @@
 // What the tests that run `make -n` on a copy of the Makefile share: the files of the copy, the environment of a make run without
 // inherited make flags, and the search of a line in the printed recipes.
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 
 /** The files that a copy of the Makefile reads: the Makefile, the kit targets and the kinds of config/parity.json. */
-const MAKE_FILES = ['Makefile', 'scripts/kit/kit-bootstrap.mk', 'node_modules/@polyspec/kit/dist/kit.mk', 'config/parity.json'];
+const MAKE_FILES = ['Makefile', 'config/parity.json'];
 
-/** Copies the files that the Makefile reads from the checkout `root` into the directory `dir`. */
-export function copyMakeFiles(root: string, dir: string): void {
+/** Copies the Makefile and the config it reads from the checkout `root` into the repository folder `tmp/fsm`, and links the kit
+ * checkout as `tmp/kit`, so that the Makefile's include of ../kit resolves as it does in the checkout. Returns the folder. */
+export function copyMakeFiles(root: string, tmp: string): string {
+  const dir = path.join(tmp, 'fsm');
+  mkdirSync(dir, { recursive: true });
   for (const file of MAKE_FILES) {
     mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
     copyFileSync(path.join(root, file), path.join(dir, file));
   }
+  symlinkSync(path.resolve(root, '../kit'), path.join(tmp, 'kit'));
+  return dir;
 }
 
 /** The environment of a make run, with no inherited make flags. */

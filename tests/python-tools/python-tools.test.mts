@@ -38,8 +38,7 @@ const LOCKS = [
 
 /** A copy of the Makefile and of the files that it reads, without any installed dependency. */
 function sandbox(t: TestContext): string {
-  const dir = tree(t, {});
-  copyMakeFiles(ROOT, dir);
+  const dir = copyMakeFiles(ROOT, tree(t, {}));
   put(dir, Object.fromEntries(LOCKS.map(file => [file, '\n'])));
   return dir;
 }

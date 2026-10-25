@@ -107,8 +107,7 @@ const ALL = [...INSTALL.keys()];
 
 /** A copy of the Makefile and of the files it reads, with empty locks; `installed` adds the stamps, each newer than its lock. */
 function sandbox(t: TestContext, { installed = false }: { installed?: boolean } = {}): string {
-  const dir = tree(t, {});
-  copyMakeFiles(ROOT, dir);
+  const dir = copyMakeFiles(ROOT, tree(t, {}));
   put(dir, Object.fromEntries(LOCKS.map(file => [file, '\n'])));
   // The GUI lock names the pinned Playwright version, which keys the browser stamp (S-29-1).
   put(dir, { 'packages/gui/package-lock.json': JSON.stringify({ packages: { 'node_modules/playwright': { version: PLAYWRIGHT } } }) });
