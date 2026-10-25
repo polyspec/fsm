@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 66b4105a277f892fe8499977cf2c6cfd6a3e761a6d7390e02828d81ff59eedba -->
+<!-- source-sha256: 115797c9a2f13e21a00733d2bdb8490f0a1fcc409601cd1833ff52275f779fba -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -83,3 +83,4 @@
 | S-305 | K614: Makefile은 ../kit/scripts/kit/kit-bootstrap.mk를 include하고, make kit-sync가 kit-sync 사본을 지우며, config/php-lint는 없고, 공유 루트 파일은 ../kit 링크이며, 지워진 경로의 owner glob은 없다 | Makefile, config/owner-checks.json, PRINCIPLES.md, PRINCIPLES.ko.md, .editorconfig, .claude/settings.json, config/php-lint | `make kit-check` | [~] |
 | S-306 | Python 설치 스탬프는 pylock.toml의 sha256으로 판정해서, 링크된 venv가 이미 맞는 새 worktree는 아무것도 하지 않는다 | Makefile | `make packages/python/.venv/.installed` in a fresh worktree | [o] |
 | S-308 | config/generated.json이 packages/compiler/tests/golden/**를 예외로 선언해서, 추적되는 골든 테스트 출력이 layout-check를 통과한다 | config/generated.json | `make layout-check` | [o] |
+| S-309 | .php-version이 릴리스가 요구하는 PHP 8.5를 선언해서, lint-php의 Composer 플랫폼 검사가 통과한다 | .php-version | `make toolchain-check` | [ ] |
