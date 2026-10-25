@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 48b259c5b33730aca0325e6c5bc8719b89d4efdad56169611c83cf85eef863e2 -->
+<!-- source-sha256: d755abf358b816da6e58354476e3fd4eb14e93736f65ad6bd6cffebe16412987 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -80,3 +80,4 @@
 | S-302 | packages/go/examples/persist.go는 (int32, error)를 반환하는 GetStatus의 오류를 처리해서 Go 타입 검사가 통과한다 | packages/go/examples/persist.go | `make lint-go` | [-] 원인: 무시되는 생성물이 오래되었다: main의 examples/model은 이전 orm 생성기의 산출물이었다. 연결된 orm-gen으로 다시 만들면 persist.go가 컴파일되고 lint-go가 통과한다. 추적되는 결함은 없다. |
 | S-303 | packages/go/examples/persist.go는 현재 orm의 (int32, error)를 반환하는 GetStatus 오류를 처리해서 Go 타입 검사가 통과한다 | packages/go/examples/persist.go | `make lint-go` | [ ] |
 | S-304 | make build-go는 컴파일 전에 examples/model을 생성해서, 새 worktree가 이전 실행의 잔여물 없이 빌드된다 | Makefile | `make build-go` | [ ] |
+| S-305 | K614: Makefile은 ../kit/scripts/kit/kit-bootstrap.mk를 include하고, make kit-sync가 kit-sync 사본을 지우며, config/php-lint는 없고, 공유 루트 파일은 ../kit 링크이며, 지워진 경로의 owner glob은 없다 | Makefile, config/owner-checks.json, PRINCIPLES.md, PRINCIPLES.ko.md, .editorconfig, .claude/settings.json, config/php-lint | `make kit-check` | [ ] |
