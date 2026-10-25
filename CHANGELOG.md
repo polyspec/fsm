@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-306: the row is recorded as done; its change is on main (commit e078d9b or earlier) (S-306)
 - S-308: packages/compiler/tests/golden/** is an exception of config/generated.json, the tracked golden test outputs (S-308)
 - S-304: make build-go generates the ignored examples/model through examples-model before it compiles, and the tools are the ones of $(KIT_TOOLS), so a worktree builds (S-304)
 - S-303: examples/persist.go handles the error that GetStatus of the current orm returns, so lint-go passes; S-302 was dropped by mistake (S-303)
