@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 7b0681c0a6fb14d070004d40a5795826be9a6a1490db03f2e8bfcc8d55d3f015 -->
+<!-- source-sha256: 195d543ff8905797cac0713e4433660a0c9a80d85078c48a5d3d0007174be812 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-300: make hooks가 PRINCIPLES.md가 명명하는 .githooks/pre-merge-commit을 쓰고, rules-check가 통과한다 (S-300)
 
 - S-58 완료(S-58): make kit-sync가 install-mise.mts(kit K532)를 가져오고, owner 규칙이 각 언어의 source를 그 lint와 duplication-check로 보내며(kit K534) 지워진 파일을 이름 붙이지 않는다. red: make kit-check와 make owner-validate가 실패했고, 변경 뒤 green.
 - S-57 완료(S-57): make kit-sync가 kit lint 설정 사본(K514)을 지우고 kit에서 바뀐 사본을 쓰며, config/toolchain.json이 lint-php의 php symbol extractor를 선언한다. red: make kit-check가 17개 finding을 보고했고, sync 뒤 green.

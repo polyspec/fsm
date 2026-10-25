@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-300: make hooks writes .githooks/pre-merge-commit, which PRINCIPLES.md names, so rules-check passes (S-300)
 
 - S-58 is done (S-58): make kit-sync brings install-mise.mts (kit K532), and the owner rules route the sources of each language to its lint and duplication-check (kit K534) and name no removed file; red: make kit-check and make owner-validate failed, green after the change.
 - S-57 is done (S-57): make kit-sync removes the kit lint configuration copies (K514) and writes the copies that changed in kit, and config/toolchain.json declares the php symbol extractor of lint-php; red: make kit-check reported 17 findings, green after the sync.
