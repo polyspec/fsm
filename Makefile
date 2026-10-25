@@ -66,7 +66,7 @@ $(PHP_EXT_DEP): packages/php-ext/composer.lock packages/php-ext/composer.json co
 $(PYTHON_BIN):
 	$(ONLINE) $(MAKE) install-tools
 
-$(PYTHON_DEP): $(PYTHON_LOCK) $(PYTHON_BIN)
+$(PYTHON_DEP): $(PYTHON_BIN) | $(PYTHON_LOCK)
 	$(ONLINE) $(MAKE) fsm-python-install
 	touch $@
 
