@@ -82,4 +82,4 @@
 | S-305 | K614: the Makefile includes ../kit/scripts/kit/kit-bootstrap.mk, make kit-sync removes the kit-sync copies, config/php-lint is gone, the shared root files are links into ../kit, and the owner globs of deleted paths are gone | Makefile, config/owner-checks.json, PRINCIPLES.md, PRINCIPLES.ko.md, .editorconfig, .claude/settings.json, config/php-lint | `make kit-check` | [o] |
 | S-306 | the Python install stamp is judged by the sha256 of pylock.toml, so a fresh worktree whose linked venv already matches does nothing | Makefile | `make packages/python/.venv/.installed` in a fresh worktree | [o] |
 | S-308 | config/generated.json declares packages/compiler/tests/golden/** an exception, so the tracked golden test outputs pass layout-check | config/generated.json | `make layout-check` | [o] |
-| S-309 | .php-version declares PHP 8.5, which the releases require, so the Composer platform check of lint-php passes | .php-version | `make toolchain-check` | [~] |
+| S-309 | .php-version declares PHP 8.5, which the releases require, so the Composer platform check of lint-php passes | .php-version | `make toolchain-check` | [o] |
