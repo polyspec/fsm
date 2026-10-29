@@ -109,3 +109,4 @@
 | S-334 | Generate the PHP and php-ext sources in the runtime setup of CI | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-335 | Install uv and the php-arginfo generator in the shared CI job | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-336 | Remove the python build directory after the python install | Makefile | `make fsm-python-install` | [ ] |
+| S-337 | Generate the python sources before the kit build of a fresh worktree | Makefile | `make build` | [ ] |
