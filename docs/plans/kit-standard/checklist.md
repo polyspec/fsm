@@ -100,3 +100,4 @@
 | S-325 | Adopt kit 0.0.74 in this repository | package.json package-lock.json Makefile .github/workflows/ci.yml config/ci.json | `make kit-check` | [ ] |
 | S-326 | Declare the Go dependency setup of the CI plan | Makefile config/ci.json | `make kit-ci-plan` | [o] |
 | S-327 | Install the kit package before make in CI, and run only the own suite in ci.yml | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [o] |
+| S-328 | Make workflows.test name the ci-suite target of the check job | tests/workflows/workflows.test.mts | `make workflows-test` | [ ] |
