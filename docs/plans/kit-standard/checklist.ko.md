@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 40e8b9522303ea3f4431b67ab4a5981fdc1a14ac057614ec441507f411b788dd -->
+<!-- source-sha256: df1ed8d6e791e29534d633290ee9e2b498f9f3f54fb517dfa2d9f22b2e354439 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -101,4 +101,4 @@
 | S-325 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json Makefile .github/workflows/ci.yml config/ci.json | `make kit-check` | [ ] |
 | S-326 | CI 계획에 Go 의존성 setup을 선언한다 | Makefile config/ci.json | `make kit-ci-plan` | [o] |
 | S-327 | CI에서 make 전에 kit 패키지를 설치하고, ci.yml은 자기 suite만 실행한다 | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [o] |
-| S-328 | workflows.test가 check job의 ci-suite target을 기대하도록 고친다 | tests/workflows/workflows.test.mts | `make workflows-test` | [ ] |
+| S-328 | workflows.test가 check job의 ci-suite target을 기대하도록 고친다 | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |

@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-328: workflows.test expects the ci-suite target of the check job that S-327 made (S-328)
 - S-327: CI installs the kit package before make, in the order of the kit gates, and its full suite is ci-suite, the own targets without the kit-gates prerequisites (S-327)
 - S-326: config/ci.json declares the Go dependency target deps-go and the python setup target, so the kit CI plan passes (S-326)
 - S-324: config/ci.json declares the CI setup that kit 0.0.73 requires, with the kit defaults for every runtime (S-324)

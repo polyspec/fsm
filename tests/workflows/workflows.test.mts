@@ -151,13 +151,13 @@ test('every uses: is pinned to a full commit with the version comment of the ver
   assert.deepEqual(failures, []);
 });
 
-test('the check job installs kit, then runs make install, the playwright dependencies and make check, and no other make target', () => {
-  assert.deepEqual(makeTargets(CHECK_JOB), ['install-tools', 'install-packages', 'install', 'check']);
+test('the check job installs kit, then runs make install, the playwright dependencies and make ci-suite, and no other make target', () => {
+  assert.deepEqual(makeTargets(CHECK_JOB), ['install-tools', 'install-packages', 'install', 'ci-suite']);
   assert.match(CHECK_JOB, /make install-tools TOOLS=npm\n\s+make install-packages\n/, 'the check job installs the npm of packageManager and then @polyspec/kit (S-44)');
   const install = CHECK_JOB.indexOf('make install\n');
   const deps = CHECK_JOB.indexOf('install-deps chromium');
-  const check = CHECK_JOB.indexOf('make check');
-  assert.ok(install > 0 && deps > install && check > deps, 'the order must be make install, install-deps chromium, make check');
+  const check = CHECK_JOB.indexOf('make ci-suite');
+  assert.ok(install > 0 && deps > install && check > deps, 'the order must be make install, install-deps chromium, make ci-suite');
   const depsStep = step(stepsOf(CHECK_JOB), 'install-deps chromium');
   assert.match(depsStep, /sudo env PATH="\$PATH" npx playwright install-deps chromium/);
   assert.match(depsStep, /working-directory: packages\/gui/);
