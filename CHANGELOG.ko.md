@@ -6,6 +6,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-323: @polyspec/kit을 0.0.73 asset으로 고정하고 lock을 갱신한다 (kit K826, K827, K830) (S-323)
 - S-322: @polyspec/kit을 0.0.72 asset으로 고정하고 lock을 갱신하며, CI는 make link와 link-state-check를 실행하지 않는다 (S-322)
 - S-321: fsm Python 패키지를 editable이 아니게 설치하고, make link로 설치된 패키지 폴더를 checkout에 연결한다 (S-321)
 - S-320: @polyspec/kit을 0.0.70 asset으로 고정하고 lock을 갱신하며, make kit-sync로 kit 사본을 갱신한다 (S-320)
