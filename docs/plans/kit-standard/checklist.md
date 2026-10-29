@@ -102,3 +102,4 @@
 | S-327 | Install the kit package before make in CI, and run only the own suite in ci.yml | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [o] |
 | S-328 | Make workflows.test name the ci-suite target of the check job | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |
 | S-329 | Generate the python sources before the python install in CI | Makefile config/ci.json | `make fsm-python-install` | [ ] |
+| S-330 | Fetch the release zips before composer in CI runtimes | config/ci.json | `make fsm-php-install` | [ ] |

@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 60234610dc49563f27af598bf4c11d99c7e627cffe48701e980ebf82d12a5438 -->
+<!-- source-sha256: 3c0df1e940e6710afd0ba28ce43487888108460f87d50bb22fa75e77963c65ed -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -103,3 +103,4 @@
 | S-327 | CI에서 make 전에 kit 패키지를 설치하고, ci.yml은 자기 suite만 실행한다 | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [o] |
 | S-328 | workflows.test가 check job의 ci-suite target을 기대하도록 고친다 | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |
 | S-329 | CI python 설치 전에 python 소스를 생성한다 | Makefile config/ci.json | `make fsm-python-install` | [ ] |
+| S-330 | CI 런타임에서 composer 전에 릴리스 zip을 가져온다 | config/ci.json | `make fsm-php-install` | [ ] |
