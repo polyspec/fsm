@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 90570aa78714c2e594bf0f8954fb1b403dac0001b13729b9f56d04e99bdb91f6 -->
+<!-- source-sha256: 50c8f322e1393ff9b56d225e54ced2a629b2c222bd73fa05682f25e3b5fc6fcf -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-317: kit K801이 삭제한 main 쓰기 훅을 제거한다 (S-317)
 - S-316: kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 (S-316)
 
 - S-315: kit K784이 삭제한 dependency-policy-check 참조와 그 게이트만 읽던 설정 파일을 제거한다 (S-315)

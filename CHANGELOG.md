@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-317: the main writer hook that kit K801 deleted is removed (S-317)
 - S-316: python-lock-check is gone with kit K789, and its CHECK_TARGETS entry and owner-checks targets are removed (S-316)
 
 - S-315: the gate of dependency-policy-check is gone with kit K784, and the references and the config files that only it read are removed (S-315)
