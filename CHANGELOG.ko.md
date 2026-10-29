@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d8b24fbfc08b3660f8d5bed4d6371f136753d5bab8edb370128a082a15f569e1 -->
+<!-- source-sha256: 297978c165b6d62576d78a534fa6a728ff1540e6e9991b003231575891debade -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-314: fsm-python-install이 make link 전에 잠긴 패키지를 설치한다. S-54가 제거한 설치를 복원 (S-314)
 - S-313: 공유 파일은 kit-sync가 만든 일반 파일 사본이며 kit-check가 통과한다 (S-313)
 - S-311: 행을 완료로 기록한다. 변경은 main의 89a746d에 있다 (S-311)
 - S-309: 행을 완료로 기록한다. 변경은 main의 1232f4a에 있다: PHP 8.5 in .php-version and config/toolchain.json (S-309)

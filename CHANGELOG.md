@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-314: fsm-python-install installs the locked packages before make link, restoring the S-54 install (S-314)
 - S-313: the shared files are the regular copies of kit-sync (K671-2), and kit-check passes (S-313)
 - S-311: the row is recorded as done; its change is on main (89a746d) (S-311)
 - S-309: the row is recorded as done; its change is on main (1232f4a): PHP 8.5 in .php-version and config/toolchain.json (S-309)
