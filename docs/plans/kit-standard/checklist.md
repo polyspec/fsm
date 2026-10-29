@@ -92,5 +92,5 @@
 | S-317 | Remove the .githooks/reference-transaction main writer hook that kit K801 deleted | .githooks/reference-transaction | `make owner-validate` | [o] |
 | S-318 | Refresh the kit copies that rules-check flags, with make kit-sync | PRINCIPLES.md AGENTS.md | `make rules-check` | [o] |
 | S-319 | Adopt kit K804 and K805: rewrite pre-commit, drop pre-push, pre-merge-commit and commits-check | .githooks/pre-commit .githooks/pre-push .githooks/pre-merge-commit config/commit-identity.json config/checklist.json Makefile config/owner-checks.json | `make owner-validate` | [o] |
-| S-320 | Adopt kit 0.0.70 in this repository | package.json package-lock.json .gitignore config/checklist.json | `make kit-check` | [ ] |
+| S-320 | Adopt kit 0.0.70 in this repository | package.json package-lock.json .gitignore config/checklist.json | `make kit-check` | [o] |
 | S-321 | Install the Python package non-editable | Makefile | `make kit-check` | [ ] |
