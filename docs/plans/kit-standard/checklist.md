@@ -90,4 +90,4 @@
 | S-315 | Remove the dependency-policy-check references deleted with kit K784 (CHECK_TARGETS, owner-checks targets, dependency-policy.json, dependency-review.json) | Makefile config/owner-checks.json config/dependency-policy.json config/dependency-review.json | `make owner-validate` | [o] |
 | S-316 | Remove python-lock-check, which kit K789 deleted, from CHECK_TARGETS and owner-checks | Makefile config/owner-checks.json | `make owner-validate` | [o] |
 | S-317 | Remove the .githooks/reference-transaction main writer hook that kit K801 deleted | .githooks/reference-transaction | `make owner-validate` | [o] |
-| S-318 | Refresh the kit copies that rules-check flags, with make kit-sync | PRINCIPLES.md AGENTS.md | `make rules-check` | [ ] |
+| S-318 | Refresh the kit copies that rules-check flags, with make kit-sync | PRINCIPLES.md AGENTS.md | `make rules-check` | [~] |

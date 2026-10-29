@@ -1,5 +1,5 @@
 <!-- doc-id: principles -->
-<!-- source-sha256: 327a5f77868b04023ed9e98c3c0ba8aba5fdbf022c5f7d594e21c38694e65b4b -->
+<!-- source-sha256: dc3f7c91f7ab21c4df5db958dfba97ae5a22d7e5a4ca87f24c1f42b5def41cac -->
 # 원칙
 
 [English](PRINCIPLES.md)
@@ -187,7 +187,7 @@ owner가 2026-10-13에 이 기준을 승인했습니다. 각 기준은 위반 �
   repository는 파일을 더할 수만 있고 좁힐 수 없으며, test처럼 이름 붙은 파일은 binding이 실행합니다.
   Enforced by: `make parity-declarations-check`
 - S4 버전: kit은 버전도 pin도 강제하지 않습니다. 각 package manager와 그 lock이 정합니다.
-  Enforced by: `make toolchain-check`, `make dependency-policy-check`
+  Enforced by: `make toolchain-check`
 - S5 폴더: 모든 monorepo는 같은 root 폴더(`packages/`, `contracts/`, `docs/`, `scripts/`, `tests/`, `examples/`,
   `benchmarks/`, `config/`)를 가집니다. 주 spec의 runtime port는 `packages/<runtime>/`, 다른 component는
   `packages/<component>/`, 그 port는 `packages/<component>/<runtime>/`에 두며, 폴더 이름에 repository prefix를 붙이지
@@ -202,7 +202,7 @@ owner가 2026-10-13에 이 기준을 승인했습니다. 각 기준은 위반 �
   Enforced by: `make layout-check`, `make parity-declarations-check`
 - S8 이상한 점의 보고는 "책임"의 두 번째 항목이며, 어떤 tool도 이를 강제할 수 없습니다. S8이 더하는 것: 모든 예외,
   profile, rebuild 기록은 선언된 자리에 이유를 가집니다.
-  Enforced by: `make rebuild-check`, `make dependency-policy-check`
+  Enforced by: `make rebuild-check`
 - S9 kit을 포함한 언어 간 orchestration과 check는 TypeScript로 쓰고, `tsc`가 `erasableSyntaxOnly`로 검사합니다. 예외: 한
   언어의 구현을 구동하는 harness는 그 언어의 test이고, 언어별 정적 check는 그 생태계 analyzer의 plugin이며, symbol
   추출기는 그 생태계의 tool을 돌립니다.
@@ -217,7 +217,11 @@ owner가 2026-10-13에 이 기준을 승인했습니다. 각 기준은 위반 �
   Reflection으로 library와 비교하되 이름마다 그것을 선언한 library와 비교하며, unit test는 extension을 load하고 library의 source는 하나도 load하지 않고
   (dependency와 autoload-dev는 load하고 library 자신의 autoload는 load하지 않으므로 library에는 extension에 대한 guard가 없다) 실행하는 모든
   library의 PHPUnit 파일과 (있다면) `packages/php-ext`의 것이다. parity implementation은 이 layout으로 library의 test를 공유하며,
-  설정에 상대 경로를 두지 않는다. PHP library는 library code뿐이다: PHP console application처럼 userland framework 위의
-  application은 그 library를 require하는 자기 Composer package이다. 내부 class는 userland class를 확장할 수 없기 때문이다. Composer type이 `project`인 package는 application이다. extension 실행과 S10 library
+  설정에 상대 경로를 두지 않는다. Composer type이 `project`인 package는 application이다. extension 실행과 S10 library
   검사 밖에 있으며, `make test-php`는 그 test를 자기 package로 실행한다.
-  Enforced by: `make lint-php-ext`, `make test-php-ext`, `make layout-check`, `make dependency-policy-check`
+  Enforced by: `make lint-php-ext`, `make test-php-ext`
+- S11 로컬 링크: 개발 중 각 polyspec 패키지의 설치 폴더(node_modules, vendor, site-packages)는 checkout으로 가는 평범한
+  디렉터리 심링크 하나입니다. 패키지 매니저의 링크 단계(npm link, Composer path repository, pip/uv editable)는 쓰지 않습니다
+  (K591, K761, K765).
+  Enforced by: `make link-state-check`. kit의 K761 link test도 tool log에 npm link, composer update, editable 설치가 없음을
+  확인합니다
