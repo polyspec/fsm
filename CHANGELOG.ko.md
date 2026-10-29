@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 250b2a6b29da61d624276283497b91b670d48158987028a4d573e00bf38994f2 -->
+<!-- source-sha256: a66f01279ffe9672c8b4c7f070d0a4fd97072a57ea386418e6a8fb634751f78b -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-332: Go 예제가 고정된 orm v0.0.18의 GetStatus(한 값을 반환)로 행의 상태를 읽는다 (S-332)
 - S-334: CI의 php와 php-ext 런타임이 설치 뒤에 PHP 소스와 extension stub을 생성한다 (S-334)
 - S-336: python 설치가 패키지 빌드의 build 디렉터리를 제거하여 python 린트가 빌드 사본을 읽지 않는다 (S-336)
 - S-337: 새 worktree의 kit build가 packages/python의 python 소스를 먼저 생성하여 worktree 설정이 끝난다 (S-337)

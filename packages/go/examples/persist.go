@@ -45,11 +45,7 @@ func StatusOf(db *orm.DB, id int64) (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	status, err := row.GetStatus()
-	if err != nil {
-		return 0, err
-	}
-	return status, nil
+	return row.GetStatus(), nil
 }
 
 // Transition is one attempt on the row id: the row is read under its lock, decide runs on the stored code, and the row is updated
@@ -64,10 +60,7 @@ func Transition(db *orm.DB, id int64, decide Decide) (int32, bool, error) {
 		if err != nil {
 			return err
 		}
-		status, err := row.GetStatus()
-		if err != nil {
-			return err
-		}
+		status := row.GetStatus()
 		to, changed, err = decide(int64(status))
 		if err != nil {
 			return err

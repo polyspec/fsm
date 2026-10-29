@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-332: The Go example reads the status of the row with the GetStatus of the pinned orm v0.0.18, which returns one value (S-332)
 - S-334: The php and php-ext runtimes of CI generate their PHP sources and extension stub after the installs (S-334)
 - S-336: The python install removes the build directory of its package build, so the python lint does not read a build copy (S-336)
 - S-337: The kit build of packages/python generates the python sources first, so a fresh worktree sets up (S-337)
