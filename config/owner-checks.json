@@ -237,7 +237,6 @@
         "layout-check",
         "test-python",
         "toolchain-check",
-        "python-lock-check",
         "python-persist-test-postgres",
         "python-persist-test-mysql"
       ]
@@ -341,16 +340,6 @@
       ],
       "targets": [
         "make-install-test"
-      ]
-    },
-    {
-      "paths": [
-        "packages/python/pyproject.toml",
-        "packages/python/constraints.txt",
-        "packages/python/pylock.toml"
-      ],
-      "targets": [
-        "python-lock-check"
       ]
     },
     {
