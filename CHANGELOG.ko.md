@@ -1,13 +1,14 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ed0e76811ee73ad7e4d14eed45d7c07c1e74227d99378e47bb36af2a5cfdd025 -->
+<!-- source-sha256: 5e1313fedfad5a4a914fe0daf5fec24db102ec1131cddf18ec3ce469e8b94a15 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
-- S-331: 공유 CI 작업이 tools.shared로 php와 composer를 설치하여 게이트가 고정된 PHP로 Composer 설치를 실행한다 (S-331)
 
+- S-333: @polyspec/kit을 0.0.74 asset으로 고정하고 lock을 갱신한다 (kit K873 포함 릴리스) (S-333)
+- S-331: 공유 CI 작업이 tools.shared로 php와 composer를 설치하여 게이트가 고정된 PHP로 Composer 설치를 실행한다 (S-331)
 - S-330: CI의 php와 php-ext 런타임이 composer 전에 릴리스 zip을 가져오는 fsm-php-install과 fsm-php-ext-install로 설치한다 (S-330)
 - S-329: 깨끗한 checkout의 CI가 설치할 수 있도록 python 설치가 빌드 전에 packages/python의 ignore된 src를 생성한다 (S-329)
 - S-328: workflows.test가 S-327이 만든 check job의 ci-suite target을 기대한다 (S-328)

@@ -5,8 +5,9 @@
 
 <a id="unreleased"></a>
 ## Unreleased
-- S-331: The shared CI job sets up php and composer through tools.shared, so the gates run the Composer install with the pinned PHP (S-331)
 
+- S-333: @polyspec/kit is pinned to the 0.0.74 asset and the lock is updated (kit K873 among the release) (S-333)
+- S-331: The shared CI job sets up php and composer through tools.shared, so the gates run the Composer install with the pinned PHP (S-331)
 - S-330: The php and php-ext runtimes of CI install with fsm-php-install and fsm-php-ext-install, which fetch the release zips before composer (S-330)
 - S-329: The python install generates the ignored src of packages/python before the build, so a clean checkout installs in CI (S-329)
 - S-328: workflows.test expects the ci-suite target of the check job that S-327 made (S-328)
