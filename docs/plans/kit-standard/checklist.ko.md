@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: abaf71aad3098b202b5d83841c63bc5333e0c073044b66db0ad70e89538b4632 -->
+<!-- source-sha256: 04cc495e153e2c2c73515209246cbbbe9f5b836a85221cfd3441e46fcbcf95c1 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -89,3 +89,4 @@
 | S-313 | kit-sync로 공유 파일 사본을 채택하고 kit-check를 통과시킨다 (K671-2) | PRINCIPLES.md PRINCIPLES.ko.md .editorconfig .claude/settings.json .github/workflows config/layout.kit.yml | `make kit-check` | [o] |
 | S-314 | fsm-python-install이 make link 전에 잠긴 패키지를 설치한다 (S-54가 제거한 설치를 복원) | Makefile | `make link-check` | [o] |
 | S-315 | kit K784이 삭제한 dependency-policy-check 참조(CHECK_TARGETS, owner-checks 대상, dependency-policy.json, dependency-review.json)를 제거한다 | Makefile config/owner-checks.json config/dependency-policy.json config/dependency-review.json | `make owner-validate` | [o] |
+| S-316 | kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 | Makefile config/owner-checks.json | `make owner-validate` | [ ] |
