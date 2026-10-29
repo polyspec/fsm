@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: d59aa514a05f3fea54b8e503fa486c357da60cb46dd2a8fe5f26d14d122982ef -->
+<!-- source-sha256: 6f3b13d70b1718506d58371beb2d7742f112fef4ea8bba737c976eb8a2b0447d -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -87,3 +87,4 @@
 | S-311 | make-sandbox copies only the Makefile and parity.json and links the sibling kit (kit K613) | tests/support/make-sandbox.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |
 | S-312 | fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml과 packages/go/go.mod) | mise.toml packages/go/go.mod mise.lock | `make link-check` | [~] |
 | S-313 | kit-sync로 공유 파일 사본을 채택하고 kit-check를 통과시킨다 (K671-2) | PRINCIPLES.md PRINCIPLES.ko.md .editorconfig .claude/settings.json .github/workflows config/layout.kit.yml | `make kit-check` | [o] |
+| S-314 | fsm-python-install이 make link 전에 잠긴 패키지를 설치한다 (S-54가 제거한 설치를 복원) | Makefile | `make link-check` | [ ] |
