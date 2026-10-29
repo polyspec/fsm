@@ -174,7 +174,9 @@ fsm-php-ext-gen:
 # fsm-python-install makes the venv .venv with the Python of the checkout, var/tools/mise/shims/python3, which install-tools
 # installs with uv. The venv is made by kit's python-venv, and uv fills it with --link-mode copy: the locked packages of pylock.toml
 # (PEP 751, written by kit's python-lock), then make link links the install folders of the
-# packages to their checkouts, then the project itself, editable (ONLINE).
+# packages to their checkouts, then the project itself, non-editable: the python extractor of kit reads the modules from the file
+# list of the installed distribution (kit K788), which an editable install does not hold. make link then links the installed
+# package folder to the checkout (ONLINE).
 # The check of the interpreter version runs first, so a wrong Python fails before a venv is made.
 .PHONY: fsm-python-install fsm-python-gen fsm-python-test
 fsm-python-install:
@@ -183,7 +185,8 @@ fsm-python-install:
 	$(MAKE) python-venv DIR=$(PY_VENV)
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy -r packages/python/pylock.toml
 	$(MAKE) link
-	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps -e packages/python
+	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps packages/python
+	$(MAKE) link
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
 fsm-python-gen: $(PYTHON_DEP)
