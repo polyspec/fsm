@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c20893f3f1d8bb5b4fa435fbb13f550b37735aa45b4619c546af5f042c5e4377 -->
+<!-- source-sha256: 90570aa78714c2e594bf0f8954fb1b403dac0001b13729b9f56d04e99bdb91f6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-316: kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 (S-316)
 
 - S-315: kit K784이 삭제한 dependency-policy-check 참조와 그 게이트만 읽던 설정 파일을 제거한다 (S-315)
 - S-311: make sandbox가 도구마다 자기 폴더를 가지고 git 작업 트리이며, 파이썬 환경은 pylock.toml을 키로 삼는다 (S-311)

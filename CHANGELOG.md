@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-316: python-lock-check is gone with kit K789, and its CHECK_TARGETS entry and owner-checks targets are removed (S-316)
 
 - S-315: the gate of dependency-policy-check is gone with kit K784, and the references and the config files that only it read are removed (S-315)
 - S-311: the make sandbox gives its tools their own folder and is a git work tree, and the python environment is keyed on pylock.toml (S-311)
