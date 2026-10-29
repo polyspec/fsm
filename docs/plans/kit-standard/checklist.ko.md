@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 893e73339c5060a28456a793426628017c35e4dbf51f1f590b4862065ecdc0e0 -->
+<!-- source-sha256: 4370c912c794c76eb92041c192123c2b991669250aadf1cc58ba75a747b2b24c -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -105,3 +105,4 @@
 | S-329 | CI python 설치 전에 python 소스를 생성한다 | Makefile config/ci.json | `make fsm-python-install` | [ ] |
 | S-330 | CI 런타임에서 composer 전에 릴리스 zip을 가져온다 | config/ci.json | `make fsm-php-install` | [ ] |
 | S-331 | CI 공유 작업에 composer를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-332 | 고정된 orm v0.0.18에 맞춰 Go 예제를 빌드한다 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [ ] |

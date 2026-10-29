@@ -104,3 +104,4 @@
 | S-329 | Generate the python sources before the python install in CI | Makefile config/ci.json | `make fsm-python-install` | [ ] |
 | S-330 | Fetch the release zips before composer in CI runtimes | config/ci.json | `make fsm-php-install` | [ ] |
 | S-331 | Install composer in the CI shared job | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-332 | Build the Go example against the pinned orm v0.0.18 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [ ] |
