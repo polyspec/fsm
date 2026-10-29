@@ -8,7 +8,7 @@
 /docs/node_modules/
 /docs/.vitepress/dist/
 /docs/.vitepress/cache/
-/packages/*/vendor/
+/packages/*/vendor
 /packages/*/target/
 /packages/python/**/__pycache__/
 /packages/python/.venv/
