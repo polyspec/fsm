@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 853f910b180f082d286b2ab075501d5b3768db3c29962da6228526d0eda3e2e5 -->
+<!-- source-sha256: cd2c1e017d807ffc7f3cb60f764226584ffc6cea9f02109feccb28a80e3cc509 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-311: make sandbox가 도구마다 자기 폴더를 가지고 git 작업 트리이며, 파이썬 환경은 pylock.toml을 키로 삼는다 (S-311)
 - S-312: fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml, packages/go/go.mod) (S-312)
 - S-314: fsm-python-install이 make link 전에 잠긴 패키지를 설치한다. S-54가 제거한 설치를 복원 (S-314)
 - S-313: 공유 파일은 kit-sync가 만든 일반 파일 사본이며 kit-check가 통과한다 (S-313)
@@ -13,7 +15,6 @@
 - S-309: 행을 완료로 기록한다. 변경은 main의 1232f4a에 있다: PHP 8.5 in .php-version and config/toolchain.json (S-309)
 - S-305: 행을 완료로 기록한다. 변경은 main의 6a2be85에 있다: the K614 layout adoption (S-305)
 - S-309: .php-version은 릴리스가 요구하는 PHP 8.5를 선언한다 (S-309)
-
 - S-308: 행을 완료로 기록한다. 변경은 main에 있다 (e078d9b 이전 커밋) (S-308)
 - S-306: 행을 완료로 기록한다. 변경은 main에 있다 (e078d9b 이전 커밋) (S-306)
 - S-308: packages/compiler/tests/golden/**는 config/generated.json의 예외다. 추적되는 골든 테스트 출력이다 (S-308)

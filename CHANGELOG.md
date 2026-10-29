@@ -5,6 +5,8 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-311: the make sandbox gives its tools their own folder and is a git work tree, and the python environment is keyed on pylock.toml (S-311)
 - S-312: the go pin of fsm is kit's 1.27.3 in mise.toml and packages/go/go.mod (S-312)
 - S-314: fsm-python-install installs the locked packages before make link, restoring the S-54 install (S-314)
 - S-313: the shared files are the regular copies of kit-sync (K671-2), and kit-check passes (S-313)
@@ -12,7 +14,6 @@
 - S-309: the row is recorded as done; its change is on main (1232f4a): PHP 8.5 in .php-version and config/toolchain.json (S-309)
 - S-305: the row is recorded as done; its change is on main (6a2be85): the K614 layout adoption (S-305)
 - S-309: .php-version declares PHP 8.5, which the releases require (S-309)
-
 - S-308: the row is recorded as done; its change is on main (commit e078d9b or earlier) (S-308)
 - S-306: the row is recorded as done; its change is on main (commit e078d9b or earlier) (S-306)
 - S-308: packages/compiler/tests/golden/** is an exception of config/generated.json, the tracked golden test outputs (S-308)
