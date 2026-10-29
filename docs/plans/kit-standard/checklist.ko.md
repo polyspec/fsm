@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 3c0df1e940e6710afd0ba28ce43487888108460f87d50bb22fa75e77963c65ed -->
+<!-- source-sha256: 893e73339c5060a28456a793426628017c35e4dbf51f1f590b4862065ecdc0e0 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -104,3 +104,4 @@
 | S-328 | workflows.test가 check job의 ci-suite target을 기대하도록 고친다 | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |
 | S-329 | CI python 설치 전에 python 소스를 생성한다 | Makefile config/ci.json | `make fsm-python-install` | [ ] |
 | S-330 | CI 런타임에서 composer 전에 릴리스 zip을 가져온다 | config/ci.json | `make fsm-php-install` | [ ] |
+| S-331 | CI 공유 작업에 composer를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
