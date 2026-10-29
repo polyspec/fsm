@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: adefa3f089d17e2ad0fdc09eba1f06c47ab2f03073788c681df7123913f3675f -->
+<!-- source-sha256: 686b67fd3e4ee7a71e9e68ce853eb8cc877e514e2f0cd9e7e8159e54a2087743 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -95,3 +95,4 @@
 | S-319 | kit K804, K805 채택: pre-commit 재작성, pre-push, pre-merge-commit, commits-check 제거 | .githooks/pre-commit .githooks/pre-push .githooks/pre-merge-commit config/commit-identity.json config/checklist.json Makefile config/owner-checks.json | `make owner-validate` | [o] |
 | S-320 | 이 저장소에 kit 0.0.70 채택 | package.json package-lock.json .gitignore config/checklist.json | `make kit-check` | [o] |
 | S-321 | Python 패키지를 editable이 아니게 설치한다 | Makefile | `make kit-check` | [o] |
+| S-322 | 이 저장소에 kit 0.0.72 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [ ] |

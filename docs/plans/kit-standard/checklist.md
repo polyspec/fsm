@@ -94,3 +94,4 @@
 | S-319 | Adopt kit K804 and K805: rewrite pre-commit, drop pre-push, pre-merge-commit and commits-check | .githooks/pre-commit .githooks/pre-push .githooks/pre-merge-commit config/commit-identity.json config/checklist.json Makefile config/owner-checks.json | `make owner-validate` | [o] |
 | S-320 | Adopt kit 0.0.70 in this repository | package.json package-lock.json .gitignore config/checklist.json | `make kit-check` | [o] |
 | S-321 | Install the Python package non-editable | Makefile | `make kit-check` | [o] |
+| S-322 | Adopt kit 0.0.72 in this repository | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [ ] |
