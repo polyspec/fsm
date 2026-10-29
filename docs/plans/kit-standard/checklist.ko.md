@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 3538dd721f5344b409dddf7aa79017685327ecd9008fbc41c5d35c39fa7fe2e7 -->
+<!-- source-sha256: db51116392e5e013efd48523455b2d5adfbd5a1090c6e718d654515709319465 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -91,3 +91,4 @@
 | S-315 | kit K784이 삭제한 dependency-policy-check 참조(CHECK_TARGETS, owner-checks 대상, dependency-policy.json, dependency-review.json)를 제거한다 | Makefile config/owner-checks.json config/dependency-policy.json config/dependency-review.json | `make owner-validate` | [o] |
 | S-316 | kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 | Makefile config/owner-checks.json | `make owner-validate` | [o] |
 | S-317 | kit K801이 삭제한 main 쓰기 훅 .githooks/reference-transaction을 제거한다 | .githooks/reference-transaction | `make owner-validate` | [o] |
+| S-318 | rules-check가 지적하는 kit 사본을 make kit-sync로 갱신한다 | PRINCIPLES.md AGENTS.md | `make rules-check` | [ ] |
