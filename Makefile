@@ -172,13 +172,15 @@ fsm-php-ext-gen:
 
 # fsm-python-install makes the venv .venv with the Python of the checkout, var/tools/mise/shims/python3, which install-tools
 # installs with uv. The venv is made by kit's python-venv, and uv fills it with --link-mode copy: the locked packages of pylock.toml
-# (PEP 751, written by kit's python-lock and checked by python-lock-check), then the project itself, editable (ONLINE).
+# (PEP 751, written by kit's python-lock and checked by python-lock-check), then make link links the install folders of the
+# packages to their checkouts, then the project itself, editable (ONLINE).
 # The check of the interpreter version runs first, so a wrong Python fails before a venv is made.
 .PHONY: fsm-python-install fsm-python-gen fsm-python-test
 fsm-python-install:
 	@$(PYTHON_BIN) -c 'import sys; sys.exit(0 if sys.version_info[:2] == (3, 14) else "PYTHON must be Python 3.14, it is " + sys.version.split()[0])' || { echo "fsm-python-install: run make install-tools at the root first"; exit 1; }
 	rm -rf $(PY_VENV)
 	$(MAKE) python-venv DIR=$(PY_VENV)
+	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy -r packages/python/pylock.toml
 	$(MAKE) link
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps -e packages/python
 
