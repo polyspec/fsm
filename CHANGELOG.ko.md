@@ -6,6 +6,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-329: 깨끗한 checkout의 CI가 설치할 수 있도록 python 설치가 빌드 전에 packages/python의 ignore된 src를 생성한다 (S-329)
 - S-328: workflows.test가 S-327이 만든 check job의 ci-suite target을 기대한다 (S-328)
 - S-327: CI는 make 전에 kit 패키지를 kit gate와 같은 순서로 설치하며, 전체 suite는 kit-gates 전제 조건을 뺀 자기 target인 ci-suite다 (S-327)
 - S-326: config/ci.json이 Go 의존성 target deps-go와 python setup target을 선언하여 kit CI 계획이 통과한다 (S-326)

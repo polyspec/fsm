@@ -192,14 +192,22 @@ fsm-python-install:
 	$(MAKE) python-venv DIR=$(PY_VENV)
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy -r packages/python/pylock.toml
 	$(MAKE) link
+	$(MAKE) fsm-python-src
+	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/python/examples/model
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps packages/python
 	$(MAKE) link
+
+# fsm-python-src generates the ignored src/polyspec_fsm of packages/python with node alone: the package build of a clean checkout
+# (CI, a worktree) needs it before the install, and it needs no venv, so the install does not depend on the venv.
+.PHONY: fsm-python-src
+fsm-python-src:
+	$(FSM_GEN) gen --project contracts --kind python --out packages/python/src/polyspec_fsm
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
 fsm-python-gen: $(PYTHON_DEP)
 fsm-python-gen: export PYTHONDONTWRITEBYTECODE := 1
 fsm-python-gen:
-	$(FSM_GEN) gen --project contracts --kind python --out packages/python/src/polyspec_fsm
+	$(MAKE) --no-print-directory fsm-python-src
 	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/python/examples/model
 
 # fsm-python-test runs the tests through the kit runner with --venv, which runs the venv interpreter only when pyvenv.cfg names the
