@@ -107,3 +107,4 @@
 | S-332 | Build the Go example against the pinned orm v0.0.18 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [ ] |
 | S-333 | Adopt kit 0.0.74 in this repository | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
 | S-334 | Generate the PHP and php-ext sources in the runtime setup of CI | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-335 | Install uv and the php-arginfo generator in the shared CI job | config/ci.json | `make kit-ci-plan` | [ ] |
