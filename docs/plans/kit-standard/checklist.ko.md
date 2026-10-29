@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: d6ed8fd4f63b3c3c8d4172ccd5260fd82a197d97bad1a44d0da3a3a26ad5b5e4 -->
+<!-- source-sha256: 5fe0d461b9988ff5fc386e720a881bc18c25b84b588544c7d8b57801d6c16636 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -92,3 +92,4 @@
 | S-316 | kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 | Makefile config/owner-checks.json | `make owner-validate` | [o] |
 | S-317 | kit K801이 삭제한 main 쓰기 훅 .githooks/reference-transaction을 제거한다 | .githooks/reference-transaction | `make owner-validate` | [o] |
 | S-318 | rules-check가 지적하는 kit 사본을 make kit-sync로 갱신한다 | PRINCIPLES.md AGENTS.md | `make rules-check` | [o] |
+| S-319 | kit K804, K805 채택: pre-commit 재작성, pre-push, pre-merge-commit, commits-check 제거 | .githooks/pre-commit .githooks/pre-push .githooks/pre-merge-commit config/commit-identity.json config/checklist.json Makefile config/owner-checks.json | `make owner-validate` | [ ] |
