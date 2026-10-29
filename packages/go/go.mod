@@ -1,6 +1,6 @@
 module github.com/polyspec/fsm/packages/go
 
-go 1.27.2
+go 1.27.3
 
 require github.com/polyspec/orm/packages/go v0.0.18
 

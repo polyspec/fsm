@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: a0ce23f89887298a4f1a327ca1eec6f46efac1df4aa21b220057e396243dda92 -->
+<!-- source-sha256: b41bb0edb1a9a8c31d3e1c58fd60919b492e3ea4eeb8cacb2c1c3932421ccdbd -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -85,4 +85,4 @@
 | S-308 | config/generated.json이 packages/compiler/tests/golden/**를 예외로 선언해서, 추적되는 골든 테스트 출력이 layout-check를 통과한다 | config/generated.json | `make layout-check` | [o] |
 | S-309 | .php-version이 릴리스가 요구하는 PHP 8.5를 선언해서, lint-php의 Composer 플랫폼 검사가 통과한다 | .php-version | `make toolchain-check` | [o] |
 | S-311 | make-sandbox copies only the Makefile and parity.json and links the sibling kit (kit K613) | tests/support/make-sandbox.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |
-| S-312 | fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml과 packages/go/go.mod) | mise.toml packages/go/go.mod mise.lock | `make link-check` | [ ] |
+| S-312 | fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml과 packages/go/go.mod) | mise.toml packages/go/go.mod mise.lock | `make link-check` | [~] |
