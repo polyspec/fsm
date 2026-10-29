@@ -203,6 +203,9 @@ fsm-python-install:
 fsm-python-src:
 	$(FSM_GEN) gen --project contracts --kind python --out packages/python/src/polyspec_fsm
 
+# The kit build of a fresh worktree builds packages/python, which needs its generated sources first (S-337).
+build-python: fsm-python-src
+
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
 fsm-python-gen: $(PYTHON_DEP)
 fsm-python-gen: export PYTHONDONTWRITEBYTECODE := 1
