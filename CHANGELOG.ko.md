@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: cd2c1e017d807ffc7f3cb60f764226584ffc6cea9f02109feccb28a80e3cc509 -->
+<!-- source-sha256: c20893f3f1d8bb5b4fa435fbb13f550b37735aa45b4619c546af5f042c5e4377 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-315: kit K784이 삭제한 dependency-policy-check 참조와 그 게이트만 읽던 설정 파일을 제거한다 (S-315)
 - S-311: make sandbox가 도구마다 자기 폴더를 가지고 git 작업 트리이며, 파이썬 환경은 pylock.toml을 키로 삼는다 (S-311)
 - S-312: fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml, packages/go/go.mod) (S-312)
 - S-314: fsm-python-install이 make link 전에 잠긴 패키지를 설치한다. S-54가 제거한 설치를 복원 (S-314)

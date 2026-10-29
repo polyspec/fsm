@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-315: the gate of dependency-policy-check is gone with kit K784, and the references and the config files that only it read are removed (S-315)
 - S-311: the make sandbox gives its tools their own folder and is a git work tree, and the python environment is keyed on pylock.toml (S-311)
 - S-312: the go pin of fsm is kit's 1.27.3 in mise.toml and packages/go/go.mod (S-312)
 - S-314: fsm-python-install installs the locked packages before make link, restoring the S-54 install (S-314)
