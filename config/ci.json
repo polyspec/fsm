@@ -4,10 +4,10 @@
     "shared": [],
     "parity": [],
     "runtimes": {
-      "go": [],
+      "go": ["deps-go", "build-go"],
       "php": [],
       "php-ext": [],
-      "python": [],
+      "python": ["fsm-python-install"],
       "rust": [],
       "ts": []
     }

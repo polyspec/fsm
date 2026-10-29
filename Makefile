@@ -71,6 +71,8 @@ $(PYTHON_DEP): $(PYTHON_LOCK) | $(PYTHON_BIN)
 	$(ONLINE) $(MAKE) fsm-python-install
 	touch $@
 
+deps-go: $(GO_DEP)
+
 $(GO_DEP): packages/go/go.sum
 	mkdir -p $(dir $@)
 	$(ONLINE) $(MAKE) fsm-go-install
@@ -107,7 +109,7 @@ GO := $(KIT_TOOLS)/mise/shims/go
 COMPOSER := $(KIT_TOOLS)/mise/shims/composer
 
 # fsm-go-install downloads the modules that go.mod and go.sum name (the orm release and orm-gen); gen and test need them.
-.PHONY: fsm-go-install fsm-go-gen fsm-go-test
+.PHONY: deps-go fsm-go-install fsm-go-gen fsm-go-test
 fsm-go-install:
 	cd packages/go && $(GO) mod download
 

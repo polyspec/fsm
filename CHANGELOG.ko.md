@@ -6,6 +6,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-326: config/ci.json이 Go 의존성 target deps-go와 python setup target을 선언하여 kit CI 계획이 통과한다 (S-326)
 - S-324: kit 0.0.73이 요구하는 CI 설정을 config/ci.json으로 선언하며, 모든 runtime은 kit 기본값을 쓴다 (S-324)
 - S-323: @polyspec/kit을 0.0.73 asset으로 고정하고 lock을 갱신한다 (kit K826, K827, K830) (S-323)
 - S-322: @polyspec/kit을 0.0.72 asset으로 고정하고 lock을 갱신하며, CI는 make link와 link-state-check를 실행하지 않는다 (S-322)
