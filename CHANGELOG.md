@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-335: The shared CI job installs uv and the php-arginfo generator, so its gates run the python venv and the arginfo check (S-335)
+- S-337: The kit build of packages/python generates the python sources first, so a fresh worktree sets up (S-337)
 - S-332: The Go example reads the status of the row with the GetStatus of the linked orm, which returns the status and an error (S-332)
 - S-334: The php and php-ext runtimes of CI generate their PHP sources and extension stub after the installs (S-334)
 - S-336: The python install removes the build directory of its package build, so the python lint does not read a build copy (S-336)

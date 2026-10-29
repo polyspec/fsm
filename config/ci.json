@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "setup": {
-    "shared": [],
+    "shared": ["kit-install-php-arginfo"],
     "parity": [],
     "runtimes": {
       "go": ["deps-go", "build-go"],
@@ -13,6 +13,6 @@
     }
   },
   "tools": {
-    "shared": ["php", "composer"]
+    "shared": ["php", "composer", "uv"]
   }
 }

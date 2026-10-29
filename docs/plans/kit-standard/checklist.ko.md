@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 5f42f55535afd412f28432544c2d4cbd268bf7e3e8dd4b0af10b0c613818a13d -->
+<!-- source-sha256: 668867eb945b37d7f2ae84477e3f6d3e166bdb4d98fa9fdf64eb6a6453d3c66e -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -108,7 +108,7 @@
 | S-332 | 연결된 orm의 두 값 GetStatus로 Go 예제의 행 상태를 읽는다 | packages/go/examples/persist.go | `make build-go` | [o] |
 | S-333 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
 | S-334 | CI 런타임 설정에서 PHP와 php-ext 소스를 생성한다 | config/ci.json | `make kit-ci-plan` | [o] |
-| S-335 | 공유 CI 작업에 uv와 php-arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-335 | 공유 CI 작업에 uv와 php-arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [o] |
 | S-336 | python 설치 후 build 디렉터리를 제거한다 | Makefile | `make fsm-python-install` | [o] |
 | S-337 | 새 worktree의 kit build 전에 python 소스를 생성한다 | Makefile | `make build-python` | [o] |
 | S-338 | php-ext 생성 전에 arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
