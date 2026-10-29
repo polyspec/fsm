@@ -1,13 +1,16 @@
 // What the tests that run `make -n` on a copy of the Makefile share: the files of the copy, the environment of a make run without
 // inherited make flags, and the search of a line in the printed recipes.
+import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 
 /** The files that a copy of the Makefile reads: the Makefile, the kit targets and the kinds of config/parity.json. */
 const MAKE_FILES = ['Makefile', 'config/parity.json'];
 
-/** Copies the Makefile and the config it reads from the checkout `root` into the repository folder `tmp/fsm`, and links the kit
- * checkout as `tmp/kit`, so that the Makefile's include of ../kit resolves as it does in the checkout. Returns the folder. */
+/** Copies the Makefile and the config it reads from the checkout `root` into the repository folder `tmp/fsm`, links the kit
+ * checkout as `tmp/kit`, so that the Makefile's include of ../kit resolves as it does in the checkout, and links the tools of the
+ * main checkout as `var/tools/bin` (K519: a worktree runs the tools of the main checkout), and makes `tmp/fsm` a git work tree, which
+ * the tools of kit require. Returns the folder. */
 export function copyMakeFiles(root: string, tmp: string): string {
   const dir = path.join(tmp, 'fsm');
   mkdirSync(dir, { recursive: true });
@@ -16,6 +19,10 @@ export function copyMakeFiles(root: string, tmp: string): string {
     copyFileSync(path.join(root, file), path.join(dir, file));
   }
   symlinkSync(path.resolve(root, '../kit'), path.join(tmp, 'kit'));
+  const common = execFileSync('git', ['-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).trim();
+  mkdirSync(path.join(dir, 'var/tools'), { recursive: true });
+  symlinkSync(path.join(path.dirname(common), 'var/tools/bin'), path.join(dir, 'var/tools/bin'));
+  execFileSync('git', ['init', '-q', dir]);
   return dir;
 }
 
