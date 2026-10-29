@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-321: the fsm Python package is installed non-editable, and make link links its installed package folder to the checkout (S-321)
 - S-320: @polyspec/kit is pinned to the 0.0.70 asset, the lock is updated, and the kit copies are refreshed with make kit-sync (S-320)
 - S-319: kit K804 and K805 are adopted: the pre-push and pre-merge-commit hooks, commit-identity and commits-check leave the checks, and the pre-commit hook no longer calls a deleted gate (S-319)
 - S-318: the kit copies that rules-check flagged are refreshed with make kit-sync (S-318)

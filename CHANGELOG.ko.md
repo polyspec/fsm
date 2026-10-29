@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 150c6acbf2066103ba6e4ce0d9dce4eba179f012ed2b5357a572245bf466e59f -->
+<!-- source-sha256: b9411088b4478744fc0cf56873bd8b73357eec94ac860e5ebf48784e199e0f17 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-321: fsm Python 패키지를 editable이 아니게 설치하고, make link로 설치된 패키지 폴더를 checkout에 연결한다 (S-321)
 - S-320: @polyspec/kit을 0.0.70 asset으로 고정하고 lock을 갱신하며, make kit-sync로 kit 사본을 갱신한다 (S-320)
 - S-319: kit K804과 K805를 채택한다: pre-push와 pre-merge-commit hook, commit-identity와 commits-check를 검사에서 뺀다. pre-commit hook은 삭제된 gate를 부르지 않는다 (S-319)
 - S-318: rules-check가 지적한 kit 사본을 make kit-sync로 갱신한다 (S-318)
