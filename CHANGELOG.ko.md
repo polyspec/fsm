@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: bc969613a56f9bb21e433d5ea91845991011a1385f27f60e509fccdad392fa80 -->
+<!-- source-sha256: d8b24fbfc08b3660f8d5bed4d6371f136753d5bab8edb370128a082a15f569e1 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-313: 공유 파일은 kit-sync가 만든 일반 파일 사본이며 kit-check가 통과한다 (S-313)
 - S-311: 행을 완료로 기록한다. 변경은 main의 89a746d에 있다 (S-311)
 - S-309: 행을 완료로 기록한다. 변경은 main의 1232f4a에 있다: PHP 8.5 in .php-version and config/toolchain.json (S-309)
 - S-305: 행을 완료로 기록한다. 변경은 main의 6a2be85에 있다: the K614 layout adoption (S-305)

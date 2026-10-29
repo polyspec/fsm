@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: af8954b011faf7a46282087978ad37a6acd040e11916b0529111a9809d83e620 -->
+<!-- source-sha256: d59aa514a05f3fea54b8e503fa486c357da60cb46dd2a8fe5f26d14d122982ef -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -86,4 +86,4 @@
 | S-309 | .php-version이 릴리스가 요구하는 PHP 8.5를 선언해서, lint-php의 Composer 플랫폼 검사가 통과한다 | .php-version | `make toolchain-check` | [o] |
 | S-311 | make-sandbox copies only the Makefile and parity.json and links the sibling kit (kit K613) | tests/support/make-sandbox.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |
 | S-312 | fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml과 packages/go/go.mod) | mise.toml packages/go/go.mod mise.lock | `make link-check` | [~] |
-| S-313 | kit-sync로 공유 파일 사본을 채택하고 kit-check를 통과시킨다 (K671-2) | PRINCIPLES.md PRINCIPLES.ko.md .editorconfig .claude/settings.json .github/workflows config/layout.kit.yml | `make kit-check` | [~] |
+| S-313 | kit-sync로 공유 파일 사본을 채택하고 kit-check를 통과시킨다 (K671-2) | PRINCIPLES.md PRINCIPLES.ko.md .editorconfig .claude/settings.json .github/workflows config/layout.kit.yml | `make kit-check` | [o] |
