@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-319: kit K804 and K805 are adopted: the pre-push and pre-merge-commit hooks, commit-identity and commits-check leave the checks, and the pre-commit hook no longer calls a deleted gate (S-319)
 - S-318: the kit copies that rules-check flagged are refreshed with make kit-sync (S-318)
 - S-317: the main writer hook that kit K801 deleted is removed (S-317)
 - S-316: python-lock-check is gone with kit K789, and its CHECK_TARGETS entry and owner-checks targets are removed (S-316)

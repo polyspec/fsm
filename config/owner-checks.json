@@ -36,7 +36,6 @@
         "kit-check",
         "owner-validate",
         "docs-check",
-        "commits-check",
         "toolchain-check"
       ]
     },
@@ -200,7 +199,6 @@
         "kit-check",
         "owner-validate",
         "docs-check",
-        "commits-check",
         "toolchain-check"
       ]
     },

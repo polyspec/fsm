@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 1177ebe502317ff330d28f5adb7de50d006339d55648fb8228b5a2f94c278f4a -->
+<!-- source-sha256: 8f9c64c4b1fae3114017a6df3b71fc05bcfe4b23d0d81428c83f121e5cb9caa9 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-319: kit K804과 K805를 채택한다: pre-push와 pre-merge-commit hook, commit-identity와 commits-check를 검사에서 뺀다. pre-commit hook은 삭제된 gate를 부르지 않는다 (S-319)
 - S-318: rules-check가 지적한 kit 사본을 make kit-sync로 갱신한다 (S-318)
 - S-317: kit K801이 삭제한 main 쓰기 훅을 제거한다 (S-317)
 - S-316: kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 (S-316)
