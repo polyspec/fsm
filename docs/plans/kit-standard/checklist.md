@@ -103,6 +103,6 @@
 | S-328 | Make workflows.test name the ci-suite target of the check job | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |
 | S-329 | Generate the python sources before the python install in CI | Makefile config/ci.json | `make fsm-python-install` | [o] |
 | S-330 | Fetch the release zips before composer in CI runtimes | config/ci.json | `make kit-ci-plan` | [o] |
-| S-331 | Install composer in the CI shared job | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-331 | Install composer in the CI shared job | config/ci.json | `make kit-ci-plan` | [o] |
 | S-332 | Build the Go example against the pinned orm v0.0.18 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [ ] |
 | S-333 | Adopt kit 0.0.74 in this repository | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [ ] |

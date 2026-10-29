@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-331: The shared CI job sets up php and composer through tools.shared, so the gates run the Composer install with the pinned PHP (S-331)
 
 - S-330: The php and php-ext runtimes of CI install with fsm-php-install and fsm-php-ext-install, which fetch the release zips before composer (S-330)
 - S-329: The python install generates the ignored src of packages/python before the build, so a clean checkout installs in CI (S-329)

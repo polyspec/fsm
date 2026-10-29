@@ -11,5 +11,8 @@
       "rust": [],
       "ts": []
     }
+  },
+  "tools": {
+    "shared": ["php", "composer"]
   }
 }

@@ -6,6 +6,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-331: 공유 CI 작업이 tools.shared로 php와 composer를 설치하여 게이트가 고정된 PHP로 Composer 설치를 실행한다 (S-331)
 
 - S-330: CI의 php와 php-ext 런타임이 composer 전에 릴리스 zip을 가져오는 fsm-php-install과 fsm-php-ext-install로 설치한다 (S-330)
 - S-329: 깨끗한 checkout의 CI가 설치할 수 있도록 python 설치가 빌드 전에 packages/python의 ignore된 src를 생성한다 (S-329)

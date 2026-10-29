@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 516b61bfe22987c10eba8b6fca2f05de9b18e99dde94951b9515ccfa8abf2f86 -->
+<!-- source-sha256: 12a9b4b858c753d0155df925f0f8c13647a5a0731345c82934e25c8ee783ef64 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -104,6 +104,6 @@
 | S-328 | workflows.test가 check job의 ci-suite target을 기대하도록 고친다 | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |
 | S-329 | CI python 설치 전에 python 소스를 생성한다 | Makefile config/ci.json | `make fsm-python-install` | [o] |
 | S-330 | CI 런타임에서 composer 전에 릴리스 zip을 가져온다 | config/ci.json | `make kit-ci-plan` | [o] |
-| S-331 | CI 공유 작업에 composer를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-331 | CI 공유 작업에 composer를 설치한다 | config/ci.json | `make kit-ci-plan` | [o] |
 | S-332 | 고정된 orm v0.0.18에 맞춰 Go 예제를 빌드한다 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [ ] |
 | S-333 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [ ] |
