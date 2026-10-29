@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-336: The python install removes the build directory of its package build, so the python lint does not read a build copy (S-336)
 - S-337: The kit build of packages/python generates the python sources first, so a fresh worktree sets up (S-337)
 
 - S-333: @polyspec/kit is pinned to the 0.0.74 asset and the lock is updated (kit K873 among the release) (S-333)

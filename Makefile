@@ -195,6 +195,7 @@ fsm-python-install:
 	$(MAKE) fsm-python-src
 	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/python/examples/model
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps packages/python
+	rm -rf packages/python/build
 	$(MAKE) link
 
 # fsm-python-src generates the ignored src/polyspec_fsm of packages/python with node alone: the package build of a clean checkout

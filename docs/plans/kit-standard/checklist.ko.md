@@ -109,5 +109,5 @@
 | S-333 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
 | S-334 | CI 런타임 설정에서 PHP와 php-ext 소스를 생성한다 | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-335 | 공유 CI 작업에 uv와 php-arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
-| S-336 | python 설치 후 build 디렉터리를 제거한다 | Makefile | `make fsm-python-install` | [ ] |
+| S-336 | python 설치 후 build 디렉터리를 제거한다 | Makefile | `make fsm-python-install` | [o] |
 | S-337 | 새 worktree의 kit build 전에 python 소스를 생성한다 | Makefile | `make build-python` | [o] |

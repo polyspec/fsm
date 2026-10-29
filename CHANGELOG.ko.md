@@ -6,6 +6,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-336: python 설치가 패키지 빌드의 build 디렉터리를 제거하여 python 린트가 빌드 사본을 읽지 않는다 (S-336)
 - S-337: 새 worktree의 kit build가 packages/python의 python 소스를 먼저 생성하여 worktree 설정이 끝난다 (S-337)
 
 - S-333: @polyspec/kit을 0.0.74 asset으로 고정하고 lock을 갱신한다 (kit K873 포함 릴리스) (S-333)
