@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 14fbd572d0e7e8dde578fe3f929222021ce63bf2d7ca766113bd8302d699d1bb -->
+<!-- source-sha256: fd9952640970d97cb76d24504f6060987271eaab8583b26d0824325b14514703 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -85,6 +85,6 @@
 | S-308 | config/generated.json이 packages/compiler/tests/golden/**를 예외로 선언해서, 추적되는 골든 테스트 출력이 layout-check를 통과한다 | config/generated.json | `make layout-check` | [o] |
 | S-309 | .php-version이 릴리스가 요구하는 PHP 8.5를 선언해서, lint-php의 Composer 플랫폼 검사가 통과한다 | .php-version | `make toolchain-check` | [o] |
 | S-311 | make-sandbox copies only the Makefile and parity.json and links the sibling kit (kit K613) | tests/support/make-sandbox.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |
-| S-312 | fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml과 packages/go/go.mod) | mise.toml packages/go/go.mod mise.lock | `make link-check` | [~] |
+| S-312 | fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml과 packages/go/go.mod) | mise.toml packages/go/go.mod mise.lock | `make link-check` | [o] |
 | S-313 | kit-sync로 공유 파일 사본을 채택하고 kit-check를 통과시킨다 (K671-2) | PRINCIPLES.md PRINCIPLES.ko.md .editorconfig .claude/settings.json .github/workflows config/layout.kit.yml | `make kit-check` | [o] |
 | S-314 | fsm-python-install이 make link 전에 잠긴 패키지를 설치한다 (S-54가 제거한 설치를 복원) | Makefile | `make link-check` | [o] |
