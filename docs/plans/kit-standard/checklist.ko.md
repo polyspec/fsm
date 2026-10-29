@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 3e04c48a4975a093845bfc922ff5592c12c461b70dd2b891b7738bc4b6a9b755 -->
+<!-- source-sha256: ab068a4581481934972d6315682f3ba99df3883b1b77575a213531c26e4af188 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -96,3 +96,4 @@
 | S-320 | 이 저장소에 kit 0.0.70 채택 | package.json package-lock.json .gitignore config/checklist.json | `make kit-check` | [o] |
 | S-321 | Python 패키지를 editable이 아니게 설치한다 | Makefile | `make kit-check` | [o] |
 | S-322 | 이 저장소에 kit 0.0.72 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
+| S-323 | 이 저장소에 kit 0.0.73 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [ ] |
