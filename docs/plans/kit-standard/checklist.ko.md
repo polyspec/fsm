@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: d1e07fc1fee9b5f9dc1854f80a8fa086056e94afdd41e3444f8662d9c9c5d685 -->
+<!-- source-sha256: b7dab9056edd44ec83fa32238e28624c985060b207d29053a6177a9e0f1586cd -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -94,3 +94,4 @@
 | S-318 | rules-check가 지적하는 kit 사본을 make kit-sync로 갱신한다 | PRINCIPLES.md AGENTS.md | `make rules-check` | [o] |
 | S-319 | kit K804, K805 채택: pre-commit 재작성, pre-push, pre-merge-commit, commits-check 제거 | .githooks/pre-commit .githooks/pre-push .githooks/pre-merge-commit config/commit-identity.json config/checklist.json Makefile config/owner-checks.json | `make owner-validate` | [o] |
 | S-320 | 이 저장소에 kit 0.0.70 채택 | package.json package-lock.json .gitignore config/checklist.json | `make kit-check` | [ ] |
+| S-321 | Python 패키지를 editable이 아니게 설치한다 | Makefile | `make kit-check` | [ ] |
