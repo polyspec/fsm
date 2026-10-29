@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-327: CI installs the kit package before make, in the order of the kit gates, and its full suite is ci-suite, the own targets without the kit-gates prerequisites (S-327)
 - S-326: config/ci.json declares the Go dependency target deps-go and the python setup target, so the kit CI plan passes (S-326)
 - S-324: config/ci.json declares the CI setup that kit 0.0.73 requires, with the kit defaults for every runtime (S-324)
 - S-323: @polyspec/kit is pinned to the 0.0.73 asset and the lock is updated (kit K826, K827, K830) (S-323)

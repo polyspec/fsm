@@ -6,6 +6,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-327: CI는 make 전에 kit 패키지를 kit gate와 같은 순서로 설치하며, 전체 suite는 kit-gates 전제 조건을 뺀 자기 target인 ci-suite다 (S-327)
 - S-326: config/ci.json이 Go 의존성 target deps-go와 python setup target을 선언하여 kit CI 계획이 통과한다 (S-326)
 - S-324: kit 0.0.73이 요구하는 CI 설정을 config/ci.json으로 선언하며, 모든 runtime은 kit 기본값을 쓴다 (S-324)
 - S-323: @polyspec/kit을 0.0.73 asset으로 고정하고 lock을 갱신한다 (kit K826, K827, K830) (S-323)
