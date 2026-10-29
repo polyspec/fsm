@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-318: the kit copies that rules-check flagged are refreshed with make kit-sync (S-318)
 - S-317: the main writer hook that kit K801 deleted is removed (S-317)
 - S-316: python-lock-check is gone with kit K789, and its CHECK_TARGETS entry and owner-checks targets are removed (S-316)
 

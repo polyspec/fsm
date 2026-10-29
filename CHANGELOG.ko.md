@@ -1,11 +1,12 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 50c8f322e1393ff9b56d225e54ced2a629b2c222bd73fa05682f25e3b5fc6fcf -->
+<!-- source-sha256: 1177ebe502317ff330d28f5adb7de50d006339d55648fb8228b5a2f94c278f4a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-318: rules-check가 지적한 kit 사본을 make kit-sync로 갱신한다 (S-318)
 - S-317: kit K801이 삭제한 main 쓰기 훅을 제거한다 (S-317)
 - S-316: kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 (S-316)
 
