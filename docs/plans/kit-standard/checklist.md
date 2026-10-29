@@ -108,3 +108,4 @@
 | S-333 | Adopt kit 0.0.74 in this repository | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
 | S-334 | Generate the PHP and php-ext sources in the runtime setup of CI | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-335 | Install uv and the php-arginfo generator in the shared CI job | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-336 | Remove the python build directory after the python install | Makefile | `make fsm-python-install` | [ ] |

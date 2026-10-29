@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 65afc609b6c65e00aac716f5a20358ee75ec0fc97b31b41ca1e1ce276961fdcf -->
+<!-- source-sha256: 0ee62d4996e03844bf4868a1041e575cd04650bc28158b23444b1d6b576fa6b7 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -109,3 +109,4 @@
 | S-333 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
 | S-334 | CI 런타임 설정에서 PHP와 php-ext 소스를 생성한다 | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-335 | 공유 CI 작업에 uv와 php-arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-336 | python 설치 후 build 디렉터리를 제거한다 | Makefile | `make fsm-python-install` | [ ] |
