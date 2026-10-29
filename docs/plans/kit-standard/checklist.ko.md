@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: b2d550748f2b701e17721e1cb84f06370f226f3d39b213411c41e06b693cb8b0 -->
+<!-- source-sha256: 5e74c3141246d7fdcb11b0e12fe1ef4a0c5967083fbc2be358db56641c2fa88b -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -100,3 +100,4 @@
 | S-324 | kit CI 계획을 위해 config/ci.json을 선언한다 | config/ci.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
 | S-325 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json Makefile .github/workflows/ci.yml config/ci.json | `make kit-check` | [ ] |
 | S-326 | CI 계획에 Go 의존성 setup을 선언한다 | Makefile config/ci.json | `make kit-ci-plan` | [o] |
+| S-327 | CI에서 make 전에 kit 패키지를 설치하고, ci.yml은 자기 suite만 실행한다 | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [ ] |
