@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 1ce563e62b47c463a5530f87f3808393f2a84bbe2abb24e147407f13b6ae8b46 -->
+<!-- source-sha256: 16d9bd5fa5b6ab02936cc32a05dd7538a4c2f746605dcd04393f79f120e39a4a -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -90,3 +90,4 @@
 | S-314 | fsm-python-install이 make link 전에 잠긴 패키지를 설치한다 (S-54가 제거한 설치를 복원) | Makefile | `make link-check` | [o] |
 | S-315 | kit K784이 삭제한 dependency-policy-check 참조(CHECK_TARGETS, owner-checks 대상, dependency-policy.json, dependency-review.json)를 제거한다 | Makefile config/owner-checks.json config/dependency-policy.json config/dependency-review.json | `make owner-validate` | [o] |
 | S-316 | kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 | Makefile config/owner-checks.json | `make owner-validate` | [o] |
+| S-317 | kit K801이 삭제한 main 쓰기 훅 .githooks/reference-transaction을 제거한다 | .githooks/reference-transaction | `make owner-validate` | [ ] |
