@@ -96,3 +96,4 @@
 | S-321 | Install the Python package non-editable | Makefile | `make kit-check` | [o] |
 | S-322 | Adopt kit 0.0.72 in this repository | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | S-323 | Adopt kit 0.0.73 in this repository | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
+| S-324 | Declare config/ci.json for the kit CI plan | config/ci.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [ ] |
