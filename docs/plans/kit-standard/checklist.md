@@ -106,7 +106,7 @@
 | S-331 | Install composer in the CI shared job | config/ci.json | `make kit-ci-plan` | [o] |
 | S-332 | Build the Go example against the pinned orm v0.0.18 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [ ] |
 | S-333 | Adopt kit 0.0.74 in this repository | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
-| S-334 | Generate the PHP and php-ext sources in the runtime setup of CI | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-334 | Generate the PHP and php-ext sources in the runtime setup of CI | config/ci.json | `make kit-ci-plan` | [o] |
 | S-335 | Install uv and the php-arginfo generator in the shared CI job | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-336 | Remove the python build directory after the python install | Makefile | `make fsm-python-install` | [o] |
 | S-337 | Generate the python sources before the kit build of a fresh worktree | Makefile | `make build-python` | [o] |

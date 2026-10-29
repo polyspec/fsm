@@ -1,14 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 5e1313fedfad5a4a914fe0daf5fec24db102ec1131cddf18ec3ce469e8b94a15 -->
+<!-- source-sha256: 250b2a6b29da61d624276283497b91b670d48158987028a4d573e00bf38994f2 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-334: CI의 php와 php-ext 런타임이 설치 뒤에 PHP 소스와 extension stub을 생성한다 (S-334)
 - S-336: python 설치가 패키지 빌드의 build 디렉터리를 제거하여 python 린트가 빌드 사본을 읽지 않는다 (S-336)
 - S-337: 새 worktree의 kit build가 packages/python의 python 소스를 먼저 생성하여 worktree 설정이 끝난다 (S-337)
-
 - S-333: @polyspec/kit을 0.0.74 asset으로 고정하고 lock을 갱신한다 (kit K873 포함 릴리스) (S-333)
 - S-331: 공유 CI 작업이 tools.shared로 php와 composer를 설치하여 게이트가 고정된 PHP로 Composer 설치를 실행한다 (S-331)
 - S-330: CI의 php와 php-ext 런타임이 composer 전에 릴리스 zip을 가져오는 fsm-php-install과 fsm-php-ext-install로 설치한다 (S-330)

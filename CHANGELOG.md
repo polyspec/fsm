@@ -5,9 +5,10 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-334: The php and php-ext runtimes of CI generate their PHP sources and extension stub after the installs (S-334)
 - S-336: The python install removes the build directory of its package build, so the python lint does not read a build copy (S-336)
 - S-337: The kit build of packages/python generates the python sources first, so a fresh worktree sets up (S-337)
-
 - S-333: @polyspec/kit is pinned to the 0.0.74 asset and the lock is updated (kit K873 among the release) (S-333)
 - S-331: The shared CI job sets up php and composer through tools.shared, so the gates run the Composer install with the pinned PHP (S-331)
 - S-330: The php and php-ext runtimes of CI install with fsm-php-install and fsm-php-ext-install, which fetch the release zips before composer (S-330)
