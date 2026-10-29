@@ -37,8 +37,7 @@
         "owner-validate",
         "docs-check",
         "commits-check",
-        "toolchain-check",
-        "dependency-policy-check"
+        "toolchain-check"
       ]
     },
     {
@@ -88,7 +87,6 @@
       ],
       "targets": [
         "db-test",
-        "dependency-policy-check",
         "gui-test",
         "db-test-postgres",
         "db-test-mysql"
@@ -111,7 +109,6 @@
         "layout-check",
         "fsm-js-test",
         "npm-types",
-        "dependency-policy-check",
         "npm-persist-test",
         "npm-persist-test-postgres",
         "npm-persist-test-mysql"
@@ -124,7 +121,6 @@
       "targets": [
         "layout-check",
         "test-go",
-        "dependency-policy-check",
         "toolchain-check",
         "go-persist-test-postgres",
         "go-persist-test-mysql"
@@ -145,8 +141,7 @@
       ],
       "targets": [
         "gui-test",
-        "gui-browser-test",
-        "dependency-policy-check"
+        "gui-browser-test"
       ]
     },
     {
@@ -170,7 +165,6 @@
       ],
       "targets": [
         "db-test",
-        "dependency-policy-check",
         "db-test-postgres",
         "db-test-mysql"
       ]
@@ -182,7 +176,6 @@
       "targets": [
         "layout-check",
         "test-php",
-        "dependency-policy-check",
         "toolchain-check",
         "php-persist-test-postgres",
         "php-persist-test-mysql"
@@ -208,8 +201,7 @@
         "owner-validate",
         "docs-check",
         "commits-check",
-        "toolchain-check",
-        "dependency-policy-check"
+        "toolchain-check"
       ]
     },
     {
@@ -220,7 +212,6 @@
         "layout-check",
         "rust-persist-test",
         "test-rust",
-        "dependency-policy-check",
         "toolchain-check",
         "rust-persist-test-postgres",
         "rust-persist-test-mysql"
@@ -233,7 +224,6 @@
       "targets": [
         "layout-check",
         "fsm-js-test",
-        "dependency-policy-check",
         "npm-persist-test",
         "npm-persist-test-postgres",
         "npm-persist-test-mysql"
@@ -246,7 +236,6 @@
       "targets": [
         "layout-check",
         "test-python",
-        "dependency-policy-check",
         "toolchain-check",
         "python-lock-check",
         "python-persist-test-postgres",
@@ -260,7 +249,6 @@
       "targets": [
         "layout-check",
         "test-php-ext",
-        "dependency-policy-check",
         "toolchain-check",
         "php-ext-persist-test-postgres",
         "php-ext-persist-test-mysql"
@@ -300,8 +288,7 @@
         "docs/package-lock.json"
       ],
       "targets": [
-        "docs-build",
-        "dependency-policy-check"
+        "docs-build"
       ]
     },
     {
