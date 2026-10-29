@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: ad8edbfdaab7a9751a171a9ab4649e31bf6f9d376645ab685988b52f812ed579 -->
+<!-- source-sha256: da729c595e370291c2ff71ac31c3f1b49650536f169e5747fefbc97b2a838dff -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -107,3 +107,4 @@
 | S-331 | CI 공유 작업에 composer를 설치한다 | config/ci.json | `make kit-ci-plan` | [o] |
 | S-332 | 고정된 orm v0.0.18에 맞춰 Go 예제를 빌드한다 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [ ] |
 | S-333 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
+| S-334 | CI 런타임 설정에서 PHP와 php-ext 소스를 생성한다 | config/ci.json | `make kit-ci-plan` | [ ] |
