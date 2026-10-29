@@ -2,10 +2,11 @@
 # installs into var/tools and recipes start by $(NODE) of kit.mk (kit K171). Each language
 # package item adds the declaration of its toolchain (config/toolchain.json).
 # The shared targets of kit: the gates, the document, owner and commit checks, the toolchains, the layout check and the dependency
-# gate. scripts/kit/kit-bootstrap.mk is a copy of the package @polyspec/kit (make kit-sync); it includes the kit.mk of the
-# installed package, which runs its built tools ($(KIT)/<tool>.$(KIT_EXT)), and before the package is installed it runs only
-# make install-tools TOOLS=npm and make install-packages (S-44). The tools read the configuration in config/*.json.
-include ../kit/scripts/kit/kit-bootstrap.mk
+# gate. node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk is the bootstrap of the installed package @polyspec/kit (in dev, a link
+# to the kit checkout; in CI, the 0.0.70 install). It includes the kit.mk of the installed package, which runs its built tools
+# ($(KIT)/<tool>.$(KIT_EXT)), and before the package is installed it runs only make install-tools TOOLS=npm and
+# make install-packages (S-44). The tools read the configuration in config/*.json.
+include node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk
 export PATH := $(KIT_TOOLS)/bin:$(PATH)
 
 # The test runner of kit: every test target runs its tool through it (AGENTS.md, Rules).
