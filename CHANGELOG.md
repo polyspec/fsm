@@ -5,6 +5,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-324: config/ci.json declares the CI setup that kit 0.0.73 requires, with the kit defaults for every runtime (S-324)
 - S-323: @polyspec/kit is pinned to the 0.0.73 asset and the lock is updated (kit K826, K827, K830) (S-323)
 - S-322: @polyspec/kit is pinned to the 0.0.72 asset and the lock is updated; CI runs no make link or link-state-check (S-322)
 - S-321: the fsm Python package is installed non-editable, and make link links its installed package folder to the checkout (S-321)
