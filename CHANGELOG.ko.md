@@ -6,6 +6,7 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+- S-322: @polyspec/kit을 0.0.72 asset으로 고정하고 lock을 갱신하며, CI는 make link와 link-state-check를 실행하지 않는다 (S-322)
 - S-321: fsm Python 패키지를 editable이 아니게 설치하고, make link로 설치된 패키지 폴더를 checkout에 연결한다 (S-321)
 - S-320: @polyspec/kit을 0.0.70 asset으로 고정하고 lock을 갱신하며, make kit-sync로 kit 사본을 갱신한다 (S-320)
 - S-319: kit K804과 K805를 채택한다: pre-push와 pre-merge-commit hook, commit-identity와 commits-check를 검사에서 뺀다. pre-commit hook은 삭제된 gate를 부르지 않는다 (S-319)
