@@ -5,6 +5,8 @@
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-330: The php and php-ext runtimes of CI install with fsm-php-install and fsm-php-ext-install, which fetch the release zips before composer (S-330)
 - S-329: The python install generates the ignored src of packages/python before the build, so a clean checkout installs in CI (S-329)
 - S-328: workflows.test expects the ci-suite target of the check job that S-327 made (S-328)
 - S-327: CI installs the kit package before make, in the order of the kit gates, and its full suite is ci-suite, the own targets without the kit-gates prerequisites (S-327)
@@ -18,7 +20,6 @@
 - S-318: the kit copies that rules-check flagged are refreshed with make kit-sync (S-318)
 - S-317: the main writer hook that kit K801 deleted is removed (S-317)
 - S-316: python-lock-check is gone with kit K789, and its CHECK_TARGETS entry and owner-checks targets are removed (S-316)
-
 - S-315: the gate of dependency-policy-check is gone with kit K784, and the references and the config files that only it read are removed (S-315)
 - S-311: the make sandbox gives its tools their own folder and is a git work tree, and the python environment is keyed on pylock.toml (S-311)
 - S-312: the go pin of fsm is kit's 1.27.3 in mise.toml and packages/go/go.mod (S-312)

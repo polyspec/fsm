@@ -5,8 +5,8 @@
     "parity": [],
     "runtimes": {
       "go": ["deps-go", "build-go"],
-      "php": [],
-      "php-ext": [],
+      "php": ["fsm-php-install"],
+      "php-ext": ["fsm-php-ext-install"],
       "python": ["fsm-python-install"],
       "rust": [],
       "ts": []

@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 0fed597b9f16b4cdd6f8ed1fbede98d7a7149d62dee7d04a43248aa087f9f1d2 -->
+<!-- source-sha256: 619c6816debb8bb9210600db24b720d453484d03f984153291ed86d3b79b6c45 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -103,6 +103,6 @@
 | S-327 | CI에서 make 전에 kit 패키지를 설치하고, ci.yml은 자기 suite만 실행한다 | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [o] |
 | S-328 | workflows.test가 check job의 ci-suite target을 기대하도록 고친다 | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |
 | S-329 | CI python 설치 전에 python 소스를 생성한다 | Makefile config/ci.json | `make fsm-python-install` | [o] |
-| S-330 | CI 런타임에서 composer 전에 릴리스 zip을 가져온다 | config/ci.json | `make fsm-php-install` | [ ] |
+| S-330 | CI 런타임에서 composer 전에 릴리스 zip을 가져온다 | config/ci.json | `make kit-ci-plan` | [o] |
 | S-331 | CI 공유 작업에 composer를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-332 | 고정된 orm v0.0.18에 맞춰 Go 예제를 빌드한다 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [ ] |

@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b9411088b4478744fc0cf56873bd8b73357eec94ac860e5ebf48784e199e0f17 -->
+<!-- source-sha256: ed0e76811ee73ad7e4d14eed45d7c07c1e74227d99378e47bb36af2a5cfdd025 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-330: CI의 php와 php-ext 런타임이 composer 전에 릴리스 zip을 가져오는 fsm-php-install과 fsm-php-ext-install로 설치한다 (S-330)
 - S-329: 깨끗한 checkout의 CI가 설치할 수 있도록 python 설치가 빌드 전에 packages/python의 ignore된 src를 생성한다 (S-329)
 - S-328: workflows.test가 S-327이 만든 check job의 ci-suite target을 기대한다 (S-328)
 - S-327: CI는 make 전에 kit 패키지를 kit gate와 같은 순서로 설치하며, 전체 suite는 kit-gates 전제 조건을 뺀 자기 target인 ci-suite다 (S-327)
@@ -19,7 +21,6 @@
 - S-318: rules-check가 지적한 kit 사본을 make kit-sync로 갱신한다 (S-318)
 - S-317: kit K801이 삭제한 main 쓰기 훅을 제거한다 (S-317)
 - S-316: kit K789가 삭제한 python-lock-check를 CHECK_TARGETS와 owner-checks에서 제거한다 (S-316)
-
 - S-315: kit K784이 삭제한 dependency-policy-check 참조와 그 게이트만 읽던 설정 파일을 제거한다 (S-315)
 - S-311: make sandbox가 도구마다 자기 폴더를 가지고 git 작업 트리이며, 파이썬 환경은 pylock.toml을 키로 삼는다 (S-311)
 - S-312: fsm의 go 핀을 kit의 1.27.3으로 맞춘다 (mise.toml, packages/go/go.mod) (S-312)
