@@ -113,6 +113,6 @@
 | S-337 | 새 worktree의 kit build 전에 python 소스를 생성한다 | Makefile | `make build-python` | [o] |
 | S-338 | php-ext 생성 전에 arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-339 | rust 예제의 use 경로와 크레이트 이름을 맞춘다 | packages/rust/Cargo.toml | `make kit-ci-plan` | [ ] |
-| S-341 | kit K895에 맞춰 fsm 문서의 자리표시자를 코드 표기로 쓴다 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md | `make docs-check` | [ ] |
+| S-341 | kit K895에 맞춰 fsm 문서의 자리표시자를 코드 표기로 쓴다 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md docs/plans/kit-standard/checklist.ko.md docs/plans/kit-standard/checklist.md | `make docs-check` | [ ] |
 | S-342 | CI check 잡을 kit처럼 make ci-targets로 돌린다 | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [ ] |
 | S-343 | pages 설치 전에 고정된 kit 패키지를 부트스트랩한다 | .github/workflows/pages.yml | `make kit-ci-plan` | [ ] |
