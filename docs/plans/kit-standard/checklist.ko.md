@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 80e09b964d2343d296fa70adf83b9a7ed1036658a4539d403205b109eb26ce1c -->
+<!-- source-sha256: baa52e57cca3012cd829aecd072b05957700848893817f75209a5894fab221d4 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -116,7 +116,7 @@
 | S-341 | kit K895에 맞춰 fsm 문서의 자리표시자를 코드 표기로 쓴다 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md docs/plans/kit-standard/checklist.ko.md docs/plans/kit-standard/checklist.md | `make docs-check` | [ ] |
 | S-342 | CI check 잡을 kit처럼 make ci-targets로 돌린다 | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [o] |
 | S-343 | pages 설치 전에 고정된 kit 패키지를 부트스트랩한다 | .github/workflows/pages.yml | `make kit-ci-plan` | [o] |
-| S-344 | kit 0.0.77 채택: prepare-commit-msg 훅 제거(K892), link-state-check를 link-check로(K869), 루트 .links 연결, deps-rust 정의(K859), Makefile:24,27과 owner-checks.json의 toolchain-check 제거(K854) (K870: ci.yml:2 주석을 실제 순서 make install 다음 make ci-targets로 고친다) (K905: test-php-ext가 확장과 함께 packages/php/tests를 돌린다; S-352) (parity: CHECK_TARGETS와 ci.yml을 맞추는 테스트는 없음; tests/workflows/workflows.test.mts:154가 check 잡을 make ci-targets로 고정(S-353), 목록은 CHECK_TARGETS에서 KIT_GATE_TARGETS를 뺀 것을 따른다) | .githooks/prepare-commit-msg Makefile owner-checks.json .gitignore .links CHANGELOG.md CHANGELOG.ko.md | `make kit-check` and `make deps-node`; CI에서 test-php-ext가 확장과 함께 packages/php/tests를 돌린다 (S-352) | [ ] |
+| S-344 | kit 0.0.77 채택: @polyspec/kit 0.0.77, @polyspec/ordered-json 0.0.14(루트, js, db package), @polyspec/template 0.0.15(gui)를 고정하고, fsm의 Composer package를 release-assets-fetch(K865) 대신 ordered-json의 release packages.json에서 설치하며(K871), CHECK_TARGETS와 KIT_GATE_TARGETS에서 toolchain-check를 뺀다(K854). tests/make-install은 새 동작(K865, K871, kit 0.0.77의 .mjs)을 단언한다 | package.json package-lock.json packages/js/package.json packages/js/package-lock.json packages/db/package.json packages/db/package-lock.json packages/gui/package.json packages/gui/package-lock.json packages/php/composer.json packages/php-ext/composer.json Makefile config/release-assets.json tests/make-install/make-install.test.mts .github/workflows/gates.yml PRINCIPLES.md PRINCIPLES.ko.md CHANGELOG.md CHANGELOG.ko.md | `var/tools/bin/node --test tests/make-install/make-install.test.mts` | [o] |
 | S-345 | db 저장소 계약 테스트에서 백엔드에 없는 vectorsFile 호출을 없앤다 | packages/db/tests/store-contract-all.test.mjs | `var/tools/bin/node --test packages/db/tests/store-contract-all.test.mjs` | [o] |
 | S-346 | CI 대상 목록에서 hooks-check를 뺀다(로컬 훅 상태) | .github/workflows/ci.yml | `make kit-ci-plan` | [o] |
 | S-347 | make -n 테스트의 샌드박스와 check-name 픽스처를 고친다. CI 잡 123889807196이 실패했다: 샌드박스 복사본에 Makefile이 include하는 node_modules/@polyspec/kit가 없고(Makefile:9: No such file or directory), check-name.test가 설치된 kit이 나열하지 않는 scripts/kit/kit-bootstrap.mk를 kit 복사본으로 쓴다 | tests/support/make-sandbox.mts tests/check-name/check-name.test.mts CHANGELOG.md CHANGELOG.ko.md | `node --test tests/check-name/check-name.test.mts` | [o] |

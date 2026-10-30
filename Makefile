@@ -257,7 +257,7 @@ check:
 # make-install-test runs the tests of the package dependencies (tests/make-install): a target that needs a dependency installs it
 # first, and a present dependency is not installed again (docs/plans/fsm-v1/checklist.md, S-29).
 make-install-test:
-	$(RUN_TESTS) node --results .results/make-install-test.json --inputs Makefile --inputs scripts/kit/kit-bootstrap.mk --inputs config/parity.json --inputs packages --inputs tests/make-install -- tests/make-install
+	$(RUN_TESTS) node --results .results/make-install-test.json --inputs Makefile --inputs config/parity.json --inputs packages --inputs tests/make-install -- $(or $(TESTS),tests/make-install)
 
 # workflows-test runs the tests of the CI and Pages workflows (.github/workflows): every action is pinned to a verified commit,
 # the check job runs make install and make check with the services of plan C-6, and each version comes from the file that
