@@ -97,7 +97,7 @@
 | S-322 | Adopt kit 0.0.72 in this repository | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | S-323 | Adopt kit 0.0.73 in this repository | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | S-324 | Declare config/ci.json for the kit CI plan | config/ci.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
-| S-325 | Adopt kit 0.0.80 in this repository | package.json package-lock.json .github/workflows/ci.yml .github/workflows/ci-pipeline.yml .github/workflows/release.yml PRINCIPLES.md PRINCIPLES.ko.md tests/workflows/workflows.test.mts CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [v] |
+| S-325 | Adopt kit 0.0.80 in this repository | package.json package-lock.json .github/workflows/ci.yml .github/workflows/gates.yml .github/workflows/ci-pipeline.yml .github/workflows/release.yml PRINCIPLES.md PRINCIPLES.ko.md tests/workflows/workflows.test.mts CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [v] |
 | S-326 | Declare the Go dependency setup of the CI plan | Makefile config/ci.json | `make kit-ci-plan` | [o] |
 | S-327 | Install the kit package before make in CI, and run only the own suite in ci.yml | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [o] |
 | S-328 | Make workflows.test name the ci-suite target of the check job | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |

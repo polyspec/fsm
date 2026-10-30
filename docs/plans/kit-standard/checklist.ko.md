@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: d0465434999af25c13facc1ac64d9bc6e15cc792db699877fc4bced9c94250b9 -->
+<!-- source-sha256: 50d3dfe12ed513512e8514ec8e32dc6fc97ddce4fa7f48c3377714be855bfd5d -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -98,7 +98,7 @@
 | S-322 | 이 저장소에 kit 0.0.72 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | S-323 | 이 저장소에 kit 0.0.73 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | S-324 | kit CI 계획을 위해 config/ci.json을 선언한다 | config/ci.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
-| S-325 | 이 저장소에 kit 0.0.80 채택 | package.json package-lock.json .github/workflows/ci.yml .github/workflows/ci-pipeline.yml .github/workflows/release.yml PRINCIPLES.md PRINCIPLES.ko.md tests/workflows/workflows.test.mts CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [v] |
+| S-325 | 이 저장소에 kit 0.0.80 채택 | package.json package-lock.json .github/workflows/ci.yml .github/workflows/gates.yml .github/workflows/ci-pipeline.yml .github/workflows/release.yml PRINCIPLES.md PRINCIPLES.ko.md tests/workflows/workflows.test.mts CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [v] |
 | S-326 | CI 계획에 Go 의존성 setup을 선언한다 | Makefile config/ci.json | `make kit-ci-plan` | [o] |
 | S-327 | CI에서 make 전에 kit 패키지를 설치하고, ci.yml은 자기 suite만 실행한다 | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [o] |
 | S-328 | workflows.test가 check job의 ci-suite target을 기대하도록 고친다 | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |
