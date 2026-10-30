@@ -59,6 +59,11 @@ export const ALLOWED: readonly Allowed[] = Object.freeze([
     reason: 'the S-05 group has an unlabelled bullet that names the spec path it was written with, before the rename',
   },
   {
+    files: ['docs/plans/kit-standard/checklist.md', 'docs/plans/kit-standard/checklist.ko.md'],
+    match: /(?<=\bgh run view )--exit-status\b/,
+    reason: 'the flag --exit-status of the external gh CLI (gh run view), a name that gh fixes; the recorded command ran with it, so it stays as it was run',
+  },
+  {
     files: ['docs/plans/fsm-v1/checklist.md', 'docs/plans/fsm-v1/checklist.ko.md'],
     match: /Rename status to fsm everywhere|a remaining `status` name that is not a state status|status를 fsm으로 전부 바꾼다|상태 의미가 아닌 `status` 이름이 남으면/,
     reason: 'the S-18 row is the task text: its phrases name the old name that the item renames and the scan it asks for',

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4c3fb827faf6340a04a3d3656dfd6af6b0d0f308cf8bb5714f37e222ebd603bd -->
+<!-- source-sha256: f66f99a8f8220820800025f38d4b080d5e9e99019a4ae0abd870194850a43b74 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-348: name-check 규칙이 S-56 행이 기록하는 gh run view의 플래그를 허용하고, Go 예제와 S-332 bullet은 옛 라이브러리 이름 대신 state라고 쓴다 (S-348)
 - S-353: workflows 테스트는 check 잡이 make ci-targets를 실행하고 artifact 업로드가 없는 것을 기대한다 (S-353)
 - S-346: CI check 잡은 hooks-check를 돌리지 않는다. git hook은 clone마다 make hooks가 쓰는 로컬 상태다 (S-346)
 - S-349: gui 패키지가 decodeFormRenderOptions를 내보내는 crudui 0.0.8을 고정하여, CI에서 gui 클라이언트의 esbuild 빌드가 성공한다 (S-349)

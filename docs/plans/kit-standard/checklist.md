@@ -104,7 +104,7 @@
 | S-329 | Generate the python sources before the python install in CI | Makefile config/ci.json | `make fsm-python-install` | [o] |
 | S-330 | Fetch the release zips before composer in CI runtimes | config/ci.json | `make kit-ci-plan` | [o] |
 | S-331 | Install composer in the CI shared job | config/ci.json | `make kit-ci-plan` | [o] |
-| S-332 | Read the row status of the Go example with the two-value GetStatus of the linked orm | packages/go/examples/persist.go | `make build-go` | [o] |
+| S-332 | Read the row state of the Go example with the two-value GetStatus of the linked orm | packages/go/examples/persist.go | `make build-go` | [o] |
 | S-333 | Adopt kit 0.0.74 in this repository | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
 | S-334 | Generate the PHP and php-ext sources in the runtime setup of CI | config/ci.json | `make kit-ci-plan` | [o] |
 | S-335 | Install uv and the php-arginfo generator in the shared CI job | config/ci.json | `make kit-ci-plan` | [o] |
@@ -119,7 +119,7 @@
 | S-345 | Remove the vectorsFile call of the db store contract test, which the backends no longer have | packages/db/tests/store-contract-all.test.mjs | `var/tools/bin/node --test packages/db/tests/store-contract-all.test.mjs` | [o] |
 | S-346 | Remove hooks-check from the CI target list, since the hooks are local state | .github/workflows/ci.yml | `make kit-ci-plan` | [o] |
 | S-347 | Make the tests that run make -n read the Makefile with the kit-bootstrap.mk present | tests/make-install/make-install.test.mts tests/python-tools/python-tools.test.mts tests/check-name/check-name.test.mts | `make kit-ci-plan` | [ ] |
-| S-348 | Keep the S-332 changelog line within the check-name rule | CHANGELOG.md CHANGELOG.ko.md | `make kit-ci-plan` | [ ] |
+| S-348 | Clear the eight name-check findings of CI job 123889807196: the old library name (the word that scripts/check-name.mts forbids, except as a state value, an exit status or a test result) in the S-332 changelog line (CHANGELOG.md:18, now the state), in the Go example variables of packages/go/examples/persist.go:48,52,67,71 (now state), and in the S-332 row (now state); the S-56 row's gh run view command is kept, and its flag is allowed by an exact match in scripts/check-name.mts. Cause: those lines were not in the rule when S-332 landed. name-test also needs S-347 (the check-name fixture) | CHANGELOG.md packages/go/examples/persist.go docs/plans/kit-standard/checklist.md scripts/check-name.mts tests/check-name/check-name.test.mts | `make name-check` | [o] |
 | S-349 | Fix the esbuild build of the gui package in CI | packages/gui | `make kit-ci-plan` | [o] |
 | S-350 | Stop the php extension generator from declaring the function of the InReview case twice | packages/php/src/InReview/functions.php | `make kit-ci-plan` | [ ] |
 | S-351 | Fix the npm persist test target that fails after its 15 passing tests | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [o] |

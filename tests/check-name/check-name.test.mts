@@ -61,6 +61,14 @@ test('the changelog keeps the text of old bullets, and the copies of kit are not
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 
+test('the gh CLI flag --exit-status of gh run view is allowed in the checklists, and a variable named status is not', (t) => {
+  const flag = check(t, { 'docs/plans/kit-standard/checklist.md': '| S-56 | `gh run view --exit-status $(gh run list)` |\n' });
+  assert.equal(flag.result.status, 0, flag.result.stdout + flag.result.stderr);
+  const variable = check(t, { 'packages/go/examples/persist.go': 'func f() {\n\tstatus, err := row.GetStatus()\n}\n' });
+  assert.equal(variable.result.status, 1, variable.result.stdout + variable.result.stderr);
+  assert.match(variable.result.stderr, /persist\.go:2: /);
+});
+
 test('a usage error exits with status 2', (t) => {
   const root = tree(t, {});
   const result = spawnSync(process.execPath, [SCRIPT, '--root', root, '--unknown'], { encoding: 'utf8' });

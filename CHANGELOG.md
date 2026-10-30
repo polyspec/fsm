@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-348: The name-check rule accepts the flag of gh run view that the S-56 row records, and the Go example and the S-332 bullet name the state rather than the old library name (S-348)
+- S-332: The Go example reads the state of the row with the GetStatus of the linked orm, which returns the state and an error (S-332)
 - S-353: The workflows test expects the check job to run make ci-targets, and no artifact upload, which the suite targets replaced (S-353)
 - S-346: The CI check job no longer runs hooks-check, since the git hooks are local state that make hooks writes in a clone (S-346)
 - S-349: The gui package pins crudui 0.0.8, which exports decodeFormRenderOptions, so the esbuild build of the gui client succeeds in CI (S-349)
@@ -16,7 +18,6 @@
 - S-338: The php-ext runtime of CI installs the PHP arginfo generator before it generates the extension stub (S-338)
 - S-335: The shared CI job installs uv and the php-arginfo generator, so its gates run the python venv and the arginfo check (S-335)
 - S-337: The kit build of packages/python generates the python sources first, so a fresh worktree sets up (S-337)
-- S-332: The Go example reads the status of the row with the GetStatus of the linked orm, which returns the status and an error (S-332)
 - S-334: The php and php-ext runtimes of CI generate their PHP sources and extension stub after the installs (S-334)
 - S-336: The python install removes the build directory of its package build, so the python lint does not read a build copy (S-336)
 - S-337: The kit build of packages/python generates the python sources first, so a fresh worktree sets up (S-337)

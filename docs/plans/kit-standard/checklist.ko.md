@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 711e17594b62e5c4948ca56ee79f5c0372d2056cd5f7e3dc94348291d680fec1 -->
+<!-- source-sha256: 3a225ae63b7c02c1d625125f6cb102392c0eeb6e3625830d54e92271132b60e2 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -120,7 +120,7 @@
 | S-345 | db 저장소 계약 테스트에서 백엔드에 없는 vectorsFile 호출을 없앤다 | packages/db/tests/store-contract-all.test.mjs | `var/tools/bin/node --test packages/db/tests/store-contract-all.test.mjs` | [o] |
 | S-346 | CI 대상 목록에서 hooks-check를 뺀다(로컬 훅 상태) | .github/workflows/ci.yml | `make kit-ci-plan` | [o] |
 | S-347 | make -n를 실행하는 테스트가 kit-bootstrap.mk가 있는 Makefile을 읽게 한다 | tests/make-install/make-install.test.mts tests/python-tools/python-tools.test.mts tests/check-name/check-name.test.mts | `make kit-ci-plan` | [ ] |
-| S-348 | S-332 changelog 줄을 check-name 규칙 안에 맞춘다 | CHANGELOG.md CHANGELOG.ko.md | `make kit-ci-plan` | [ ] |
+| S-348 | CI 잡 123889807196의 name-check 발견 8건을 없앤다: 옛 라이브러리 이름(scripts/check-name.mts가 금지하는 낱말, 상태 값·종료 코드·테스트 결과로만 허용) 이 S-332 changelog 줄(CHANGELOG.md:18, 이제 state), packages/go/examples/persist.go:48,52,67,71의 변수(이제 state), S-332 행(이제 state)에 있었다; S-56 행의 gh run view 명령은 그대로 두고 그 플래그는 scripts/check-name.mts의 정확한 일치로 허용한다. 원인: 이 줄들은 S-332가 들어갈 때 규칙 밖이었다. name-test는 S-347(check-name 픽스처)도 필요하다 | CHANGELOG.md packages/go/examples/persist.go docs/plans/kit-standard/checklist.md scripts/check-name.mts tests/check-name/check-name.test.mts | `make name-check` | [o] |
 | S-349 | CI에서 gui 패키지의 esbuild 빌드 오류를 고친다 | packages/gui | `make kit-ci-plan` | [o] |
 | S-350 | php-ext 생성기가 InReview 케이스 함수를 두 번 선언하지 않게 한다 | packages/php/src/InReview/functions.php | `make kit-ci-plan` | [ ] |
 | S-351 | 15개 통과 뒤 실패하는 npm persist 대상을 고친다 | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [o] |
