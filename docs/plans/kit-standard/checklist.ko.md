@@ -118,3 +118,4 @@
 | S-343 | pages 설치 전에 고정된 kit 패키지를 부트스트랩한다 | .github/workflows/pages.yml | `make kit-ci-plan` | [o] |
 | S-344 | kit 0.0.77 채택: prepare-commit-msg 훅을 제거하고(K892), link-state-check를 link-check로 바꾸며(K869), 루트 .links를 연결한다 | .githooks/prepare-commit-msg Makefile .gitignore .links CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [ ] |
 | S-345 | db 저장소 계약 테스트에서 백엔드에 없는 vectorsFile 호출을 없앤다 | packages/db/tests/store-contract-all.test.mjs | `make ci-targets TARGETS="$6"` | [ ] |
+| S-346 | CI 대상 목록에서 hooks-check를 뺀다(로컬 훅 상태) | .github/workflows/ci.yml | `make kit-ci-plan` | [ ] |
