@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: ce2e10ba78dd88059ce5d8663b6d84a4365773e22cfa808a3b0149bda653cd79 -->
+<!-- source-sha256: 90cb214eacaa2d6a9c029795bcf8209db00924e6f68a8ccb94750c579cf84611 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -115,3 +115,4 @@
 | S-339 | rust 예제의 use 경로와 크레이트 이름을 맞춘다 | packages/rust/Cargo.toml | `make kit-ci-plan` | [ ] |
 | S-341 | kit K895에 맞춰 fsm 문서의 자리표시자를 코드 표기로 쓴다 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md | `make docs-check` | [ ] |
 | S-342 | CI check 잡을 kit처럼 make ci-targets로 돌린다 | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [ ] |
+| S-343 | pages 설치 전에 고정된 kit 패키지를 부트스트랩한다 | .github/workflows/pages.yml | `make kit-ci-plan` | [ ] |
