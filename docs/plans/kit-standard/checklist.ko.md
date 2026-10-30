@@ -98,7 +98,7 @@
 | S-322 | 이 저장소에 kit 0.0.72 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | S-323 | 이 저장소에 kit 0.0.73 채택 | package.json package-lock.json .github/workflows/gates.yml config/checklist.json | `make kit-check` | [o] |
 | S-324 | kit CI 계획을 위해 config/ci.json을 선언한다 | config/ci.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
-| S-325 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json Makefile .github/workflows/ci.yml config/ci.json | `make kit-check` | [ ] |
+| S-325 | 이 저장소에 kit 0.0.80 채택 | package.json package-lock.json .github/workflows/ci.yml .github/workflows/ci-pipeline.yml .github/workflows/release.yml PRINCIPLES.md PRINCIPLES.ko.md tests/workflows/workflows.test.mts CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [v] |
 | S-326 | CI 계획에 Go 의존성 setup을 선언한다 | Makefile config/ci.json | `make kit-ci-plan` | [o] |
 | S-327 | CI에서 make 전에 kit 패키지를 설치하고, ci.yml은 자기 suite만 실행한다 | Makefile .github/workflows/ci.yml | `make ci-suite -n` | [o] |
 | S-328 | workflows.test가 check job의 ci-suite target을 기대하도록 고친다 | tests/workflows/workflows.test.mts | `make workflows-test` | [o] |
