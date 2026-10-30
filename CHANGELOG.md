@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-344: fsm installs the Composer packages from the release packages.json of ordered-json (K865, K871), without release-assets-fetch, and the make-install test states that (S-344)
 - S-344: @polyspec/template is pinned to the 0.0.15 asset, with its lock, for the gui (S-344)
 - S-344: @polyspec/kit is pinned to the 0.0.77 asset and @polyspec/ordered-json to the 0.0.14 asset, with the lock files and the kit-sync copies (S-344)
 - S-355: The make-install tests read the ci-targets line of make -n check, and assert the current python install: the lock is installed first, then make link links the checkouts (S-355)

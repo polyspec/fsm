@@ -21,10 +21,10 @@ KINDS := $(shell node -p "require('./config/parity.json').implementations.map(im
 
 # The kit-gates prerequisites run in the shared gates of CI (kit K870, Decision 9), and CI links nothing (kit K824): the own suite of
 # ci.yml is CHECK_TARGETS without them. make check runs all of CHECK_TARGETS locally.
-KIT_GATE_TARGETS := kit-check toolchain-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check parity-check bypass-check suppression-check divergence-check lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext link-state-check
+KIT_GATE_TARGETS := kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check parity-check bypass-check suppression-check divergence-check lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext link-state-check
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := kit-check owner-validate docs-check hooks-check toolchain-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test parity-declarations-check parity-check rules-check rebuild-check language-check test-markers-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext link-state-check bypass-check divergence-check suppression-check
+CHECK_TARGETS := kit-check owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test parity-declarations-check parity-check rules-check rebuild-check language-check test-markers-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext link-state-check bypass-check divergence-check suppression-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-js test-go test-php test-rust rust-persist-test npm-types test-python test-php-ext gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
@@ -56,18 +56,17 @@ PACKAGE_DEPS := $(NPM_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(R
 $(NPM_DEP): packages/js/package-lock.json
 	$(ONLINE) $(MAKE) fsm-js-install
 
-$(PHP_DEP): packages/php/composer.lock packages/php/composer.json config/release-assets.json
+$(PHP_DEP): packages/php/composer.lock packages/php/composer.json
 	$(ONLINE) $(MAKE) fsm-php-install
 	touch $@
 
-$(PHP_EXT_DEP): packages/php-ext/composer.lock packages/php-ext/composer.json config/release-assets.json
+$(PHP_EXT_DEP): packages/php-ext/composer.lock packages/php-ext/composer.json
 	$(ONLINE) $(MAKE) fsm-php-ext-install
 	touch $@
 
-# The polyspec packages of Composer (orm and ordered-json) are on no registry: their releases publish the zips that
-# config/release-assets.json pins by version and sha256, and Composer reads them from var/composer-artifacts, the artifact
-# repository that the composer.json of packages/php and packages/php-ext names. The install of each Composer package runs
-# make release-assets-fetch of kit first (K140), and composer.lock records the dist of each zip with its shasum.
+# The polyspec packages of Composer (orm and ordered-json) come from the packages.json of each release, a flat
+# Composer repository that composer.json names (K871). Kit downloads no package (K865): composer install reads that
+# repository, and composer.lock records the dist of each package.
 
 $(PYTHON_BIN):
 	$(ONLINE) $(MAKE) install-tools
@@ -143,12 +142,11 @@ fsm-js-gen:
 fsm-js-test: $(NPM_DEP) fsm-js-gen
 	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- packages/js/tests/conformance.test.mjs
 
-# fsm-php-install downloads the release zips of orm and ordered-json into var/composer-artifacts, the artifact repository of
-# composer.json, with make release-assets-fetch of kit (K140), then installs the dependencies of composer.lock, and links right
-# after the install (P30), so the vendor installed from the tracked lock never replaces the links.
+# fsm-php-install installs the Composer dependencies of packages/php from the release packages.json of composer.json (K865,
+# K871), then installs the dependencies of composer.lock, and links right after the install (P30), so the vendor
+# installed from the tracked lock never replaces the links.
 .PHONY: fsm-php-install fsm-php-gen fsm-php-test
 fsm-php-install:
-	$(MAKE) release-assets-fetch
 	cd packages/php && $(COMPOSER) install --no-interaction --no-progress
 	$(MAKE) --no-print-directory link
 
@@ -164,7 +162,6 @@ fsm-php-test: $(PHP_DEP) fsm-php-gen
 # fsm-php-ext-install is the install of the extension: the same Composer packages as packages/php (composer.lock).
 .PHONY: fsm-php-ext-install fsm-php-ext-gen
 fsm-php-ext-install:
-	$(MAKE) release-assets-fetch
 	cd packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
 	$(MAKE) --no-print-directory link
 

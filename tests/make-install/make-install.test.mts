@@ -58,8 +58,8 @@ const TARGETS = [
   { target: 'fsm-js-test', line: /--results \.results\/npm\.json/, needs: ['npm'] },
   { target: 'test-go', line: /go --cwd packages\/go/, needs: ['go'] },
   { target: 'test-php', line: /phpunit --cwd packages\/php --results/, needs: ['php'] },
-  { target: 'test-php-ext', line: /php-extension\.mts test/, needs: ['php-ext'] },
-  { target: 'test-python', line: /run-tests\.mts python --venv/, needs: ['python'] },
+  { target: 'test-php-ext', line: /php-extension\.m[jt]s test/, needs: ['php-ext'] },
+  { target: 'test-python', line: /run-tests\.m[jt]s python --venv/, needs: ['python'] },
   { target: 'test-rust', line: /--results \.results\/rust\.json/, needs: ['rust'] },
   { target: 'db-test', line: /db-test\.json/, needs: ['db'] },
   { target: 'gui-test', line: /gui-test\.json/, needs: ['gui', 'db'] },
@@ -114,7 +114,7 @@ function dryRun(dir: string, goal: string): string {
 /** The targets of the full-run line of `make -n check`, which must print it. */
 function checkTargets(stdout: string): string[] {
   const report = 'var/report/ci-targets';
-  const line = stdout.split('\n').find((candidate) => candidate.includes(`ci-targets.mts ${report}`));
+  const line = stdout.split('\n').find((candidate) => new RegExp(`ci-targets\\.m[jt]s ${report}`).test(candidate));
   if (line === undefined) throw new Error(`make -n check printed no ci-targets line:\n${stdout}`);
   return line.slice(line.indexOf(report) + report.length).trim().split(/\s+/);
 }
@@ -144,16 +144,11 @@ test('the composer vendor is keyed on composer.json too: its autoload is not in 
   }
 });
 
-test('the Composer packages fetch the release zips of config/release-assets.json before composer install (S-44-8-1)', (t) => {
-  for (const kind of ['php', 'php-ext']) {
-    const dir = sandbox(t, { installed: true });
-    const now = Date.now() / 1000;
-    utimesSync(path.join(dir, 'config/release-assets.json'), now + 60, now + 60);
-    const out = dryRun(dir, `test-${kind}`);
-    const fetch = lineIndex(out, /release-assets\.mts fetch/);
-    const install = lineIndex(out, /composer install/);
-    assert.ok(lineIndex(out, installLine(kind)) >= 0, `a newer config/release-assets.json does not install the ${kind} vendor again:\n${out}`);
-    assert.ok(fetch >= 0 && fetch < install, `no make release-assets-fetch before the composer install of ${kind}:\n${out}`);
+test('the Composer packages come from the release packages.json, so no release-assets fetch runs before composer install (K865, K871)', (t) => {
+  for (const target of ['fsm-php-install', 'fsm-php-ext-install']) {
+    const out = dryRun(sandbox(t), target);
+    assert.ok(lineIndex(out, /composer install/) >= 0, `no composer install in ${target}:\n${out}`);
+    assert.equal(lineIndex(out, /release-assets/), -1, `${target} still fetches release zips, which kit 0.0.77 removed (K865):\n${out}`);
   }
 });
 
@@ -161,7 +156,7 @@ test('the php installs link right after composer install, so a vendor from the t
   for (const target of ['fsm-php-install', 'fsm-php-ext-install']) {
     const out = dryRun(sandbox(t), target);
     const install = lineIndex(out, /composer install/);
-    const link = lineIndex(out, /(^|[ /])make\b.*\blink\b|link\.mts link/);
+    const link = lineIndex(out, /(^|[ /])make\b.*\blink\b|link\.m[jt]s link/);
     assert.ok(install >= 0, `no composer install in ${target}:\n${out}`);
     assert.ok(link > install, `no make link right after the composer install of ${target}:\n${out}`);
   }
@@ -190,7 +185,7 @@ test('gui-browser-test downloads the browser once, then needs no network', (t) =
 test('the python environment is created with the Python 3.14 of install-tools', (t) => {
   const out = dryRun(sandbox(t), 'test-python');
   // install-tools takes no tool names: it installs every tool of mise.lock, the Python among them (kit K127).
-  const interpreter = lineIndex(out, /install-tools\.mts\s*$/);
+  const interpreter = lineIndex(out, /install-tools\.m[jt]s\s*$/);
   const install = lineIndex(out, installLine('python'));
   assert.ok(interpreter >= 0 && interpreter < install, `no install-tools before the python install:\n${out}`);
 });
@@ -198,7 +193,7 @@ test('the python environment is created with the Python 3.14 of install-tools', 
 test('install builds every dependency and the toolchains', (t) => {
   const out = dryRun(sandbox(t), 'install');
   for (const name of ALL) assert.ok(lineIndex(out, installLine(name)) >= 0, `install does not install ${name}:\n${out}`);
-  assert.ok(lineIndex(out, /install-tools\.mts/) >= 0, `install does not install the toolchains:\n${out}`);
+  assert.ok(lineIndex(out, /install-tools\.m[jt]s/) >= 0, `install does not install the toolchains:\n${out}`);
 });
 
 test('the targets with a dependency present run no install', (t) => {

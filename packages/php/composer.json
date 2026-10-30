@@ -12,8 +12,8 @@
     },
     "repositories": [
         {
-            "type": "artifact",
-            "url": "../../var/composer-artifacts"
+            "type": "composer",
+            "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.14/packages.json"
         },
         {
             "type": "vcs",

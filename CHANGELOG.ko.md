@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-344: fsm은 release-assets-fetch 없이 ordered-json의 release packages.json에서 Composer package를 설치하며(K865, K871), make-install 테스트가 이를 단언한다 (S-344)
 - S-344: @polyspec/template을 0.0.15 asset으로 고정하고 gui의 lock을 갱신한다 (S-344)
 - S-344: @polyspec/kit을 0.0.77 asset으로, @polyspec/ordered-json을 0.0.14 asset으로 고정하고 lock 파일과 kit-sync 사본을 갱신한다 (S-344)
 - S-355: make-install 테스트는 make -n check의 ci-targets 줄을 읽고, 현재 python 설치를 단언한다: lock을 먼저 설치하고 그 뒤에 make link가 체크아웃을 링크한다 (S-355)
