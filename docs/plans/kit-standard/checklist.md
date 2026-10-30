@@ -127,3 +127,4 @@
 | S-353 | Update the workflows test to the check job that runs make ci-targets | tests/workflows/workflows.test.mts | `make kit-ci-plan` | [o] |
 | S-354 | Remove the python-tools assertions that pin kit internals | tests/python-tools/python-tools.test.mts | `node --test tests/python-tools/python-tools.test.mts` | [ ] |
 | S-355 | Parse the ci-targets list of make -n check in the make-install tests | tests/make-install/make-install.test.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |
+| S-356 | Accept the lock install of the python venv by the S-54 criteria | tests/make-install/make-install.test.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |
