@@ -27,7 +27,7 @@ function text(value: unknown, what: string): string {
   return value;
 }
 
-// The workflows among the copies of kit (kit.copies of the installed @polyspec/kit: gates.yml and release.yml) belong to kit: make kit-check keeps them
+// The workflows among the copies of kit (kit.copies of the installed @polyspec/kit: ci-pipeline.yml and release.yml) belong to kit: make kit-check keeps them
 // byte for byte, so the rules of fsm's own workflows below do not read them.
 const KIT_PACKAGE: unknown = JSON.parse(read('node_modules/@polyspec/kit/package.json'));
 const COPIES = field(field(KIT_PACKAGE, 'kit', '@polyspec/kit package.json'), 'copies', '@polyspec/kit package.json kit');
@@ -106,14 +106,16 @@ const PAGES_JOB = job(jobsOf(PAGES), 'pages');
 const CHECK_JOB = job(ci, 'check');
 
 // ubuntu-26.04: orm's PHP client requires SQLite 3.46, and the PHP of ubuntu-24.04 links its system SQLite 3.45.1 (S-21-1).
-test('the CI workflow has one job, check, on ubuntu-26.04', () => {
-  assert.deepEqual([...ci.keys()], ['check']);
+test('the CI workflow runs the kit pipeline, then its job check, on ubuntu-26.04 (K910)', () => {
+  assert.deepEqual([...ci.keys()], ['kit', 'check']);
+  assert.match(ci.get('kit') ?? '', /^ {4}uses: \.\/\.github\/workflows\/ci-pipeline\.yml$/m);
+  assert.match(CHECK_JOB, /^ {4}needs: kit$/m);
   assert.match(CHECK_JOB, /^ {4}runs-on: ubuntu-26\.04$/m);
   assert.match(PAGES_JOB, /^ {4}runs-on: ubuntu-26\.04$/m);
 });
 
-test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the gates and release workflows that kit vendors', () => {
-  assert.deepEqual(VENDORED, ['.github/workflows/release.yml', '.github/workflows/gates.yml']);
+test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the ci-pipeline and release workflows that kit vendors', () => {
+  assert.deepEqual(VENDORED, ['.github/workflows/release.yml', '.github/workflows/ci-pipeline.yml']);
   assert.deepEqual(WORKFLOWS, ['.github/workflows/ci.yml', '.github/workflows/pages.yml']);
 });
 

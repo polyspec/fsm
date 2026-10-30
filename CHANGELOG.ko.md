@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 32cc0d265fb6fb8cf414beb7bd1b0401cd6f39f70f9a54f5288469de727f8c40 -->
+<!-- source-sha256: 13d4aa45407bb90d9d63e5171be8204eb3f5ebca8bf623f6f95fc9111d1de144 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-325: kit 0.0.80을 채택한다. ci.yml은 kit의 ci-pipeline.yml을 job kit으로 부르고 job check는 needs: kit으로 그 뒤에 돌며, gates.yml은 지워지고 kit 사본(PRINCIPLES, release.yml)은 0.0.80의 것이다 (S-325)
 - S-365: deps-rust가 kit의 catch check crate도 가져와서 lint-rust의 offline catch check가 이를 찾는다 (S-365)
 - S-361: fsm의 P30 링크 규칙 보충을 삭제한다. kit P30이 이를 다루고 make link-check가 중첩 project를 검사한다 (S-361)
 - S-364: ts 런타임 설정이 lint-ts 전에 패키지를 설치하고 js 선언을 생성(fsm-js-gen)하여 npm-types의 import가 풀린다 (S-364)
