@@ -105,3 +105,22 @@ foreach (['string' => '2', 'float' => 2.0, 'fraction' => 2.5, 'bool' => true, 'n
       'RESULT bool E_UNKNOWN_CODE', 'RESULT null E_UNKNOWN_CODE', 'RESULT int Paid'],
   );
 });
+
+// S-350: the php-ext kind registers the namespace functions in the same process, so functions.php guards each of them with
+// function_exists (the polyfill form). Requiring the file after the extension declared the functions must not redeclare them.
+test('functions.php guards every namespace function with function_exists, so it loads after the extension declared them (S-350)', async (t) => {
+  const names = ['initial', 'code', 'key', 'fromCode', 'isFinal', 'eventsFrom', 'target', 'apply'];
+  const [{ content }] = (await orderFiles()).filter(file => file.path === 'Order/functions.php');
+  for (const name of names) {
+    assert.ok(content.includes(`if (!\\function_exists('${NAMESPACE}\\Order\\${name}')) {`), `no guard of ${name}`);
+  }
+  const dir = mkdtempSync(path.join(tmpdir(), 'fsm-s350-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const declared = names.map(name => `function ${name}() {}`).join('\n');
+  writeFileSync(path.join(dir, 'extension.php'), `<?php\nnamespace ${NAMESPACE}\\Order;\n${declared}\n`);
+  writeFileSync(path.join(dir, 'functions.php'), content);
+  writeFileSync(path.join(dir, 'main.php'), `<?php\nrequire ${JSON.stringify(path.join(dir, 'extension.php'))};\nrequire ${JSON.stringify(path.join(dir, 'functions.php'))};\necho "loaded\\n";\n`);
+  const run = spawnSync('php', [path.join(dir, 'main.php')], { encoding: 'utf8' });
+  assert.equal(run.status, 0, run.stdout + run.stderr);
+  assert.match(run.stdout, /loaded/);
+});

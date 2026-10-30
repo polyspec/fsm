@@ -91,6 +91,33 @@ function stepFile(ir, ns) {
   ]);
 }
 
+/**
+ * Wraps each function of a block of lines in `if (!\function_exists(...))`, the polyfill form (S-350): the php-ext kind registers
+ * the same namespace functions in the process, so a require of this file must not declare them again. Blocks that declare no
+ * function (the tag, the namespace and the uses, the classes) pass unchanged.
+ */
+function guardFunctions(lines, ns) {
+  const out = [];
+  let block = [];
+  const flush = () => {
+    const declaration = block.find(line => /^function \w+\(/.test(line));
+    if (declaration === undefined) out.push(...block);
+    else {
+      const name = declaration.match(/^function (\w+)\(/)[1];
+      out.push(`if (!\\function_exists('${ns}\\${name}')) {`, ...block.map(line => `    ${line}`), '}');
+    }
+    block = [];
+  };
+  for (const line of lines) {
+    if (line === '') {
+      flush();
+      out.push('');
+    } else block.push(line);
+  }
+  flush();
+  return out;
+}
+
 /** The namespace functions of `ir`: initial, code, key, fromCode, isFinal, eventsFrom, target and apply (docs/spec/fsm.md, B-6). */
 function functionsFile(ir, ns, phpNamespace, reservedCodes) {
   const { machine, initial, states, events, transitions } = ir;
@@ -132,9 +159,9 @@ function functionsFile(ir, ns, phpNamespace, reservedCodes) {
     '}',
     '',
     '/**',
-    ' * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a value that',
-    ' * is not an int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so every caller gets the same',
-    ' * result.',
+    ' * The state of a code: E_RESERVED_CODE for a reserved code, E_UNKNOWN_CODE for any other value and for a',
+    ' * value that is not an int (docs/spec/fsm.md, B-6). The type is checked here, not by the signature, so',
+    ' * every caller gets the same result.',
     ' */',
     'function fromCode(mixed $value): State',
     '{',
@@ -207,7 +234,7 @@ function functionsFile(ir, ns, phpNamespace, reservedCodes) {
     ], ';'),
     '}',
   ];
-  return text(lines);
+  return text(guardFunctions(lines, ns));
 }
 
 /** The code enum of the shared namespace: the error codes of B-4, B-5 and B-6 without the E_ prefix in the case names. */

@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 0d9a43fdbbcbff47a208000ce1e8554fc6e7c9f0cd0ea6d1b4f824f9cc82e1ea -->
+<!-- source-sha256: 5ed93adacf65d6aeb5cf979f24d04362b22ee0d52e1fbfcfeca01c9c4ac5519b -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -122,7 +122,7 @@
 | S-347 | make -n 테스트의 샌드박스와 check-name 픽스처를 고친다. CI 잡 123889807196이 실패했다: 샌드박스 복사본에 Makefile이 include하는 node_modules/@polyspec/kit가 없고(Makefile:9: No such file or directory), check-name.test가 설치된 kit이 나열하지 않는 scripts/kit/kit-bootstrap.mk를 kit 복사본으로 쓴다 | tests/support/make-sandbox.mts tests/check-name/check-name.test.mts CHANGELOG.md CHANGELOG.ko.md | `node --test tests/check-name/check-name.test.mts` | [o] |
 | S-348 | CI 잡 123889807196의 name-check 발견 8건을 없앤다: 옛 라이브러리 이름(scripts/check-name.mts가 금지하는 낱말, 상태 값·종료 코드·테스트 결과로만 허용) 이 S-332 changelog 줄(CHANGELOG.md:18, 이제 state), packages/go/examples/persist.go:48,52,67,71의 변수(이제 state), S-332 행(이제 state)에 있었다; S-56 행의 gh run view 명령은 그대로 두고 그 플래그는 scripts/check-name.mts의 정확한 일치로 허용한다. 원인: 이 줄들은 S-332가 들어갈 때 규칙 밖이었다. name-test는 S-347(check-name 픽스처)도 필요하다 | CHANGELOG.md packages/go/examples/persist.go docs/plans/kit-standard/checklist.md scripts/check-name.mts tests/check-name/check-name.test.mts | `make name-check` | [o] |
 | S-349 | CI에서 gui 패키지의 esbuild 빌드 오류를 고친다 | packages/gui | `make kit-ci-plan` | [o] |
-| S-350 | php-ext 생성기가 InReview 케이스 함수를 두 번 선언하지 않게 한다 | packages/php/src/InReview/functions.php | `make kit-ci-plan` | [ ] |
+| S-350 | php 생성기의 모든 네임스페이스 함수를 function_exists로 감싼다(polyfill 형태). 확장이 이미 선언한 뒤에도 functions.php가 로드되게 한다. CI 실패: packages/php/src/InReview/functions.php 12행에서 Cannot redeclare function Polyspec\FsmTest\InReview\initial() (잡 123889807196, php-ext persist 테스트) | packages/compiler/src/backends/php.mjs packages/compiler/tests/php-backend.test.mjs packages/compiler/tests/golden/php/src/Order/functions.php CHANGELOG.md CHANGELOG.ko.md | `node --test packages/compiler/tests/php-backend.test.mjs`와 `make kit-ci-plan` | [o] |
 | S-351 | 15개 통과 뒤 실패하는 npm persist 대상을 고친다 | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [o] |
 | S-352 | php-ext phpunit 대상이 테스트를 실제로 돌리게 한다 | packages/php-ext | `make kit-ci-plan` | [-] 원인: kit의 test-php-ext가 테스트가 없는 packages/php-ext를 골랐고, parity-check가 선언한 packages/php/tests가 아니었다 (kit K905, 0.0.77); 검증은 S-344에 합쳤다 |
 | S-353 | workflows 테스트의 check 잡 기대를 make ci-targets로 갱신한다 | tests/workflows/workflows.test.mts | `make kit-ci-plan` | [o] |
