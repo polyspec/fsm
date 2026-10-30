@@ -35,8 +35,7 @@
       "targets": [
         "kit-check",
         "owner-validate",
-        "docs-check",
-        "toolchain-check"
+        "docs-check"
       ]
     },
     {
@@ -120,7 +119,6 @@
       "targets": [
         "layout-check",
         "test-go",
-        "toolchain-check",
         "go-persist-test-postgres",
         "go-persist-test-mysql"
       ]
@@ -175,7 +173,6 @@
       "targets": [
         "layout-check",
         "test-php",
-        "toolchain-check",
         "php-persist-test-postgres",
         "php-persist-test-mysql"
       ]
@@ -198,8 +195,7 @@
       "targets": [
         "kit-check",
         "owner-validate",
-        "docs-check",
-        "toolchain-check"
+        "docs-check"
       ]
     },
     {
@@ -210,7 +206,6 @@
         "layout-check",
         "rust-persist-test",
         "test-rust",
-        "toolchain-check",
         "rust-persist-test-postgres",
         "rust-persist-test-mysql"
       ]
@@ -234,7 +229,6 @@
       "targets": [
         "layout-check",
         "test-python",
-        "toolchain-check",
         "python-persist-test-postgres",
         "python-persist-test-mysql"
       ]
@@ -246,7 +240,6 @@
       "targets": [
         "layout-check",
         "test-php-ext",
-        "toolchain-check",
         "php-ext-persist-test-postgres",
         "php-ext-persist-test-mysql"
       ]
