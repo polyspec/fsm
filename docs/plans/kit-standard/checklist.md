@@ -123,3 +123,4 @@
 | S-349 | Fix the esbuild build of the gui package in CI | packages/gui | `make kit-ci-plan` | [ ] |
 | S-350 | Stop the php extension generator from declaring the function of the InReview case twice | packages/php/src/InReview/functions.php | `make kit-ci-plan` | [ ] |
 | S-351 | Fix the npm persist test target that fails after its 15 passing tests | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [ ] |
+| S-352 | Make the php-ext phpunit target run its tests, which no test ran in CI | packages/php-ext | `make kit-ci-plan` | [ ] |
