@@ -131,3 +131,4 @@
 | S-356 | S-355에 합침(같은 테스트 파일, 같은 CI 잡의 두 원인) | tests/make-install/make-install.test.mts | — | [-] 원인: fsm-python-install의 S-54 단언을 현재 규칙(S-314, K869)으로 바꾼다. 변경은 S-355 커밋에 있다 |
 | S-357 | kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 | .githooks/prepare-commit-msg | `test ! -e .githooks/prepare-commit-msg` | [ ] |
 | S-358 | fsm의 npm 설치 stamp를 lock 파일 내용으로 키잉한다 | Makefile tests/make-install/make-install.test.mts CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make -n install` | [ ] |
+| S-359 | orm 0.0.19(composer lock 포함), hyper 0.0.22, crudui 0.0.9를 각 릴리스 발표 때 fsm에 고정한다 | packages/php/composer.json packages/php/composer.lock packages/php-ext/composer.json packages/php-ext/composer.lock packages/gui/package.json packages/gui/package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make make-install-test` | [ ] |
