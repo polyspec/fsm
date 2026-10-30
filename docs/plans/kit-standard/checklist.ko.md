@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 50d3dfe12ed513512e8514ec8e32dc6fc97ddce4fa7f48c3377714be855bfd5d -->
+<!-- source-sha256: 430782407d1eb627143280adf903dad97553315102bc8f9079386d7e74a03b8a -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -140,6 +140,6 @@
 | S-365 | deps-rust가 kit의 cargo 다운로드를 가져와서 lint-rust의 offline catch check가 실행되게 한다 | Makefile CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make -n deps-rust \| grep -q fetch-cargo-downloads && H=$(mktemp -d) && CARGO_HOME=$H make deps-rust && CARGO_HOME=$H CARGO_TARGET_DIR=var/kit/catch-check-rust cargo run --quiet --offline --locked --manifest-path node_modules/@polyspec/kit/scripts/kit/catch-check-rust/Cargo.toml -- $(git ls-files '*.rs')` | [o] |
 | S-366 | 로컬 packages/rust clippy가 통과하게 한다: orm 핀이 ordered-json 0.0.9를 개발 checkout 0.0.14와 맞지 않게 해결한다 | CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make lint-rust` | [ ] |
 | S-367 | 제거된 artifact zip을 가리키는 Composer lock을 갱신한다: ordered-json을 packages.json에서 다시 lock한다 | packages/php/composer.lock packages/php-ext/composer.lock CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make fsm-php-install && make fsm-php-ext-install` | [ ] |
-| S-368 | kit의 run id 릴리스가 읽도록 fsm에 config/release.json을 추가한다 | config/release.json CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make release-coverage` | [v] |
+| S-368 | fsm의 릴리스 패키지를 config/release.json에 선언한다(생성 소스: S-369 python, S-370 php-ext, S-371 php, go, rust) | config/release.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make release-coverage` | [v] |
 | S-369 | fsm python wheel의 생성 소스에 release 경로를 준다 | packages/python config/release.json docs/plans/kit-standard/checklist.md | `make release-candidate-assets VERSION=0.0.79` | [ ] |
 | S-370 | fsm php-ext release archive에 생성된 C 확장을 담는다 | packages/php-ext config/release.json docs/plans/kit-standard/checklist.md | `make php-ext-release-check` | [ ] |
