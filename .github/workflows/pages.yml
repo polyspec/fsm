@@ -32,6 +32,9 @@ jobs:
           node-version-file: mise.toml
           package-manager-cache: false
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: bootstrap the locked kit package
+        run: |
+          npm_config_cache="$PWD/var/bootstrap/npm-cache" npm exec --yes --package="$(node -p 'require("./package.json").packageManager.split("+")[0]')" -- npm ci --ignore-scripts --allow-remote=root
       - name: Install kit, the npm of packageManager and then @polyspec/kit of package-lock.json
         run: |
           make install-tools TOOLS=npm

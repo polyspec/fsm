@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-343: The pages workflow bootstraps the locked kit package before it installs the tools, so the included kit bootstrap is present (S-343)
 - S-342: The check job of CI runs the suite targets through make ci-targets, and the full-run artifact is removed (S-342)
 - S-338: The php-ext runtime of CI installs the PHP arginfo generator before it generates the extension stub (S-338)
 - S-335: The shared CI job installs uv and the php-arginfo generator, so its gates run the python venv and the arginfo check (S-335)
