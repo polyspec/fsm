@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 430782407d1eb627143280adf903dad97553315102bc8f9079386d7e74a03b8a -->
+<!-- source-sha256: 702f504604e1de2602135f4d07c68e2a783d6e9f298c8c82c5b1dab47a2aab15 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -143,3 +143,4 @@
 | S-368 | fsm의 릴리스 패키지를 config/release.json에 선언한다(생성 소스: S-369 python, S-370 php-ext, S-371 php, go, rust) | config/release.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make release-coverage` | [v] |
 | S-369 | fsm python wheel의 생성 소스에 release 경로를 준다 | packages/python config/release.json docs/plans/kit-standard/checklist.md | `make release-candidate-assets VERSION=0.0.79` | [ ] |
 | S-370 | fsm php-ext release archive에 생성된 C 확장을 담는다 | packages/php-ext config/release.json docs/plans/kit-standard/checklist.md | `make php-ext-release-check` | [ ] |
+| S-371 | kit P34에 따라 fsm의 php 패키지, go 모듈, rust crate의 생성 소스를 릴리스한다. go 모듈과 rust crate는 태그된 트리 그대로 설치되므로 생성 소스를 추적하고 config/generated.json에 이유와 함께 선언한다(tracked, kit K930). php 패키지는 생성 경로와 그것을 만드는 make target을 config/release.json에 선언한다(kit K930) | config/generated.json config/release.json packages/go packages/rust packages/php Makefile CHANGELOG.md CHANGELOG.ko.md | `make release-coverage` | [ ] |
