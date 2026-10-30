@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: c4eaf6bb0aa4e5ed9cc39fbcc949bcccac37311e0e965889cb6fc7832e562698 -->
+<!-- source-sha256: 01bbc05e0e010d8462bfa2db3bfa7e6df9a4919962c787e71fd8467ab176fba9 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -111,3 +111,4 @@
 | S-335 | 공유 CI 작업에 uv와 php-arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
 | S-336 | python 설치 후 build 디렉터리를 제거한다 | Makefile | `make fsm-python-install` | [o] |
 | S-337 | 새 worktree의 kit build 전에 python 소스를 생성한다 | Makefile | `make build-python` | [o] |
+| S-338 | php-ext 생성 전에 arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
