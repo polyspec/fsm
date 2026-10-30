@@ -118,3 +118,4 @@
 | S-344 | Adopt kit 0.0.77: remove the prepare-commit-msg hook (K892), rename link-state-check to link-check (K869) and link the root .links | .githooks/prepare-commit-msg Makefile .gitignore .links CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [ ] |
 | S-345 | Remove the vectorsFile call of the db store contract test, which the backends no longer have | packages/db/tests/store-contract-all.test.mjs | `make ci-targets TARGETS="$6"` | [ ] |
 | S-346 | Remove hooks-check from the CI target list, since the hooks are local state | .github/workflows/ci.yml | `make kit-ci-plan` | [ ] |
+| S-347 | Make the tests that run make -n read the Makefile with the kit-bootstrap.mk present | tests/make-install/make-install.test.mts tests/python-tools/python-tools.test.mts tests/check-name/check-name.test.mts | `make kit-ci-plan` | [ ] |
