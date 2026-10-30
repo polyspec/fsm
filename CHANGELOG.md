@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-342: The check job of CI runs the suite targets through make ci-targets, and the full-run artifact is removed (S-342)
 - S-338: The php-ext runtime of CI installs the PHP arginfo generator before it generates the extension stub (S-338)
 - S-335: The shared CI job installs uv and the php-arginfo generator, so its gates run the python venv and the arginfo check (S-335)
 - S-337: The kit build of packages/python generates the python sources first, so a fresh worktree sets up (S-337)

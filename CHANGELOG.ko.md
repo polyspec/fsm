@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-342: CI의 check 잡은 suite 대상을 make ci-targets로 실행하고, full-run 산출물 업로드를 지운다 (S-342)
 - S-338: CI의 php-ext 런타임이 확장 스텁을 생성하기 전에 PHP arginfo 생성기를 설치한다 (S-338)
 - S-335: 공유 CI 작업이 uv와 php-arginfo 생성기를 설치하여 그 게이트가 python venv와 arginfo 검사를 실행한다 (S-335)
 - S-337: 새 worktree의 kit build가 packages/python의 python 소스를 먼저 생성하여 worktree 설정이 끝난다 (S-337)

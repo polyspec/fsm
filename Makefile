@@ -249,13 +249,13 @@ install: fsm-install
 fsm-install: install-kit $(PACKAGE_DEPS)
 
 # check runs the full suite once per committed tree, when no item of docs/plans/fsm-v1/checklist.md is [~] (kit's
-# full-run); it records its result in var/full-run.json.
+# ci-targets of kit runs the targets to their end; ci.yml runs the same list.
 .PHONY: ci-suite
 ci-suite:
-	$(NODE) $(KIT)/full-run.$(KIT_EXT) run $(CI_SUITE_TARGETS)
+	$(MAKE) ci-targets TARGETS="$(CI_SUITE_TARGETS)"
 
 check:
-	$(NODE) $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)
+	$(MAKE) ci-targets TARGETS="$(CHECK_TARGETS)"
 
 # make-install-test runs the tests of the package dependencies (tests/make-install): a target that needs a dependency installs it
 # first, and a present dependency is not installed again (docs/plans/fsm-v1/checklist.md, S-29).

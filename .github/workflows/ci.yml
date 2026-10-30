@@ -77,13 +77,5 @@ jobs:
       - name: Install the system libraries of Chromium
         run: sudo env PATH="$PATH" npx playwright install-deps chromium
         working-directory: packages/gui
-      - name: Run the full suite
-        run: make ci-suite
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ !cancelled() }}
-        with:
-          name: full-run
-          path: |
-            var/full-run.json
-            .results/
-          if-no-files-found: error
+      - name: Run the suite targets through make ci-targets
+        run: make ci-targets TARGETS="hooks-check compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test"

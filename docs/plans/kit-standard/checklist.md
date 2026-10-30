@@ -113,6 +113,6 @@
 | S-338 | Install the arginfo generator before the php-ext generation | config/ci.json | `make kit-ci-plan` | [o] |
 | S-339 | Make the rust crate name match the use paths of the examples | packages/rust/Cargo.toml | `make kit-ci-plan` | [ ] |
 | S-341 | Write the placeholders of the fsm documents as code spans for kit K895 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md docs/plans/kit-standard/checklist.ko.md docs/plans/kit-standard/checklist.md | `make docs-check` | [ ] |
-| S-342 | Run the CI check targets through make ci-targets, as kit runs them | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [ ] |
+| S-342 | Run the CI check targets through make ci-targets, as kit runs them | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [o] |
 | S-343 | Bootstrap the locked kit package before the pages install | .github/workflows/pages.yml | `make kit-ci-plan` | [ ] |
 | S-344 | Remove the prepare-commit-msg hook before kit K892 lands | .githooks/prepare-commit-msg | `make kit-check` | [ ] |
