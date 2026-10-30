@@ -9,29 +9,10 @@ import { readFileSync, utimesSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { cleanEnv, copyMakeFiles, lineIndex } from '../support/make-sandbox.mts';
+import { cleanEnv, copyMakeFiles, LOCKS, lineIndex } from '../support/make-sandbox.mts';
 import { put, tree } from '../support/tree.mts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-
-// The lock or manifest that each dependency is keyed on: an empty file in the copy.
-const LOCKS = [
-  'packages/js/package-lock.json',
-  'packages/db/package-lock.json',
-  'packages/gui/package-lock.json',
-  'docs/package-lock.json',
-  'packages/php/composer.lock',
-  'packages/php/composer.json',
-  'packages/php-ext/composer.lock',
-  'packages/php-ext/composer.json',
-  // The release zips of the Composer artifact repository (S-44-8, S-44-8-1): both Composer packages are keyed on their pins
-  // in config/release-assets.json too.
-  'config/release-assets.json',
-  'packages/python/pylock.toml',
-  'packages/python/pyproject.toml',
-  'packages/go/go.sum',
-  'packages/rust/Cargo.lock',
-];
 
 // The Playwright version that packages/gui pins (its devDependency, exact) and the browser stamp keyed on it (S-29-1).
 const PLAYWRIGHT = '1.64.0';

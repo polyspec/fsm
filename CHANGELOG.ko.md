@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-354: python-tools 테스트는 kit 내부를 단언하는 검사(install-tools 셈 규칙, .mjs 파일 이름, Makefile의 UV 철자)를 뺀다. 이것은 kit이 정한다 (S-354)
 - S-350: php 생성기가 functions.php의 네임스페이스 함수마다 function_exists를 두어 php-ext와 php가 한 프로세스에서 함께 로드된다 (S-350)
 - S-347: make -n 테스트 샌드박스가 Makefile이 include하는 설치된 kit을 링크하고, check-name 픽스처는 kit이 나열하는 복사본 경로를 쓴다 (S-347)
 - S-348: name-check 규칙이 S-56 행이 기록하는 gh run view의 플래그를 허용하고, Go 예제와 S-332 bullet은 옛 라이브러리 이름 대신 state라고 쓴다 (S-348)

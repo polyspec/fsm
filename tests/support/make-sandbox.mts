@@ -7,6 +7,25 @@ import path from 'node:path';
 /** The files that a copy of the Makefile reads: the Makefile, the kit targets and the kinds of config/parity.json. */
 const MAKE_FILES = ['Makefile', 'config/parity.json'];
 
+// The lock or manifest that each dependency is keyed on: an empty file in the copy of a make -n test.
+export const LOCKS = [
+  'packages/js/package-lock.json',
+  'packages/db/package-lock.json',
+  'packages/gui/package-lock.json',
+  'docs/package-lock.json',
+  'packages/php/composer.lock',
+  'packages/php/composer.json',
+  'packages/php-ext/composer.lock',
+  'packages/php-ext/composer.json',
+  // The release zips of the Composer artifact repository (S-44-8, S-44-8-1): both Composer packages are keyed on their pins
+  // in config/release-assets.json too.
+  'config/release-assets.json',
+  'packages/python/pylock.toml',
+  'packages/python/pyproject.toml',
+  'packages/go/go.sum',
+  'packages/rust/Cargo.lock',
+];
+
 /** Copies the Makefile and the config it reads from the checkout `root` into the repository folder `tmp/fsm`, links the kit
  * checkout as `tmp/kit`, so that the Makefile's include of ../kit resolves as it does in the checkout, and links the tools of the
  * main checkout as `var/tools/bin` (K519: a worktree runs the tools of the main checkout), and makes `tmp/fsm` a git work tree, which
