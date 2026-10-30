@@ -23,7 +23,7 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   Enforced by: `make kit-check`
 - Refines P30: The link of fsm runs from the repository root (`kit link <checkout>...`, never with `--project`, which skips the
   nested projects such as `packages/gui`, `packages/db` and `packages/php`) and is never committed.
-  Enforced by: `make link-state-check`
+  Enforced by: `make link-check`
 - Refines S7: The base test of a feature lives in the package that owns it (compiler, DB store, GUI). Language packages hold only
   consumer-side tests. The root holds only the tests of its own tools and their shared helper `tests/support/`. Fixtures of the
   root tool tests are built in temporary directories and never committed.
