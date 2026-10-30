@@ -113,9 +113,10 @@ function dryRun(dir: string, goal: string): string {
 
 /** The targets of the full-run line of `make -n check`, which must print it. */
 function checkTargets(stdout: string): string[] {
-  const line = stdout.split('\n').find((candidate) => candidate.includes('full-run.mts run'));
-  if (line === undefined) throw new Error(`make -n check printed no full-run line:\n${stdout}`);
-  return line.split(/\s+/);
+  const report = 'var/report/ci-targets';
+  const line = stdout.split('\n').find((candidate) => candidate.includes(`ci-targets.mts ${report}`));
+  if (line === undefined) throw new Error(`make -n check printed no ci-targets line:\n${stdout}`);
+  return line.slice(line.indexOf(report) + report.length).trim().split(/\s+/);
 }
 
 test('npm-types installs the npm dependencies before its test', (t) => {
@@ -292,11 +293,13 @@ test('make check runs make lint-ts (S-44-15)', () => {
   assert.ok(targets.includes('lint-ts'), 'CHECK_TARGETS does not run lint-ts');
 });
 
-// S-54: the python install links the sibling polyspec checkouts from the start and installs no release wheel of pylock.toml. The
-// recipe is read from the Makefile, not run: make -n runs the recursive $(MAKE) lines, which would create the venv.
-test('fsm-python-install installs no pylock.toml and links the siblings (S-54)', () => {
+// S-356 (S-314, K869): fsm-python-install installs the lock pylock.toml first, and make link links the development checkouts after
+// it. The recipe is read from the Makefile, not run: make -n runs the recursive $(MAKE) lines, which would create the venv.
+test('fsm-python-install installs the lock, then make link links the checkouts (S-314, K869)', () => {
   const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
   const recipe = makefile.slice(makefile.indexOf('\nfsm-python-install:'), makefile.indexOf('\n# No bytecode'));
-  assert.ok(!/pip install[^\n]*pylock\.toml/.test(recipe), `fsm-python-install still installs pylock.toml:\n${recipe}`);
-  assert.ok(/\$\(MAKE\) link\b/.test(recipe), `fsm-python-install does not link the siblings:\n${recipe}`);
+  const lock = recipe.search(/\$\(UV\) pip install[^\n]*-r packages\/python\/pylock\.toml/);
+  const link = recipe.indexOf('$(MAKE) link');
+  assert.ok(lock >= 0, `fsm-python-install does not install the lock pylock.toml:\n${recipe}`);
+  assert.ok(link > lock, `make link does not run after the lock install:\n${recipe}`);
 });
