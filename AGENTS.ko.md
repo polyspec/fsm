@@ -20,9 +20,6 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   실행하고, package가 export하는 것(`@polyspec/kit/tracked-files`)만 import하며, 일반적인 필요는 자기 `package.json`에 선언한
   생태계 라이브러리(ajv, picomatch, `node:`)로 채운다. kit의 동작은 kit에서 테스트한다.
   Enforced by: `make kit-check`
-- Refines P30: fsm의 link는 repository root에서 실행하며(`kit link <checkout>...`, `packages/gui`, `packages/db`, `packages/php` 같은 중첩된 project를 건너뛰는
-  `--project`는 쓰지 않는다) commit하지 않는다.
-  Enforced by: none, 판단 사항입니다. `make link-check`는 개발에서만 실행되며(K869), CI는 link를 만들지 않으므로(K824) 어떤 gate도 이를 실행하지 않는다.
 - Refines S7: 기능의 기본 테스트는 그 기능을 소유한 패키지(compiler, DB store, GUI)에 둔다. 언어 패키지에는 소비자 입장 테스트만 둔다.
   루트에는 루트 도구의 테스트와 그 공용 helper `tests/support/`만 둔다. 루트 도구 테스트의 fixture는 임시 디렉터리에 만들고 커밋하지 않는다.
   Enforced by: `make layout-check`, `make parity-declarations-check`

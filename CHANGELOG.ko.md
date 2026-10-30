@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-361: fsm의 P30 링크 규칙 보충을 삭제한다. kit P30이 이를 다루고 make link-check가 중첩 project를 검사한다 (S-361)
 - S-364: ts 런타임 설정이 lint-ts 전에 패키지를 설치하고 js 선언을 생성(fsm-js-gen)하여 npm-types의 import가 풀린다 (S-364)
 - S-363: rust 런타임 설정이 테스트 전에 crate를 생성(fsm-rust-gen)하여 CI에서 fsm_rust가 풀린다 (S-363)
 - S-358: packages/js, packages/db, packages/gui, docs의 npm 설치 stamp를 lock의 sha256으로 키잉하여, mtime과 관계없이 바뀐 lock은 다시 설치한다 (S-358)
