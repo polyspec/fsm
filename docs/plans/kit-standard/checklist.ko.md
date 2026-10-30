@@ -121,3 +121,4 @@
 | S-346 | CI 대상 목록에서 hooks-check를 뺀다(로컬 훅 상태) | .github/workflows/ci.yml | `make kit-ci-plan` | [ ] |
 | S-347 | make -n를 실행하는 테스트가 kit-bootstrap.mk가 있는 Makefile을 읽게 한다 | tests/make-install/make-install.test.mts tests/python-tools/python-tools.test.mts tests/check-name/check-name.test.mts | `make kit-ci-plan` | [ ] |
 | S-348 | S-332 changelog 줄을 check-name 규칙 안에 맞춘다 | CHANGELOG.md CHANGELOG.ko.md | `make kit-ci-plan` | [ ] |
+| S-349 | CI에서 gui 패키지의 esbuild 빌드 오류를 고친다 | packages/gui | `make kit-ci-plan` | [ ] |

@@ -120,3 +120,4 @@
 | S-346 | Remove hooks-check from the CI target list, since the hooks are local state | .github/workflows/ci.yml | `make kit-ci-plan` | [ ] |
 | S-347 | Make the tests that run make -n read the Makefile with the kit-bootstrap.mk present | tests/make-install/make-install.test.mts tests/python-tools/python-tools.test.mts tests/check-name/check-name.test.mts | `make kit-ci-plan` | [ ] |
 | S-348 | Keep the S-332 changelog line within the check-name rule | CHANGELOG.md CHANGELOG.ko.md | `make kit-ci-plan` | [ ] |
+| S-349 | Fix the esbuild build of the gui package in CI | packages/gui | `make kit-ci-plan` | [ ] |
