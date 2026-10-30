@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 12a3a1ae0ca7e954570aa1175d4998d0a4df6ec3c22edf6baa7ddafafa329115 -->
+<!-- source-sha256: ebe53b88945336e37744ea971e526a906ffecba1b42f9d7d810215275b52c782 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -123,6 +123,6 @@
 | S-348 | S-332 changelog 줄을 check-name 규칙 안에 맞춘다 | CHANGELOG.md CHANGELOG.ko.md | `make kit-ci-plan` | [ ] |
 | S-349 | CI에서 gui 패키지의 esbuild 빌드 오류를 고친다 | packages/gui | `make kit-ci-plan` | [ ] |
 | S-350 | php-ext 생성기가 InReview 케이스 함수를 두 번 선언하지 않게 한다 | packages/php/src/InReview/functions.php | `make kit-ci-plan` | [ ] |
-| S-351 | 15개 통과 뒤 실패하는 npm persist 대상을 고친다 | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [ ] |
+| S-351 | 15개 통과 뒤 실패하는 npm persist 대상을 고친다 | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [o] |
 | S-352 | php-ext phpunit 대상이 테스트를 실제로 돌리게 한다 | packages/php-ext | `make kit-ci-plan` | [ ] |
 | S-353 | workflows 테스트의 check 잡 기대를 make ci-targets로 갱신한다 | tests/workflows/workflows.test.mts | `make kit-ci-plan` | [ ] |

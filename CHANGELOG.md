@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-351: the npm persist targets stop naming the git-ignored generated models as an input, so the run-tests check of the inputs accepts them (S-351)
 - S-345: The db store contract test reads the vectors without the vectorsFile of the backends, which the vector refactor removed (S-345)
 - S-343: The pages workflow bootstraps the locked kit package before it installs the tools, so the included kit bootstrap is present (S-343)
 - S-342: The check job of CI runs the suite targets through make ci-targets, and the full-run artifact is removed (S-342)
