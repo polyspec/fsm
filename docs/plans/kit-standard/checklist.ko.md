@@ -141,3 +141,4 @@
 | S-366 | 로컬 packages/rust clippy가 통과하게 한다: orm 핀이 ordered-json 0.0.9를 개발 checkout 0.0.14와 맞지 않게 해결한다 | CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make lint-rust` | [ ] |
 | S-367 | 제거된 artifact zip을 가리키는 Composer lock을 갱신한다: ordered-json을 packages.json에서 다시 lock한다 | packages/php/composer.lock packages/php-ext/composer.lock CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make fsm-php-install && make fsm-php-ext-install` | [ ] |
 | S-368 | kit의 run id 릴리스가 읽도록 fsm에 config/release.json을 추가한다 | config/release.json CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make release-coverage` | [ ] |
+| S-369 | fsm python wheel의 생성 소스에 release 경로를 준다 | packages/python config/release.json docs/plans/kit-standard/checklist.md | `make release-candidate-assets VERSION=0.0.79` | [ ] |
