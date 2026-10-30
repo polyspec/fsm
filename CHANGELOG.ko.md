@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-363: rust 런타임 설정이 테스트 전에 crate를 생성(fsm-rust-gen)하여 CI에서 fsm_rust가 풀린다 (S-363)
 - S-358: packages/js, packages/db, packages/gui, docs의 npm 설치 stamp를 lock의 sha256으로 키잉하여, mtime과 관계없이 바뀐 lock은 다시 설치한다 (S-358)
 - S-360: CI 설정의 기본 설치 대상 deps-rust와 deps-node를 Makefile에 정의하여 gates discover가 rust와 ts 런타임을 찾는다 (S-360)
 - S-344: fsm은 release-assets-fetch 없이 ordered-json의 release packages.json에서 Composer package를 설치하며(K865, K871), make-install 테스트가 이를 단언한다 (S-344)

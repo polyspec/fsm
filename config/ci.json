@@ -8,7 +8,7 @@
       "php": ["fsm-php-install", "fsm-php-gen"],
       "php-ext": ["kit-install-php-arginfo", "fsm-php-ext-install", "fsm-php-ext-gen"],
       "python": ["fsm-python-install"],
-      "rust": [],
+      "rust": ["deps-rust", "fsm-rust-gen"],
       "ts": []
     }
   },

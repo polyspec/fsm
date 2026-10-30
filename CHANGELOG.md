@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-363: the rust runtime setup generates the crate (fsm-rust-gen) before its tests, so fsm_rust resolves in CI (S-363)
 - S-358: the npm stamps of packages/js, packages/db, packages/gui and docs are keyed on the sha256 of their lock, so a changed lock installs again whatever its mtime (S-358)
 - S-360: the CI setup targets deps-rust and deps-node are defined, so gates discover finds the default setup of the rust and ts runtimes (S-360)
 - S-344: fsm installs the Composer packages from the release packages.json of ordered-json (K865, K871), without release-assets-fetch, and the make-install test states that (S-344)
