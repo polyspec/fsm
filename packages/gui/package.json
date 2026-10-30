@@ -19,9 +19,9 @@
     "start": "node src/main.mjs"
   },
   "dependencies": {
-    "@polyspec/crudui-generator-core": "https://github.com/polyspec/crudui/releases/download/v0.0.7/polyspec-crudui-generator-core-npm-0.0.7.tgz",
-    "@polyspec/crudui-generator-html": "https://github.com/polyspec/crudui/releases/download/v0.0.7/polyspec-crudui-generator-html-npm-0.0.7.tgz",
-    "@polyspec/crudui-validator": "https://github.com/polyspec/crudui/releases/download/v0.0.7/polyspec-crudui-validator-npm-0.0.7.tgz",
+    "@polyspec/crudui-generator-core": "https://github.com/polyspec/crudui/releases/download/v0.0.8/polyspec-crudui-generator-core-npm-0.0.8.tgz",
+    "@polyspec/crudui-generator-html": "https://github.com/polyspec/crudui/releases/download/v0.0.8/polyspec-crudui-generator-html-npm-0.0.8.tgz",
+    "@polyspec/crudui-validator": "https://github.com/polyspec/crudui/releases/download/v0.0.8/polyspec-crudui-validator-npm-0.0.8.tgz",
     "@polyspec/hyper-build": "https://github.com/polyspec/hyper/releases/download/v0.0.17/polyspec-hyper-build-npm-0.0.17.tgz",
     "@polyspec/hyper-client": "https://github.com/polyspec/hyper/releases/download/v0.0.17/polyspec-hyper-client-npm-0.0.17.tgz",
     "@polyspec/hyper-server": "https://github.com/polyspec/hyper/releases/download/v0.0.17/polyspec-hyper-server-npm-0.0.17.tgz",
