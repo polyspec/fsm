@@ -122,3 +122,4 @@
 | S-348 | Keep the S-332 changelog line within the check-name rule | CHANGELOG.md CHANGELOG.ko.md | `make kit-ci-plan` | [ ] |
 | S-349 | Fix the esbuild build of the gui package in CI | packages/gui | `make kit-ci-plan` | [ ] |
 | S-350 | Stop the php extension generator from declaring the function of the InReview case twice | packages/php/src/InReview/functions.php | `make kit-ci-plan` | [ ] |
+| S-351 | Fix the npm persist test target that fails after its 15 passing tests | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [ ] |

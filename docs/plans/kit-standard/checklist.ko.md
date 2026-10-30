@@ -123,3 +123,4 @@
 | S-348 | S-332 changelog 줄을 check-name 규칙 안에 맞춘다 | CHANGELOG.md CHANGELOG.ko.md | `make kit-ci-plan` | [ ] |
 | S-349 | CI에서 gui 패키지의 esbuild 빌드 오류를 고친다 | packages/gui | `make kit-ci-plan` | [ ] |
 | S-350 | php-ext 생성기가 InReview 케이스 함수를 두 번 선언하지 않게 한다 | packages/php/src/InReview/functions.php | `make kit-ci-plan` | [ ] |
+| S-351 | 15개 통과 뒤 실패하는 npm persist 대상을 고친다 | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [ ] |
