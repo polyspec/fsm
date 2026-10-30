@@ -77,6 +77,10 @@ $(PYTHON_DEP): $(PYTHON_LOCK) | $(PYTHON_BIN)
 
 deps-go: $(GO_DEP)
 
+deps-rust: $(RUST_DEP)
+
+deps-node: $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP)
+
 $(GO_DEP): packages/go/go.sum
 	mkdir -p $(dir $@)
 	$(ONLINE) $(MAKE) fsm-go-install

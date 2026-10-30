@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-360: CI 설정의 기본 설치 대상 deps-rust와 deps-node를 Makefile에 정의하여 gates discover가 rust와 ts 런타임을 찾는다 (S-360)
 - S-344: fsm은 release-assets-fetch 없이 ordered-json의 release packages.json에서 Composer package를 설치하며(K865, K871), make-install 테스트가 이를 단언한다 (S-344)
 - S-344: @polyspec/template을 0.0.15 asset으로 고정하고 gui의 lock을 갱신한다 (S-344)
 - S-344: @polyspec/kit을 0.0.77 asset으로, @polyspec/ordered-json을 0.0.14 asset으로 고정하고 lock 파일과 kit-sync 사본을 갱신한다 (S-344)
