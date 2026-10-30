@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 5ed93adacf65d6aeb5cf979f24d04362b22ee0d52e1fbfcfeca01c9c4ac5519b -->
+<!-- source-sha256: 4996c35e579d46a290b5800094a2c1cdb9a096ee07445cbd1d555c1d27b45fb8 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -126,3 +126,4 @@
 | S-351 | 15개 통과 뒤 실패하는 npm persist 대상을 고친다 | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [o] |
 | S-352 | php-ext phpunit 대상이 테스트를 실제로 돌리게 한다 | packages/php-ext | `make kit-ci-plan` | [-] 원인: kit의 test-php-ext가 테스트가 없는 packages/php-ext를 골랐고, parity-check가 선언한 packages/php/tests가 아니었다 (kit K905, 0.0.77); 검증은 S-344에 합쳤다 |
 | S-353 | workflows 테스트의 check 잡 기대를 make ci-targets로 갱신한다 | tests/workflows/workflows.test.mts | `make kit-ci-plan` | [o] |
+| S-354 | kit 내부를 단언하는 python-tools 검사를 지운다 | tests/python-tools/python-tools.test.mts | `node --test tests/python-tools/python-tools.test.mts` | [ ] |
