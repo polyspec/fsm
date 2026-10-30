@@ -111,3 +111,4 @@
 | S-336 | Remove the python build directory after the python install | Makefile | `make fsm-python-install` | [o] |
 | S-337 | Generate the python sources before the kit build of a fresh worktree | Makefile | `make build-python` | [o] |
 | S-338 | Install the arginfo generator before the php-ext generation | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-339 | Make the rust crate name match the use paths of the examples | packages/rust/Cargo.toml | `make kit-ci-plan` | [ ] |

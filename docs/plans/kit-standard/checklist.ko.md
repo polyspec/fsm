@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 01bbc05e0e010d8462bfa2db3bfa7e6df9a4919962c787e71fd8467ab176fba9 -->
+<!-- source-sha256: 8f0f202418e2926d8960de6de73445fc58aa7f8bd2e3fd6a10a23e4f5e4d38ac -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -112,3 +112,4 @@
 | S-336 | python 설치 후 build 디렉터리를 제거한다 | Makefile | `make fsm-python-install` | [o] |
 | S-337 | 새 worktree의 kit build 전에 python 소스를 생성한다 | Makefile | `make build-python` | [o] |
 | S-338 | php-ext 생성 전에 arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-339 | rust 예제의 use 경로와 크레이트 이름을 맞춘다 | packages/rust/Cargo.toml | `make kit-ci-plan` | [ ] |
