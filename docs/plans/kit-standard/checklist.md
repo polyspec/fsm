@@ -126,3 +126,4 @@
 | S-352 | Make the php-ext phpunit target run its tests, which no test ran in CI | packages/php-ext | `make kit-ci-plan` | [-] cause: the kit test-php-ext picks packages/php-ext, which has no test, instead of packages/php/tests that parity-check declares (kit K905, 0.0.77); the check is merged into S-344 |
 | S-353 | Update the workflows test to the check job that runs make ci-targets | tests/workflows/workflows.test.mts | `make kit-ci-plan` | [o] |
 | S-354 | Remove the python-tools assertions that pin kit internals | tests/python-tools/python-tools.test.mts | `node --test tests/python-tools/python-tools.test.mts` | [ ] |
+| S-355 | Parse the ci-targets list of make -n check in the make-install tests | tests/make-install/make-install.test.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |

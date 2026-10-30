@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 4996c35e579d46a290b5800094a2c1cdb9a096ee07445cbd1d555c1d27b45fb8 -->
+<!-- source-sha256: 3a7aad7aeaeb23c2c5e76ece2d38ace619b1d306c06365fa23652498df7dac5c -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -127,3 +127,4 @@
 | S-352 | php-ext phpunit 대상이 테스트를 실제로 돌리게 한다 | packages/php-ext | `make kit-ci-plan` | [-] 원인: kit의 test-php-ext가 테스트가 없는 packages/php-ext를 골랐고, parity-check가 선언한 packages/php/tests가 아니었다 (kit K905, 0.0.77); 검증은 S-344에 합쳤다 |
 | S-353 | workflows 테스트의 check 잡 기대를 make ci-targets로 갱신한다 | tests/workflows/workflows.test.mts | `make kit-ci-plan` | [o] |
 | S-354 | kit 내부를 단언하는 python-tools 검사를 지운다 | tests/python-tools/python-tools.test.mts | `node --test tests/python-tools/python-tools.test.mts` | [ ] |
+| S-355 | make-install 테스트가 make -n check의 ci-targets TARGETS 목록을 파싱하게 한다 | tests/make-install/make-install.test.mts | `node --test tests/make-install/make-install.test.mts` | [ ] |
