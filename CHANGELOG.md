@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-344: @polyspec/kit is pinned to the 0.0.77 asset and @polyspec/ordered-json to the 0.0.14 asset, with the lock files and the kit-sync copies (S-344)
 - S-355: The make-install tests read the ci-targets line of make -n check, and assert the current python install: the lock is installed first, then make link links the checkouts (S-355)
 - S-354: The python-tools test drops the assertions that pin kit internals (the install-tools shim rule, the .mjs file names, the Makefile spelling of UV), which the kit owns (S-354)
 - S-350: The php generator guards each namespace function of functions.php with function_exists, so the php-ext kind and the php kind load in one process (S-350)

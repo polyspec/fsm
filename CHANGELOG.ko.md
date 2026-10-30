@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-344: @polyspec/kit을 0.0.77 asset으로, @polyspec/ordered-json을 0.0.14 asset으로 고정하고 lock 파일과 kit-sync 사본을 갱신한다 (S-344)
 - S-355: make-install 테스트는 make -n check의 ci-targets 줄을 읽고, 현재 python 설치를 단언한다: lock을 먼저 설치하고 그 뒤에 make link가 체크아웃을 링크한다 (S-355)
 - S-354: python-tools 테스트는 kit 내부를 단언하는 검사(install-tools 셈 규칙, .mjs 파일 이름, Makefile의 UV 철자)를 뺀다. 이것은 kit이 정한다 (S-354)
 - S-350: php 생성기가 functions.php의 네임스페이스 함수마다 function_exists를 두어 php-ext와 php가 한 프로세스에서 함께 로드된다 (S-350)

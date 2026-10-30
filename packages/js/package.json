@@ -9,7 +9,7 @@
     "node": ">=26.12.0"
   },
   "devDependencies": {
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.9/polyspec-ordered-json-npm-0.0.9.tgz",
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.14/polyspec-ordered-json-npm-0.0.14.tgz",
     "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.18/polyspec-orm-npm-0.0.18.tgz",
     "typescript": "7.0.2"
   },
