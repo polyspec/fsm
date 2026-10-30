@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-365: deps-rust also fetches the crates of kit's catch check (cargo-downloads-fetch), so the offline catch check of lint-rust finds them (S-365)
 - S-361: the fsm P30 refinement of the link rule is deleted, since kit P30 covers it and make link-check checks the nested projects (S-361)
 - S-364: the ts runtime setup installs the packages and generates the js declarations (fsm-js-gen) before lint-ts, so the npm-types imports resolve (S-364)
 - S-363: the rust runtime setup generates the crate (fsm-rust-gen) before its tests, so fsm_rust resolves in CI (S-363)

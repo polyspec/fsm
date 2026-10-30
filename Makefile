@@ -82,7 +82,8 @@ $(PYTHON_DEP): $(PYTHON_LOCK) | $(PYTHON_BIN)
 
 deps-go: $(GO_DEP)
 
-deps-rust: $(RUST_DEP)
+# deps-rust also fetches the crates of kit's own catch check (cargo-downloads-fetch), which lint-rust runs offline (S-365).
+deps-rust: $(RUST_DEP) cargo-downloads-fetch
 
 deps-node: $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP)
 
