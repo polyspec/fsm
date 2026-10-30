@@ -1,7 +1,8 @@
 {
     "name": "polyspec/fsm",
-    "description": "PHP consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)",
-    "type": "project",
+    "description": "PHP package of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)",
+    "version": "0.0.1",
+    "type": "library",
     "license": "MIT",
     "require": {
         "php": ">=8.4",

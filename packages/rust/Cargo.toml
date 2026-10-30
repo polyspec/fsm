@@ -1,10 +1,10 @@
 [package]
 name = "fsm-rust"
-version = "0.0.0"
+version = "0.0.1"
 edition = "2021"
 rust-version = "1.99.0"
 publish = false
-description = "Rust consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)"
+description = "Rust package of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)"
 
 # The test targets are tests/conformance/main.rs, with its module tests/conformance/vectors.rs (Cargo's layout of a test target
 # of several files), and tests/persist.rs; both take the modules tests/common/mod.rs and examples/persist.rs. The modules are no targets of their own, so automatic test and example discovery

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 13d4aa45407bb90d9d63e5171be8204eb3f5ebca8bf623f6f95fc9111d1de144 -->
+<!-- source-sha256: 6f921e144d1d035866f0c2924301efd7274c6fa5a416f106c64ccecb95a5bf5f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-368: config/release.json이 fsm의 릴리스 패키지(composer 패키지 polyspec/fsm과 polyspec/fsm-php-ext, wheel polyspec-fsm-python, git tag로 받는 rust crate, go module)를 선언하므로 kit의 release-tag가 CI run id로 fsm을 릴리스한다. manifest는 0.0.1이고 polyspec/fsm은 library다 (S-368)
 - S-325: kit 0.0.80을 채택한다. ci.yml은 kit의 ci-pipeline.yml을 job kit으로 부르고 job check는 needs: kit으로 그 뒤에 돌며, gates.yml은 지워지고 kit 사본(PRINCIPLES, release.yml)은 0.0.80의 것이다 (S-325)
 - S-365: deps-rust가 kit의 catch check crate도 가져와서 lint-rust의 offline catch check가 이를 찾는다 (S-365)
 - S-361: fsm의 P30 링크 규칙 보충을 삭제한다. kit P30이 이를 다루고 make link-check가 중첩 project를 검사한다 (S-361)

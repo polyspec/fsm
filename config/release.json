@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "repositoryUrl": "https://github.com/polyspec/fsm",
+  "changelog": "CHANGELOG.md",
+  "changelogTranslations": [
+    "CHANGELOG.ko.md"
+  ],
+  "packages": [
+    {
+      "kind": "composer",
+      "directory": "packages/php",
+      "name": "polyspec/fsm"
+    },
+    {
+      "kind": "composer",
+      "directory": "packages/php-ext",
+      "name": "polyspec/fsm-php-ext"
+    },
+    {
+      "kind": "wheel",
+      "directory": "packages/python",
+      "name": "polyspec-fsm-python"
+    }
+  ],
+  "manifests": {
+    "packages/php/composer.json": "archive",
+    "packages/php-ext/composer.json": "archive",
+    "packages/python/pyproject.toml": "archive",
+    "packages/rust/Cargo.toml": "git-tag"
+  },
+  "notReleased": {
+    "package.json": "the private npm workspace root of fsm (@polyspec/fsm): it installs the checkout's packages, and no consumer installs it from a registry",
+    "docs/package.json": "the VitePress site of docs, private; no consumer installs it",
+    "packages/js/package.json": "@polyspec/fsm-npm, private; no consumer installs it from a registry",
+    "packages/db/package.json": "@polyspec/fsm-db, private; README.md:284 installs it from the checkout (npm install -g ./packages/db), not from a registry",
+    "packages/gui/package.json": "@polyspec/fsm-gui, private; README.md:285 installs it from the checkout (npm install -g ./packages/gui), not from a registry",
+    "packages/compiler/package.json": "@polyspec/fsm-compiler, private; README.md:283 installs it from the checkout (npm install -g ./packages/compiler), not from a registry",
+    ".mise/locks/pypi-vulture/2.16/pyproject.toml": "a lock of the tool vulture for make, not a package"
+  },
+  "goModules": {
+    "packages/go": "github.com/polyspec/fsm/packages/go"
+  }
+}
