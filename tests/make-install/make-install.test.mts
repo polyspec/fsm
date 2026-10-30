@@ -5,7 +5,8 @@
 // of each dependency and, per case, the installed stamps. No dependency is installed and no network is used: make only prints the recipes.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, utimesSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, utimesSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -18,13 +19,19 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const PLAYWRIGHT = '1.64.0';
 const BROWSER = `var/deps/playwright-${PLAYWRIGHT}`;
 
-// The stamps that an installed dependency leaves, each newer than its lock. var/tools/mise/shims/python3 is the shim of the
-// Python that install-tools installs with mise (S-41, kit K127), which the Python environment depends on.
+// The directories whose npm install is keyed on the sha256 of its lock (S-358): the stamp is var/deps/npm/<dir>-<sha256>.
+const NPM_DIRS = ['packages/js', 'packages/db', 'packages/gui', 'docs'];
+
+/** The npm stamp of the directory `npmDir` in the sandbox `dir`, as the Makefile names it (the first 16 hex digits of the lock's sha256). */
+function npmStamp(dir: string, npmDir: string): string {
+  const sha = createHash('sha256').update(readFileSync(path.join(dir, npmDir, 'package-lock.json'))).digest('hex');
+  return `var/deps/npm/${npmDir.replaceAll('/', '-')}-${sha.slice(0, 16)}`;
+}
+
+// The stamps that an installed dependency leaves, each newer than its lock. The npm stamps are added per sandbox by npmStamp.
+// var/tools/mise/shims/python3 is the shim of the Python that install-tools installs with mise (S-41, kit K127), which the
+// Python environment depends on.
 const STAMPS = [
-  'packages/js/node_modules/.package-lock.json',
-  'packages/db/node_modules/.package-lock.json',
-  'packages/gui/node_modules/.package-lock.json',
-  'docs/node_modules/.package-lock.json',
   'packages/php/vendor/composer/installed.json',
   'packages/php-ext/vendor/composer/installed.json',
   'packages/python/.venv/.installed',
@@ -96,10 +103,11 @@ function sandbox(t: TestContext, { installed = false }: { installed?: boolean } 
   const old = now - 3600;
   for (const file of LOCKS) utimesSync(path.join(dir, file), old, old);
   if (installed) {
-    put(dir, Object.fromEntries(STAMPS.map(file => [file, '\n'])));
+    const stamps = [...STAMPS, ...NPM_DIRS.map(npmDir => npmStamp(dir, npmDir))];
+    put(dir, Object.fromEntries(stamps.map(file => [file, '\n'])));
     put(dir, { 'var/tools/mise/shims/python3': '\n' });
     utimesSync(path.join(dir, 'var/tools/mise/shims/python3'), now - 1800, now - 1800);
-    for (const file of STAMPS) utimesSync(path.join(dir, file), now, now);
+    for (const file of stamps) utimesSync(path.join(dir, file), now, now);
   }
   return dir;
 }
@@ -160,6 +168,15 @@ test('the php installs link right after composer install, so a vendor from the t
     assert.ok(install >= 0, `no composer install in ${target}:\n${out}`);
     assert.ok(link > install, `no make link right after the composer install of ${target}:\n${out}`);
   }
+});
+
+test('an npm dependency is keyed on the content of its lock: a changed lock installs again even when its mtime is older (S-358)', (t) => {
+  const dir = sandbox(t, { installed: true });
+  assert.equal(lineIndex(dryRun(dir, 'npm-types'), installLine('npm')), -1, 'an installed npm dependency installs again');
+  // The same lock path with other content, and an mtime older than the stamp: make by mtime alone would keep the stamp.
+  writeFileSync(path.join(dir, 'packages/js/package-lock.json'), '{"changed":true}\n');
+  utimesSync(path.join(dir, 'packages/js/package-lock.json'), Date.now() / 1000 - 7200, Date.now() / 1000 - 7200);
+  assert.ok(lineIndex(dryRun(dir, 'npm-types'), installLine('npm')) >= 0, 'a changed npm lock does not install again');
 });
 
 test('the python environment is keyed on pylock.toml: a newer lock installs it again, a newer manifest alone does not', (t) => {

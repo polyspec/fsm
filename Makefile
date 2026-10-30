@@ -35,12 +35,15 @@ CHECK_TARGETS := kit-check owner-validate docs-check hooks-check layout-check li
 
 # ---- Package dependencies (docs/plans/fsm-v1/plan.md, Verification; docs/plans/fsm-v1/checklist.md, S-29) ------------------------
 # A dependency is a file target keyed on the lock or manifest it installs from. A fresh clone installs it once; a later run finds
-# the file newer than its lock, runs nothing and needs no network. A target that uses a package names its file as a prerequisite,
+# the stamp of the same lock content, runs nothing and needs no network. The npm stamps are var/deps/npm/<dir>-<sha256 of the lock>,
+# so a changed lock is a new stamp and an mtime cannot hide it (S-358). A target that uses a package names its file as a prerequisite,
 # so make installs what that target needs before the target's recipe and nothing else. go and cargo leave no file of their own:
 # their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the pylock.toml of packages/python and on the
 # Python 3.14 that install-tools installs with mise, whose shim is var/tools/mise/shims/python3 (S-41, S-44-2).
 # install builds every dependency, with the toolchains of install-tools. ONLINE marks each download, as it does in kit.mk.
-NPM_DEP := packages/js/node_modules/.package-lock.json
+# npm_stamp is the stamp of the npm install of the directory $(1): the first 16 hex digits of the sha256 of its lock.
+npm_stamp = var/deps/npm/$(subst /,-,$(1))-$(shell shasum -a 256 $(1)/package-lock.json | cut -c1-16)
+NPM_DEP := $(call npm_stamp,packages/js)
 PHP_DEP := packages/php/vendor/composer/installed.json
 PHP_EXT_DEP := packages/php-ext/vendor/composer/installed.json
 PYTHON_BIN := $(KIT_TOOLS)/mise/shims/python3
@@ -48,13 +51,15 @@ PYTHON_DEP := packages/python/.venv/.installed
 PYTHON_LOCK := packages/python/pylock.toml
 GO_DEP := var/deps/go
 RUST_DEP := var/deps/rust
-DB_DEP := packages/db/node_modules/.package-lock.json
-GUI_DEP := packages/gui/node_modules/.package-lock.json
-DOCS_DEP := docs/node_modules/.package-lock.json
+DB_DEP := $(call npm_stamp,packages/db)
+GUI_DEP := $(call npm_stamp,packages/gui)
+DOCS_DEP := $(call npm_stamp,docs)
 PACKAGE_DEPS := $(NPM_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP)
 
 $(NPM_DEP): packages/js/package-lock.json
+	mkdir -p $(dir $@)
 	$(ONLINE) $(MAKE) fsm-js-install
+	touch $@
 
 $(PHP_DEP): packages/php/composer.lock packages/php/composer.json
 	$(ONLINE) $(MAKE) fsm-php-install
@@ -92,14 +97,20 @@ $(RUST_DEP): packages/rust/Cargo.lock
 	touch $@
 
 $(DB_DEP): packages/db/package-lock.json
+	mkdir -p $(dir $@)
 	cd packages/db && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
+	touch $@
 
 # The GUI installs after the db packages, because its tests run the db store (order only: a db install does not reinstall the GUI).
 $(GUI_DEP): packages/gui/package-lock.json | $(DB_DEP)
+	mkdir -p $(dir $@)
 	cd packages/gui && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
+	touch $@
 
 $(DOCS_DEP): docs/package-lock.json
+	mkdir -p $(dir $@)
 	cd docs && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
+	touch $@
 
 # ---- Runtime packages (K245, S-44): the install, gen, build, clean and test of each runtime package are targets of this Makefile,
 # named fsm-<package>-<task> with the folder name of the package. gen writes the generated files of the package, which no checkout tracks.
