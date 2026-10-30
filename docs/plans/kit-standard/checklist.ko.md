@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 0d3aa15609bb78a44c444c097a9a5a2859153927c78a6027ce5d4e7846f8ab12 -->
+<!-- source-sha256: d0465434999af25c13facc1ac64d9bc6e15cc792db699877fc4bced9c94250b9 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -136,3 +136,4 @@
 | S-361 | fsm 링크 규칙을 리뷰 판단이 아니라 gate가 실행하는 검사로 강제한다 | Makefile AGENTS.md AGENTS.ko.md tests/make-install/make-install.test.mts CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make rules-check && make kit-check` | [ ] |
 | S-362 | parity, runtime, shared 잡에서 orm-gen이 거부하는 go 예제 모델을 고친다 | examples/persist.go CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make examples-model` | [ ] |
 | S-363 | conformance와 example 테스트가 fsm_rust를 찾도록 rust crate 이름과 연결을 고친다 | packages/rust/Cargo.toml CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make test-rust` | [ ] |
+| S-364 | runtime ts 잡에서 lint-ts 전에 npm 선언을 생성한다 | Makefile config/ci.json CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make lint-ts` | [ ] |
