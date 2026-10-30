@@ -116,3 +116,4 @@
 | S-342 | Run the CI check targets through make ci-targets, as kit runs them | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [o] |
 | S-343 | Bootstrap the locked kit package before the pages install | .github/workflows/pages.yml | `make kit-ci-plan` | [o] |
 | S-344 | Adopt kit 0.0.77: remove the prepare-commit-msg hook (K892), rename link-state-check to link-check (K869) and link the root .links | .githooks/prepare-commit-msg Makefile .gitignore .links CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [ ] |
+| S-345 | Remove the vectorsFile call of the db store contract test, which the backends no longer have | packages/db/tests/store-contract-all.test.mjs | `make ci-targets TARGETS="$6"` | [ ] |
