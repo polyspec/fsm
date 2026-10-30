@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { backendOf, KINDS } from '../../compiler/src/backends/index.mjs';
+import { KINDS } from '../../compiler/src/backends/index.mjs';
 import { copy, run } from '../../compiler/src/core/run.mjs';
 import { jsonStore } from '../../compiler/src/store-json/store.mjs';
 import { mermaidStore } from '../../compiler/src/store-mermaid/store.mjs';
@@ -77,7 +77,6 @@ async function roundTrip(source) {
 /** The output of every command the stores serve: gen of every kind, the vectors and the vectors file of every kind. */
 async function outputsOf(store) {
   const gen = {};
-  const vectorFiles = {};
   for (const kind of KINDS) {
     const result = await run('gen', store, { kind, ...KIND_OPTIONS[kind] });
     assert.deepEqual(result.findings, [], `gen --kind ${kind}`);
@@ -85,8 +84,7 @@ async function outputsOf(store) {
   }
   const vectors = await run('vectors', store, {});
   assert.deepEqual(vectors.findings, []);
-  for (const kind of KINDS) vectorFiles[kind] = backendOf(kind).vectorsFile(vectors.vectors, { phpNamespace: KIND_OPTIONS[kind].phpNamespace, module: KIND_OPTIONS[kind].goModule });
-  return { gen, vectors: vectors.vectors, vectorFiles };
+  return { gen, vectors: vectors.vectors };
 }
 
 /** The same definitions and lock on the json, mermaid and db stores, each in its own medium. */

@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-345: db 저장소 계약 테스트가 벡터 리팩터링으로 사라진 백엔드의 vectorsFile 없이 벡터를 읽는다 (S-345)
 - S-343: pages 워크플로가 도구를 설치하기 전에 고정된 kit 패키지를 부트스트랩하여 포함되는 kit 부트스트랩이 존재한다 (S-343)
 - S-342: CI의 check 잡은 suite 대상을 make ci-targets로 실행하고, full-run 산출물 업로드를 지운다 (S-342)
 - S-338: CI의 php-ext 런타임이 확장 스텁을 생성하기 전에 PHP arginfo 생성기를 설치한다 (S-338)

@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 90cb214eacaa2d6a9c029795bcf8209db00924e6f68a8ccb94750c579cf84611 -->
+<!-- source-sha256: 12a3a1ae0ca7e954570aa1175d4998d0a4df6ec3c22edf6baa7ddafafa329115 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -117,7 +117,7 @@
 | S-342 | CI check 잡을 kit처럼 make ci-targets로 돌린다 | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [o] |
 | S-343 | pages 설치 전에 고정된 kit 패키지를 부트스트랩한다 | .github/workflows/pages.yml | `make kit-ci-plan` | [o] |
 | S-344 | kit 0.0.77 채택: prepare-commit-msg 훅 제거(K892), link-state-check를 link-check로(K869), 루트 .links 연결, deps-rust 정의(K859), Makefile:24,27과 owner-checks.json의 toolchain-check 제거(K854) (K870: ci.yml:2 주석을 실제 순서 make install 다음 make ci-suite로 고친다) (parity: CHECK_TARGETS와 ci.yml을 맞추는 테스트는 없음; tests/workflows/workflows.test.mts:154가 check 잡을 make ci-suite로 고정(S-353), 목록은 CHECK_TARGETS에서 KIT_GATE_TARGETS를 뺀 것을 따른다) | .githooks/prepare-commit-msg Makefile owner-checks.json .gitignore .links CHANGELOG.md CHANGELOG.ko.md | `make kit-check` and `make deps-node` | [ ] |
-| S-345 | db 저장소 계약 테스트에서 백엔드에 없는 vectorsFile 호출을 없앤다 | packages/db/tests/store-contract-all.test.mjs | `make ci-targets TARGETS="$6"` | [ ] |
+| S-345 | db 저장소 계약 테스트에서 백엔드에 없는 vectorsFile 호출을 없앤다 | packages/db/tests/store-contract-all.test.mjs | `var/tools/bin/node --test packages/db/tests/store-contract-all.test.mjs` | [o] |
 | S-346 | CI 대상 목록에서 hooks-check를 뺀다(로컬 훅 상태) | .github/workflows/ci.yml | `make kit-ci-plan` | [ ] |
 | S-347 | make -n를 실행하는 테스트가 kit-bootstrap.mk가 있는 Makefile을 읽게 한다 | tests/make-install/make-install.test.mts tests/python-tools/python-tools.test.mts tests/check-name/check-name.test.mts | `make kit-ci-plan` | [ ] |
 | S-348 | S-332 changelog 줄을 check-name 규칙 안에 맞춘다 | CHANGELOG.md CHANGELOG.ko.md | `make kit-ci-plan` | [ ] |

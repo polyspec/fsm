@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-345: The db store contract test reads the vectors without the vectorsFile of the backends, which the vector refactor removed (S-345)
 - S-343: The pages workflow bootstraps the locked kit package before it installs the tools, so the included kit bootstrap is present (S-343)
 - S-342: The check job of CI runs the suite targets through make ci-targets, and the full-run artifact is removed (S-342)
 - S-338: The php-ext runtime of CI installs the PHP arginfo generator before it generates the extension stub (S-338)
