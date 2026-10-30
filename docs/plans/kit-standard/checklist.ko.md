@@ -116,7 +116,7 @@
 | S-341 | kit K895에 맞춰 fsm 문서의 자리표시자를 코드 표기로 쓴다 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md docs/plans/kit-standard/checklist.ko.md docs/plans/kit-standard/checklist.md | `make docs-check` | [ ] |
 | S-342 | CI check 잡을 kit처럼 make ci-targets로 돌린다 | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [o] |
 | S-343 | pages 설치 전에 고정된 kit 패키지를 부트스트랩한다 | .github/workflows/pages.yml | `make kit-ci-plan` | [o] |
-| S-344 | kit 0.0.77 채택: prepare-commit-msg 훅을 제거하고(K892), link-state-check를 link-check로 바꾸며(K869), 루트 .links를 연결한다 | .githooks/prepare-commit-msg Makefile .gitignore .links CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [ ] |
+| S-344 | kit 0.0.77 채택: prepare-commit-msg 훅 제거(K892), link-state-check를 link-check로(K869), 루트 .links 연결, deps-rust 정의(K859), Makefile:24,27과 owner-checks.json의 toolchain-check 제거(K854) | .githooks/prepare-commit-msg Makefile owner-checks.json .gitignore .links CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [ ] |
 | S-345 | db 저장소 계약 테스트에서 백엔드에 없는 vectorsFile 호출을 없앤다 | packages/db/tests/store-contract-all.test.mjs | `make ci-targets TARGETS="$6"` | [ ] |
 | S-346 | CI 대상 목록에서 hooks-check를 뺀다(로컬 훅 상태) | .github/workflows/ci.yml | `make kit-ci-plan` | [ ] |
 | S-347 | make -n를 실행하는 테스트가 kit-bootstrap.mk가 있는 Makefile을 읽게 한다 | tests/make-install/make-install.test.mts tests/python-tools/python-tools.test.mts tests/check-name/check-name.test.mts | `make kit-ci-plan` | [ ] |
