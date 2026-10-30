@@ -19,6 +19,10 @@ export function copyMakeFiles(root: string, tmp: string): string {
     copyFileSync(path.join(root, file), path.join(dir, file));
   }
   symlinkSync(path.resolve(root, '../kit'), path.join(tmp, 'kit'));
+  // The Makefile includes node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk: the installed kit of the checkout, which CI installs as a
+  // package and a dev checkout links, is linked into the copy the same way.
+  mkdirSync(path.join(dir, 'node_modules/@polyspec'), { recursive: true });
+  symlinkSync(path.resolve(root, 'node_modules/@polyspec/kit'), path.join(dir, 'node_modules/@polyspec/kit'));
   const common = execFileSync('git', ['-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).trim();
   mkdirSync(path.join(dir, 'var/tools'), { recursive: true });
   symlinkSync(path.join(path.dirname(common), 'var/tools/bin'), path.join(dir, 'var/tools/bin'));

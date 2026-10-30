@@ -56,7 +56,7 @@ test('an exit status and a test result status are allowed', (t) => {
 test('the changelog keeps the text of old bullets, and the copies of kit are not scanned', (t) => {
   const { result } = check(t, {
     'CHANGELOG.md': '- S-01: `status-gen` was named so.\n',
-    'scripts/kit/kit-bootstrap.mk': '# the status of the bootstrap\n',
+    'PRINCIPLES.md': '# the status of the principles\n',
   });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });

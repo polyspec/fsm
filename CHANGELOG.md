@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-347: The make -n test sandbox links the installed kit that the Makefile includes, and the check-name fixture names a kit copy that the kit lists (S-347)
 - S-348: The name-check rule accepts the flag of gh run view that the S-56 row records, and the Go example and the S-332 bullet name the state rather than the old library name (S-348)
 - S-332: The Go example reads the state of the row with the GetStatus of the linked orm, which returns the state and an error (S-332)
 - S-353: The workflows test expects the check job to run make ci-targets, and no artifact upload, which the suite targets replaced (S-353)

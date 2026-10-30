@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: f66f99a8f8220820800025f38d4b080d5e9e99019a4ae0abd870194850a43b74 -->
+<!-- source-sha256: f7fb5257b53113b291c8322656b89d2bb82fc2c3ead76be342dc525a2ab1c37e -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-347: make -n 테스트 샌드박스가 Makefile이 include하는 설치된 kit을 링크하고, check-name 픽스처는 kit이 나열하는 복사본 경로를 쓴다 (S-347)
 - S-348: name-check 규칙이 S-56 행이 기록하는 gh run view의 플래그를 허용하고, Go 예제와 S-332 bullet은 옛 라이브러리 이름 대신 state라고 쓴다 (S-348)
 - S-353: workflows 테스트는 check 잡이 make ci-targets를 실행하고 artifact 업로드가 없는 것을 기대한다 (S-353)
 - S-346: CI check 잡은 hooks-check를 돌리지 않는다. git hook은 clone마다 make hooks가 쓰는 로컬 상태다 (S-346)
