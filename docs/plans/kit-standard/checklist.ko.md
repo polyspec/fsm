@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 945d2daaf967cc717f028d05862433981b0ac96c36abe10908dffd2bea251c42 -->
+<!-- source-sha256: 6e38734d1dc2e5495329bbe7651c83bcdf0fb185d3d4e6aa14ef441e21f9797c -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -133,3 +133,4 @@
 | S-358 | fsm의 npm 설치 stamp를 lock 파일 내용으로 키잉한다 | Makefile tests/make-install/make-install.test.mts CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make -n install` | [o] |
 | S-359 | orm 0.0.19(composer lock 포함), hyper 0.0.22, crudui 0.0.9를 각 릴리스 발표 때 fsm에 고정한다 | packages/php/composer.json packages/php/composer.lock packages/php-ext/composer.json packages/php-ext/composer.lock packages/gui/package.json packages/gui/package-lock.json CHANGELOG.md CHANGELOG.ko.md | `var/tools/bin/node --test tests/make-install/make-install.test.mts` | [ ] |
 | S-360 | config/ci.json이 비운 rust와 ts runtime을 위해 deps-rust와 deps-node를 Makefile에 잠금 설치로 정의한다 | Makefile CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make kit-ci-plan` | [o] |
+| S-361 | fsm 링크 규칙을 리뷰 판단이 아니라 gate가 실행하는 검사로 강제한다 | Makefile AGENTS.md AGENTS.ko.md tests/make-install/make-install.test.mts CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make rules-check && make kit-check` | [ ] |
