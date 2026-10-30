@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 702f504604e1de2602135f4d07c68e2a783d6e9f298c8c82c5b1dab47a2aab15 -->
+<!-- source-sha256: ddc4b113eb529fb6a0e30969ff14b3613e61c46694d9e8a830af2022314ac132 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -144,3 +144,4 @@
 | S-369 | fsm python wheel의 생성 소스에 release 경로를 준다 | packages/python config/release.json docs/plans/kit-standard/checklist.md | `make release-candidate-assets VERSION=0.0.79` | [ ] |
 | S-370 | fsm php-ext release archive에 생성된 C 확장을 담는다 | packages/php-ext config/release.json docs/plans/kit-standard/checklist.md | `make php-ext-release-check` | [ ] |
 | S-371 | kit P34에 따라 fsm의 php 패키지, go 모듈, rust crate의 생성 소스를 릴리스한다. go 모듈과 rust crate는 태그된 트리 그대로 설치되므로 생성 소스를 추적하고 config/generated.json에 이유와 함께 선언한다(tracked, kit K930). php 패키지는 생성 경로와 그것을 만드는 make target을 config/release.json에 선언한다(kit K930) | config/generated.json config/release.json packages/go packages/rust packages/php Makefile CHANGELOG.md CHANGELOG.ko.md | `make release-coverage` | [ ] |
+| S-372 | fsm 0.0.1 릴리스: Unreleased 항목을 ## 0.0.1로 옮기고, 설치 절을 쓰며, README.md:41-42, README.ko.md:41, docs/plans/fsm-v1/plan.md:14와 :43, packages/php, php-ext, python, go, rust README 쌍의 2번째 줄의 test bed 문구를 릴리스 라이브러리 문구로 바꾼다 | CHANGELOG.md CHANGELOG.ko.md README.md README.ko.md docs/plans/fsm-v1/plan.md docs/plans/fsm-v1/plan.ko.md packages/php packages/php-ext packages/python packages/go packages/rust | `make release-candidate-assets VERSION=0.0.1` | [ ] |
