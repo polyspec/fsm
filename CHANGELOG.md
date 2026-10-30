@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-338: The php-ext runtime of CI installs the PHP arginfo generator before it generates the extension stub (S-338)
 - S-335: The shared CI job installs uv and the php-arginfo generator, so its gates run the python venv and the arginfo check (S-335)
 - S-337: The kit build of packages/python generates the python sources first, so a fresh worktree sets up (S-337)
 - S-332: The Go example reads the status of the row with the GetStatus of the linked orm, which returns the status and an error (S-332)

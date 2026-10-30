@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-338: CI의 php-ext 런타임이 확장 스텁을 생성하기 전에 PHP arginfo 생성기를 설치한다 (S-338)
 - S-335: 공유 CI 작업이 uv와 php-arginfo 생성기를 설치하여 그 게이트가 python venv와 arginfo 검사를 실행한다 (S-335)
 - S-337: 새 worktree의 kit build가 packages/python의 python 소스를 먼저 생성하여 worktree 설정이 끝난다 (S-337)
 - S-332: Go 예제가 연결된 orm의 GetStatus(상태와 에러를 반환)로 행의 상태를 읽는다 (S-332)

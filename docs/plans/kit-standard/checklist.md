@@ -110,7 +110,7 @@
 | S-335 | Install uv and the php-arginfo generator in the shared CI job | config/ci.json | `make kit-ci-plan` | [o] |
 | S-336 | Remove the python build directory after the python install | Makefile | `make fsm-python-install` | [o] |
 | S-337 | Generate the python sources before the kit build of a fresh worktree | Makefile | `make build-python` | [o] |
-| S-338 | Install the arginfo generator before the php-ext generation | config/ci.json | `make kit-ci-plan` | [ ] |
+| S-338 | Install the arginfo generator before the php-ext generation | config/ci.json | `make kit-ci-plan` | [o] |
 | S-339 | Make the rust crate name match the use paths of the examples | packages/rust/Cargo.toml | `make kit-ci-plan` | [ ] |
 | S-341 | Write the placeholders of the fsm documents as code spans for kit K895 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md docs/plans/kit-standard/checklist.ko.md docs/plans/kit-standard/checklist.md | `make docs-check` | [ ] |
 | S-342 | Run the CI check targets through make ci-targets, as kit runs them | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [ ] |
