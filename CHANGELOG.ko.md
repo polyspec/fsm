@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-346: CI check 잡은 hooks-check를 돌리지 않는다. git hook은 clone마다 make hooks가 쓰는 로컬 상태다 (S-346)
 - S-349: gui 패키지가 decodeFormRenderOptions를 내보내는 crudui 0.0.8을 고정하여, CI에서 gui 클라이언트의 esbuild 빌드가 성공한다 (S-349)
 - S-351: npm persist 대상이 git-ignored 생성 모델을 입력으로 부르지 않아 run-tests의 입력 검사가 통과한다 (S-351)
 - S-345: db 저장소 계약 테스트가 벡터 리팩터링으로 사라진 백엔드의 vectorsFile 없이 벡터를 읽는다 (S-345)

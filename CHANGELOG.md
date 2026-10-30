@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-346: The CI check job no longer runs hooks-check, since the git hooks are local state that make hooks writes in a clone (S-346)
 - S-349: The gui package pins crudui 0.0.8, which exports decodeFormRenderOptions, so the esbuild build of the gui client succeeds in CI (S-349)
 - S-351: the npm persist targets stop naming the git-ignored generated models as an input, so the run-tests check of the inputs accepts them (S-351)
 - S-345: The db store contract test reads the vectors without the vectorsFile of the backends, which the vector refactor removed (S-345)
