@@ -87,7 +87,7 @@ function stepsOf(jobText: string): string[] {
 function makeTargets(jobText: string): string[] {
   return jobText
     .split('\n')
-    .filter(line => !/^\s*#/.test(line))
+    .filter(line => !/^\s*#/.test(line) && !/^\s*-?\s*name:/.test(line))
     .flatMap(line => [...line.matchAll(/\bmake\s+([^\s"'$]+)/g)].map(match => text(match[1], 'the target of a make command')));
 }
 
@@ -151,13 +151,13 @@ test('every uses: is pinned to a full commit with the version comment of the ver
   assert.deepEqual(failures, []);
 });
 
-test('the check job installs kit, then runs make install, the playwright dependencies and make ci-suite, and no other make target', () => {
-  assert.deepEqual(makeTargets(CHECK_JOB), ['install-tools', 'install-packages', 'install', 'ci-suite']);
+test('the check job installs kit, then runs make install, the playwright dependencies and make ci-targets, and no other make target', () => {
+  assert.deepEqual(makeTargets(CHECK_JOB), ['install-tools', 'install-packages', 'install', 'ci-targets']);
   assert.match(CHECK_JOB, /make install-tools TOOLS=npm\n\s+make install-packages\n/, 'the check job installs the npm of packageManager and then @polyspec/kit (S-44)');
   const install = CHECK_JOB.indexOf('make install\n');
   const deps = CHECK_JOB.indexOf('install-deps chromium');
-  const check = CHECK_JOB.indexOf('make ci-suite');
-  assert.ok(install > 0 && deps > install && check > deps, 'the order must be make install, install-deps chromium, make ci-suite');
+  const check = CHECK_JOB.indexOf('make ci-targets');
+  assert.ok(install > 0 && deps > install && check > deps, 'the order must be make install, install-deps chromium, make ci-targets');
   const depsStep = step(stepsOf(CHECK_JOB), 'install-deps chromium');
   assert.match(depsStep, /sudo env PATH="\$PATH" npx playwright install-deps chromium/);
   assert.match(depsStep, /working-directory: packages\/gui/);
@@ -228,12 +228,8 @@ test('uv comes from mise.toml through make install, and the workflow installs no
   assert.doesNotMatch(CHECK_JOB, /pipx|install uv/, 'the check job installs a uv of its own');
 });
 
-test('the check job uploads the results of make check and the full-run record under !cancelled()', () => {
-  const upload = stepsOf(CHECK_JOB).find(entry => entry.includes('upload-artifact'));
-  assert.ok(upload, 'the check job has no upload-artifact step');
-  assert.match(upload, /if: \$\{\{ !cancelled\(\) \}\}/);
-  assert.match(upload, /var\/full-run\.json/);
-  assert.match(upload, /\.results\//);
+test('the check job uploads no artifact: the full-run record of make check is removed with the suite targets (S-342)', () => {
+  assert.equal(stepsOf(CHECK_JOB).find(entry => entry.includes('upload-artifact')), undefined);
 });
 
 test('the pages workflow builds the site with VITEPRESS_BASE=/fsm/ and deploys docs/.vitepress/dist', () => {

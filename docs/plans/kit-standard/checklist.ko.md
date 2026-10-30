@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 0251b0a6daae3d5d368478d785a3c05947aa56e1767c347619348198c7a71d00 -->
+<!-- source-sha256: 711e17594b62e5c4948ca56ee79f5c0372d2056cd5f7e3dc94348291d680fec1 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -125,4 +125,4 @@
 | S-350 | php-ext 생성기가 InReview 케이스 함수를 두 번 선언하지 않게 한다 | packages/php/src/InReview/functions.php | `make kit-ci-plan` | [ ] |
 | S-351 | 15개 통과 뒤 실패하는 npm persist 대상을 고친다 | packages/js/tests/persist.test.mjs | `make kit-ci-plan` | [o] |
 | S-352 | php-ext phpunit 대상이 테스트를 실제로 돌리게 한다 | packages/php-ext | `make kit-ci-plan` | [ ] |
-| S-353 | workflows 테스트의 check 잡 기대를 make ci-targets로 갱신한다 | tests/workflows/workflows.test.mts | `make kit-ci-plan` | [ ] |
+| S-353 | workflows 테스트의 check 잡 기대를 make ci-targets로 갱신한다 | tests/workflows/workflows.test.mts | `make kit-ci-plan` | [o] |
