@@ -105,7 +105,7 @@
 | S-329 | CI python 설치 전에 python 소스를 생성한다 | Makefile config/ci.json | `make fsm-python-install` | [o] |
 | S-330 | CI 런타임에서 composer 전에 릴리스 zip을 가져온다 | config/ci.json | `make kit-ci-plan` | [o] |
 | S-331 | CI 공유 작업에 composer를 설치한다 | config/ci.json | `make kit-ci-plan` | [o] |
-| S-332 | 고정된 orm v0.0.18에 맞춰 Go 예제를 빌드한다 | packages/go/examples/persist.go | `GOWORK=off make build-go` | [o] |
+| S-332 | 연결된 orm의 두 값 GetStatus로 Go 예제의 행 상태를 읽는다 | packages/go/examples/persist.go | `make build-go` | [o] |
 | S-333 | 이 저장소에 kit 0.0.74 채택 | package.json package-lock.json CHANGELOG.md CHANGELOG.ko.md | `make kit-check` | [o] |
 | S-334 | CI 런타임 설정에서 PHP와 php-ext 소스를 생성한다 | config/ci.json | `make kit-ci-plan` | [o] |
 | S-335 | 공유 CI 작업에 uv와 php-arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [ ] |
