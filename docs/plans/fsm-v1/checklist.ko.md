@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: a762ee5902082f0dc42587fe26a3b4a459927cc80aa70a075f30b7c1fbe1067c -->
+<!-- source-sha256: c2f3f29c7f7233649a1640ecb425bc48b25588d0936f251231312f5c028b85af -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -121,4 +121,4 @@
 | S-44-24 | AGENTS에 생성 파일(의존성 설치물, 빌드 결과물, 캐시, 테스트 산출물, 도구 다운로드)은 추적하지 않는다는 규칙과 의도적 예외를 적고, `.gitignore`가 dist, dist.next와 캐시를 덮는다(사용자 규칙 2026-10-18). | AGENTS에 생성 파일(의존성 설치물, 빌드 결과물, 캐시, 테스트 산출물, 도구 다운로드)은 추적하지 않는다는 규칙과 의도적 예외를 적고, `.gitignore`가 dist, dist.next와 캐시를 덮는다(사용자 규칙 2026-10-18). | `git ls-files`는 전후 모두 생성 파일을 나열하지 않는다; AGENTS 규칙 없음 RED → 있음, `make docs-check` 통과 GREEN | [o] |
 | S-376 | `config/duplication.json`: `config/generated.json`이 이미 나열하고 kit의 duplication-check가 이미 제외하는 `packages/compiler/tests/golden/**` 제외 항목을 삭제한다 (K640) | `config/duplication.json` without the golden exclude | `make duplication-check` | [o] |
 | S-377 | `config/parity.json`: `packages/compiler`를 `tools`에서 구현 집합으로 옮긴다. 사유가 모든 종류의 코드가 나오는 하나의 구현이라고 적고 있다 (plan C-5). `packages/db`는 `tools`에 남는다 | `config/parity.json` with packages/compiler in the implementation set | `make parity-declarations-check`, `make divergence-check` | [ ] |
-| S-378 | CI의 check 작업이 `.github/workflows/ci.yml`에서 `make hooks-check` 전에 `make hooks`를 실행한다. template, hyper, crudui 워크플로와 같다 (S-346이 제거했다) | `.github/workflows/ci.yml` runs make hooks, then make hooks-check | `make workflows-test` | [ ] |
+| S-378 | CI의 check 작업이 `.github/workflows/ci.yml`에서 `make hooks-check` 전에 `make hooks`를 실행한다. template, hyper, crudui 워크플로와 같다 (S-346이 제거했다) | `.github/workflows/ci.yml` runs make hooks, then make hooks-check | `make workflows-test` | [o] |

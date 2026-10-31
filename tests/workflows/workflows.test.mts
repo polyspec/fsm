@@ -153,8 +153,12 @@ test('every uses: is pinned to a full commit with the version comment of the ver
   assert.deepEqual(failures, []);
 });
 
-test('the check job installs kit, then runs make install, the playwright dependencies and make ci-targets, and no other make target', () => {
-  assert.deepEqual(makeTargets(CHECK_JOB), ['install-tools', 'install-packages', 'install', 'ci-targets']);
+test('the check job installs kit, then runs make install, the playwright dependencies, make hooks and make ci-targets, and no other make target', () => {
+  assert.deepEqual(makeTargets(CHECK_JOB), ['install-tools', 'install-packages', 'install', 'hooks', 'ci-targets', 'ci-targets']);
+  // hooks-check needs core.hooksPath, which make hooks sets in the clone, so make hooks runs before the check of the hooks (S-378).
+  const hooks = CHECK_JOB.indexOf('make hooks\n');
+  const hooksCheck = CHECK_JOB.indexOf('TARGETS="hooks-check"');
+  assert.ok(hooks > 0 && hooksCheck > hooks, 'the order must be make hooks, then make ci-targets TARGETS="hooks-check"');
   assert.match(CHECK_JOB, /make install-tools TOOLS=npm\n\s+make install-packages\n/, 'the check job installs the npm of packageManager and then @polyspec/kit (S-44)');
   const install = CHECK_JOB.indexOf('make install\n');
   const deps = CHECK_JOB.indexOf('install-deps chromium');
