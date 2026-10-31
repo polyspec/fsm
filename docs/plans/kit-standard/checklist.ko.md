@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: eb5b13f7bfa54bcab826b2a941b26a392fd074397294984cdff1f246794dd51a -->
+<!-- source-sha256: c7c77419ea3907b154d86554deacc0d4233af32e0e0856f9ca8e27c0b21948ec -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -153,4 +153,4 @@
 | S-381 | fsm Go 모듈은 PHP 패키지와 같은 orm 릴리스를 require하고, Go 예제는 그 GetStatus에 맞춰 컴파일된다 | packages/go/examples/persist.go | RED: `make fsm-go-gen` exits 1 on persist.go:48 and :67. GREEN: `make fsm-go-gen` exits 0 | [o] |
 | S-382 | fsm은 Composer 설치 뒤 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook kit checkout이 필요하다 | Makefile | RED: `make fsm-php-install` fails on make link in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 | [o] |
 | S-383 | config/rebuild.json이 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 쓰는 생태계 도구로 분류한다 | config/rebuild.json | RED: `make rebuild-check` reports scripts/php-ext-arginfo.mts unclassified. GREEN: `make rebuild-check` exits 0 | [o] |
-| S-384 | fsm은 package.json의 devEngines.packageManager와 mise.toml의 npm:npm 고정, 그리고 그 npm의 추적되는 도구 lock으로 npm 버전을 선언한다(orm, crudui와 같음). 그래야 worktree-setup이 실행된다 | package.json mise.toml .mise/locks/npm-npm/12.2.0 | RED: `make worktree-setup` refuses on the missing devEngines.packageManager. GREEN: `make worktree-setup` passes | [~] |
+| S-384 | fsm은 package.json의 devEngines.packageManager와 mise.toml의 npm:npm 고정, 그리고 그 npm의 추적되는 도구 lock으로 npm 버전을 선언한다(orm, crudui와 같음). 그래야 worktree-setup이 실행된다 | package.json mise.toml .mise/locks/npm-npm/12.2.0 | RED: `make worktree-setup` refuses on the missing devEngines.packageManager. GREEN: `make worktree-setup` passes | [o] |
