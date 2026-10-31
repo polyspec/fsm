@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-388: fsm adopts kit 0.0.85: package.json and its lock name the release asset polyspec-kit-0.0.85.tgz, the copies PRINCIPLES.md and PRINCIPLES.ko.md are those of 0.0.85, and config/release.json declares product and runtime for each package (S-388)
 - S-385: the Python install of fsm links its packages with make install-link of kit 0.0.84, as the PHP installs do (S-382), in place of make link, which needs the Claude hook kit checkout that CI lacks (S-385)
 - S-384: package.json declares npm 12.2.0 by devEngines.packageManager and mise.toml pins it as npm:npm, with its tool lock in .mise/locks/npm-npm/12.2.0 and mise.lock, so worktree-setup of kit 0.0.84 creates the worktree (S-384)
 - S-383: config/rebuild.json classes scripts/php-ext-arginfo.mts as an ecosystem tool of php, since it runs the gen_stub.php of PHP (S-383)

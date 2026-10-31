@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-388: fsm은 kit 0.0.85를 채택한다. package.json과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, PRINCIPLES.md와 PRINCIPLES.ko.md는 0.0.85의 복사본이며, config/release.json은 패키지마다 product와 runtime을 선언한다 (S-388)
 - S-385: Python 설치는 패키지를 연결할 때 make link 대신 kit 0.0.84의 make install-link를 쓴다. PHP 설치와 같으며(S-382), make link는 CI에 없는 Claude hook kit checkout이 필요하다 (S-385)
 - S-384: package.json은 devEngines.packageManager로 npm 12.2.0을 선언하고, mise.toml은 npm:npm으로 고정한다. 도구 lock은 .mise/locks/npm-npm/12.2.0과 mise.lock에 있어, kit 0.0.84의 worktree-setup이 worktree를 만든다 (S-384)
 - S-383: config/rebuild.json은 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 실행하는 생태계 도구 php로 분류한다 (S-383)

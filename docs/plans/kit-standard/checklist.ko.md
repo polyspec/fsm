@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 70c37e7c9f2a484449fb1d61634b1c510aeb48577c03fe674731711478d28605 -->
+<!-- source-sha256: a7e49603ee2442c8c74005b3763dd7830f83046e4cbe5011a219af7f442b126e -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -157,4 +157,4 @@
 | S-385 | fsm은 Python 패키지 설치에서 make link 대신 kit 0.0.84의 make install-link를 쓴다. S-382의 PHP 설치와 같으며, CI에는 make link가 필요로 하는 Claude hook kit checkout이 없다 | Makefile | RED: CI run 41232763585 fails kit / shared on make link in fsm-python-install. GREEN: `make fsm-python-install` exits 0 | [o] |
 | S-386 | fsm go 런타임 설정은 deadcode와 빌드 전에 생성 패키지를 만들어 CI에서 생성 소스 패키지가 해석되게 한다 | config/ci.json | RED: `make kit-gates-runtime-go` fails on the missing generated package of deadcode. GREEN: `make fsm-go-gen` followed by `make build-go` exits 0 | [ ] |
 | S-387 | fsm의 php와 php-ext 설치는 install-link 전에 install-tools로 uv를 설치해, CI의 php 작업에서 Python 작업 공간 연결이 실행되게 한다 | Makefile | RED: `make kit-gates-runtime-php` fails in install-link with spawnSync uv ENOENT in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 with uv absent from the path | [ ] |
-| S-388 | fsm은 kit 0.0.85를 채택한다. 고정과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, 복사본은 kit을 따르며, config/release.json은 패키지마다 product와 runtime을 선언한다 | package.json package-lock.json PRINCIPLES.md PRINCIPLES.ko.md config/release.json | RED: `make kit-check` exits 2 with six findings for missing product and runtime. GREEN: `make kit-check` and `make kit-inject-check` exit 0 | [ ] |
+| S-388 | fsm은 kit 0.0.85를 채택한다. 고정과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, 복사본은 kit을 따르며, config/release.json은 패키지마다 product와 runtime을 선언한다 | package.json package-lock.json PRINCIPLES.md PRINCIPLES.ko.md config/release.json | RED: `make kit-check` exits 2 with six findings for missing product and runtime. GREEN: `make kit-check` and `make kit-inject-check` exit 0 | [~] |
