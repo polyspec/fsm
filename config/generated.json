@@ -36,6 +36,9 @@
     "**/go.work.sum"
   ],
   "exceptions": [
-    "packages/compiler/tests/golden/**"
+    {
+      "path": "packages/compiler/tests/golden/**",
+      "reason": "the golden outputs of the compiler that its tests compare with, tracked as test fixtures (S-308)"
+    }
   ]
 }

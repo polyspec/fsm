@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "931a126f8dbe3bfc612effd5fcda35b2",
+    "content-hash": "c2690a2b263364b91688e52f5703ac6c",
     "packages": [
         {
             "name": "nikic/php-parser",
@@ -65,22 +65,22 @@
         },
         {
             "name": "polyspec/ordered-json",
-            "version": "0.0.9",
+            "version": "0.0.14",
             "dist": {
                 "type": "zip",
-                "url": "../../var/composer-artifacts/polyspec-ordered-json-php-0.0.9.zip",
-                "shasum": "5f93a2c0df5967163801cb3d4d087e44834bb456"
+                "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.14/polyspec-ordered-json-php-0.0.14.zip",
+                "shasum": "9c5e7fb57d483ac7931ab4898381a534a7970ea0"
             },
             "require": {
                 "ext-json": "*",
                 "ext-pcre": "*",
-                "php": ">=8.5"
+                "php": ">=8.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "13.4.2"
+                "phpunit/phpunit": "13.4.5"
             },
             "suggest": {
-                "ext-ordered_json": "Native backend from the polyspec/ordered-json-extension PIE package"
+                "ext-polyspec_ordered_json": "Native backend from the polyspec/ordered-json-php-ext PIE package"
             },
             "type": "library",
             "autoload": {
@@ -103,11 +103,11 @@
         },
         {
             "name": "polyspec/orm",
-            "version": "0.0.18",
+            "version": "0.0.19",
             "dist": {
                 "type": "zip",
-                "url": "../../var/composer-artifacts/polyspec-orm-php-0.0.18.zip",
-                "shasum": "7aff6a97d7ca201839d362c051acdc86779677de"
+                "url": "https://github.com/polyspec/orm/releases/download/v0.0.19/polyspec-orm-php-0.0.19.zip",
+                "shasum": "9dad25d11e712697cac5fd2c7bb6fcd61720072e"
             },
             "require": {
                 "composer-runtime-api": "^2.2",
@@ -115,20 +115,22 @@
                 "ext-pdo": "*",
                 "ext-zlib": "*",
                 "nikic/php-parser": "^5.9.0",
-                "php": ">=8.5",
-                "polyspec/ordered-json": "0.0.9",
-                "purrphp/yaml": "^1.0",
+                "php": ">=8.4",
+                "polyspec/ordered-json": "0.0.14",
+                "purrphp/yaml": "1.0.0-p1",
                 "symfony/yaml": "^8.1"
             },
             "suggest": {
                 "ext-openssl": "host-side AES on PostgreSQL and SQLite (aes columns)",
-                "ext-orm_dbspec": "Polyspec\\Orm\\Dbspec\\Native\\Dbspec, the dbspec surface of this client implemented in C (packages/php-ext)",
                 "ext-pdo_mysql": "mysql:// DSNs",
-                "ext-pdo_pgsql": "postgres:// DSNs",
-                "ext-pdo_sqlite": "sqlite:// DSNs"
+                "ext-pdo_pgsql": "postgres:// PDO handle type and DSNs",
+                "ext-pdo_sqlite": "sqlite:// DSNs",
+                "ext-pgsql": "postgres:// query, notification, and in-flight cancellation support",
+                "ext-polyspec_orm": "the dbspec surface and the error codes of this client implemented in C under the same class names (packages/php-ext)"
             },
             "bin": [
-                "bin/orm-gen"
+                "bin/orm-gen",
+                "bin/orm-sqlite-cancel-build.php"
             ],
             "type": "library",
             "autoload": {
@@ -139,11 +141,9 @@
             "autoload-dev": {
                 "psr-4": {
                     "Polyspec\\Orm\\Tests\\Model\\": "gen/",
-                    "Polyspec\\Orm\\Tests\\MarkdownModel\\": "markdownmodel/"
-                },
-                "files": [
-                    "gen/bootstrap.php"
-                ]
+                    "Polyspec\\Orm\\Tests\\MarkdownModel\\": "markdownmodel/",
+                    "Polyspec\\Orm\\Tests\\ComplexModel\\": "complexmodel/"
+                }
             },
             "license": [
                 "MIT"
@@ -208,16 +208,16 @@
         },
         {
             "name": "purrphp/yaml",
-            "version": "1.0.0",
+            "version": "v1.0.0-p1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/PurrPHP/yaml.git",
-                "reference": "c069a72e06e5a11a725b50226122f1eb26eb64fe"
+                "url": "https://github.com/min-0-max/yaml",
+                "reference": "98daf838506e3199d5a058c90adff5a40940959e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PurrPHP/yaml/zipball/c069a72e06e5a11a725b50226122f1eb26eb64fe",
-                "reference": "c069a72e06e5a11a725b50226122f1eb26eb64fe",
+                "url": "https://api.github.com/repos/min-0-max/yaml/zipball/98daf838506e3199d5a058c90adff5a40940959e",
+                "reference": "98daf838506e3199d5a058c90adff5a40940959e",
                 "shasum": ""
             },
             "require": {
@@ -235,7 +235,43 @@
                     "Purr\\Yaml\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Purr\\Yaml\\Test\\": [
+                        "test/unit",
+                        "test/src"
+                    ],
+                    "src\\": "test/src/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit --coverage-html coverage"
+                ],
+                "coverage": [
+                    "vendor/bin/phpunit --coverage-text --colors=never --coverage-clover coverage/clover.xml"
+                ],
+                "cs-fix": [
+                    "vendor/bin/php-cs-fixer fix"
+                ],
+                "cs-check": [
+                    "vendor/bin/php-cs-fixer fix --dry-run --diff"
+                ],
+                "analyse": [
+                    "vendor/bin/phpstan analyse --memory-limit=1G"
+                ],
+                "refactor": [
+                    "vendor/bin/rector process"
+                ],
+                "check": [
+                    "@cs-check",
+                    "@analyse",
+                    "@test"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -257,7 +293,7 @@
                 "issues": "https://github.com/PurrPHP/yaml/issues",
                 "source": "https://github.com/PurrPHP/yaml"
             },
-            "time": "2026-08-04T18:35:41+00:00"
+            "time": "2026-10-15T02:57:00+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -2288,11 +2324,11 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.5"
+        "php": ">=8.4"
     },
     "platform-dev": {},
     "platform-overrides": {
-        "php": "8.5.0"
+        "php": "8.5.1"
     },
     "plugin-api-version": "2.9.0"
 }

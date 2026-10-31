@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-373: packages/php와 packages/php-ext는 polyspec/orm 0.0.19를 릴리스 packages.json에서 받고, 두 composer.lock은 orm 0.0.19와 polyspec/ordered-json 0.0.14를 릴리스 zip에서 해석한다. CI가 받을 수 없는 로컬 artifact 경로 0.0.9 대신이다 (S-373)
 - S-375: packages/rust/Cargo.lock이 fsm-rust를 Cargo.toml이 선언한 릴리스 버전 0.0.1로 적으므로(S-368) cargo가 --locked로 lock을 받는다 (S-375)
 - S-374: packages/php와 packages/php-ext가 config.platform.php를 8.5.1로 선언한다(.php-version의 minor와 patch 1, S-45-13), 8.4.1 대신. 그래서 composer가 PHP 8.5를 요구하는 orm 0.0.18을 더 이상 거부하지 않는다 (S-374)
 - S-377: config/parity.json의 packages/compiler tools 항목 종류를 test:에서 generated:로 바꾼다. compiler는 모든 kind의 코드를 내는 코드 생성기이며 계약 unit을 구현하지 않는다 (S-377)
