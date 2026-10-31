@@ -134,6 +134,15 @@ test('the parity setup generates the npm sources and the db models (S-393)', () 
   assert.ok(setup.parity.includes('fsm-db-gen'), 'setup.parity does not run fsm-db-gen');
 });
 
+// The check job bootstraps the installed kit with the npm of devEngines, run from RUNNER_TEMP with --prefix (S-394, K938-1): the npm of the
+// runner refuses the devEngines of the checkout (EBADDEVENGINES, run 41249402504).
+test('the check job bootstraps the installed kit from RUNNER_TEMP with the devEngines npm (S-394)', () => {
+  const bootstrap = step(stepsOf(CHECK_JOB), 'bootstrap the installed kit package');
+  assert.match(bootstrap, /RUNNER_TEMP/, 'the bootstrap does not run from RUNNER_TEMP');
+  assert.match(bootstrap, /devEngines\.packageManager\.version/, 'the bootstrap reads packageManager, not devEngines');
+  assert.doesNotMatch(bootstrap, /packageManager\.split/, 'the bootstrap still reads packageManager');
+});
+
 test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the ci-pipeline and release workflows that kit vendors', () => {
   assert.deepEqual(VENDORED, ['.github/workflows/release.yml', '.github/workflows/ci-pipeline.yml']);
   assert.deepEqual(WORKFLOWS, ['.github/workflows/ci.yml', '.github/workflows/pages.yml']);

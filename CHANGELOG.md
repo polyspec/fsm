@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-394: the check job of ci.yml bootstraps the installed kit with the devEngines npm from RUNNER_TEMP, as ci-pipeline does (S-394)
 - S-393: the parity setup runs fsm-js-gen and fsm-db-gen, so the npm vectors load the generated packages/js and db sources on CI (S-393)
 - S-391: config/ci.json declares runner ubuntu-26.04-arm, so the parity and runtime jobs of CI link SQLite 3.46.1 for PHP, as orm declares (orm docs/plans/execution/checklist.ko.md, G5.8) (S-391)
 - S-389: packages/js pins /orm 0.0.19 from its npm release asset, with the lock file, and its conformance vectors pass (S-389)
