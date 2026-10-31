@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: b987875441ead5f87288f433e9935911df9403fb92392f9ec871661dab518f1e -->
+<!-- source-sha256: 1b5d958e26297b397d3db2331fdcde27dc2c9b5e5f59afa545dcab4c42fe214d -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -154,4 +154,4 @@
 | S-382 | fsm은 Composer 설치 뒤 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook kit checkout이 필요하다 | Makefile | RED: `make fsm-php-install` fails on make link in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 | [o] |
 | S-383 | config/rebuild.json이 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 쓰는 생태계 도구로 분류한다 | config/rebuild.json | RED: `make rebuild-check` reports scripts/php-ext-arginfo.mts unclassified. GREEN: `make rebuild-check` exits 0 | [o] |
 | S-384 | fsm은 package.json의 devEngines.packageManager와 mise.toml의 npm:npm 고정, 그리고 그 npm의 추적되는 도구 lock으로 npm 버전을 선언한다(orm, crudui와 같음). 그래야 worktree-setup이 실행된다 | package.json mise.toml .mise/locks/npm-npm/12.2.0 | RED: `make worktree-setup` refuses on the missing devEngines.packageManager. GREEN: `make worktree-setup` passes | [o] |
-| S-385 | fsm은 Python 패키지 설치에서 make link 대신 kit 0.0.84의 make install-link를 쓴다. S-382의 PHP 설치와 같으며, CI에는 make link가 필요로 하는 Claude hook kit checkout이 없다 | Makefile | RED: CI run 41232763585 fails kit / shared on make link in fsm-python-install. GREEN: `make fsm-python-install` exits 0 | [ ] |
+| S-385 | fsm은 Python 패키지 설치에서 make link 대신 kit 0.0.84의 make install-link를 쓴다. S-382의 PHP 설치와 같으며, CI에는 make link가 필요로 하는 Claude hook kit checkout이 없다 | Makefile | RED: CI run 41232763585 fails kit / shared on make link in fsm-python-install. GREEN: `make fsm-python-install` exits 0 | [o] |

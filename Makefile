@@ -204,12 +204,12 @@ fsm-python-install:
 	rm -rf $(PY_VENV)
 	$(MAKE) python-venv DIR=$(PY_VENV)
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy -r packages/python/pylock.toml
-	$(MAKE) link
+	$(MAKE) install-link
 	$(MAKE) fsm-python-src
 	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/python/examples/model
 	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps packages/python
 	rm -rf packages/python/build
-	$(MAKE) link
+	$(MAKE) install-link
 
 # fsm-python-src generates the ignored src/polyspec_fsm of packages/python with node alone: the package build of a clean checkout
 # (CI, a worktree) needs it before the install, and it needs no venv, so the install does not depend on the venv.
