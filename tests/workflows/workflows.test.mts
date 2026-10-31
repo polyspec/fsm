@@ -114,6 +114,13 @@ test('the CI workflow runs the kit pipeline, then its job check, on ubuntu-26.04
   assert.match(PAGES_JOB, /^ {4}runs-on: ubuntu-26\.04$/m);
 });
 
+// The parity and runtime jobs run on the runner of config/ci.json. ubuntu-24.04 links SQLite 3.45.1, below the 3.46 that orm 0.0.19 persists with (S-391);
+// orm declares the same runner for its PHP jobs (orm docs/plans/execution/checklist.ko.md, G5.8).
+test('the parity and runtime jobs run on ubuntu-26.04-arm, which links SQLite 3.46 (S-391, orm G5.8)', () => {
+  const config: { runner?: string } = JSON.parse(read('config/ci.json'));
+  assert.equal(config.runner, 'ubuntu-26.04-arm');
+});
+
 test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the ci-pipeline and release workflows that kit vendors', () => {
   assert.deepEqual(VENDORED, ['.github/workflows/release.yml', '.github/workflows/ci-pipeline.yml']);
   assert.deepEqual(WORKFLOWS, ['.github/workflows/ci.yml', '.github/workflows/pages.yml']);

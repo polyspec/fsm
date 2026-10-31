@@ -1,5 +1,6 @@
 {
   "schema": 1,
+  "runner": "ubuntu-26.04-arm",
   "setup": {
     "shared": [],
     "parity": ["fsm-php-ext-install", "fsm-php-ext-gen", "build-php-ext"],

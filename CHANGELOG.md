@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-391: config/ci.json declares runner ubuntu-26.04-arm, so the parity and runtime jobs of CI link SQLite 3.46.1 for PHP, as orm declares (orm docs/plans/execution/checklist.ko.md, G5.8) (S-391)
 - S-389: packages/js pins /orm 0.0.19 from its npm release asset, with the lock file, and its conformance vectors pass (S-389)
 - S-390: the parity job builds the php-ext library with build-php-ext after its sources are generated, so the php-ext vectors load var/php-ext/polyspec_fsm.so (S-390)
 - S-392: the Pages workflow bootstraps the locked kit package with the devEngines npm from RUNNER_TEMP with --prefix, as kit does (S-392)
