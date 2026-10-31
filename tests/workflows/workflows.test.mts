@@ -122,6 +122,18 @@ test('the parity and runtime jobs run on ubuntu-26.04-arm, which links SQLite 3.
   assert.equal(config.runner, 'ubuntu-26.04-arm');
 });
 
+// The npm vectors of parity load packages/js and the db models that packages/db generates (S-393): a checkout without them exits 1 with
+// ERR_MODULE_NOT_FOUND, 0 of 290 cases, so the parity setup must run both generators.
+test('the parity setup generates the npm sources and the db models (S-393)', () => {
+  const config: unknown = JSON.parse(read('config/ci.json'));
+  assert.ok(typeof config === 'object' && config !== null && 'setup' in config, 'config/ci.json declares no setup');
+  const setup: unknown = config.setup;
+  assert.ok(typeof setup === 'object' && setup !== null && 'parity' in setup, 'config/ci.json declares no parity setup');
+  assert.ok(Array.isArray(setup.parity), 'setup.parity is not a list');
+  assert.ok(setup.parity.includes('fsm-js-gen'), 'setup.parity does not run fsm-js-gen');
+  assert.ok(setup.parity.includes('fsm-db-gen'), 'setup.parity does not run fsm-db-gen');
+});
+
 test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the ci-pipeline and release workflows that kit vendors', () => {
   assert.deepEqual(VENDORED, ['.github/workflows/release.yml', '.github/workflows/ci-pipeline.yml']);
   assert.deepEqual(WORKFLOWS, ['.github/workflows/ci.yml', '.github/workflows/pages.yml']);

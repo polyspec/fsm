@@ -3,7 +3,7 @@
   "runner": "ubuntu-26.04-arm",
   "setup": {
     "shared": [],
-    "parity": ["fsm-php-ext-install", "fsm-php-ext-gen", "build-php-ext"],
+    "parity": ["fsm-php-ext-install", "fsm-php-ext-gen", "build-php-ext", "fsm-js-gen", "fsm-db-gen"],
     "runtimes": {
       "go": ["deps-go", "fsm-go-gen", "build-go"],
       "php": ["fsm-php-install", "fsm-php-gen"],
