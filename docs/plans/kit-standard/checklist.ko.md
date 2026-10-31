@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: c537a9927114078ce7e31f1d9cad663d5cc692bbb3e1a2ca66ac530dc05e3e10 -->
+<!-- source-sha256: 65a5de94c70ba5cfd827e3db814545a81f81e20bb4722b45bf0ec75177a11d13 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -150,6 +150,6 @@
 | S-375 | packages/rust/Cargo.lock이 fsm-rust를 Cargo.toml이 선언한 릴리스 버전 0.0.1로 적는다(S-368). 지금은 0.0.0이어서 cargo가 --locked로 lock을 받지 않는다 | packages/rust/Cargo.lock: the version of fsm-rust is 0.0.1, and the lock changes no other line | RED, recorded on HEAD: cargo metadata --locked with HEAD's Cargo.lock exits 101 (cannot update the lock file). GREEN: `cargo metadata --locked --format-version 1 --manifest-path packages/rust/Cargo.toml` exits 0 | [v] |
 | S-379 | fsm은 kit K861 이후 php-ext arginfo 헤더를 자체 make 타겟으로 생성한다(orm과 같은 방식). kit 0.0.84에는 php-ext-arginfo가 없어 make land가 통과한다 | Makefile packages/php-ext | RED: `make land` is refused on layout-check, which exits 2 with no rule to make target php-ext-arginfo. GREEN: `make layout-check` exits 0 and `make land` passes | [~] |
 | S-380 | fsm의 kit 0.0.84 복사본(PRINCIPLES.md, PRINCIPLES.ko.md, release.yml, ci-pipeline.yml)을 make kit-sync가 쓰는 내용으로 맞춘다 | PRINCIPLES.md PRINCIPLES.ko.md .github/workflows/release.yml .github/workflows/ci-pipeline.yml | RED: `make kit-inject-check` exits 1 on the four copies. GREEN: `make kit-inject-check` exits 0 | [o] |
-| S-381 | fsm Go 예제가 orm 0.0.19의 GetStatus(값 하나를 반환)를 쓰도록 맞춘다 | packages/go/examples/persist.go | RED: `make fsm-go-gen` exits 1 on persist.go:48 and :67. GREEN: `make fsm-go-gen` exits 0 | [o] |
+| S-381 | fsm Go 모듈은 PHP 패키지와 같은 orm 릴리스를 require하고, Go 예제는 그 GetStatus에 맞춰 컴파일된다 | packages/go/examples/persist.go | RED: `make fsm-go-gen` exits 1 on persist.go:48 and :67. GREEN: `make fsm-go-gen` exits 0 | [o] |
 | S-382 | fsm은 Composer 설치 뒤 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook kit checkout이 필요하다 | Makefile | RED: `make fsm-php-install` fails on make link in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 | [o] |
 | S-383 | config/rebuild.json이 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 쓰는 생태계 도구로 분류한다 | config/rebuild.json | RED: `make rebuild-check` reports scripts/php-ext-arginfo.mts unclassified. GREEN: `make rebuild-check` exits 0 | [o] |

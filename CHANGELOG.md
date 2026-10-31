@@ -8,7 +8,7 @@
 
 - S-383: config/rebuild.json classes scripts/php-ext-arginfo.mts as an ecosystem tool of php, since it runs the gen_stub.php of PHP (S-383)
 - S-382: the php and php-ext installs link their packages with make install-link of kit 0.0.84, as orm does, in place of make link, which needs the kit checkout of the Claude hook that CI lacks (S-382)
-- S-381: the Go example packages/go/examples/persist.go takes the one value that GetStatus of orm 0.0.19 returns (S-381)
+- S-381: the Go module of fsm requires the orm module v0.0.19, the release of the PHP packages too, so the examples compile against its GetStatus, which returns the code and an error (S-381)
 - S-380: PRINCIPLES.md, PRINCIPLES.ko.md, .github/workflows/release.yml and ci-pipeline.yml are the copies of kit 0.0.84, which the pin of package.json names (S-380)
 - S-379: fsm-php-ext-gen writes the arginfo header of packages/php-ext with scripts/php-ext-arginfo.mts, as orm does, in place of kit's php-ext-arginfo target that kit 0.0.84 no longer has; config/ci.json no longer names kit-install-php-arginfo (S-379)
 - S-373: packages/php and packages/php-ext require polyspec/orm 0.0.19 from its release packages.json, and their composer.lock files resolve orm 0.0.19 and polyspec/ordered-json 0.0.14 from the release zips, in place of the local artifact paths of 0.0.9 that CI cannot download (S-373)

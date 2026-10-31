@@ -9,7 +9,7 @@
 
 - S-383: config/rebuild.json은 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 실행하는 생태계 도구 php로 분류한다 (S-383)
 - S-382: php와 php-ext 설치는 패키지를 연결할 때 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook의 kit checkout이 필요하다 (S-382)
-- S-381: Go 예제 packages/go/examples/persist.go는 orm 0.0.19의 GetStatus가 반환하는 값 하나를 받는다 (S-381)
+- S-381: fsm의 Go 모듈은 PHP 패키지와 같은 orm 모듈 v0.0.19를 require하므로, 예제는 코드와 에러를 반환하는 GetStatus에 맞춰 컴파일된다 (S-381)
 - S-380: PRINCIPLES.md, PRINCIPLES.ko.md, .github/workflows/release.yml, ci-pipeline.yml은 package.json이 고정한 kit 0.0.84의 복사본이다 (S-380)
 - S-379: fsm-php-ext-gen은 packages/php-ext의 arginfo 헤더를 orm과 같이 scripts/php-ext-arginfo.mts로 쓴다. kit 0.0.84에 없는 kit의 php-ext-arginfo 타겟 대신이며, config/ci.json은 kit-install-php-arginfo를 더 이상 부르지 않는다 (S-379)
 - S-373: packages/php와 packages/php-ext는 polyspec/orm 0.0.19를 릴리스 packages.json에서 받고, 두 composer.lock은 orm 0.0.19와 polyspec/ordered-json 0.0.14를 릴리스 zip에서 해석한다. CI가 받을 수 없는 로컬 artifact 경로 0.0.9 대신이다 (S-373)
