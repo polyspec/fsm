@@ -3,16 +3,17 @@
 // phpize runs in a copy of src/ under var/, which the script removes, so the checkout gains only the header. gen_stub.php fetches its
 // pinned PHP-Parser into that copy, so the script needs the network.
 //
-// Usage: node scripts/php/php-ext-arginfo.mts
+// Usage: node scripts/php-ext-arginfo.mts
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = resolve(import.meta.dirname, '../..');
-const extension = join(root, 'packages/php-ext/src');
-const work = join(root, 'var/php-ext-arginfo', String(process.pid));
-const source = join(work, 'src');
-const tool = (name: string): string => join(root, 'var/tools/bin', name);
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const extension = path.join(root, 'packages/php-ext/src');
+const work = path.join(root, 'var/php-ext-arginfo', String(process.pid));
+const source = path.join(work, 'src');
+const tool = (name: string): string => path.join(root, 'var/tools/bin', name);
 
 function run(program: string, args: readonly string[]): void {
   console.log(`[php-ext-arginfo] ${program} ${args.join(' ')}`);
@@ -23,14 +24,14 @@ function run(program: string, args: readonly string[]): void {
 
 try {
   const stubs = readdirSync(extension).filter(name => name.endsWith('.stub.php'));
-  if (stubs.length !== 1) throw new Error(`packages/php-ext/src must hold one stub, found ${stubs.length}`);
-  const stub = stubs[0]!;
+  const [stub] = stubs;
+  if (stubs.length !== 1 || stub === undefined) throw new Error(`packages/php-ext/src must hold one stub, found ${stubs.length}`);
   const header = `${stub.slice(0, -'.stub.php'.length)}_arginfo.h`;
   mkdirSync(work, { recursive: true });
   cpSync(extension, source, { recursive: true });
   run(tool('phpize'), []);
-  run(tool('php'), [join(source, 'build/gen_stub.php'), join(source, stub)]);
-  copyFileSync(join(source, header), join(extension, header));
+  run(tool('php'), [path.join(source, 'build/gen_stub.php'), path.join(source, stub)]);
+  copyFileSync(path.join(source, header), path.join(extension, header));
   console.log(`[php-ext-arginfo] wrote packages/php-ext/src/${header}`);
 } catch (error) {
   console.error(`php-ext-arginfo: ${error instanceof Error ? error.message : String(error)}`);

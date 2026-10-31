@@ -6,7 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- S-379: fsm-php-ext-gen writes the arginfo header of packages/php-ext with scripts/php/php-ext-arginfo.mts, as orm does, in place of kit's php-ext-arginfo target that kit 0.0.84 no longer has; config/ci.json no longer names kit-install-php-arginfo (S-379)
+- S-379: fsm-php-ext-gen writes the arginfo header of packages/php-ext with scripts/php-ext-arginfo.mts, as orm does, in place of kit's php-ext-arginfo target that kit 0.0.84 no longer has; config/ci.json no longer names kit-install-php-arginfo (S-379)
 - S-373: packages/php and packages/php-ext require polyspec/orm 0.0.19 from its release packages.json, and their composer.lock files resolve orm 0.0.19 and polyspec/ordered-json 0.0.14 from the release zips, in place of the local artifact paths of 0.0.9 that CI cannot download (S-373)
 - S-375: packages/rust/Cargo.lock names fsm-rust at the release version 0.0.1 that its Cargo.toml declares (S-368), so cargo accepts the lock with --locked (S-375)
 - S-374: packages/php and packages/php-ext declare config.platform.php 8.5.1, the minor of .php-version with patch 1 (S-45-13), in place of 8.4.1, so composer no longer refuses orm 0.0.18, which requires PHP 8.5 (S-374)
