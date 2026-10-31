@@ -117,7 +117,8 @@ test('the CI workflow runs the kit pipeline, then its job check, on ubuntu-26.04
 // The parity and runtime jobs run on the runner of config/ci.json. ubuntu-24.04 links SQLite 3.45.1, below the 3.46 that orm 0.0.19 persists with (S-391);
 // orm declares the same runner for its PHP jobs (orm docs/plans/execution/checklist.ko.md, G5.8).
 test('the parity and runtime jobs run on ubuntu-26.04-arm, which links SQLite 3.46 (S-391, orm G5.8)', () => {
-  const config: { runner?: string } = JSON.parse(read('config/ci.json'));
+  const config: unknown = JSON.parse(read('config/ci.json'));
+  assert.ok(typeof config === 'object' && config !== null && 'runner' in config, 'config/ci.json declares no runner');
   assert.equal(config.runner, 'ubuntu-26.04-arm');
 });
 
