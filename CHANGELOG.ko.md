@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-383: config/rebuild.json은 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 실행하는 생태계 도구 php로 분류한다 (S-383)
 - S-382: php와 php-ext 설치는 패키지를 연결할 때 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook의 kit checkout이 필요하다 (S-382)
 - S-381: Go 예제 packages/go/examples/persist.go는 orm 0.0.19의 GetStatus가 반환하는 값 하나를 받는다 (S-381)
 - S-380: PRINCIPLES.md, PRINCIPLES.ko.md, .github/workflows/release.yml, ci-pipeline.yml은 package.json이 고정한 kit 0.0.84의 복사본이다 (S-380)

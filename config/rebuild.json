@@ -18,6 +18,10 @@
       "kind": "policy",
       "reason": "the check of the required sections and the Korean twin of each README pair of this repository, which no ecosystem tool states"
     },
+    "scripts/php-ext-arginfo.mts": {
+      "kind": "ecosystem",
+      "tool": "php"
+    },
     "scripts/root-option.mts": {
       "kind": "ecosystem",
       "tool": "node:util"

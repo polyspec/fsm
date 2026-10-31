@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-383: config/rebuild.json classes scripts/php-ext-arginfo.mts as an ecosystem tool of php, since it runs the gen_stub.php of PHP (S-383)
 - S-382: the php and php-ext installs link their packages with make install-link of kit 0.0.84, as orm does, in place of make link, which needs the kit checkout of the Claude hook that CI lacks (S-382)
 - S-381: the Go example packages/go/examples/persist.go takes the one value that GetStatus of orm 0.0.19 returns (S-381)
 - S-380: PRINCIPLES.md, PRINCIPLES.ko.md, .github/workflows/release.yml and ci-pipeline.yml are the copies of kit 0.0.84, which the pin of package.json names (S-380)
