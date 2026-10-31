@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 28a958fb8ac0b90d83024011e919fad08ce68ddbef811fffa3610d67e71bb080 -->
+<!-- source-sha256: be1ff1e2eeed16e4c35056d6c968e288b72c962ef07dd8db039d620fbb1fd75b -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -156,3 +156,4 @@
 | S-384 | fsm은 package.json의 devEngines.packageManager와 mise.toml의 npm:npm 고정, 그리고 그 npm의 추적되는 도구 lock으로 npm 버전을 선언한다(orm, crudui와 같음). 그래야 worktree-setup이 실행된다 | package.json mise.toml .mise/locks/npm-npm/12.2.0 | RED: `make worktree-setup` refuses on the missing devEngines.packageManager. GREEN: `make worktree-setup` passes | [o] |
 | S-385 | fsm은 Python 패키지 설치에서 make link 대신 kit 0.0.84의 make install-link를 쓴다. S-382의 PHP 설치와 같으며, CI에는 make link가 필요로 하는 Claude hook kit checkout이 없다 | Makefile | RED: CI run 41232763585 fails kit / shared on make link in fsm-python-install. GREEN: `make fsm-python-install` exits 0 | [o] |
 | S-386 | fsm go 런타임 설정은 deadcode와 빌드 전에 생성 패키지를 만들어 CI에서 생성 소스 패키지가 해석되게 한다 | config/ci.json | RED: `make kit-gates-runtime-go` fails on the missing generated package of deadcode. GREEN: `make fsm-go-gen` followed by `make build-go` exits 0 | [ ] |
+| S-387 | fsm의 php와 php-ext 설치는 install-link 전에 install-tools로 uv를 설치해, CI의 php 작업에서 Python 작업 공간 연결이 실행되게 한다 | Makefile | RED: `make kit-gates-runtime-php` fails in install-link with spawnSync uv ENOENT in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 with uv absent from the path | [ ] |
