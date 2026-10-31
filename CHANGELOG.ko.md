@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 149308e08fcfe8fc31a7e16c15af30dac257a1c96696853dc55e8de18ba014dc -->
+<!-- source-sha256: 4990f6fdc5a7ed1c1c439493f5ccedad906bdd6549bffdd5c961192741adfa4f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-387: php와 php-ext 설치는 install-link 전에 install-tools로 uv를 설치한다. CI의 php 작업에는 uv가 없어 Python 작업 공간 연결이 실행되도록 한다 (S-387)
 - S-386: CI의 go 런타임 설정은 build-go 전에 fsm-go-gen을 실행해, deadcode가 packages/go의 생성 패키지를 해석한다 (S-386)
 - S-388: fsm은 kit 0.0.85를 채택한다. package.json과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, PRINCIPLES.md와 PRINCIPLES.ko.md는 0.0.85의 복사본이며, config/release.json은 패키지마다 product와 runtime을 선언한다 (S-388)
 - S-385: Python 설치는 패키지를 연결할 때 make link 대신 kit 0.0.84의 make install-link를 쓴다. PHP 설치와 같으며(S-382), make link는 CI에 없는 Claude hook kit checkout이 필요하다 (S-385)

@@ -164,6 +164,7 @@ fsm-js-test: $(NPM_DEP) fsm-js-gen
 .PHONY: fsm-php-install fsm-php-gen fsm-php-test
 fsm-php-install:
 	cd packages/php && $(COMPOSER) install --no-interaction --no-progress
+	$(MAKE) --no-print-directory install-tools TOOLS=uv
 	$(MAKE) --no-print-directory install-link
 
 fsm-php-gen: $(PHP_DEP)
@@ -179,6 +180,7 @@ fsm-php-test: $(PHP_DEP) fsm-php-gen
 .PHONY: fsm-php-ext-install fsm-php-ext-gen
 fsm-php-ext-install:
 	cd packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
+	$(MAKE) --no-print-directory install-tools TOOLS=uv
 	$(MAKE) --no-print-directory install-link
 
 # fsm-php-ext-gen writes the generated files of the extension (src/): fsm-gen writes the C files and the stub, and scripts/php-ext-arginfo.mts
