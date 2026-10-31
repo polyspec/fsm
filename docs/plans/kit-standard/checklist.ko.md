@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: ece0aefd40863e2435dba171c04d50b3be7b1c5d61152460270098070fe7b9ff -->
+<!-- source-sha256: c71b4f666f5370545fb845fbf277bf9c32cd9c427e63a49cd00d797d75c9606b -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -145,3 +145,4 @@
 | S-370 | fsm php-ext release archive에 생성된 C 확장을 담는다 | packages/php-ext config/release.json docs/plans/kit-standard/checklist.md | `make php-ext-release-check` | [ ] |
 | S-371 | kit P34에 따라 fsm의 php 패키지, go 모듈, rust crate의 생성 소스를 릴리스한다. go 모듈과 rust crate는 태그된 트리 그대로 설치되므로 생성 소스를 추적하고 config/generated.json에 이유와 함께 선언한다(tracked, kit K930). php 패키지는 생성 경로와 그것을 만드는 make target을 config/release.json에 선언한다(kit K930). kit K930이 새 P34와 함께 들어온 뒤에 시작하며, go와 rust의 생성 소스를 추적하지 않는다는 S-45-8-3의 검사를 대체한다 | .gitignore config/generated.json config/release.json packages/go packages/rust packages/php Makefile CHANGELOG.md CHANGELOG.ko.md | `make release-coverage` | [ ] |
 | S-372 | fsm 0.0.1 릴리스: Unreleased 항목을 ## 0.0.1로 옮기고, 설치 절을 쓰며, README.md:41-42, README.ko.md:41, docs/plans/fsm-v1/plan.md:14와 :43, packages/php, php-ext, python, go, rust README 쌍의 2번째 줄의 test bed 문구를 릴리스 라이브러리 문구로 바꾼다 | CHANGELOG.md CHANGELOG.ko.md README.md README.ko.md docs/plans/fsm-v1/plan.md docs/plans/fsm-v1/plan.ko.md packages/php packages/php-ext packages/python packages/go packages/rust | `make release-candidate-assets VERSION=0.0.1` | [ ] |
+| S-373 | fsm main CI: packages/php와 packages/php-ext의 Composer lock이 polyspec/ordered-json을 composer.json이 가리키는 release packages.json의 0.0.14로 해석한다. 지금은 CI가 받을 수 없는 로컬 artifact 경로 0.0.9를 가리킨다(kit / shared의 설치) | packages/php/composer.lock and packages/php-ext/composer.lock hold polyspec/ordered-json 0.0.14 with the release zip URL and its shasum, as the lock of orm does | RED: `make docs-check` exits 2 with checklist-verification on the S-373 row (no command named). GREEN: `make docs-check` exits 0. Lock (blocked by orm 0.0.19 release): `make fsm-php-install` and `make fsm-php-ext-install` exit 0 from a clean vendor with no var/composer-artifacts path in the locks | [ ] |
