@@ -2,7 +2,7 @@
   "schema": 1,
   "setup": {
     "shared": [],
-    "parity": [],
+    "parity": ["fsm-php-ext-install", "fsm-php-ext-gen", "build-php-ext"],
     "runtimes": {
       "go": ["deps-go", "fsm-go-gen", "build-go"],
       "php": ["fsm-php-install", "fsm-php-gen"],
