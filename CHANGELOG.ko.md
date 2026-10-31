@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-392: Pages 워크플로는 kit과 같이(K938-1) devEngines의 npm을 RUNNER_TEMP에서 --prefix로 실행하여 잠긴 kit 패키지를 부트스트랩한다 (S-392)
 - S-387: php와 php-ext 설치는 install-link 전에 install-tools로 uv를 설치한다. CI의 php 작업에는 uv가 없어 Python 작업 공간 연결이 실행되도록 한다 (S-387)
 - S-386: CI의 go 런타임 설정은 build-go 전에 fsm-go-gen을 실행해, deadcode가 packages/go의 생성 패키지를 해석한다 (S-386)
 - S-388: fsm은 kit 0.0.85를 채택한다. package.json과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, PRINCIPLES.md와 PRINCIPLES.ko.md는 0.0.85의 복사본이며, config/release.json은 패키지마다 product와 runtime을 선언한다 (S-388)

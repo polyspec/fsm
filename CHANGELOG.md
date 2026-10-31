@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-392: the Pages workflow bootstraps the locked kit package with the devEngines npm from RUNNER_TEMP with --prefix, as kit does (S-392)
 - S-387: the php and php-ext installs install uv with install-tools before install-link, so the link of the Python workspace runs in the php jobs of CI, which lack uv (S-387)
 - S-386: the go runtime setup of CI runs fsm-go-gen before build-go, so the generated package of packages/go resolves for deadcode (S-386)
 - S-388: fsm adopts kit 0.0.85: package.json and its lock name the release asset polyspec-kit-0.0.85.tgz, the copies PRINCIPLES.md and PRINCIPLES.ko.md are those of 0.0.85, and config/release.json declares product and runtime for each package (S-388)
