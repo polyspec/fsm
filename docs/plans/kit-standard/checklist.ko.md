@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 047acf35ddf033c7d0b590990c9080e0c4d5bef6c1ef2bd1a807212be657493a -->
+<!-- source-sha256: 36b447005501b8dbb4a6a0f605531f5c3645445779757c43c4f425e01f5c953f -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -151,3 +151,4 @@
 | S-379 | fsm은 kit K861 이후 php-ext arginfo 헤더를 자체 make 타겟으로 생성한다(orm과 같은 방식). kit 0.0.84에는 php-ext-arginfo가 없어 make land가 통과한다 | Makefile packages/php-ext | RED: `make land` is refused on layout-check, which exits 2 with no rule to make target php-ext-arginfo. GREEN: `make layout-check` exits 0 and `make land` passes | [~] |
 | S-380 | fsm의 kit 0.0.84 복사본(PRINCIPLES.md, PRINCIPLES.ko.md, release.yml, ci-pipeline.yml)을 make kit-sync가 쓰는 내용으로 맞춘다 | PRINCIPLES.md PRINCIPLES.ko.md .github/workflows/release.yml .github/workflows/ci-pipeline.yml | RED: `make kit-inject-check` exits 1 on the four copies. GREEN: `make kit-inject-check` exits 0 | [ ] |
 | S-381 | fsm Go 예제가 orm 0.0.19의 GetStatus(값 하나를 반환)를 쓰도록 맞춘다 | packages/go/examples/persist.go | RED: `make fsm-go-gen` exits 1 on persist.go:48 and :67. GREEN: `make fsm-go-gen` exits 0 | [ ] |
+| S-382 | fsm은 Composer 설치 뒤 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook kit checkout이 필요하다 | Makefile | RED: `make fsm-php-install` fails on make link in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 | [ ] |
