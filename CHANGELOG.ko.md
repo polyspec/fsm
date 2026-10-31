@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-396: python-tools-test는 저장소 파일만 입력으로 적는다. kit 패키지가 제공하는 scripts/kit/kit-bootstrap.mk는 입력이 아니다 (S-396)
 - S-395: packages/python/tests는 __init__.py를 가진 패키지이며, kit runtime-targets가 CI에서 이를 요구한다 (S-395)
 - S-394: ci.yml의 check job은 ci-pipeline과 같이 devEngines의 npm을 RUNNER_TEMP에서 실행하여 설치된 kit 패키지를 부트스트랩한다 (S-394)
 - S-393: parity setup은 fsm-js-gen과 fsm-db-gen을 실행하여, CI의 npm 벡터가 생성된 packages/js와 db 소스를 적재한다 (S-393)

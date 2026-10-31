@@ -78,3 +78,14 @@ function makefileOf(): string {
 test('the python tests folder is a package with __init__.py (S-395)', () => {
   assert.ok(existsSync(path.join(ROOT, 'packages/python/tests/__init__.py')), 'packages/python/tests/__init__.py is missing');
 });
+
+// The inputs of python-tools-test name files of the repository (S-396): run-tests reads each --inputs path, and CI refused one that
+// names no tracked or new file, scripts/kit/kit-bootstrap.mk (run 41250601308).
+test('the python-tools-test inputs name tracked files', () => {
+  const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
+  const recipe = makefile.split('\n').find(line => line.includes('--results .results/python-tools-test.json'));
+  assert.ok(recipe, 'the python-tools-test recipe is missing');
+  const inputs = [...recipe.matchAll(/--inputs (\S+)/g)].map(match => match[1] ?? '');
+  const missing = inputs.filter(input => !existsSync(path.join(ROOT, input)));
+  assert.deepEqual(missing, [], 'python-tools-test names inputs that are not files of the repository');
+});

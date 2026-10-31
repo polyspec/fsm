@@ -440,7 +440,7 @@ rust-persist-test: $(RUST_DEP) fsm-rust-gen
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
 python-tools-test:
-	$(RUN_TESTS) node --results .results/python-tools-test.json --inputs Makefile --inputs config/parity.json --inputs scripts/kit/kit-bootstrap.mk --inputs config/toolchain.json --inputs tests/python-tools -- tests/python-tools
+	$(RUN_TESTS) node --results .results/python-tools-test.json --inputs Makefile --inputs config/parity.json --inputs config/toolchain.json --inputs tests/python-tools -- tests/python-tools
 
 # test-python is the fixed task of kit; the tests of packages/python are its prerequisite (K246-2).
 test-python: fsm-python-test
