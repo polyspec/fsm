@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-382: php와 php-ext 설치는 패키지를 연결할 때 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook의 kit checkout이 필요하다 (S-382)
 - S-381: Go 예제 packages/go/examples/persist.go는 orm 0.0.19의 GetStatus가 반환하는 값 하나를 받는다 (S-381)
 - S-380: PRINCIPLES.md, PRINCIPLES.ko.md, .github/workflows/release.yml, ci-pipeline.yml은 package.json이 고정한 kit 0.0.84의 복사본이다 (S-380)
 - S-379: fsm-php-ext-gen은 packages/php-ext의 arginfo 헤더를 orm과 같이 scripts/php-ext-arginfo.mts로 쓴다. kit 0.0.84에 없는 kit의 php-ext-arginfo 타겟 대신이며, config/ci.json은 kit-install-php-arginfo를 더 이상 부르지 않는다 (S-379)

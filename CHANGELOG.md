@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-382: the php and php-ext installs link their packages with make install-link of kit 0.0.84, as orm does, in place of make link, which needs the kit checkout of the Claude hook that CI lacks (S-382)
 - S-381: the Go example packages/go/examples/persist.go takes the one value that GetStatus of orm 0.0.19 returns (S-381)
 - S-380: PRINCIPLES.md, PRINCIPLES.ko.md, .github/workflows/release.yml and ci-pipeline.yml are the copies of kit 0.0.84, which the pin of package.json names (S-380)
 - S-379: fsm-php-ext-gen writes the arginfo header of packages/php-ext with scripts/php-ext-arginfo.mts, as orm does, in place of kit's php-ext-arginfo target that kit 0.0.84 no longer has; config/ci.json no longer names kit-install-php-arginfo (S-379)
