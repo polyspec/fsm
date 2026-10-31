@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 36b447005501b8dbb4a6a0f605531f5c3645445779757c43c4f425e01f5c953f -->
+<!-- source-sha256: a8f0af475f62e8478cfff5b79d0799d9366d5201978cc694de51927297a71ae0 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -152,3 +152,4 @@
 | S-380 | fsm의 kit 0.0.84 복사본(PRINCIPLES.md, PRINCIPLES.ko.md, release.yml, ci-pipeline.yml)을 make kit-sync가 쓰는 내용으로 맞춘다 | PRINCIPLES.md PRINCIPLES.ko.md .github/workflows/release.yml .github/workflows/ci-pipeline.yml | RED: `make kit-inject-check` exits 1 on the four copies. GREEN: `make kit-inject-check` exits 0 | [ ] |
 | S-381 | fsm Go 예제가 orm 0.0.19의 GetStatus(값 하나를 반환)를 쓰도록 맞춘다 | packages/go/examples/persist.go | RED: `make fsm-go-gen` exits 1 on persist.go:48 and :67. GREEN: `make fsm-go-gen` exits 0 | [ ] |
 | S-382 | fsm은 Composer 설치 뒤 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook kit checkout이 필요하다 | Makefile | RED: `make fsm-php-install` fails on make link in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 | [ ] |
+| S-383 | config/rebuild.json이 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 쓰는 생태계 도구로 분류한다 | config/rebuild.json | RED: `make rebuild-check` reports scripts/php-ext-arginfo.mts unclassified. GREEN: `make rebuild-check` exits 0 | [ ] |
