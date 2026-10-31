@@ -6,7 +6,7 @@
 // prints the recipes, so no network is used and nothing is installed. The package targets are targets of the root Makefile (K245).
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -72,3 +72,9 @@ test('test-python has no PATH entry for the venv', () => {
 function makefileOf(): string {
   return readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
 }
+
+// The tests of the python package are a package (S-395): unittest discovers a directory only as a package, and kit's runtime-targets
+// refuses a tests/ folder without __init__.py on CI (run 41250601308).
+test('the python tests folder is a package with __init__.py (S-395)', () => {
+  assert.ok(existsSync(path.join(ROOT, 'packages/python/tests/__init__.py')), 'packages/python/tests/__init__.py is missing');
+});

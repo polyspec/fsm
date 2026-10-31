@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-395: packages/python/tests is a package with __init__.py, which kit runtime-targets requires on CI (S-395)
 - S-394: the check job of ci.yml bootstraps the installed kit with the devEngines npm from RUNNER_TEMP, as ci-pipeline does (S-394)
 - S-393: the parity setup runs fsm-js-gen and fsm-db-gen, so the npm vectors load the generated packages/js and db sources on CI (S-393)
 - S-391: config/ci.json declares runner ubuntu-26.04-arm, so the parity and runtime jobs of CI link SQLite 3.46.1 for PHP, as orm declares (orm docs/plans/execution/checklist.ko.md, G5.8) (S-391)
