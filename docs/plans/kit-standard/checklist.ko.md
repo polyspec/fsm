@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: b2b63a3959aeb135f7b5d4836c356487e3961b3eb5e317462aa07fff3c05a106 -->
+<!-- source-sha256: 2c3bbc543e66165b97abdc1750c534b40eee682ca87f06250e4f2487ce098901 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -159,3 +159,4 @@
 | S-387 | fsm의 php와 php-ext 설치는 install-link 전에 install-tools로 uv를 설치해, CI의 php 작업에서 Python 작업 공간 연결이 실행되게 한다 | Makefile | RED: `make kit-gates-runtime-php` fails in install-link with spawnSync uv ENOENT in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 with uv absent from the path | [o] |
 | S-388 | fsm은 kit 0.0.85를 채택한다. 고정과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, 복사본은 kit을 따르며, config/release.json은 패키지마다 product와 runtime을 선언한다 | package.json package-lock.json PRINCIPLES.md PRINCIPLES.ko.md config/release.json | RED: `make kit-check` exits 2 with six findings for missing product and runtime. GREEN: `make kit-check` and `make kit-inject-check` exit 0 | [o] |
 | S-389 | npm 패키지는 orm 0.0.18을 고정하고 다른 패키지는 0.0.19를 고정한다. packages/js를 @polyspec/orm 0.0.19로 옮겨 npm 벡터가 적재되게 한다 (kit parity npm 0/290) | packages/js/package.json packages/js/package-lock.json | RED: packages/js conformance with orm 0.0.18 exits 1 with 0 vectors. GREEN: node --test with the parity reporter on packages/js/tests/conformance.test.mjs passes 290 vectors | [ ] |
+| S-390 | parity 작업이 벡터 전에 php-ext 라이브러리를 빌드한다 (kit build-php-ext). kit parity php-ext가 var/php-ext/polyspec_fsm.so를 적재한다 | config/ci.json | RED: kit parity php-ext exits 2 with Unable to load dynamic library. GREEN: make build-php-ext exits 0 and the php-ext parity vectors pass | [ ] |
