@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 2aa43a6103e4d136a6bc3a2023e32f262df3e6b1776e51eb77e7b95985c0cfc9 -->
+<!-- source-sha256: 047acf35ddf033c7d0b590990c9080e0c4d5bef6c1ef2bd1a807212be657493a -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -150,3 +150,4 @@
 | S-375 | packages/rust/Cargo.lock이 fsm-rust를 Cargo.toml이 선언한 릴리스 버전 0.0.1로 적는다(S-368). 지금은 0.0.0이어서 cargo가 --locked로 lock을 받지 않는다 | packages/rust/Cargo.lock: the version of fsm-rust is 0.0.1, and the lock changes no other line | RED, recorded on HEAD: cargo metadata --locked with HEAD's Cargo.lock exits 101 (cannot update the lock file). GREEN: `cargo metadata --locked --format-version 1 --manifest-path packages/rust/Cargo.toml` exits 0 | [v] |
 | S-379 | fsm은 kit K861 이후 php-ext arginfo 헤더를 자체 make 타겟으로 생성한다(orm과 같은 방식). kit 0.0.84에는 php-ext-arginfo가 없어 make land가 통과한다 | Makefile packages/php-ext | RED: `make land` is refused on layout-check, which exits 2 with no rule to make target php-ext-arginfo. GREEN: `make layout-check` exits 0 and `make land` passes | [~] |
 | S-380 | fsm의 kit 0.0.84 복사본(PRINCIPLES.md, PRINCIPLES.ko.md, release.yml, ci-pipeline.yml)을 make kit-sync가 쓰는 내용으로 맞춘다 | PRINCIPLES.md PRINCIPLES.ko.md .github/workflows/release.yml .github/workflows/ci-pipeline.yml | RED: `make kit-inject-check` exits 1 on the four copies. GREEN: `make kit-inject-check` exits 0 | [ ] |
+| S-381 | fsm Go 예제가 orm 0.0.19의 GetStatus(값 하나를 반환)를 쓰도록 맞춘다 | packages/go/examples/persist.go | RED: `make fsm-go-gen` exits 1 on persist.go:48 and :67. GREEN: `make fsm-go-gen` exits 0 | [ ] |
