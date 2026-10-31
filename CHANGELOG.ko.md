@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-376: config/duplication.json이 packages/compiler/tests/golden/**을 더 이상 제외하지 않는다. config/generated.json이 이미 나열하고 kit의 duplication-check가 이미 제외하므로 제외 목록은 비어 있다 (S-376)
 - S-368: config/release.json이 fsm의 릴리스 패키지(composer 패키지 polyspec/fsm과 polyspec/fsm-php-ext, wheel polyspec-fsm-python, git tag로 받는 rust crate, go module)를 선언하므로 kit의 release-tag가 선언된 패키지를 릴리스할 수 있다. 생성 소스는 아직 선언되지 않았다(S-369, S-370, S-371). manifest는 0.0.1이고 polyspec/fsm은 library다 (S-368)
 - S-325: kit 0.0.80을 채택한다. ci.yml은 kit의 ci-pipeline.yml을 job kit으로 부르고 job check는 needs: kit으로 그 뒤에 돌며, gates.yml은 지워지고 kit 사본(PRINCIPLES, release.yml)은 0.0.80의 것이다 (S-325)
 - S-365: deps-rust가 kit의 catch check crate도 가져와서 lint-rust의 offline catch check가 이를 찾는다 (S-365)

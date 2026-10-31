@@ -1,6 +1,4 @@
 {
   "schema": 1,
-  "exclude": [
-    { "glob": "packages/compiler/tests/golden/**", "reason": "fixture: The golden outputs are tracked data: the expected generated files of each backend, compared byte for byte by the backend tests. They are not code that a concern holds twice, and the repetition between backends is the shape of the generated output." }
-  ]
+  "exclude": []
 }
