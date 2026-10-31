@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 1625f2cbb1850fdfd648ea7d6157665a9f789e2b3b3a12528d46e34c7227ad27 -->
+<!-- source-sha256: b2b63a3959aeb135f7b5d4836c356487e3961b3eb5e317462aa07fff3c05a106 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -158,3 +158,4 @@
 | S-386 | fsm go 런타임 설정은 deadcode와 빌드 전에 생성 패키지를 만들어 CI에서 생성 소스 패키지가 해석되게 한다 | config/ci.json | RED: `make kit-gates-runtime-go` fails on the missing generated package of deadcode. GREEN: `make fsm-go-gen` followed by `make build-go` exits 0 | [o] |
 | S-387 | fsm의 php와 php-ext 설치는 install-link 전에 install-tools로 uv를 설치해, CI의 php 작업에서 Python 작업 공간 연결이 실행되게 한다 | Makefile | RED: `make kit-gates-runtime-php` fails in install-link with spawnSync uv ENOENT in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 with uv absent from the path | [o] |
 | S-388 | fsm은 kit 0.0.85를 채택한다. 고정과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, 복사본은 kit을 따르며, config/release.json은 패키지마다 product와 runtime을 선언한다 | package.json package-lock.json PRINCIPLES.md PRINCIPLES.ko.md config/release.json | RED: `make kit-check` exits 2 with six findings for missing product and runtime. GREEN: `make kit-check` and `make kit-inject-check` exit 0 | [o] |
+| S-389 | npm 패키지는 orm 0.0.18을 고정하고 다른 패키지는 0.0.19를 고정한다. packages/js를 @polyspec/orm 0.0.19로 옮겨 npm 벡터가 적재되게 한다 (kit parity npm 0/290) | packages/js/package.json packages/js/package-lock.json | RED: packages/js conformance with orm 0.0.18 exits 1 with 0 vectors. GREEN: node --test with the parity reporter on packages/js/tests/conformance.test.mjs passes 290 vectors | [ ] |
