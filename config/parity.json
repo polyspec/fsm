@@ -15,7 +15,7 @@
   "suites": ["contracts/conformance/vectors.json"],
   "requirements": { "pattern": "FSM-B4-[0-9]+" },
   "tools": [
-    { "root": "packages/compiler", "reason": "test: the node tests of the compiler (fsm-gen): validation, stores and backends, one implementation that every kind's code comes from (plan C-5)" },
+    { "root": "packages/compiler", "reason": "generated: the node tests of the compiler (fsm-gen), a code generator that emits the code of every kind, not an implementation of the contract: validation, stores and backends (plan C-5)" },
     { "root": "packages/db", "reason": "test: the node tests of the DB store and its CLI, a component of fsm, not a port of the spec (plan C-6)" },
     { "root": "packages/gui", "reason": "test: the node tests of the GUI, a component of fsm, not a port of the spec (plan C-7)" },
     { "root": "tests", "reason": "test: the node tests of the root tools (check-name, check-readmes, the documentation site, the make targets, the workflows and the type check of the npm declarations), which implement no contract" }

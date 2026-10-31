@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-377: the tools entry of packages/compiler in config/parity.json takes the kind generated: instead of test:, since the compiler is the code generator of every kind and implements no contract unit (S-377)
 - S-378: the check job of ci.yml runs make hooks, then make ci-targets TARGETS="hooks-check", as the template, hyper and crudui workflows do, so the hooks-check that S-346 removed runs in CI again (S-378)
 - S-376: config/duplication.json no longer excludes packages/compiler/tests/golden/**, which config/generated.json already lists and kit's duplication-check already drops, so the exclude list is empty (S-376)
 - S-368: config/release.json declares the released packages of fsm (the composer packages polyspec/fsm and polyspec/fsm-php-ext, the wheel polyspec-fsm-python, the rust crate by its git tag and the go module), so kit's release-tag can release the packages it names; their generated sources are not declared yet (S-369, S-370, S-371); the manifests carry version 0.0.1 and polyspec/fsm is a library (S-368)
