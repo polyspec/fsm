@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-400: test_persist imports test_conformance from its tests package, relatively, and by name when run as a top-level module, so it loads whether run by its path or by discover (S-400)
 - S-396: python-tools-test names only repository files as its inputs; scripts/kit/kit-bootstrap.mk, which the kit package provides, is no input (S-396)
 - S-395: packages/python/tests is a package with __init__.py, which kit runtime-targets requires on CI (S-395)
 - S-394: the check job of ci.yml bootstraps the installed kit with the devEngines npm from RUNNER_TEMP, as ci-pipeline does (S-394)

@@ -10,7 +10,11 @@ import threading
 import types
 import unittest
 
-import test_conformance as conformance
+# The module of the tests package imports relatively; a run that names this file as a top-level module imports it by name (S-400).
+try:
+    from . import test_conformance as conformance
+except ImportError:
+    import test_conformance as conformance
 from polyspec_fsm_examples.persist import open_database, seed, status_of, transition
 from polyspec.orm import OrmError
 from polyspec_fsm import order

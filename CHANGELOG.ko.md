@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-400: test_persist는 tests 패키지의 test_conformance를 상대 import하고, 최상위 모듈로 실행되면 이름으로 import하여 경로 실행과 discover 모두에서 적재된다 (S-400)
 - S-396: python-tools-test는 저장소 파일만 입력으로 적는다. kit 패키지가 제공하는 scripts/kit/kit-bootstrap.mk는 입력이 아니다 (S-396)
 - S-395: packages/python/tests는 __init__.py를 가진 패키지이며, kit runtime-targets가 CI에서 이를 요구한다 (S-395)
 - S-394: ci.yml의 check job은 ci-pipeline과 같이 devEngines의 npm을 RUNNER_TEMP에서 실행하여 설치된 kit 패키지를 부트스트랩한다 (S-394)
