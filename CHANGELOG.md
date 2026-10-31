@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-384: package.json declares npm 12.2.0 by devEngines.packageManager and mise.toml pins it as npm:npm, with its tool lock in .mise/locks/npm-npm/12.2.0 and mise.lock, so worktree-setup of kit 0.0.84 creates the worktree (S-384)
 - S-383: config/rebuild.json classes scripts/php-ext-arginfo.mts as an ecosystem tool of php, since it runs the gen_stub.php of PHP (S-383)
 - S-382: the php and php-ext installs link their packages with make install-link of kit 0.0.84, as orm does, in place of make link, which needs the kit checkout of the Claude hook that CI lacks (S-382)
 - S-381: the Go module of fsm requires the orm module v0.0.19, the release of the PHP packages too, so the examples compile against its GetStatus, which returns the code and an error (S-381)

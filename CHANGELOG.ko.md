@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-384: package.json은 devEngines.packageManager로 npm 12.2.0을 선언하고, mise.toml은 npm:npm으로 고정한다. 도구 lock은 .mise/locks/npm-npm/12.2.0과 mise.lock에 있어, kit 0.0.84의 worktree-setup이 worktree를 만든다 (S-384)
 - S-383: config/rebuild.json은 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 실행하는 생태계 도구 php로 분류한다 (S-383)
 - S-382: php와 php-ext 설치는 패키지를 연결할 때 make link 대신 kit 0.0.84의 make install-link를 쓴다(orm과 같음). make link는 CI에 없는 Claude hook의 kit checkout이 필요하다 (S-382)
 - S-381: fsm의 Go 모듈은 PHP 패키지와 같은 orm 모듈 v0.0.19를 require하므로, 예제는 코드와 에러를 반환하는 GetStatus에 맞춰 컴파일된다 (S-381)
