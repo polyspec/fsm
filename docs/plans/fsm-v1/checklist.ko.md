@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: dad784f2d562bdf301f904c59c4b852f2a1cc5164d6555b2ea5c2bdbf9b4885d -->
+<!-- source-sha256: 3f25ee08e8c98c90e782da13741fc2810a363eea3c773079cd7cbc314975aeb2 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -120,3 +120,4 @@
 | S-44-23 | AGENTS.md가 kit의 local link를 가리킨다(kit K198). polyspec 버전이 0.0.x인 동안 개발 checkout은 kit `docs/plans/local-links.md`가 설명하는 대로 설치된 polyspec package를 그 source에 link하며, link는 commit하지 않는다 | AGENTS.md가 kit의 local link를 가리킨다(kit K198). polyspec 버전이 0.0.x인 동안 개발 checkout은 kit `docs/plans/local-links.md`가 설명하는 대로 설치된 polyspec package를 그 source에 link하며, link는 commit하지 않는다 | AGENTS.md와 AGENTS.ko.md에 kit `docs/plans/local-links.md`를 가리키는 문장이 없음 RED → 두 파일이 그 문장을 담고 `make docs-check` 통과 GREEN | [o] |
 | S-44-24 | AGENTS에 생성 파일(의존성 설치물, 빌드 결과물, 캐시, 테스트 산출물, 도구 다운로드)은 추적하지 않는다는 규칙과 의도적 예외를 적고, `.gitignore`가 dist, dist.next와 캐시를 덮는다(사용자 규칙 2026-10-18). | AGENTS에 생성 파일(의존성 설치물, 빌드 결과물, 캐시, 테스트 산출물, 도구 다운로드)은 추적하지 않는다는 규칙과 의도적 예외를 적고, `.gitignore`가 dist, dist.next와 캐시를 덮는다(사용자 규칙 2026-10-18). | `git ls-files`는 전후 모두 생성 파일을 나열하지 않는다; AGENTS 규칙 없음 RED → 있음, `make docs-check` 통과 GREEN | [o] |
 | S-376 | `config/duplication.json`: `config/generated.json`이 이미 나열하고 kit의 duplication-check가 이미 제외하는 `packages/compiler/tests/golden/**` 제외 항목을 삭제한다 (K640) | `config/duplication.json` without the golden exclude | `make duplication-check` | [ ] |
+| S-377 | `config/parity.json`: `packages/compiler`를 `tools`에서 구현 집합으로 옮긴다. 사유가 모든 종류의 코드가 나오는 하나의 구현이라고 적고 있다 (plan C-5). `packages/db`는 `tools`에 남는다 | `config/parity.json` with packages/compiler in the implementation set | `make parity-declarations-check`, `make divergence-check` | [ ] |
