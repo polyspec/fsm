@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-380: PRINCIPLES.md, PRINCIPLES.ko.md, .github/workflows/release.yml, ci-pipeline.yml은 package.json이 고정한 kit 0.0.84의 복사본이다 (S-380)
 - S-379: fsm-php-ext-gen은 packages/php-ext의 arginfo 헤더를 orm과 같이 scripts/php-ext-arginfo.mts로 쓴다. kit 0.0.84에 없는 kit의 php-ext-arginfo 타겟 대신이며, config/ci.json은 kit-install-php-arginfo를 더 이상 부르지 않는다 (S-379)
 - S-373: packages/php와 packages/php-ext는 polyspec/orm 0.0.19를 릴리스 packages.json에서 받고, 두 composer.lock은 orm 0.0.19와 polyspec/ordered-json 0.0.14를 릴리스 zip에서 해석한다. CI가 받을 수 없는 로컬 artifact 경로 0.0.9 대신이다 (S-373)
 - S-375: packages/rust/Cargo.lock이 fsm-rust를 Cargo.toml이 선언한 릴리스 버전 0.0.1로 적으므로(S-368) cargo가 --locked로 lock을 받는다 (S-375)
