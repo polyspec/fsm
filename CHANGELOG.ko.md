@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ddce0d768117da406c68fba95aebbbc2542244773478d53fe6d46113429b3f67 -->
+<!-- source-sha256: 7a2a26e421b9a75998255a8cfa484825dae4f30bd694c6c4fd819abac94a8891 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-374: packages/php와 packages/php-ext가 config.platform.php를 8.5.1로 선언한다(.php-version의 minor와 patch 1, S-45-13), 8.4.1 대신. 그래서 composer가 PHP 8.5를 요구하는 orm 0.0.18을 더 이상 거부하지 않는다 (S-374)
 - S-377: config/parity.json의 packages/compiler tools 항목 종류를 test:에서 generated:로 바꾼다. compiler는 모든 kind의 코드를 내는 코드 생성기이며 계약 unit을 구현하지 않는다 (S-377)
 - S-378: ci.yml의 job check가 make hooks를 실행한 뒤 make ci-targets TARGETS="hooks-check"를 실행한다. template, hyper, crudui 워크플로와 같으며, S-346이 뺐던 hooks-check가 CI에서 다시 돈다 (S-378)
 - S-376: config/duplication.json이 packages/compiler/tests/golden/**을 더 이상 제외하지 않는다. config/generated.json이 이미 나열하고 kit의 duplication-check가 이미 제외하므로 제외 목록은 비어 있다 (S-376)

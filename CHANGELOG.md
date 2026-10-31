@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-374: packages/php and packages/php-ext declare config.platform.php 8.5.1, the minor of .php-version with patch 1 (S-45-13), in place of 8.4.1, so composer no longer refuses orm 0.0.18, which requires PHP 8.5 (S-374)
 - S-377: the tools entry of packages/compiler in config/parity.json takes the kind generated: instead of test:, since the compiler is the code generator of every kind and implements no contract unit (S-377)
 - S-378: the check job of ci.yml runs make hooks, then make ci-targets TARGETS="hooks-check", as the template, hyper and crudui workflows do, so the hooks-check that S-346 removed runs in CI again (S-378)
 - S-376: config/duplication.json no longer excludes packages/compiler/tests/golden/**, which config/generated.json already lists and kit's duplication-check already drops, so the exclude list is empty (S-376)
