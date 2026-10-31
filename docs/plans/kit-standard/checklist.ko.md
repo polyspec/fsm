@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 48fde8fabb9dcc07e3d07b9ad1f3973c04eddb73a84177c3d05831b32e3f65ac -->
+<!-- source-sha256: 2aa43a6103e4d136a6bc3a2023e32f262df3e6b1776e51eb77e7b95985c0cfc9 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -149,3 +149,4 @@
 | S-374 | fsm의 Composer platform을 .php-version에 맞춘다: packages/php와 packages/php-ext의 config.platform.php를 S-45-13 규칙(.php-version의 minor와 patch 1)에 따라 8.5.1로 둔다. S-309가 .php-version을 8.5로 바꾼 뒤에도 8.4.1로 남아 있었다 | packages/php/composer.json and packages/php-ext/composer.json declare config.platform.php 8.5.1; the changelog lines of S-374 | RED, recorded on HEAD's packages/php with composer update polyspec/ordered-json --no-install: exit 2 with orm 0.0.18 requires php >=8.5 for platform 8.4.1. GREEN: `composer validate --no-check-publish --no-check-lock --working-dir=packages/php` exits 0 and `composer validate --no-check-publish --no-check-lock --working-dir=packages/php-ext` exits 0; the lock content-hash is refreshed with the orm 0.0.19 lock (S-373) | [v] |
 | S-375 | packages/rust/Cargo.lock이 fsm-rust를 Cargo.toml이 선언한 릴리스 버전 0.0.1로 적는다(S-368). 지금은 0.0.0이어서 cargo가 --locked로 lock을 받지 않는다 | packages/rust/Cargo.lock: the version of fsm-rust is 0.0.1, and the lock changes no other line | RED, recorded on HEAD: cargo metadata --locked with HEAD's Cargo.lock exits 101 (cannot update the lock file). GREEN: `cargo metadata --locked --format-version 1 --manifest-path packages/rust/Cargo.toml` exits 0 | [v] |
 | S-379 | fsm은 kit K861 이후 php-ext arginfo 헤더를 자체 make 타겟으로 생성한다(orm과 같은 방식). kit 0.0.84에는 php-ext-arginfo가 없어 make land가 통과한다 | Makefile packages/php-ext | RED: `make land` is refused on layout-check, which exits 2 with no rule to make target php-ext-arginfo. GREEN: `make layout-check` exits 0 and `make land` passes | [~] |
+| S-380 | fsm의 kit 0.0.84 복사본(PRINCIPLES.md, PRINCIPLES.ko.md, release.yml, ci-pipeline.yml)을 make kit-sync가 쓰는 내용으로 맞춘다 | PRINCIPLES.md PRINCIPLES.ko.md .github/workflows/release.yml .github/workflows/ci-pipeline.yml | RED: `make kit-inject-check` exits 1 on the four copies. GREEN: `make kit-inject-check` exits 0 | [ ] |
