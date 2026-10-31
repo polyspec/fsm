@@ -249,6 +249,8 @@ rules:
       - "!packages/python/examples/persist.py"
       # the package of the examples (S3): an empty package file that makes examples an installed package, polyspec_fsm_examples
       - "!packages/python/examples/__init__.py"
+      # the package of the tests (S-395): an empty package file that unittest needs to discover them, which kit runtime-targets checks on CI
+      - "!packages/python/tests/__init__.py"
     message: "C-2: a file that the python package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-ext-required
