@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: f0df78b9d13eaedd89fd7fe1c00a534c9a5950b843ef1b2ad167d68140759b64 -->
+<!-- source-sha256: dad784f2d562bdf301f904c59c4b852f2a1cc5164d6555b2ea5c2bdbf9b4885d -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -119,3 +119,4 @@
 | S-44-22 | kit 0.0.53으로 옮긴다(kit K195). 게시된 파일의 integrity로 pin한다. `make kit-sync`는 복사본을 바꾸지 않으며, kit의 release proof는 release가 각 sibling wheel의 asset을 나열하는지 검사하는데, wheel이 없는 fsm은 이를 게시하지 않는다 | kit 0.0.53으로 옮긴다(kit K195). 게시된 파일의 integrity로 pin한다. `make kit-sync`는 복사본을 바꾸지 않으며, kit의 release proof는 release가 각 sibling wheel의 asset을 나열하는지 검사하는데, wheel이 없는 fsm은 이를 게시하지 않는다 | `make dependency-policy-check`가 package-lock.json이 검토 뒤에 바뀌었다고 보고 RED → `make dependency-review RECORD=1` 뒤 `make kit-check toolchain-check layout-check owner-validate docs-check dependency-policy-check` 통과 GREEN | [o] |
 | S-44-23 | AGENTS.md가 kit의 local link를 가리킨다(kit K198). polyspec 버전이 0.0.x인 동안 개발 checkout은 kit `docs/plans/local-links.md`가 설명하는 대로 설치된 polyspec package를 그 source에 link하며, link는 commit하지 않는다 | AGENTS.md가 kit의 local link를 가리킨다(kit K198). polyspec 버전이 0.0.x인 동안 개발 checkout은 kit `docs/plans/local-links.md`가 설명하는 대로 설치된 polyspec package를 그 source에 link하며, link는 commit하지 않는다 | AGENTS.md와 AGENTS.ko.md에 kit `docs/plans/local-links.md`를 가리키는 문장이 없음 RED → 두 파일이 그 문장을 담고 `make docs-check` 통과 GREEN | [o] |
 | S-44-24 | AGENTS에 생성 파일(의존성 설치물, 빌드 결과물, 캐시, 테스트 산출물, 도구 다운로드)은 추적하지 않는다는 규칙과 의도적 예외를 적고, `.gitignore`가 dist, dist.next와 캐시를 덮는다(사용자 규칙 2026-10-18). | AGENTS에 생성 파일(의존성 설치물, 빌드 결과물, 캐시, 테스트 산출물, 도구 다운로드)은 추적하지 않는다는 규칙과 의도적 예외를 적고, `.gitignore`가 dist, dist.next와 캐시를 덮는다(사용자 규칙 2026-10-18). | `git ls-files`는 전후 모두 생성 파일을 나열하지 않는다; AGENTS 규칙 없음 RED → 있음, `make docs-check` 통과 GREEN | [o] |
+| S-376 | `config/duplication.json`: `config/generated.json`이 이미 나열하고 kit의 duplication-check가 이미 제외하는 `packages/compiler/tests/golden/**` 제외 항목을 삭제한다 (K640) | `config/duplication.json` without the golden exclude | `make duplication-check` | [ ] |
