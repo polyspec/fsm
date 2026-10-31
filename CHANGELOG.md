@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-389: packages/js pins /orm 0.0.19 from its npm release asset, with the lock file, and its conformance vectors pass (S-389)
 - S-390: the parity job builds the php-ext library with build-php-ext after its sources are generated, so the php-ext vectors load var/php-ext/polyspec_fsm.so (S-390)
 - S-392: the Pages workflow bootstraps the locked kit package with the devEngines npm from RUNNER_TEMP with --prefix, as kit does (S-392)
 - S-387: the php and php-ext installs install uv with install-tools before install-link, so the link of the Python workspace runs in the php jobs of CI, which lack uv (S-387)
