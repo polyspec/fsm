@@ -1,12 +1,12 @@
 {
   "schema": 1,
   "setup": {
-    "shared": ["kit-install-php-arginfo"],
+    "shared": [],
     "parity": [],
     "runtimes": {
       "go": ["deps-go", "build-go"],
       "php": ["fsm-php-install", "fsm-php-gen"],
-      "php-ext": ["kit-install-php-arginfo", "fsm-php-ext-install", "fsm-php-ext-gen"],
+      "php-ext": ["fsm-php-ext-install", "fsm-php-ext-gen"],
       "python": ["fsm-python-install"],
       "rust": ["deps-rust", "fsm-rust-gen"],
       "ts": ["deps-node", "fsm-js-gen"]
