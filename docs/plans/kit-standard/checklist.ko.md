@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: fc5f24dc74cefe51aab98ab9b88db4b666ae5055fe1b940826e17a4456d068b4 -->
+<!-- source-sha256: cec6f94abc3a28056d065e8c7b706011318ace6f477fce2df9a2953667caedfe -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -155,6 +155,6 @@
 | S-383 | config/rebuild.json이 scripts/php-ext-arginfo.mts를 PHP의 gen_stub.php를 쓰는 생태계 도구로 분류한다 | config/rebuild.json | RED: `make rebuild-check` reports scripts/php-ext-arginfo.mts unclassified. GREEN: `make rebuild-check` exits 0 | [o] |
 | S-384 | fsm은 package.json의 devEngines.packageManager와 mise.toml의 npm:npm 고정, 그리고 그 npm의 추적되는 도구 lock으로 npm 버전을 선언한다(orm, crudui와 같음). 그래야 worktree-setup이 실행된다 | package.json mise.toml .mise/locks/npm-npm/12.2.0 | RED: `make worktree-setup` refuses on the missing devEngines.packageManager. GREEN: `make worktree-setup` passes | [o] |
 | S-385 | fsm은 Python 패키지 설치에서 make link 대신 kit 0.0.84의 make install-link를 쓴다. S-382의 PHP 설치와 같으며, CI에는 make link가 필요로 하는 Claude hook kit checkout이 없다 | Makefile | RED: CI run 41232763585 fails kit / shared on make link in fsm-python-install. GREEN: `make fsm-python-install` exits 0 | [o] |
-| S-386 | fsm go 런타임 설정은 deadcode와 빌드 전에 생성 패키지를 만들어 CI에서 생성 소스 패키지가 해석되게 한다 | config/ci.json | RED: `make kit-gates-runtime-go` fails on the missing generated package of deadcode. GREEN: `make fsm-go-gen` followed by `make build-go` exits 0 | [ ] |
+| S-386 | fsm go 런타임 설정은 deadcode와 빌드 전에 생성 패키지를 만들어 CI에서 생성 소스 패키지가 해석되게 한다 | config/ci.json | RED: `make kit-gates-runtime-go` fails on the missing generated package of deadcode. GREEN: `make fsm-go-gen` followed by `make build-go` exits 0 | [o] |
 | S-387 | fsm의 php와 php-ext 설치는 install-link 전에 install-tools로 uv를 설치해, CI의 php 작업에서 Python 작업 공간 연결이 실행되게 한다 | Makefile | RED: `make kit-gates-runtime-php` fails in install-link with spawnSync uv ENOENT in CI. GREEN: `make fsm-php-install` and `make fsm-php-ext-install` exit 0 with uv absent from the path | [ ] |
 | S-388 | fsm은 kit 0.0.85를 채택한다. 고정과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, 복사본은 kit을 따르며, config/release.json은 패키지마다 product와 runtime을 선언한다 | package.json package-lock.json PRINCIPLES.md PRINCIPLES.ko.md config/release.json | RED: `make kit-check` exits 2 with six findings for missing product and runtime. GREEN: `make kit-check` and `make kit-inject-check` exit 0 | [o] |

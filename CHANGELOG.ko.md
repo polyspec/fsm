@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c5fabcbc47d19610f909b4908d8c29f8eb5209a2137bc5d0508bb507b7ec0753 -->
+<!-- source-sha256: 149308e08fcfe8fc31a7e16c15af30dac257a1c96696853dc55e8de18ba014dc -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-386: CI의 go 런타임 설정은 build-go 전에 fsm-go-gen을 실행해, deadcode가 packages/go의 생성 패키지를 해석한다 (S-386)
 - S-388: fsm은 kit 0.0.85를 채택한다. package.json과 lock은 polyspec-kit-0.0.85.tgz를 가리키고, PRINCIPLES.md와 PRINCIPLES.ko.md는 0.0.85의 복사본이며, config/release.json은 패키지마다 product와 runtime을 선언한다 (S-388)
 - S-385: Python 설치는 패키지를 연결할 때 make link 대신 kit 0.0.84의 make install-link를 쓴다. PHP 설치와 같으며(S-382), make link는 CI에 없는 Claude hook kit checkout이 필요하다 (S-385)
 - S-384: package.json은 devEngines.packageManager로 npm 12.2.0을 선언하고, mise.toml은 npm:npm으로 고정한다. 도구 lock은 .mise/locks/npm-npm/12.2.0과 mise.lock에 있어, kit 0.0.84의 worktree-setup이 worktree를 만든다 (S-384)

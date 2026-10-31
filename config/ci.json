@@ -4,7 +4,7 @@
     "shared": [],
     "parity": [],
     "runtimes": {
-      "go": ["deps-go", "build-go"],
+      "go": ["deps-go", "fsm-go-gen", "build-go"],
       "php": ["fsm-php-install", "fsm-php-gen"],
       "php-ext": ["fsm-php-ext-install", "fsm-php-ext-gen"],
       "python": ["fsm-python-install"],
