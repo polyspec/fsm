@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d350ce796e625f5b5ec5353627555635f6e743c54888f43b1ba9e88da5f33fd7 -->
+<!-- source-sha256: fcaece44d94d269dc968db8fc64cf21aa6d60b35cb8d5736419aed4d24d5c136 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-414: fsm이 kit 0.0.88을 채택합니다. kit-check는 하나의 CI pipeline(S12), link step 없음(S11), 저장소 밖 manifest 경로 없음(P30)을 판단하며 fsm은 이를 지킵니다(S-414).
 - S-412: fsm은 kit 0.0.87을 채택한다. ci.yml과 pages.yml은 kit-sync가 복사하는 kit-bootstrap action으로 bootstrap하고(K992), pack된 kit으로 시작한 make install은 link 뒤에 link된 kit을 따른다(K993)(S-412).
 
 ## 0.0.1
