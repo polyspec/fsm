@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-419: fsm adopts Kit 0.0.92, and deps-rust no longer names cargo-downloads-fetch, which kit deleted with the Rust catch check (S-419).
 ## 0.0.2
 
 - fsm 0.0.2 pins the providers of the 0.0.88 round in every runtime (S-416) on kit 0.0.89 (S-417) (S-418).

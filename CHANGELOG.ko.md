@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ef08af3a6fc4d16f6134887a21dd71fed2663c08b8b670d7ad5965d6507cf1b2 -->
+<!-- source-sha256: d4f3b25b240cfd8758ca791cd5587c5138ce5bc5b417df6346202d919d11d322 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-419: fsm이 Kit 0.0.92를 채택하고, deps-rust는 kit이 Rust catch check와 함께 삭제한 cargo-downloads-fetch를 더 이상 이름하지 않는다 (S-419).
 ## 0.0.2
 
 - fsm 0.0.2는 kit 0.0.89 위에서(S-417) 모든 runtime에 0.0.88 라운드의 provider를 pin합니다(S-416) (S-418).
