@@ -52,3 +52,8 @@ test('php-ext persist mysql names only tracked inputs (S-399)', () => {
   assert.ok(inputs.length > 0, 'php-ext-persist-test-mysql names no --inputs');
   assert.deepEqual(untracked(inputs), [], 'php-ext-persist-test-mysql names an input that no tracked file lies under');
 });
+
+test('the php-ext persist test folder is a declared tool test of the root tests (S-401)', () => {
+  const layout = readFileSync(path.join(ROOT, 'config/layout.yml'), 'utf8');
+  assert.ok(layout.includes('- "!tests/php-ext-persist"'), 'config/layout.yml does not declare tests/php-ext-persist as a tool test (S7)');
+});

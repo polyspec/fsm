@@ -41,6 +41,8 @@ rules:
       - "!tests/check-readmes"
       - "!tests/docs-build"
       - "!tests/make-install"
+      # the tool test of the php-ext persist recipes of the Makefile (S-398, S-399): it reads the Makefile and tracked files, as the tests above do
+      - "!tests/php-ext-persist"
       - "!tests/python-tools"
       - "!tests/workflows"
       # the type check of the declarations of packages/js (S-09-2, make npm-types): tsc compiles tests/npm-types/consumer.ts in strict mode against packages/js/src/*.d.ts

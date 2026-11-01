@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-401: config/layout.yml declares tests/php-ext-persist as a tool test of the root tests, as tests/make-install is declared (S-401)
 - S-399: the php-ext mysql persist run names the tracked compiler and arginfo sources as its inputs, not the ignored var/php-ext output (S-399)
 - S-398: the php-ext postgres persist run names the tracked compiler and arginfo sources as its inputs, not the ignored var/php-ext output (S-398)
 - S-397: the make-install case of fsm-python-install reads the install-link target that kit names for linking the checkouts, after the lock install (S-397)

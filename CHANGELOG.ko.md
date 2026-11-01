@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-401: config/layout.yml은 tests/php-ext-persist를 루트 tests의 도구 테스트로 선언한다. tests/make-install과 같다 (S-401)
 - S-399: php-ext mysql persist 실행은 무시되는 출력 var/php-ext 대신 추적되는 compiler와 arginfo 원본을 --inputs로 쓴다 (S-399)
 - S-398: php-ext postgres persist 실행은 무시되는 출력 var/php-ext 대신 추적되는 compiler와 arginfo 원본을 --inputs로 쓴다 (S-398)
 - S-397: make-install 검사는 kit이 checkout을 link하는 install-link 대상을 lock 설치 뒤에서 읽는다 (S-397)
