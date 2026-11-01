@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-403: the kit-owned copies that kit-sync 0.0.86 writes (release.yml, PRINCIPLES.md, PRINCIPLES.ko.md) are committed as kit-sync wrote them (S-403)
 - S-402: every runtime pins the release set: orm 0.0.20, ordered-json 0.0.16, crudui 0.0.10, hyper 0.0.23, template 0.0.17 and kit 0.0.86; the CI workflow is named ci (S-402)
 - S-401: config/layout.yml declares tests/php-ext-persist as a tool test of the root tests, as tests/make-install is declared (S-401)
 - S-399: the php-ext mysql persist run names the tracked compiler and arginfo sources as its inputs, not the ignored var/php-ext output (S-399)

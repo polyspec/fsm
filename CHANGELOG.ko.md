@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-403: kit-sync 0.0.86이 쓰는 kit 소유 복사본(release.yml, PRINCIPLES.md, PRINCIPLES.ko.md)을 kit-sync가 쓴 그대로 커밋했다 (S-403)
 - S-402: 모든 런타임이 릴리스 집합을 고정한다: orm 0.0.20, ordered-json 0.0.16, crudui 0.0.10, hyper 0.0.23, template 0.0.17, kit 0.0.86; CI 워크플로는 ci다 (S-402)
 - S-401: config/layout.yml은 tests/php-ext-persist를 루트 tests의 도구 테스트로 선언한다. tests/make-install과 같다 (S-401)
 - S-399: php-ext mysql persist 실행은 무시되는 출력 var/php-ext 대신 추적되는 compiler와 arginfo 원본을 --inputs로 쓴다 (S-399)
