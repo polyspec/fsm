@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The Rust crate is polyspec-fsm with the lib polyspec_fsm, the name of a polyspec crate (S-407).
+
 ## 0.0.1
 
 - S-406: the Python distribution is polyspec-fsm, as the other polyspec wheels name their product and part; the first release fixes the name (S-406)

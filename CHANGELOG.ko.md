@@ -7,6 +7,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- Rust 크레이트 이름이 polyspec-fsm(lib polyspec_fsm)이다. polyspec 크레이트의 이름이다(S-407).
+
 ## 0.0.1
 
 - S-406: Python 배포 이름은 polyspec-fsm이다. 다른 polyspec wheel처럼 제품과 부분을 이름에 쓰며, 첫 릴리스가 이름을 고정한다 (S-406)
