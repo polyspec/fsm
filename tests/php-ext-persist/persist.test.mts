@@ -46,3 +46,9 @@ test('php-ext persist postgres names only tracked inputs (S-398)', () => {
   assert.ok(inputs.length > 0, 'php-ext-persist-test-postgres names no --inputs');
   assert.deepEqual(untracked(inputs), [], 'php-ext-persist-test-postgres names an input that no tracked file lies under');
 });
+
+test('php-ext persist mysql names only tracked inputs (S-399)', () => {
+  const inputs = inputsOf(recipe('php-ext-persist-test-mysql'));
+  assert.ok(inputs.length > 0, 'php-ext-persist-test-mysql names no --inputs');
+  assert.deepEqual(untracked(inputs), [], 'php-ext-persist-test-mysql names an input that no tracked file lies under');
+});
