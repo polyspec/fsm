@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The polyspec names of the runtimes are checked by one root test, tests/package-names: @polyspec/fsm, polyspec-fsm (Python) and polyspec-fsm (Rust) (S-410).
+
 ## 0.0.1
 
 - S-409: the first version commit moves the Unreleased entries under 0.0.1 and names the six runtimes in the release candidate of 0.0.1 (S-409).

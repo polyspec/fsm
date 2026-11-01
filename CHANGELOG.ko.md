@@ -7,6 +7,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 런타임의 polyspec 이름을 루트 테스트 하나(tests/package-names)가 검사한다: @polyspec/fsm, polyspec-fsm(Python), polyspec-fsm(Rust)(S-410).
+
 ## 0.0.1
 
 - S-409: 첫 버전 커밋이 Unreleased 항목을 0.0.1 아래로 옮기고, 0.0.1의 release candidate가 여섯 runtime을 만든다(S-409).
