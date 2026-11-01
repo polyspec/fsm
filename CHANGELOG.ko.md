@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 0293eee45a0fe09b87879a7c45d227561da00444b7beb4c730bed5a7fa47e65c -->
+<!-- source-sha256: da8ffae78e94666bbf249b3cda5622d700404334aa0379bea9dc0ac0bfd2f0dd -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -9,7 +9,7 @@
 
 ## 0.0.1
 
-- S-411: S-410 항목을 0.0.1 아래로 옮기고 Unreleased를 비운다. 다음 녹색 CI 실행이 0.0.1을 릴리스한다(K988, S-411).
+- S-411: S-410 항목을 0.0.1 아래로 옮기고 Unreleased를 비운다. 다음 녹색 CI 실행이 0.0.1을 릴리스한다(S-411).
 - 런타임의 polyspec 이름을 루트 테스트 하나(tests/package-names)가 검사한다: @polyspec/fsm, polyspec-fsm(Python), polyspec-fsm(Rust)(S-410).
 
 - S-409: 첫 버전 커밋이 Unreleased 항목을 0.0.1 아래로 옮기고, 0.0.1의 release candidate가 여섯 runtime을 만든다(S-409).
