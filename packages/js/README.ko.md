@@ -1,5 +1,5 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: 133e7a7b94067714da81647b80c2a6a89a6da3024e87d9e8ccddc50ea3088af3 -->
+<!-- source-sha256: 02d53d15fe3be9df443d16f1926c0697f54942846fdd49b4e79e49f12f97ce5f -->
 # @polyspec/fsm
 
 [English](README.md)
@@ -8,6 +8,12 @@ fsm의 TS 런타임(`docs/plans/fsm-v1/plan.md`, C-2)이며 @polyspec/fsm으로 
 그 코드를 conformance vector로 검사한다. 생성 코드는 type 선언(`.js`와 `.d.ts`)을 가진 ES module이며
 런타임 의존성이 없다.
 
+
+릴리스는 아카이브의 URL로 설치한다. 릴리스 자산 `polyspec-fsm-0.0.1.tgz`이다:
+
+```sh
+npm install https://github.com/polyspec/fsm/releases/download/v0.0.1/polyspec-fsm-0.0.1.tgz
+```
 ## 프로젝트에 생성
 
 `fsm.config.json`이 store를 지정한 프로젝트 디렉터리를 주고, 패키지의 소스 디렉터리에 쓴다. 생성 파일이 ES module이므로 `package.json`에

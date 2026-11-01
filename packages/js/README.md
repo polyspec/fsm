@@ -7,10 +7,10 @@ The TS runtime of fsm (`docs/plans/fsm-v1/plan.md`, C-2), released as @polyspec/
 fsm definitions: ES modules with type declarations (`.js` and `.d.ts`) and no runtime dependency. Its tests check that code
 against the conformance vectors, and the example shows how it is used.
 
-Install the release by its URL, the archive of the release asset (`@scope/x` is `scope-x-npm-<version>.tgz`):
+Install the release by the URL of its archive, the release asset `polyspec-fsm-0.0.1.tgz`:
 
 ```sh
-npm install https://github.com/polyspec/fsm/releases/download/v0.0.1/scope-fsm-npm-0.0.1.tgz
+npm install https://github.com/polyspec/fsm/releases/download/v0.0.1/polyspec-fsm-0.0.1.tgz
 ```
 
 ## Generate into your project
