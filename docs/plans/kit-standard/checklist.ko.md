@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 4609a6b87a339670835aa181d67e350b7e160bf139d86e675ad95c3c975892dd -->
+<!-- source-sha256: 0b2b6e33b172c5e78ebd134eade152f9aad9fa8a337a0e0d85c01dd59115e2d8 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -188,4 +188,4 @@
 | S-416 | fsm의 모든 manifest와 lock에 crudui 0.0.12, hyper 0.0.25, orm 0.0.21, ordered-json 0.0.18, template 0.0.19를 pin한다 | packages/{db,js,gui}/package.json and locks, packages/go/go.mod and go.sum, packages/python/pyproject.toml and uv.lock, packages/{php,php-ext}/composer.json and locks, packages/rust/Cargo.toml and Cargo.lock | GREEN: `npm ci --dry-run --ignore-scripts --allow-remote=root --prefix packages/gui`, `composer validate --no-check-publish --working-dir=packages/php`, `composer validate --no-check-publish --working-dir=packages/php-ext`, `go -C packages/go mod verify` and `cargo metadata --locked --format-version 1 --manifest-path packages/rust/Cargo.toml` pass | [o] |
 | S-417 | kit 0.0.89를 채택한다: pin하고 그 사본(PRINCIPLES S15 포함)을 동기화한다 | package.json, package-lock.json, PRINCIPLES.md(.ko) | GREEN: `make kit-inject-check` and `make kit-check` pass | [o] |
 | S-418 | fsm 0.0.2 릴리즈 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [o] |
-| S-419 | Kit 0.0.92를 채택하고 deps-rust에서 cargo-downloads-fetch를 뺀다 | Makefile, package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [ ] |
+| S-419 | Kit 0.0.92를 채택하고 deps-rust에서 cargo-downloads-fetch를 뺀다 | Makefile, package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [~] |
