@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The TS runtime is released as @polyspec/fsm 0.0.1, public, with the generated src that prepack builds; the private helpers keep their polyspec names (S-408).
+
 - The Rust crate is polyspec-fsm with the lib polyspec_fsm, the name of a polyspec crate (S-407).
 
 ## 0.0.1
