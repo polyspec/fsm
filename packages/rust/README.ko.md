@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: c1fb7848c6183cc22512ff03857d568a069a9fef09df076804aceff4e4a49dda -->
+<!-- source-sha256: 55bf74dd307c4730ee944f10631a8d70194808666a606dd497aabb359b097ab8 -->
 # polyspec-fsm
 
 [English](README.md)

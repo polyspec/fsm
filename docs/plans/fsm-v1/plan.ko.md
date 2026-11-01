@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 740b57a4532d94d850c20f24c476c21f741fb9bec4e8546606573337fd0ff9ff -->
+<!-- source-sha256: 46c57988402d026119c5d17b233b6374bc07970d8ae9e53fdbd58a6ea8a88fad -->
 # fsm v1 계획
 
 [English](plan.md)

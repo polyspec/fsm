@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 08fa68a9e254797ec66e4264788e840e5db1012e1463598db49fde20af04a791 -->
+<!-- source-sha256: d722c33c5c1a3edc8474a3d672a211e8f4f444fadb43db426de7b96016be06af -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -184,7 +184,7 @@
 | S-412 | fsm에 kit v0.0.87을 채택한다. URL을 고정하고 lock을 갱신하고 kit-sync를 실행하며, 복사본 단계를 가진 워크플로마다 kit-bootstrap action을 쓴다. 릴리스가 아니므로 버전 커밋은 없다. | package.json pins polyspec-kit-0.0.87.tgz and package-lock.json matches it; .github/actions/kit-bootstrap/action.yml is written by kit-sync; each workflow bootstrap copy is uses: ./.github/actions/kit-bootstrap | The first backticked command: `make kit-check` exits 0 in the worktree of this row. | [o] |
 | S-413 | kit 0.0.87 차례의 provider 릴리즈(crudui 0.0.11, hyper 0.0.24, template 0.0.18, ordered-json 0.0.17, orm 0.0.21)를 고정하고 lock을 갱신한 뒤 version commit으로 0.0.2를 릴리즈한다. | `packages/*/package.json`, `packages/*/composer.json`, `packages/python/pyproject.toml`, the locks, `CHANGELOG.md(.ko)`, the manifests of `config/release.json` | Every provider URL names the release of the round; `make kit-check` and the quick owner checks of the changed paths pass; CI of the push is green and releases 0.0.2. | [~] |
 | S-414 | kit 0.0.88을 채택하고 make kit-gates-static이 적는 모든 finding을 고친다: 하나의 CI pipeline(S12), link step 없음(S11), 저장소 밖 manifest 경로 없음(P30) | package.json, package-lock.json, the copies of kit-sync, .github/workflows/ci.yml, config/ci.json | GREEN: `make kit-gates-static` ends with every shared gate passed | [o] |
-| S-415 | plan.md는 runner 문장을 한 번만 적고, 원문과 함께 번역된 AGENTS, plan, python과 rust README의 KO twin에 stamp를 찍는다 | docs/plans/fsm-v1/plan.md(.ko), AGENTS.ko.md, packages/python/README.ko.md, packages/rust/README.ko.md | GREEN: `make documents-stamp` names 0 moved and `make docs-check` passes | [~] |
+| S-415 | plan.md는 runner 문장을 한 번만 적고, 원문과 함께 번역된 AGENTS, plan, python과 rust README의 KO twin에 stamp를 찍는다 | docs/plans/fsm-v1/plan.md(.ko), AGENTS.ko.md, packages/python/README.ko.md, packages/rust/README.ko.md | GREEN: `make documents-stamp` names 0 moved and `make docs-check` passes | [o] |
 | S-416 | fsm의 모든 manifest와 lock에 crudui 0.0.12, hyper 0.0.25, orm 0.0.21, ordered-json 0.0.18, template 0.0.19를 pin한다 | packages/{db,js,gui}/package.json and locks, packages/go/go.mod and go.sum, packages/python/pyproject.toml and uv.lock, packages/{php,php-ext}/composer.json and locks, packages/rust/Cargo.toml and Cargo.lock | GREEN: each lock check of its package manager passes and `make gui-test` passes | [ ] |
 | S-417 | kit 0.0.89를 채택한다: pin하고 그 사본(PRINCIPLES S15 포함)을 동기화한다 | package.json, package-lock.json, PRINCIPLES.md(.ko) | GREEN: `make kit-inject-check` and `make kit-check` pass | [ ] |
 | S-418 | fsm 0.0.2 릴리즈 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [ ] |

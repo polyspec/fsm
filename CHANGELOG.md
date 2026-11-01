@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-415: docs/plans/fsm-v1/plan.md states its runner sentence once, and the KO twins of AGENTS, plan and the python and rust READMEs are stamped (S-415).
 - S-414: fsm adopts kit 0.0.88, whose kit-check judges one CI pipeline (S12), no link step (S11) and no manifest path out of the repository (P30); fsm meets them (S-414).
 - S-412: fsm adopts kit 0.0.87: ci.yml and pages.yml bootstrap with the kit-bootstrap action that kit-sync copies (K992), and a make install that starts on the packed kit follows the linked kit after its link (K993) (S-412).
 
