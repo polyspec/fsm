@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.2
+
+- fsm 0.0.2 pins the providers of the 0.0.88 round in every runtime (S-416) on kit 0.0.89 (S-417) (S-418).
+
 - S-417: fsm adopts kit 0.0.89 and its PRINCIPLES S15, loose coupling, whose kit-check finds no part of fsm reaching another past its interface (S-417).
 - S-416: every manifest and lock of fsm takes the 0.0.88 round: crudui 0.0.12, hyper 0.0.25 and template 0.0.19 in gui, and orm 0.0.21 with ordered-json 0.0.18 in db, js, php, php-ext, python, go and rust (S-416).
 - S-415: docs/plans/fsm-v1/plan.md states its runner sentence once, and the KO twins of AGENTS, plan and the python and rust READMEs are stamped (S-415).
