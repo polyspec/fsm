@@ -1,5 +1,5 @@
 {
-  "name": "@polyspec/fsm",
+  "name": "@polyspec/fsm-root",
   "version": "0.0.0",
   "private": true,
   "description": "The root tools of fsm: the shared tools of polyspec (@polyspec/kit) and the libraries of fsm's own scripts and tests",

@@ -125,6 +125,8 @@ rules:
       - "!packages/js/package-lock.json"
       - "!packages/js/tests/conformance.test.mjs"
       - "!packages/js/tests/persist.test.mjs"
+      # the release test of the TS runtime (S-408): the package is @polyspec/fsm, public, with the generated src that prepack builds
+      - "!packages/js/tests/package.test.mjs"
       - "!packages/js/examples/persist.mjs"
     message: "C-2: a file that the npm package does not allow; add it to its canonical, required or allowed files with its reason"
 

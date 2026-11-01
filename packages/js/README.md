@@ -1,11 +1,17 @@
 <!-- doc-id: readme-npm -->
-# @polyspec/fsm-npm
+# @polyspec/fsm
 
 [한국어](README.ko.md)
 
-The npm consumer of fsm (`docs/plans/fsm-v1/plan.md`, C-2). The package is private and is a test bed: it is not published. It
-shows how the generated npm code of a fsm definition is used, and it checks that code against the conformance vectors. The
-generated code is ES modules with type declarations (`.js` and `.d.ts`) and has no runtime dependency.
+The TS runtime of fsm (`docs/plans/fsm-v1/plan.md`, C-2), released as @polyspec/fsm. The package holds the generated code of the
+fsm definitions: ES modules with type declarations (`.js` and `.d.ts`) and no runtime dependency. Its tests check that code
+against the conformance vectors, and the example shows how it is used.
+
+Install the release by its URL, the archive of the release asset (`@scope/x` is `scope-x-npm-<version>.tgz`):
+
+```sh
+npm install https://github.com/polyspec/fsm/releases/download/v0.0.1/scope-fsm-npm-0.0.1.tgz
+```
 
 ## Generate into your project
 

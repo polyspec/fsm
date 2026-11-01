@@ -1,11 +1,11 @@
 <!-- doc-id: readme-npm -->
 <!-- source-sha256: 133e7a7b94067714da81647b80c2a6a89a6da3024e87d9e8ccddc50ea3088af3 -->
-# @polyspec/fsm-npm
+# @polyspec/fsm
 
 [English](README.md)
 
-fsm의 npm 소비자(`docs/plans/fsm-v1/plan.md`, C-2)다. 패키지는 비공개이며 test bed이고 공개하지 않는다. fsm 정의로부터 생성한 npm 코드를
-어떻게 쓰는지 보여주고, 그 코드를 conformance vector로 검사한다. 생성 코드는 type 선언(`.js`와 `.d.ts`)을 가진 ES module이며
+fsm의 TS 런타임(`docs/plans/fsm-v1/plan.md`, C-2)이며 @polyspec/fsm으로 릴리스한다. 패키지는 fsm 정의로부터 생성한 코드를 담고,
+그 코드를 conformance vector로 검사한다. 생성 코드는 type 선언(`.js`와 `.d.ts`)을 가진 ES module이며
 런타임 의존성이 없다.
 
 ## 프로젝트에 생성

@@ -1,8 +1,19 @@
 {
-  "name": "@polyspec/fsm-npm",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@polyspec/fsm",
+  "version": "0.0.1",
   "description": "npm consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./*": "./src/*"
+  },
+  "types": "./src/index.d.ts",
+  "main": "./src/index.js",
+  "files": [
+    "src"
+  ],
   "type": "module",
   "license": "MIT",
   "engines": {
@@ -15,5 +26,8 @@
   },
   "overrides": {
     "@polyspec/ordered-json": "$@polyspec/ordered-json"
+  },
+  "scripts": {
+    "prepack": "node ../compiler/src/cli/fsm-gen.mjs gen --project ../../contracts --kind npm --out src"
   }
 }
