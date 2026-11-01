@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c52721ad42a150ff4be798bbfc6e42633b03da40d6cd598a1b39162bc67ab38c -->
+<!-- source-sha256: 2c0d45ac734f12b64c789c46e41c021db5a0bd905c644752a53e523d2c0a5b5f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-417: fsm은 kit 0.0.89와 그 PRINCIPLES S15 느슨한 결합을 채택하며, 그 kit-check는 인터페이스를 넘어 다른 part에 닿는 fsm의 곳을 찾지 않습니다 (S-417).
 - S-416: fsm의 모든 manifest와 lock이 0.0.88 라운드를 받습니다: gui에는 crudui 0.0.12, hyper 0.0.25, template 0.0.19, db, js, php, php-ext, python, go, rust에는 orm 0.0.21과 ordered-json 0.0.18 (S-416).
 - S-415: docs/plans/fsm-v1/plan.md는 runner 문장을 한 번만 적고, AGENTS, plan, python과 rust README의 KO twin에 stamp를 찍었습니다(S-415).
 - S-414: fsm이 kit 0.0.88을 채택합니다. kit-check는 하나의 CI pipeline(S12), link step 없음(S11), 저장소 밖 manifest 경로 없음(P30)을 판단하며 fsm은 이를 지킵니다(S-414).
