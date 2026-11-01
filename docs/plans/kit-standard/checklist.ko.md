@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: a9a70d0148c2fe6ced47d21a7c62203f735f3448949ad2ab2a0a7a0b4b2a51d0 -->
+<!-- source-sha256: 41844ba47650bb527347560645d6e8ee62cc8ebbb09b0b310d7aed25cba25acf -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -187,4 +187,4 @@
 | S-415 | plan.md는 runner 문장을 한 번만 적고, 원문과 함께 번역된 AGENTS, plan, python과 rust README의 KO twin에 stamp를 찍는다 | docs/plans/fsm-v1/plan.md(.ko), AGENTS.ko.md, packages/python/README.ko.md, packages/rust/README.ko.md | GREEN: `make documents-stamp` names 0 moved and `make docs-check` passes | [o] |
 | S-416 | fsm의 모든 manifest와 lock에 crudui 0.0.12, hyper 0.0.25, orm 0.0.21, ordered-json 0.0.18, template 0.0.19를 pin한다 | packages/{db,js,gui}/package.json and locks, packages/go/go.mod and go.sum, packages/python/pyproject.toml and uv.lock, packages/{php,php-ext}/composer.json and locks, packages/rust/Cargo.toml and Cargo.lock | GREEN: `npm ci --dry-run --ignore-scripts --allow-remote=root --prefix packages/gui`, `composer validate --no-check-publish --working-dir=packages/php`, `composer validate --no-check-publish --working-dir=packages/php-ext`, `go -C packages/go mod verify` and `cargo metadata --locked --format-version 1 --manifest-path packages/rust/Cargo.toml` pass | [o] |
 | S-417 | kit 0.0.89를 채택한다: pin하고 그 사본(PRINCIPLES S15 포함)을 동기화한다 | package.json, package-lock.json, PRINCIPLES.md(.ko) | GREEN: `make kit-inject-check` and `make kit-check` pass | [o] |
-| S-418 | fsm 0.0.2 릴리즈 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [ ] |
+| S-418 | fsm 0.0.2 릴리즈 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [~] |
