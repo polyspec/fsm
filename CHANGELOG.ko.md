@@ -9,6 +9,7 @@
 
 ## 0.0.1
 
+- S-409: 첫 버전 커밋이 Unreleased 항목을 0.0.1 아래로 옮기고, 0.0.1의 release candidate가 여섯 runtime을 만든다(S-409).
 - TS 런타임이 @polyspec/fsm 0.0.1로 릴리스된다. 공개 패키지이며 prepack이 생성한 src를 담는다. 비공개 helper는 polyspec 이름을 유지한다(S-408).
 - Rust 크레이트 이름이 polyspec-fsm(lib polyspec_fsm)이다. polyspec 크레이트의 이름이다(S-407).
 

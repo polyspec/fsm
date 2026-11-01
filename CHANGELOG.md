@@ -8,6 +8,7 @@
 
 ## 0.0.1
 
+- S-409: the first version commit moves the Unreleased entries under 0.0.1 and names the six runtimes in the release candidate of 0.0.1 (S-409).
 - The TS runtime is released as @polyspec/fsm 0.0.1, public, with the generated src that prepack builds; the private helpers keep their polyspec names (S-408).
 - The Rust crate is polyspec-fsm with the lib polyspec_fsm, the name of a polyspec crate (S-407).
 
