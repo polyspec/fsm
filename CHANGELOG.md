@@ -6,9 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- The polyspec names of the runtimes are checked by one root test, tests/package-names: @polyspec/fsm, polyspec-fsm (Python) and polyspec-fsm (Rust) (S-410).
-
 ## 0.0.1
+
+- S-411: the S-410 line moves under 0.0.1 and Unreleased is empty, so the next green CI run releases 0.0.1 (K988, S-411).
+- The polyspec names of the runtimes are checked by one root test, tests/package-names: @polyspec/fsm, polyspec-fsm (Python) and polyspec-fsm (Rust) (S-410).
 
 - S-409: the first version commit moves the Unreleased entries under 0.0.1 and names the six runtimes in the release candidate of 0.0.1 (S-409).
 - The TS runtime is released as @polyspec/fsm 0.0.1, public, with the generated src that prepack builds; the private helpers keep their polyspec names (S-408).

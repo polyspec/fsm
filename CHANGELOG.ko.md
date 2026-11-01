@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b0caae1625ab45db710253c4ce022f624755e1de9913d50660d78e34848f1b6c -->
+<!-- source-sha256: 0293eee45a0fe09b87879a7c45d227561da00444b7beb4c730bed5a7fa47e65c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,9 +7,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- 런타임의 polyspec 이름을 루트 테스트 하나(tests/package-names)가 검사한다: @polyspec/fsm, polyspec-fsm(Python), polyspec-fsm(Rust)(S-410).
-
 ## 0.0.1
+
+- S-411: S-410 항목을 0.0.1 아래로 옮기고 Unreleased를 비운다. 다음 녹색 CI 실행이 0.0.1을 릴리스한다(K988, S-411).
+- 런타임의 polyspec 이름을 루트 테스트 하나(tests/package-names)가 검사한다: @polyspec/fsm, polyspec-fsm(Python), polyspec-fsm(Rust)(S-410).
 
 - S-409: 첫 버전 커밋이 Unreleased 항목을 0.0.1 아래로 옮기고, 0.0.1의 release candidate가 여섯 runtime을 만든다(S-409).
 - TS 런타임이 @polyspec/fsm 0.0.1로 릴리스된다. 공개 패키지이며 prepack이 생성한 src를 담는다. 비공개 helper는 polyspec 이름을 유지한다(S-408).
