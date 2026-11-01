@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: da8ffae78e94666bbf249b3cda5622d700404334aa0379bea9dc0ac0bfd2f0dd -->
+<!-- source-sha256: d350ce796e625f5b5ec5353627555635f6e743c54888f43b1ba9e88da5f33fd7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-412: fsm은 kit 0.0.87을 채택한다. ci.yml과 pages.yml은 kit-sync가 복사하는 kit-bootstrap action으로 bootstrap하고(K992), pack된 kit으로 시작한 make install은 link 뒤에 link된 kit을 따른다(K993)(S-412).
 
 ## 0.0.1
 

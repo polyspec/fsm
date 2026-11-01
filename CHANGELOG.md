@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-412: fsm adopts kit 0.0.87: ci.yml and pages.yml bootstrap with the kit-bootstrap action that kit-sync copies (K992), and a make install that starts on the packed kit follows the linked kit after its link (K993) (S-412).
+
 ## 0.0.1
 
 - S-411: the S-410 line moves under 0.0.1 and Unreleased is empty, so the next green CI run releases 0.0.1 (S-411).

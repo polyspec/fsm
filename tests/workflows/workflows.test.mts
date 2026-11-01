@@ -37,6 +37,8 @@ const WORKFLOWS = readdirSync(path.join(ROOT, '.github/workflows')).filter(name 
   .filter(file => !VENDORED.includes(file));
 const CI = read('.github/workflows/ci.yml');
 const PAGES = read('.github/workflows/pages.yml');
+// The bootstrap of every job is the kit-bootstrap action that kit vendors (K992); the jobs use it by its uses line.
+const USES_KIT = 'uses: ./.github/actions/kit-bootstrap';
 const PLAN = read('docs/plans/fsm-v1/plan.md');
 // The PHP minors of config/toolchain.json, the implementations of config/parity.json and the tools of mise.toml.
 const PHP: unknown = field(JSON.parse(read('config/toolchain.json')), 'php', 'config/toolchain.json');
@@ -134,13 +136,9 @@ test('the parity setup generates the npm sources and the db models (S-393)', () 
   assert.ok(setup.parity.includes('fsm-db-gen'), 'setup.parity does not run fsm-db-gen');
 });
 
-// The check job bootstraps the installed kit with the npm of devEngines, run from RUNNER_TEMP with --prefix (S-394, K938-1): the npm of the
-// runner refuses the devEngines of the checkout (EBADDEVENGINES, run 41249402504).
-test('the check job bootstraps the installed kit from RUNNER_TEMP with the devEngines npm (S-394)', () => {
-  const bootstrap = step(stepsOf(CHECK_JOB), 'bootstrap the installed kit package');
-  assert.match(bootstrap, /RUNNER_TEMP/, 'the bootstrap does not run from RUNNER_TEMP');
-  assert.match(bootstrap, /devEngines\.packageManager\.version/, 'the bootstrap reads packageManager, not devEngines');
-  assert.doesNotMatch(bootstrap, /packageManager\.split/, 'the bootstrap still reads packageManager');
+// The check job runs the kit-bootstrap action of kit (K992): the action vendored by kit-sync holds its steps, so this test reads the uses line only.
+test('the check job runs the kit-bootstrap action (K992)', () => {
+  assert.ok(CHECK_JOB.includes(USES_KIT), 'the check job does not run the kit-bootstrap action');
 });
 
 test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the ci-pipeline and release workflows that kit vendors', () => {
@@ -183,12 +181,11 @@ test('every uses: is pinned to a full commit with the version comment of the ver
 });
 
 test('the check job installs kit, then runs make install, the playwright dependencies, make hooks and make ci-targets, and no other make target', () => {
-  assert.deepEqual(makeTargets(CHECK_JOB), ['install-tools', 'install-packages', 'install', 'hooks', 'ci-targets', 'ci-targets']);
+  assert.deepEqual(makeTargets(CHECK_JOB), ['install', 'hooks', 'ci-targets', 'ci-targets']);
   // hooks-check needs core.hooksPath, which make hooks sets in the clone, so make hooks runs before the check of the hooks (S-378).
   const hooks = CHECK_JOB.indexOf('make hooks\n');
   const hooksCheck = CHECK_JOB.indexOf('TARGETS="hooks-check"');
   assert.ok(hooks > 0 && hooksCheck > hooks, 'the order must be make hooks, then make ci-targets TARGETS="hooks-check"');
-  assert.match(CHECK_JOB, /make install-tools TOOLS=npm\n\s+make install-packages\n/, 'the check job installs the npm of packageManager and then @polyspec/kit (S-44)');
   const install = CHECK_JOB.indexOf('make install\n');
   const deps = CHECK_JOB.indexOf('install-deps chromium');
   const check = CHECK_JOB.indexOf('make ci-targets');
@@ -199,7 +196,8 @@ test('the check job installs kit, then runs make install, the playwright depende
 });
 
 test('the pages job installs kit and then runs make docs-build only', () => {
-  assert.deepEqual(makeTargets(PAGES_JOB), ['install-tools', 'install-packages', 'docs-build']);
+  assert.ok(PAGES_JOB.includes(USES_KIT), 'the pages job does not run the kit-bootstrap action');
+  assert.deepEqual(makeTargets(PAGES_JOB), ['docs-build']);
 });
 
 test('the services and env of the check job are the lines of plan C-6, copied exactly', () => {
@@ -212,7 +210,7 @@ test('the services and env of the check job are the lines of plan C-6, copied ex
 
 test('the node, go, php and rust versions come from the files that declare them', () => {
   // Node.js is a tool of mise.toml (kit K171): setup-node reads it only for the node that starts the bootstrap.
-  assert.match(CHECK_JOB, /\n {10}node-version-file: mise\.toml\n/);
+  assert.ok(CHECK_JOB.includes(USES_KIT), 'the check job does not run the kit-bootstrap action');
   assert.doesNotMatch(CHECK_JOB, /node-version: /);
   assert.match(text(miseTool('node'), 'node of mise.toml'), /^\d+\.\d+\.\d+$/);
 
