@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-398: the php-ext postgres persist run names the tracked compiler and arginfo sources as its inputs, not the ignored var/php-ext output (S-398)
 - S-397: the make-install case of fsm-python-install reads the install-link target that kit names for linking the checkouts, after the lock install (S-397)
 - S-400: test_persist imports test_conformance from its tests package, relatively, and by name when run as a top-level module, so it loads whether run by its path or by discover (S-400)
 - S-396: python-tools-test names only repository files as its inputs; scripts/kit/kit-bootstrap.mk, which the kit package provides, is no input (S-396)

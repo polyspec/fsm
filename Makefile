@@ -483,7 +483,7 @@ php-persist-test-mysql: $(PHP_DEP) fsm-php-gen
 
 php-ext-persist-test-postgres: $(PHP_EXT_DEP) fsm-php-gen build-php-ext
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php --results .results/php-ext-persist-test-postgres.json --inputs packages/php --inputs var/php-ext --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php --results .results/php-ext-persist-test-postgres.json --inputs packages/php --inputs packages/compiler/src --inputs scripts/php-ext-arginfo.mts --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
 php-ext-persist-test-mysql: $(PHP_EXT_DEP) fsm-php-gen build-php-ext
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
