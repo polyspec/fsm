@@ -1,6 +1,6 @@
 <!-- doc-id: readme-rust -->
 <!-- source-sha256: c1fb7848c6183cc22512ff03857d568a069a9fef09df076804aceff4e4a49dda -->
-# fsm-rust
+# polyspec-fsm
 
 [English](README.md)
 
@@ -66,7 +66,7 @@ module `order`의 함수(`src/order.rs`):
 
 ```rust
 /// The decide function of a persist case: the machine's step on the stored code.
-fn decide(case: &Value) -> impl Fn(i64) -> Result<(i32, bool), fsm_rust::fsm::Error> {
+fn decide(case: &Value) -> impl Fn(i64) -> Result<(i32, bool), polyspec_fsm::fsm::Error> {
     let expected = state(&case["expected"]);
     let event = event(&case["event"]);
     move |stored| {

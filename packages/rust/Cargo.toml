@@ -1,5 +1,5 @@
 [package]
-name = "fsm-rust"
+name = "polyspec-fsm"
 version = "0.0.1"
 edition = "2021"
 rust-version = "1.99.0"
@@ -36,6 +36,11 @@ harness = false
 [[test]]
 name = "persist"
 path = "tests/persist.rs"
+
+# tests/package_name.rs holds the name test of the crate (S-407): every polyspec crate names its product, polyspec-<product>.
+[[test]]
+name = "package_name"
+path = "tests/package_name.rs"
 
 # The orm pins of docs/plans/fsm-v1/plan.md, C-1: the model generator runs in build.rs, the runtime is used by the persist example.
 [build-dependencies]

@@ -12,7 +12,7 @@ mod persist;
 // FSM-B4-5: every apply case of the vector file gives the result of the B-4 table.
 mod vectors;
 
-use fsm_rust::fsm::{Code, Error};
+use polyspec_fsm::fsm::{Code, Error};
 use common::{persist_dsn, scratch_directory, server_cases};
 use std::fmt::Debug;
 

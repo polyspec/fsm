@@ -9,7 +9,7 @@ polyspec_orm::models!();
 
 use model::Item;
 use polyspec_orm::{Config, Db};
-use fsm_rust::fsm::Error;
+use polyspec_fsm::fsm::Error;
 
 /// Why one attempt failed inside its transaction: a database error, or the machine's error, which rolls the transaction back.
 #[derive(Debug)]

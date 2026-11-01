@@ -9,8 +9,8 @@ mod common;
 mod persist;
 
 use common::{persist_dsn, scratch_directory, server_cases, Scratch};
-use fsm_rust::fsm::{Code, Error};
-use fsm_rust::order::{self, Event, State};
+use polyspec_fsm::fsm::{Code, Error};
+use polyspec_fsm::order::{self, Event, State};
 use polyspec_orm::Db;
 use std::sync::MutexGuard;
 

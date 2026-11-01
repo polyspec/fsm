@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-# fsm-rust
+# polyspec-fsm
 
 [한국어](README.ko.md)
 
@@ -66,7 +66,7 @@ cases pass to `check_persist` (`machine` is the module of the machine, `order` f
 
 ```rust
 /// The decide function of a persist case: the machine's step on the stored code.
-fn decide(case: &Value) -> impl Fn(i64) -> Result<(i32, bool), fsm_rust::fsm::Error> {
+fn decide(case: &Value) -> impl Fn(i64) -> Result<(i32, bool), polyspec_fsm::fsm::Error> {
     let expected = state(&case["expected"]);
     let event = event(&case["event"]);
     move |stored| {

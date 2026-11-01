@@ -2,7 +2,7 @@
 // when the test runs; a case is one trial named vectors::<feature>__<id>, run through the adapter of its machine.
 
 use crate::{check_persist, check_result, check_slice, check_value, Expected};
-use fsm_rust::fsm::Code;
+use polyspec_fsm::fsm::Code;
 use libtest_mimic::Trial;
 use serde_json::Value;
 use std::path::PathBuf;
@@ -131,7 +131,7 @@ macro_rules! adapter {
     ($module:ident, states: { $($skey:literal => $state:ident),* $(,)? }, events: { $($ekey:literal => $event:ident),+ $(,)? }) => {
         mod $module {
             use super::*;
-            use fsm_rust::$module::{self as machine, Event, State, Step};
+            use polyspec_fsm::$module::{self as machine, Event, State, Step};
 
             state_lookup!($module, $($skey => $state),*);
 
@@ -143,7 +143,7 @@ macro_rules! adapter {
             }
 
             /// The state argument of a case: what from_code gives its raw code, or the state of its key.
-            fn argument(case: &Value, key: &str, raw: &str) -> Result<State, fsm_rust::fsm::Error> {
+            fn argument(case: &Value, key: &str, raw: &str) -> Result<State, polyspec_fsm::fsm::Error> {
                 match case.get(raw) {
                     Some(value) => machine::from_code(raw_of(value)),
                     None => Ok(state(&case[key])),
@@ -151,7 +151,7 @@ macro_rules! adapter {
             }
 
             /// The decide function of a persist case: the machine's step on the stored code.
-            fn decide(case: &Value) -> impl Fn(i64) -> Result<(i32, bool), fsm_rust::fsm::Error> {
+            fn decide(case: &Value) -> impl Fn(i64) -> Result<(i32, bool), polyspec_fsm::fsm::Error> {
                 let expected = state(&case["expected"]);
                 let event = event(&case["event"]);
                 move |stored| {
@@ -206,7 +206,7 @@ macro_rules! adapter {
     ($module:ident, states: { $($skey:literal => $state:ident),* $(,)? }, events: {}) => {
         mod $module {
             use super::*;
-            use fsm_rust::$module::{self as machine, Event, State};
+            use polyspec_fsm::$module::{self as machine, Event, State};
 
             state_lookup!($module, $($skey => $state),*);
 

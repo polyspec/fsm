@@ -207,6 +207,8 @@ rules:
       - "!packages/rust/tests/conformance/main.rs"
       - "!packages/rust/tests/conformance/vectors.rs"
       - "!packages/rust/tests/persist.rs"
+      # the name test of the crate (S-407): every polyspec crate names its product, polyspec-<product>, and the first release fixes it
+      - "!packages/rust/tests/package_name.rs"
       # the dialect of the persist tests, the shared module of the test crates tests/conformance/ and tests/persist.rs (S-44-9)
       - "!packages/rust/tests/common/mod.rs"
       - "!packages/rust/examples/persist.rs"
