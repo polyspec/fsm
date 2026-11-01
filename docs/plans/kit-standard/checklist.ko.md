@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 04eec80997596c019b666098cddd956feecfb9bf5595a80c9c2ac5bd145ed276 -->
+<!-- source-sha256: eb481a92c1a63974db62df58ece1cf011391458fb97a4043d2bba1086f3002a1 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -170,3 +170,4 @@
 | S-398 | CI의 php-ext-persist-test-postgres가 persist 단계에서 실패한다 (run 41250601308). | the php-ext postgres persist failure is fixed at its cause, found by local reproduction | RED: `node --test --test-name-pattern="php-ext persist postgres" tests/php-ext-persist/persist.test.mts` exits 2 locally. GREEN: `node --test --test-name-pattern="php-ext persist postgres" tests/php-ext-persist/persist.test.mts` exits 0 locally. | [o] |
 | S-399 | CI의 php-ext-persist-test-mysql이 persist 단계에서 실패한다 (run 41250601308). | the php-ext mysql persist failure is fixed at its cause, found by local reproduction | RED: `node --test --test-name-pattern="php-ext persist mysql" tests/php-ext-persist/persist.test.mts` exits 2 locally. GREEN: `node --test --test-name-pattern="php-ext persist mysql" tests/php-ext-persist/persist.test.mts` exits 0 locally. | [o] |
 | S-400 | S-395로 tests 폴더가 패키지가 된 뒤, 파일 경로로 실행하면 test_persist가 test_conformance를 import하지 못한다. | packages/python/tests/test_persist.py puts its own folder on sys.path before importing test_conformance; the owner test runs the file by path | RED: `packages/python/.venv/bin/python -m unittest packages/python/tests/test_persist.py` exits 1 with ModuleNotFoundError test_conformance. GREEN: the same command exits 0 locally, and the python vectors pass on CI. | [o] |
+| S-401 | S-398과 S-399의 php-ext persist 테스트 폴더가 루트 tests에 있어 layout-check(S7)가 CI에서 거부한다. | config/layout.yml declares tests/php-ext-persist as a tool test, as tests/make-install is declared; layout-check passes | RED: CI run 41259806461 fails layout-check with "tests/php-ext-persist: error: layout-root-tests: S7". GREEN: make layout-check exits 0 in a full worktree install. | [ ] |
