@@ -54,7 +54,7 @@ pub async fn seed(db: &Db, id: i64, code: i32) -> polyspec_orm::Result<()> {
 
 /// The status code stored in the row `id`.
 pub async fn status_of(db: &Db, id: i64) -> polyspec_orm::Result<i32> {
-    Item::new().connect(db).id(id).get().await?.get_status()
+    Item::new().connect(db).id(id).get().await?.expect("the row of the id is seeded").get_status()
 }
 
 /// One transition on the row `id` (docs/spec/fsm.md, B-4). `decide` receives the code that the row holds and returns the code of
@@ -81,7 +81,7 @@ pub async fn transition_with_fault(
     let outcome = db
         .transaction(async || {
             fault()?;
-            let row = Item::new().connect(db).id(id).for_update().get().await?;
+            let row = Item::new().connect(db).id(id).for_update().get().await?.expect("the row of the id is seeded");
             let step = decide(i64::from(row.get_status()?));
             if let Ok((to, true)) = step {
                 row.set_status(to).update(false).await?;

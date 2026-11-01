@@ -127,7 +127,7 @@ pub async fn transition_with_fault(
     let outcome = db
         .transaction(async || {
             fault()?;
-            let row = Item::new().connect(db).id(id).for_update().get().await?;
+            let row = Item::new().connect(db).id(id).for_update().get().await?.expect("the row of the id is seeded");
             let step = decide(i64::from(row.get_status()?));
             if let Ok((to, true)) = step {
                 row.set_status(to).update(false).await?;
