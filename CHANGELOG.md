@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-416: every manifest and lock of fsm takes the 0.0.88 round: crudui 0.0.12, hyper 0.0.25 and template 0.0.19 in gui, and orm 0.0.21 with ordered-json 0.0.18 in db, js, php, php-ext, python, go and rust (S-416).
 - S-415: docs/plans/fsm-v1/plan.md states its runner sentence once, and the KO twins of AGENTS, plan and the python and rust READMEs are stamped (S-415).
 - S-414: fsm adopts kit 0.0.88, whose kit-check judges one CI pipeline (S12), no link step (S11) and no manifest path out of the repository (P30); fsm meets them (S-414).
 - S-412: fsm adopts kit 0.0.87: ci.yml and pages.yml bootstrap with the kit-bootstrap action that kit-sync copies (K992), and a make install that starts on the packed kit follows the linked kit after its link (K993) (S-412).

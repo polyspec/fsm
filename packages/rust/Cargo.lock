@@ -1216,8 +1216,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-ordered-json"
-version = "0.0.16"
-source = "git+https://github.com/polyspec/ordered-json.git?tag=v0.0.16#a8372a309a277daa4974b1d35939e67fcf2921c8"
+version = "0.0.18"
+source = "git+https://github.com/polyspec/ordered-json.git?tag=v0.0.18#beee7f4de0b0abec25508dd78945e531552bc761"
 dependencies = [
  "serde",
  "serde_json",
@@ -1225,8 +1225,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm"
-version = "0.0.20"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.20#f120f29eab76582fce53620ee5787042eb76de0c"
+version = "0.0.21"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.21#874946330476f1a96c8d2f29dc48da41cb5b3cc0"
 dependencies = [
  "aes-gcm",
  "base64",
@@ -1254,8 +1254,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm-build"
-version = "0.0.20"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.20#f120f29eab76582fce53620ee5787042eb76de0c"
+version = "0.0.21"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.21#874946330476f1a96c8d2f29dc48da41cb5b3cc0"
 dependencies = [
  "polyspec-orm-schema",
  "proc-macro2",
@@ -1268,8 +1268,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm-schema"
-version = "0.0.20"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.20#f120f29eab76582fce53620ee5787042eb76de0c"
+version = "0.0.21"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.21#874946330476f1a96c8d2f29dc48da41cb5b3cc0"
 dependencies = [
  "regex",
  "same-file",

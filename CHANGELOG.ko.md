@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b58ba6d4c13685a660f134a715610a2b85defe95b5cb7d83e0509dd1e4dacb6b -->
+<!-- source-sha256: c52721ad42a150ff4be798bbfc6e42633b03da40d6cd598a1b39162bc67ab38c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-416: fsm의 모든 manifest와 lock이 0.0.88 라운드를 받습니다: gui에는 crudui 0.0.12, hyper 0.0.25, template 0.0.19, db, js, php, php-ext, python, go, rust에는 orm 0.0.21과 ordered-json 0.0.18 (S-416).
 - S-415: docs/plans/fsm-v1/plan.md는 runner 문장을 한 번만 적고, AGENTS, plan, python과 rust README의 KO twin에 stamp를 찍었습니다(S-415).
 - S-414: fsm이 kit 0.0.88을 채택합니다. kit-check는 하나의 CI pipeline(S12), link step 없음(S11), 저장소 밖 manifest 경로 없음(P30)을 판단하며 fsm은 이를 지킵니다(S-414).
 - S-412: fsm은 kit 0.0.87을 채택한다. ci.yml과 pages.yml은 kit-sync가 복사하는 kit-bootstrap action으로 bootstrap하고(K992), pack된 kit으로 시작한 make install은 link 뒤에 link된 kit을 따른다(K993)(S-412).

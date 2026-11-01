@@ -2,12 +2,11 @@ cffi==2.1.1
 cryptography==50.0.2
 deprecation==2.1.0
 packaging==26.3
-polyspec-ordered-json @ https://github.com/polyspec/ordered-json/releases/download/v0.0.16/polyspec_ordered_json-0.0.16-py3-none-any.whl#sha256=c2428b63c31ee845c0b5b28d1fec35c4bf1c738f62f38c7c9c8cd8ce3840f45a
-polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.20/polyspec_orm-0.0.20-py3-none-any.whl#sha256=5df8051ad5191523403c95ceef9966cd97eb4743f6faa990872a8f9bf5e8ae3b
+polyspec-ordered-json @ https://github.com/polyspec/ordered-json/releases/download/v0.0.18/polyspec_ordered_json-0.0.18-py3-none-any.whl#sha256=9884b9d6bf09a4b6db3abc069c0fe4ee3156cf9f153ddbb5c99c90685a2dae4f
+polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.21/polyspec_orm-0.0.21-py3-none-any.whl#sha256=f10a0e06c5dbedb25ce5782bab6cbda33c469029f49eadf0b12867bd707a071b
 psycopg-binary==3.3.6
 psycopg==3.3.6
 pycparser==3.11
 pymysql==1.2.3
-rapidyaml==0.15.2
 ruamel.yaml==0.19.1
 tzdata==2026.5

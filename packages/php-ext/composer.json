@@ -10,7 +10,7 @@
     },
     "require": {
         "php": ">=8.4",
-        "polyspec/orm": "0.0.20"
+        "polyspec/orm": "0.0.21"
     },
     "require-dev": {
         "phpunit/phpunit": "13.4.2"
@@ -18,11 +18,11 @@
     "repositories": [
         {
             "type": "composer",
-            "url": "https://github.com/polyspec/orm/releases/download/v0.0.20/packages.json"
+            "url": "https://github.com/polyspec/orm/releases/download/v0.0.21/packages.json"
         },
         {
             "type": "composer",
-            "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.16/packages.json"
+            "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.18/packages.json"
         },
         {
             "type": "vcs",
