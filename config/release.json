@@ -25,7 +25,10 @@
       "directory": "packages/python",
       "name": "polyspec-fsm-python",
       "product": "fsm",
-      "runtime": "python"
+      "runtime": "python",
+      "generated": [
+        { "kind": "make", "target": "fsm-python-gen", "outputs": ["src/polyspec_fsm", "examples/model"] }
+      ]
     }
   ],
   "manifests": {
