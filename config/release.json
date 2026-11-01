@@ -49,7 +49,8 @@
     "packages/php/composer.json": "archive",
     "packages/php-ext/composer.json": "archive",
     "packages/python/pyproject.toml": "archive",
-    "packages/rust/Cargo.toml": "git-tag"
+    "packages/rust/Cargo.toml": "git-tag",
+    "packages/js/package.json": "archive"
   },
   "notReleased": {
     "package.json": "the private root of the checkout (@polyspec/fsm-root): it holds the scripts of the workspace, and no runtime uses it",
