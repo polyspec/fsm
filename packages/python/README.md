@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-# polyspec-fsm-python
+# polyspec-fsm
 
 [한국어](README.ko.md)
 

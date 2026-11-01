@@ -9,6 +9,7 @@
 
 ## 0.0.1
 
+- S-406: Python 배포 이름은 polyspec-fsm이다. 다른 polyspec wheel처럼 제품과 부분을 이름에 쓰며, 첫 릴리스가 이름을 고정한다 (S-406)
 - S-405: fsm 0.0.1은 첫 버전 커밋이다: config/release.json의 릴리스 매니페스트와 lock이 0.0.1을 가리키고, 변경 기록의 Unreleased를 그 아래로 옮긴다 (S-405)
 - S-404: Rust persist 예제는 orm 0.0.20의 get이 돌려주는 Option을 seed된 row로 풀어낸다 (S-404)
 - S-403: kit-sync 0.0.86이 쓰는 kit 소유 복사본(release.yml, PRINCIPLES.md, PRINCIPLES.ko.md)을 kit-sync가 쓴 그대로 커밋했다 (S-403)
@@ -42,7 +43,7 @@
 - S-377: config/parity.json의 packages/compiler tools 항목 종류를 test:에서 generated:로 바꾼다. compiler는 모든 kind의 코드를 내는 코드 생성기이며 계약 unit을 구현하지 않는다 (S-377)
 - S-378: ci.yml의 job check가 make hooks를 실행한 뒤 make ci-targets TARGETS="hooks-check"를 실행한다. template, hyper, crudui 워크플로와 같으며, S-346이 뺐던 hooks-check가 CI에서 다시 돈다 (S-378)
 - S-376: config/duplication.json이 packages/compiler/tests/golden/**을 더 이상 제외하지 않는다. config/generated.json이 이미 나열하고 kit의 duplication-check가 이미 제외하므로 제외 목록은 비어 있다 (S-376)
-- S-368: config/release.json이 fsm의 릴리스 패키지(composer 패키지 polyspec/fsm과 polyspec/fsm-php-ext, wheel polyspec-fsm-python, git tag로 받는 rust crate, go module)를 선언하므로 kit의 release-tag가 선언된 패키지를 릴리스할 수 있다. 생성 소스는 아직 선언되지 않았다(S-369, S-370, S-371). manifest는 0.0.1이고 polyspec/fsm은 library다 (S-368)
+- S-368: config/release.json이 fsm의 릴리스 패키지(composer 패키지 polyspec/fsm과 polyspec/fsm-php-ext, wheel polyspec-fsm, git tag로 받는 rust crate, go module)를 선언하므로 kit의 release-tag가 선언된 패키지를 릴리스할 수 있다. 생성 소스는 아직 선언되지 않았다(S-369, S-370, S-371). manifest는 0.0.1이고 polyspec/fsm은 library다 (S-368)
 - S-325: kit 0.0.80을 채택한다. ci.yml은 kit의 ci-pipeline.yml을 job kit으로 부르고 job check는 needs: kit으로 그 뒤에 돌며, gates.yml은 지워지고 kit 사본(PRINCIPLES, release.yml)은 0.0.80의 것이다 (S-325)
 - S-365: deps-rust가 kit의 catch check crate도 가져와서 lint-rust의 offline catch check가 이를 찾는다 (S-365)
 - S-361: fsm의 P30 링크 규칙 보충을 삭제한다. kit P30이 이를 다루고 make link-check가 중첩 project를 검사한다 (S-361)

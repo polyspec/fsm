@@ -8,6 +8,7 @@
 
 ## 0.0.1
 
+- S-406: the Python distribution is polyspec-fsm, as the other polyspec wheels name their product and part; the first release fixes the name (S-406)
 - S-405: fsm 0.0.1 is the first version commit: the release manifests and locks of config/release.json name 0.0.1, and the changelogs move Unreleased under it (S-405)
 - S-404: the Rust persist example unwraps the row that orm 0.0.20 get returns as an Option (S-404)
 - S-403: the kit-owned copies that kit-sync 0.0.86 writes (release.yml, PRINCIPLES.md, PRINCIPLES.ko.md) are committed as kit-sync wrote them (S-403)
@@ -41,7 +42,7 @@
 - S-377: the tools entry of packages/compiler in config/parity.json takes the kind generated: instead of test:, since the compiler is the code generator of every kind and implements no contract unit (S-377)
 - S-378: the check job of ci.yml runs make hooks, then make ci-targets TARGETS="hooks-check", as the template, hyper and crudui workflows do, so the hooks-check that S-346 removed runs in CI again (S-378)
 - S-376: config/duplication.json no longer excludes packages/compiler/tests/golden/**, which config/generated.json already lists and kit's duplication-check already drops, so the exclude list is empty (S-376)
-- S-368: config/release.json declares the released packages of fsm (the composer packages polyspec/fsm and polyspec/fsm-php-ext, the wheel polyspec-fsm-python, the rust crate by its git tag and the go module), so kit's release-tag can release the packages it names; their generated sources are not declared yet (S-369, S-370, S-371); the manifests carry version 0.0.1 and polyspec/fsm is a library (S-368)
+- S-368: config/release.json declares the released packages of fsm (the composer packages polyspec/fsm and polyspec/fsm-php-ext, the wheel polyspec-fsm, the rust crate by its git tag and the go module), so kit's release-tag can release the packages it names; their generated sources are not declared yet (S-369, S-370, S-371); the manifests carry version 0.0.1 and polyspec/fsm is a library (S-368)
 - S-325: kit 0.0.80 is adopted: ci.yml calls kit's ci-pipeline.yml as its job kit and its job check follows with needs: kit, gates.yml is removed, and the copies of kit (PRINCIPLES, release.yml) are those of 0.0.80 (S-325)
 - S-365: deps-rust also fetches the crates of kit's catch check (cargo-downloads-fetch), so the offline catch check of lint-rust finds them (S-365)
 - S-361: the fsm P30 refinement of the link rule is deleted, since kit P30 covers it and make link-check checks the nested projects (S-361)

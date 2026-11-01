@@ -253,6 +253,9 @@ rules:
       - "!packages/python/examples/__init__.py"
       # the package of the tests (S-395): an empty package file that unittest needs to discover them, which kit runtime-targets checks on CI
       - "!packages/python/tests/__init__.py"
+      # the vulture whitelist of the python package (S-406): the names that only unittest discovery uses, which vulture cannot see in use
+      - "!packages/python/vulture_whitelist.py"
+      - "!packages/python/tests/test_distribution.py"
     message: "C-2: a file that the python package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-ext-required

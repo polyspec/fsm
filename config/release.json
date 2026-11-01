@@ -23,7 +23,7 @@
     {
       "kind": "wheel",
       "directory": "packages/python",
-      "name": "polyspec-fsm-python",
+      "name": "polyspec-fsm",
       "product": "fsm",
       "runtime": "python",
       "generated": [
