@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 771c8e7f0c646ef0a37f70b37457b854571caef7f3d22107b46baca14075ff36 -->
+<!-- source-sha256: b0caae1625ab45db710253c4ce022f624755e1de9913d50660d78e34848f1b6c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,11 +7,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- TS 런타임이 @polyspec/fsm 0.0.1로 릴리스된다. 공개 패키지이며 prepack이 생성한 src를 담는다. 비공개 helper는 polyspec 이름을 유지한다(S-408).
-
-- Rust 크레이트 이름이 polyspec-fsm(lib polyspec_fsm)이다. polyspec 크레이트의 이름이다(S-407).
-
 ## 0.0.1
+
+- TS 런타임이 @polyspec/fsm 0.0.1로 릴리스된다. 공개 패키지이며 prepack이 생성한 src를 담는다. 비공개 helper는 polyspec 이름을 유지한다(S-408).
+- Rust 크레이트 이름이 polyspec-fsm(lib polyspec_fsm)이다. polyspec 크레이트의 이름이다(S-407).
 
 - S-406: Python 배포 이름은 polyspec-fsm이다. 다른 polyspec wheel처럼 제품과 부분을 이름에 쓰며, 첫 릴리스가 이름을 고정한다 (S-406)
 - S-405: fsm 0.0.1은 첫 버전 커밋이다: config/release.json의 릴리스 매니페스트와 lock이 0.0.1을 가리키고, 변경 기록의 Unreleased를 그 아래로 옮긴다 (S-405)

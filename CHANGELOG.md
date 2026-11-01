@@ -6,11 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- The TS runtime is released as @polyspec/fsm 0.0.1, public, with the generated src that prepack builds; the private helpers keep their polyspec names (S-408).
-
-- The Rust crate is polyspec-fsm with the lib polyspec_fsm, the name of a polyspec crate (S-407).
-
 ## 0.0.1
+
+- The TS runtime is released as @polyspec/fsm 0.0.1, public, with the generated src that prepack builds; the private helpers keep their polyspec names (S-408).
+- The Rust crate is polyspec-fsm with the lib polyspec_fsm, the name of a polyspec crate (S-407).
 
 - S-406: the Python distribution is polyspec-fsm, as the other polyspec wheels name their product and part; the first release fixes the name (S-406)
 - S-405: fsm 0.0.1 is the first version commit: the release manifests and locks of config/release.json name 0.0.1, and the changelogs move Unreleased under it (S-405)
