@@ -1216,18 +1216,17 @@ checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "polyspec-ordered-json"
-version = "0.0.9"
-source = "git+https://github.com/polyspec/ordered-json.git?tag=v0.0.9#c5a48799dd11c86e22c7a3540638fb93326f225c"
+version = "0.0.16"
+source = "git+https://github.com/polyspec/ordered-json.git?tag=v0.0.16#a8372a309a277daa4974b1d35939e67fcf2921c8"
 dependencies = [
  "serde",
- "serde_ignored",
  "serde_json",
 ]
 
 [[package]]
 name = "polyspec-orm"
-version = "0.0.18"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.18#4e304aacffabe20b26366fb1f435313953ec3758"
+version = "0.0.20"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.20#f120f29eab76582fce53620ee5787042eb76de0c"
 dependencies = [
  "aes-gcm",
  "base64",
@@ -1255,8 +1254,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm-build"
-version = "0.0.18"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.18#4e304aacffabe20b26366fb1f435313953ec3758"
+version = "0.0.20"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.20#f120f29eab76582fce53620ee5787042eb76de0c"
 dependencies = [
  "polyspec-orm-schema",
  "proc-macro2",
@@ -1269,8 +1268,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm-schema"
-version = "0.0.18"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.18#4e304aacffabe20b26366fb1f435313953ec3758"
+version = "0.0.20"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.20#f120f29eab76582fce53620ee5787042eb76de0c"
 dependencies = [
  "regex",
  "same-file",
@@ -1647,16 +1646,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.7",
-]
-
-[[package]]
-name = "serde_ignored"
-version = "0.1.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "115dffd5f3853e06e746965a20dcbae6ee747ae30b543d91b0e089668bb07798"
-dependencies = [
- "serde",
- "serde_core",
 ]
 
 [[package]]

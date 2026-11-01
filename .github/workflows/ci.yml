@@ -5,7 +5,7 @@
 # Node.js, Go, Python and uv from mise.toml, which mise installs at the digests of mise.lock: Node.js with make install-tools
 # TOOLS=npm, which the node of setup-node only starts (kit K171), and the others with make install (install-tools, S-44-6). The workflow runs on every push to main and on a manual run (workflow_dispatch). A newer push does
 # not cancel the run of an earlier one.
-name: CI
+name: ci
 
 on:
   push:

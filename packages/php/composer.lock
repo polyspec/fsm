@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c2690a2b263364b91688e52f5703ac6c",
+    "content-hash": "bbe268efaf6cb7855483c66340cf3d2e",
     "packages": [
         {
             "name": "nikic/php-parser",
@@ -65,11 +65,11 @@
         },
         {
             "name": "polyspec/ordered-json",
-            "version": "0.0.14",
+            "version": "0.0.16",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.14/polyspec-ordered-json-php-0.0.14.zip",
-                "shasum": "9c5e7fb57d483ac7931ab4898381a534a7970ea0"
+                "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.16/polyspec-ordered-json-php-0.0.16.zip",
+                "shasum": "e5ebcb33447632bffdc2d4303f51af5086925b6a"
             },
             "require": {
                 "ext-json": "*",
@@ -103,11 +103,11 @@
         },
         {
             "name": "polyspec/orm",
-            "version": "0.0.19",
+            "version": "0.0.20",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/polyspec/orm/releases/download/v0.0.19/polyspec-orm-php-0.0.19.zip",
-                "shasum": "9dad25d11e712697cac5fd2c7bb6fcd61720072e"
+                "url": "https://github.com/polyspec/orm/releases/download/v0.0.20/polyspec-orm-php-0.0.20.zip",
+                "shasum": "59b81187ac304113104b8613693025bd693d9aaa"
             },
             "require": {
                 "composer-runtime-api": "^2.2",
@@ -116,7 +116,7 @@
                 "ext-zlib": "*",
                 "nikic/php-parser": "^5.9.0",
                 "php": ">=8.4",
-                "polyspec/ordered-json": "0.0.14",
+                "polyspec/ordered-json": "0.0.16",
                 "purrphp/yaml": "1.0.0-p1",
                 "symfony/yaml": "^8.1"
             },
@@ -380,16 +380,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v8.1.9",
+            "version": "v8.1.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "6107ee26a25215c3df3af0a3315e56bb4fd0b7db"
+                "reference": "9de4ff9874dd18b738b9f248398c3e36ef15a1d2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/6107ee26a25215c3df3af0a3315e56bb4fd0b7db",
-                "reference": "6107ee26a25215c3df3af0a3315e56bb4fd0b7db",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/9de4ff9874dd18b738b9f248398c3e36ef15a1d2",
+                "reference": "9de4ff9874dd18b738b9f248398c3e36ef15a1d2",
                 "shasum": ""
             },
             "require": {
@@ -432,7 +432,7 @@
             "description": "Loads and dumps YAML files",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/yaml/tree/v8.1.9"
+                "source": "https://github.com/symfony/yaml/tree/v8.1.10"
             },
             "funding": [
                 {
@@ -452,7 +452,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-12T12:37:13+00:00"
+            "time": "2026-10-18T14:56:39+00:00"
         }
     ],
     "packages-dev": [
