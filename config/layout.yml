@@ -41,6 +41,8 @@ rules:
       - "!tests/check-readmes"
       - "!tests/docs-build"
       - "!tests/make-install"
+      # the name tests of the released runtimes (S-410): the manifests of @polyspec/fsm, polyspec-fsm (python) and polyspec-fsm (rust)
+      - "!tests/package-names"
       # the tool test of the php-ext persist recipes of the Makefile (S-398, S-399): it reads the Makefile and tracked files, as the tests above do
       - "!tests/php-ext-persist"
       - "!tests/python-tools"
@@ -125,8 +127,6 @@ rules:
       - "!packages/js/package-lock.json"
       - "!packages/js/tests/conformance.test.mjs"
       - "!packages/js/tests/persist.test.mjs"
-      # the release test of the TS runtime (S-408): the package is @polyspec/fsm, public, with the generated src that prepack builds
-      - "!packages/js/tests/package.test.mjs"
       - "!packages/js/examples/persist.mjs"
     message: "C-2: a file that the npm package does not allow; add it to its canonical, required or allowed files with its reason"
 
@@ -209,8 +209,6 @@ rules:
       - "!packages/rust/tests/conformance/main.rs"
       - "!packages/rust/tests/conformance/vectors.rs"
       - "!packages/rust/tests/persist.rs"
-      # the name test of the crate (S-407): every polyspec crate names its product, polyspec-<product>, and the first release fixes it
-      - "!packages/rust/tests/package_name.rs"
       # the dialect of the persist tests, the shared module of the test crates tests/conformance/ and tests/persist.rs (S-44-9)
       - "!packages/rust/tests/common/mod.rs"
       - "!packages/rust/examples/persist.rs"
@@ -257,9 +255,6 @@ rules:
       - "!packages/python/examples/__init__.py"
       # the package of the tests (S-395): an empty package file that unittest needs to discover them, which kit runtime-targets checks on CI
       - "!packages/python/tests/__init__.py"
-      # the vulture whitelist of the python package (S-406): the names that only unittest discovery uses, which vulture cannot see in use
-      - "!packages/python/vulture_whitelist.py"
-      - "!packages/python/tests/test_distribution.py"
     message: "C-2: a file that the python package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-ext-required

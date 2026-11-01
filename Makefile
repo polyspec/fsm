@@ -277,6 +277,11 @@ check:
 make-install-test:
 	$(RUN_TESTS) node --results .results/make-install-test.json --inputs Makefile --inputs config/parity.json --inputs packages --inputs tests/make-install -- $(or $(TESTS),tests/make-install)
 
+# package-names-test runs the tests of the polyspec names of the released runtimes (tests/package-names, S-410): the TS runtime, the Python
+# wheel and the Rust crate name their packages polyspec-fsm, as the other polyspec packages do.
+package-names-test:
+	$(RUN_TESTS) node --results .results/package-names-test.json --inputs packages/js/package.json --inputs packages/python/pyproject.toml --inputs packages/rust/Cargo.toml --inputs tests/package-names -- $(or $(TESTS),tests/package-names/package-names.test.mts)
+
 # workflows-test runs the tests of the CI and Pages workflows (.github/workflows): every action is pinned to a verified commit,
 # the check job runs make install and make check with the services of plan C-6, and each version comes from the file that
 # declares it (docs/plans/fsm-v1/plan.md, C-10; docs/plans/fsm-v1/checklist.md, S-21). It reads the workflows as text, offline.
