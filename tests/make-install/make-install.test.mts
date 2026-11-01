@@ -307,11 +307,11 @@ test('make check runs make lint-ts (S-44-15)', () => {
 
 // S-356 (S-314, K869): fsm-python-install installs the lock pylock.toml first, and make link links the development checkouts after
 // it. The recipe is read from the Makefile, not run: make -n runs the recursive $(MAKE) lines, which would create the venv.
-test('fsm-python-install installs the lock, then make link links the checkouts (S-314, K869)', () => {
+test('fsm-python-install installs the lock, then make install-link links the checkouts (S-314, K869)', () => {
   const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
   const recipe = makefile.slice(makefile.indexOf('\nfsm-python-install:'), makefile.indexOf('\n# No bytecode'));
   const lock = recipe.search(/\$\(UV\) pip install[^\n]*-r packages\/python\/pylock\.toml/);
-  const link = recipe.indexOf('$(MAKE) link');
+  const link = recipe.indexOf('$(MAKE) install-link');
   assert.ok(lock >= 0, `fsm-python-install does not install the lock pylock.toml:\n${recipe}`);
-  assert.ok(link > lock, `make link does not run after the lock install:\n${recipe}`);
+  assert.ok(link > lock, `make install-link does not run after the lock install:\n${recipe}`);
 });
