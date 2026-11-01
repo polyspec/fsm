@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4990f6fdc5a7ed1c1c439493f5ccedad906bdd6549bffdd5c961192741adfa4f -->
+<!-- source-sha256: 771c8e7f0c646ef0a37f70b37457b854571caef7f3d22107b46baca14075ff36 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.1
+
+- S-405: fsm 0.0.1은 첫 버전 커밋이다: config/release.json의 릴리스 매니페스트와 lock이 0.0.1을 가리키고, 변경 기록의 Unreleased를 그 아래로 옮긴다 (S-405)
 - S-404: Rust persist 예제는 orm 0.0.20의 get이 돌려주는 Option을 seed된 row로 풀어낸다 (S-404)
 - S-403: kit-sync 0.0.86이 쓰는 kit 소유 복사본(release.yml, PRINCIPLES.md, PRINCIPLES.ko.md)을 kit-sync가 쓴 그대로 커밋했다 (S-403)
 - S-402: 모든 런타임이 릴리스 집합을 고정한다: orm 0.0.20, ordered-json 0.0.16, crudui 0.0.10, hyper 0.0.23, template 0.0.17, kit 0.0.86; CI 워크플로는 ci다 (S-402)

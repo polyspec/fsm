@@ -6,6 +6,9 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.1
+
+- S-405: fsm 0.0.1 is the first version commit: the release manifests and locks of config/release.json name 0.0.1, and the changelogs move Unreleased under it (S-405)
 - S-404: the Rust persist example unwraps the row that orm 0.0.20 get returns as an Option (S-404)
 - S-403: the kit-owned copies that kit-sync 0.0.86 writes (release.yml, PRINCIPLES.md, PRINCIPLES.ko.md) are committed as kit-sync wrote them (S-403)
 - S-402: every runtime pins the release set: orm 0.0.20, ordered-json 0.0.16, crudui 0.0.10, hyper 0.0.23, template 0.0.17 and kit 0.0.86; the CI workflow is named ci (S-402)
