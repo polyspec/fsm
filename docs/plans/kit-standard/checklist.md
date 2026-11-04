@@ -188,3 +188,4 @@
 | S-417 | Adopt kit 0.0.89: pin it and sync its copies, PRINCIPLES S15 among them | package.json, package-lock.json, PRINCIPLES.md(.ko) | GREEN: `make kit-inject-check` and `make kit-check` pass | [o] |
 | S-418 | Release fsm 0.0.2 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [o] |
 | S-419 | Adopt Kit 0.0.92 and drop cargo-downloads-fetch from deps-rust | Makefile, package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [o] |
+| S-420 | make install installs the npm projects before the steps that run install-link | `Makefile`, `CHANGELOG.md(.ko)` | `make -n -B fsm-install` lists the packages/gui install before the first install-link | [ ] |
