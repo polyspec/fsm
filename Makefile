@@ -54,7 +54,8 @@ RUST_DEP := var/deps/rust
 DB_DEP := $(call npm_stamp,packages/db)
 GUI_DEP := $(call npm_stamp,packages/gui)
 DOCS_DEP := $(call npm_stamp,docs)
-PACKAGE_DEPS := $(NPM_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP)
+# The npm projects install first: the PHP and Python installs run install-link, which needs every linked project installed.
+PACKAGE_DEPS := $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP)
 
 $(NPM_DEP): packages/js/package-lock.json
 	mkdir -p $(dir $@)

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d4f3b25b240cfd8758ca791cd5587c5138ce5bc5b417df6346202d919d11d322 -->
+<!-- source-sha256: 7e751caea013ba3be74509f83051d1dcc3527e9c37a060083fa3849b9a605ab9 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-420: make install이 install-link를 실행하는 PHP와 Python 설치보다 npm 프로젝트를 먼저 설치해, packages/db와 packages/gui가 설치되지 않은 체크아웃에서도 통과한다 (S-420).
 - S-419: fsm이 Kit 0.0.92를 채택하고, deps-rust는 kit이 Rust catch check와 함께 삭제한 cargo-downloads-fetch를 더 이상 이름하지 않는다 (S-419).
 ## 0.0.2
 

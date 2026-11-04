@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 5b94637b8ac42c05041b1ead7045c03a51582b29c5336fa1164bf0f3e9307aad -->
+<!-- source-sha256: 0213393eeba764b0ba3d582a8f05baf398fd49b228108a700fd7eeae4feb5cb5 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -189,4 +189,4 @@
 | S-417 | kit 0.0.89를 채택한다: pin하고 그 사본(PRINCIPLES S15 포함)을 동기화한다 | package.json, package-lock.json, PRINCIPLES.md(.ko) | GREEN: `make kit-inject-check` and `make kit-check` pass | [o] |
 | S-418 | fsm 0.0.2 릴리즈 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [o] |
 | S-419 | Kit 0.0.92를 채택하고 deps-rust에서 cargo-downloads-fetch를 뺀다 | Makefile, package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [o] |
-| S-420 | make install이 install-link를 실행하는 단계보다 npm 프로젝트를 먼저 설치한다 | `Makefile`, `CHANGELOG.md(.ko)` | `make -n -B fsm-install` lists the packages/gui install before the first install-link | [~] |
+| S-420 | make install이 install-link를 실행하는 단계보다 npm 프로젝트를 먼저 설치한다 | `Makefile`, `CHANGELOG.md(.ko)` | `make -n -B fsm-install` lists the packages/gui install before the first install-link | [o] |

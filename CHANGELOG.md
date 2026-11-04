@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-420: make install installs the npm projects before the PHP and Python installs that run install-link, so it passes on a checkout without packages/db and packages/gui installed (S-420).
 - S-419: fsm adopts Kit 0.0.92, and deps-rust no longer names cargo-downloads-fetch, which kit deleted with the Rust catch check (S-419).
 ## 0.0.2
 
