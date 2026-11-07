@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 950ad9103a55aed2e1ecdf5f976f0f8f50fd917cba3f1892b5059fa87a2a61ad -->
+<!-- source-sha256: 5391156b179f978e6c704afbee2a05d2cbf6baf40ac0c8b3b81f4f7f253c7fa3 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -193,4 +193,4 @@
 | S-421 | 모든 런타임에서 orm 0.0.22 라운드의 제공 라이브러리를 고정한다 | every package manifest and lock, `CHANGELOG.md(.ko)` | `make link-check` passes | [o] |
 | S-422 | fsm 0.0.3을 릴리즈한다 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [o] |
 | S-423 | knip이 gui overrides가 고정하는 php-serialize 의존성을 무시한다 | `config/knip-entries.json`, `CHANGELOG.md(.ko)` | `make lint-ts` passes knip | [o] |
-| S-424 | kit 0.0.98 지원: fsm이 자기 recipe와 설정, kit에서 가져온 파일을 소유한다(kit docs/spec/utilities-and-recipes.md) | `Makefile` (no include of kit; every target that fsm, its CI and its docs run), `.npmrc`, `mise.toml` [settings] and [env], the lint configurations (`.oxlintrc.json`, `knip.jsonc`, `ruff.toml`, `phpcs.xml.dist`, `phpstan.dist.neon`, `.golangci.yml`, `clippy.toml`, `[workspace.lints]` of packages/rust, `[tool.vulture]` of packages/python), `config/layout.kit.yml`, `config/layout.yml`, `config/owner-checks.json`, the workflows and the bootstrap action, `scripts/check-name.mts`, tests, `AGENTS.md(.ko)`, `CHANGELOG.md(.ko)` | `make -n -B install kit-gates-static release-assets` names no include of kit and runs every utility as `$(NODE) $(KIT)/<utility>.$(KIT_EXT)`; `node --test tests/workflows/workflows.test.mts` passes | [~] |
+| S-424 | kit 0.0.98 지원: fsm이 자기 recipe와 설정, kit에서 가져온 파일을 소유한다(kit docs/spec/utilities-and-recipes.md) | `Makefile` (no include of kit; every target that fsm, its CI and its docs run), `.npmrc`, `mise.toml` [settings] and [env], the lint configurations (`.oxlintrc.json`, `knip.jsonc`, `ruff.toml`, `phpcs.xml.dist`, `phpstan.dist.neon`, `.golangci.yml`, `clippy.toml`, `[workspace.lints]` of packages/rust, `[tool.vulture]` of packages/python), `config/layout.kit.yml`, `config/layout.yml`, `config/owner-checks.json`, the workflows and the bootstrap action, `scripts/check-name.mts`, tests, `PRINCIPLES.md(.ko)` (Enforced-by 줄이 fsm의 check를 적는 kit 0.0.98 사본), `.githooks` (fsm의 파일), `.claude/settings.json` 제거, `AGENTS.md(.ko)`, `CHANGELOG.md(.ko)` | `make -n -B install kit-gates-static release-assets` names no include of kit and runs every utility as `$(NODE) $(KIT)/<utility>.$(KIT_EXT)`; `node --test tests/workflows/workflows.test.mts` passes | [~] |

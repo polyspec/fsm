@@ -6,7 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- S-424: fsm owns its recipes for kit 0.0.98: the Makefile includes no recipe of kit and writes every target that fsm, its CI and its hooks run, each running a kit utility with explicit arguments; npm allow-remote is in .npmrc, the mise and uv settings in mise.toml, and each lint tool reads the configuration of fsm (.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, the Cargo lints and [tool.vulture]); the workflows, the bootstrap action and config/layout.kit.yml are files of fsm (S-424).
+- S-424: fsm owns its recipes for kit 0.0.98: the Makefile includes no recipe of kit and writes every target that fsm, its CI and its hooks run, each running a kit utility with explicit arguments; npm allow-remote is in .npmrc, the mise and uv settings in mise.toml, and each lint tool reads the configuration of fsm (.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, the Cargo lints and [tool.vulture]); the workflows, the bootstrap action, config/layout.kit.yml, the Git hooks and PRINCIPLES.md, the 0.0.98 copy of kit whose Enforced-by lines name the checks of fsm, are files of fsm; the Claude Code settings, whose hook kit removed, are removed (S-424).
 
 ## 0.0.3
 

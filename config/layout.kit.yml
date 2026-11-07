@@ -103,7 +103,7 @@ rules:
     message: "S10: the stub of the PHP extension is packages/php-ext/src/polyspec_<repository>.stub.php"
   # S5: the root folders of every monorepo, and the dot folders of Git, GitHub, kit and Claude Code. .mise holds .mise/locks/,
   # the uv lock sidecars that make toolchain-lock writes and mise.lock names: lock data that is tracked with mise.lock (K192).
-  # .claude holds settings.json, the Claude Code settings that kit vendors with the hook of K240.
+  # .claude holds the Claude Code settings of a checkout; fsm tracks none since kit 0.0.98 (K1053, S-424).
   - id: layout-root-folders
     kind: dir_absent
     level: error
