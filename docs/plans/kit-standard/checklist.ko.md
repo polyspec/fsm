@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 49ee15b2dc8823699d06d40b3426697135e84bf02859a5c1cab9c5a9fff62acd -->
+<!-- source-sha256: 21db817512ddfff6943fd65590d17a99b79bb155c4e07d2a0efbd74ba783d817 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -191,3 +191,4 @@
 | S-419 | Kit 0.0.92를 채택하고 deps-rust에서 cargo-downloads-fetch를 뺀다 | Makefile, package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [o] |
 | S-420 | make install이 install-link를 실행하는 단계보다 npm 프로젝트를 먼저 설치한다 | `Makefile`, `CHANGELOG.md(.ko)` | `make -n -B fsm-install` lists the packages/gui install before the first install-link | [o] |
 | S-421 | 모든 런타임에서 orm 0.0.22 라운드의 제공 라이브러리를 고정한다 | every package manifest and lock, `CHANGELOG.md(.ko)` | `make link-check` passes | [o] |
+| S-422 | fsm 0.0.3을 릴리즈한다 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [ ] |
