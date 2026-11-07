@@ -24,6 +24,7 @@
       "paths": [
         "package.json",
         "package-lock.json",
+        ".npmrc",
         "PRINCIPLES.md",
         "PRINCIPLES.ko.md",
         ".editorconfig",
@@ -181,6 +182,7 @@
       "paths": [
         "package.json",
         "package-lock.json",
+        ".npmrc",
         "PRINCIPLES.md",
         "PRINCIPLES.ko.md",
         ".editorconfig",
@@ -300,6 +302,7 @@
     {
       "paths": [
         ".github/workflows/**",
+        ".github/actions/**",
         "tests/workflows/**",
         ".php-version"
       ],
@@ -399,6 +402,50 @@
       "targets": [
         "lint-php-ext",
         "duplication-check"
+      ]
+    },
+    {
+      "paths": [
+        ".oxlintrc.json",
+        "knip.jsonc"
+      ],
+      "targets": [
+        "lint-ts"
+      ]
+    },
+    {
+      "paths": [
+        "ruff.toml",
+        "packages/python/pyproject.toml"
+      ],
+      "targets": [
+        "lint-python"
+      ]
+    },
+    {
+      "paths": [
+        "phpcs.xml.dist",
+        "phpstan.dist.neon"
+      ],
+      "targets": [
+        "lint-php"
+      ]
+    },
+    {
+      "paths": [
+        ".golangci.yml"
+      ],
+      "targets": [
+        "lint-go"
+      ]
+    },
+    {
+      "paths": [
+        "clippy.toml",
+        "packages/rust/Cargo.toml"
+      ],
+      "targets": [
+        "lint-rust"
       ]
     }
   ]

@@ -1,37 +1,376 @@
-# The tools of every run are the releases that the tracked declaration files name: Node.js in mise.toml, which the bootstrap
-# installs into var/tools and recipes start by $(NODE) of kit.mk (kit K171). Each language
-# package item adds the declaration of its toolchain (config/toolchain.json).
-# The shared targets of kit: the gates, the document, owner and commit checks, the toolchains, the layout check and the dependency
-# gate. node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk is the bootstrap of the installed package @polyspec/kit (in dev, a link
-# to the kit checkout; in CI, the 0.0.70 install). It includes the kit.mk of the installed package, which runs its built tools
-# ($(KIT)/<tool>.$(KIT_EXT)), and before the package is installed it runs only make install-tools TOOLS=npm and
-# make install-packages (S-44). The tools read the configuration in config/*.json.
-include node_modules/@polyspec/kit/scripts/kit/kit-bootstrap.mk
-export PATH := $(KIT_TOOLS)/bin:$(PATH)
+# The recipes of fsm. Every target that this repository runs, from its own recipes, its CI workflows, its Git hooks and its
+# documents, is written in this Makefile; kit includes no recipe (kit docs/spec/utilities-and-recipes.md, S-424). A recipe of a
+# shared tool runs a utility of the installed package @polyspec/kit with explicit arguments: node $(KIT)/<utility>.$(KIT_EXT).
+# The utilities read the configuration of fsm in config/*.json.
+#
+# KIT is the folder of those utilities. It is read each time a recipe expands it, so a run follows an npm ci that replaces the
+# package in the middle of it: the sources scripts/kit/*.mts of the kit checkout that node_modules/@polyspec/kit links during
+# 0.0.x development (node strips their types outside node_modules), or the dist/*.mjs of the packed release that npm ci
+# installs. A packed release holds no scripts/kit/run-tests.mts.
+KIT_PACKAGE := node_modules/@polyspec/kit
+kit-linked = $(wildcard $(KIT_PACKAGE)/scripts/kit/run-tests.mts)
+KIT = $(realpath $(KIT_PACKAGE)/$(if $(kit-linked),scripts/kit,dist))
+KIT_EXT = $(if $(kit-linked),mts,mjs)
+# ONLINE marks each recipe that downloads.
+ONLINE ?=
+
+# The tools of every run are the releases that the tracked declaration files name: Node.js and the other tools of mise.toml at
+# the digests of mise.lock, which make install-tools installs into the checkout's own var/tools, a worktree's too. The shims
+# of mise run mise, which reads its folders and the mise.toml of this checkout from the variables below; var/tools/bin (node,
+# npm, mise and the wrappers of the Composer projects) and the shims come first on PATH, and a recipe starts a tool by its
+# absolute path. Each language package item adds the declaration of its toolchain (config/toolchain.json).
+KIT_TOOLS := $(CURDIR)/var/tools
+export MISE_DATA_DIR := $(KIT_TOOLS)/mise
+export MISE_CACHE_DIR := $(KIT_TOOLS)/mise/cache
+export MISE_STATE_DIR := $(KIT_TOOLS)/mise/state
+export MISE_CONFIG_DIR := $(KIT_TOOLS)/mise/config
+export MISE_GLOBAL_CONFIG_FILE := $(CURDIR)/mise.toml
+# mise install records the trust of the root of the global config, the home folder unless this names the checkout.
+export MISE_GLOBAL_CONFIG_ROOT := $(CURDIR)
+MISE_ENVIRONMENT := MISE_DATA_DIR MISE_CACHE_DIR MISE_STATE_DIR MISE_CONFIG_DIR MISE_GLOBAL_CONFIG_FILE MISE_GLOBAL_CONFIG_ROOT
+export PATH := $(KIT_TOOLS)/bin:$(KIT_TOOLS)/mise/shims:$(PATH)
+NODE := $(KIT_TOOLS)/bin/node
+NPM := $(KIT_TOOLS)/bin/npm
+ALINT := $(KIT_TOOLS)/mise/shims/alint
 
 # The test runner of kit: every test target runs its tool through it (AGENTS.md, Rules).
-RUN_TESTS := node $(KIT)/run-tests.$(KIT_EXT)
+RUN_TESTS = node $(KIT)/run-tests.$(KIT_EXT)
 
-# The targets of the full suite that make check runs through the guard of kit's full-run. Each checklist item appends the
-# targets that it defines (docs/plans/fsm-v1/plan.md, Verification).
+# ---- Tools and packages ----------------------------------------------------------------------------------------------
+# The bootstrap order of a checkout: the mise, node and npm of mise.toml (install-tools TOOLS=npm), the packages of
+# package-lock.json with that npm, @polyspec/kit included (install-packages), every other tool of mise.toml (install-tools), and
+# the declared symbol extractors of config/toolchain.json (kit-install-declared). install-kit runs them in that order; make
+# install adds the package dependencies of fsm and then the links. Each of them downloads, so it runs ONLINE.
+.PHONY: install-kit install-tools install-packages install-link kit-install-declared kit-install-symbols toolchain-lock
+install-kit:
+	$(MAKE) --no-print-directory install-tools TOOLS=npm
+	$(MAKE) --no-print-directory install-packages
+	$(MAKE) --no-print-directory install-tools
+	$(MAKE) --no-print-directory kit-install-declared
+
+# TOOLS=npm runs the bootstrap of kit, which imports only the built-ins of Node.js, with the node of the machine: it installs the
+# node of var/tools. Any other TOOLS names tools of mise.toml; without TOOLS every tool is installed.
+install-tools:
+ifeq ($(TOOLS),npm)
+	$(ONLINE) node $(KIT)/bootstrap/bootstrap.$(KIT_EXT)
+else
+	$(ONLINE) $(NODE) $(KIT)/install-tools.$(KIT_EXT) $(TOOLS)
+endif
+
+# npm ci of the root lock as it is; npm reads allow-remote=root of .npmrc, since package.json pins @polyspec/kit by the URL of its
+# release asset.
+install-packages:
+	$(ONLINE) $(NPM) ci
+
+# The links of 0.0.x development (.links of the main checkout, kit docs/operations/local-links.md): make install links after every
+# install, and CI, which has no .links, links nothing. PROJECT and RUNTIME select the project and the runtime.
+install-link:
+	$(NODE) $(KIT)/link.$(KIT_EXT) link$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
+
+kit-install-declared:
+	$(ONLINE) $(NODE) $(KIT)/install-symbols.$(KIT_EXT) --declared
+
+kit-install-symbols:
+	$(ONLINE) $(NODE) $(KIT)/install-symbols.$(KIT_EXT) $(EXTRACTORS)
+
+# toolchain-lock writes mise.lock with mise lock for each platform that has the archives of the tools. mise locks a pypi: tool
+# with uv, which takes the first uv on PATH and a managed Python of the home before PATH, so mise first locks and installs uv and
+# python, and the full lock names that Python as UV_PYTHON.
+TOOLCHAIN_LOCK_PLATFORMS := linux-x64,linux-arm64,macos-arm64,macos-x64,windows-x64,windows-arm64
+toolchain-lock:
+	@test -x $(KIT_TOOLS)/bin/mise || { echo "[toolchain-lock] $(KIT_TOOLS)/bin/mise is missing; run make install-tools TOOLS=npm" >&2; exit 1; }
+	$(ONLINE) $(KIT_TOOLS)/bin/mise lock uv python --global --platform $(TOOLCHAIN_LOCK_PLATFORMS)
+	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked uv python
+	UV_PYTHON="$$($(KIT_TOOLS)/bin/mise which python3)" $(ONLINE) $(KIT_TOOLS)/bin/mise lock --global --platform $(TOOLCHAIN_LOCK_PLATFORMS)
+
+# python-venv makes the virtual environment DIR from the python3 of mise.toml with uv venv; a venv of that Python is kept.
+.PHONY: python-venv
+python-venv:
+	@test -n "$(DIR)" || { echo "python-venv: DIR is required, for example make python-venv DIR=packages/python/.venv"; exit 1; }
+	$(NODE) $(KIT)/python-venv.$(KIT_EXT) $(DIR)
+
+# ---- Links and worktrees ---------------------------------------------------------------------------------------------
+.PHONY: link link-check unlink worktree-setup land
+link:
+	$(NODE) $(KIT)/link.$(KIT_EXT) link$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
+
+link-check:
+	$(NODE) $(KIT)/link-check.$(KIT_EXT)$(if $(PROJECT), --project $(PROJECT))
+
+unlink:
+	$(NODE) $(KIT)/link.$(KIT_EXT) unlink$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
+
+# worktree-setup creates or reuses the worktree of a row from main, runs make install and make link-check in it.
+worktree-setup:
+	$(ONLINE) $(NODE) $(KIT)/worktree-setup.$(KIT_EXT) $(NAME) $(ID) $(or $(TYPE),fix)
+
+# land merges the branch BRANCH into main fast-forward after the static gates of kit-gates that its changed paths select.
+land:
+	$(NODE) $(KIT)/land.$(KIT_EXT) $(BRANCH)
+
+# ---- Git hooks and merge drivers -------------------------------------------------------------------------------------
+# The hooks of fsm are its own files under .githooks, which config/checklist.json lists: pre-commit runs staged-generated-hook
+# and commit-msg runs commit-msg-hook. make hooks points core.hooksPath at .githooks, makes each listed hook executable and
+# declares the merge drivers of the changelogs and checklists, which git runs as make twin-merge.
+.PHONY: hooks hooks-check staged-generated-hook commit-msg-hook twin-merge
+hooks:
+	$(NODE) $(KIT)/git-hooks.$(KIT_EXT) install
+
+hooks-check:
+	$(NODE) $(KIT)/git-hooks.$(KIT_EXT) check
+
+staged-generated-hook:
+	$(NODE) $(KIT)/generated-files.$(KIT_EXT) staged
+
+commit-msg-hook:
+	$(NODE) $(KIT)/check-commits.$(KIT_EXT) --message $(MESSAGE)
+
+twin-merge:
+	@$(NODE) $(KIT)/twin-merge.$(KIT_EXT) $(MERGE)
+
+# ---- Plans, commits and documents ------------------------------------------------------------------------------------
+.PHONY: plan-new plan-split item-new item-edit item-state item-test commit documents-stamp text-absent
+# The texts of a row reach the utility unexpanded: each text that is set is passed as its raw value ($(value)), in single quotes,
+# so a text that names a make or shell variable is stored as written, and an unset text stays unset.
+raw_text = $(foreach v,$(1),$(if $(filter undefined,$(origin $(v))),,$(v)='$(subst ','\'',$(value $(v)))'))
+
+plan-new:
+	$(NODE) $(KIT)/plan.$(KIT_EXT) plan-new
+
+plan-split:
+	$(NODE) $(KIT)/plan.$(KIT_EXT) plan-split
+
+item-new:
+	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION) $(NODE) $(KIT)/plan.$(KIT_EXT) item-new
+
+item-edit:
+	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION CAUSE RETRY CAUSE_KO RETRY_KO) $(NODE) $(KIT)/plan.$(KIT_EXT) item-edit
+
+item-state:
+	$(NODE) $(KIT)/plan.$(KIT_EXT) item-state
+
+item-test:
+	$(NODE) $(KIT)/plan.$(KIT_EXT) item-test
+
+commit:
+	$(NODE) $(KIT)/plan.$(KIT_EXT) commit
+
+documents-stamp:
+	$(NODE) $(KIT)/documents-stamp.$(KIT_EXT) $(PATHS)
+
+# FILE and TEXT reach the utility through its environment, unexpanded, since a stale text may hold a backquote, a $ or a quote.
+unexport TEXT
+text-absent: export KIT_TEXT_ABSENT_FILE = $(value FILE)
+text-absent: export KIT_TEXT_ABSENT_TEXT = $(value TEXT)
+text-absent:
+	$(NODE) $(KIT)/text-absent.$(KIT_EXT)
+
+# ---- Checks ----------------------------------------------------------------------------------------------------------
+.PHONY: kit-check layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check test-markers-check duplication-check suppression-check divergence-check
+kit-check:
+	$(NODE) $(KIT)/kit-check.$(KIT_EXT)
+
+# alint checks the tree against config/layout.yml, which extends config/layout.kit.yml, the common layout rules that fsm took from
+# kit, with the map of fsm; then Git must ignore each install folder and track no generated file.
+layout-check:
+	@test -x $(ALINT) || { echo "layout-check: $(ALINT) is missing; run make install-tools"; exit 1; }
+	$(ALINT) check --config config/layout.yml --color never --compact .
+	$(NODE) $(KIT)/generated-files.$(KIT_EXT) installs
+	$(NODE) $(KIT)/generated-files.$(KIT_EXT) tracked
+
+docs-check:
+	$(NODE) $(KIT)/check-documents.$(KIT_EXT)
+
+rules-check:
+	$(NODE) $(KIT)/check-rules.$(KIT_EXT)
+
+owner-check:
+	$(NODE) $(KIT)/owner-check.$(KIT_EXT) $(if $(PATHS),--paths "$(PATHS)") $(if $(BASE),--base $(BASE))
+
+owner-validate:
+	$(NODE) $(KIT)/owner-check.$(KIT_EXT) --validate
+
+rebuild-check:
+	$(NODE) $(KIT)/rebuild-check.$(KIT_EXT)
+
+language-check:
+	$(NODE) $(KIT)/language-check.$(KIT_EXT)
+
+test-markers-check:
+	$(NODE) $(KIT)/test-markers.$(KIT_EXT)
+
+duplication-check:
+	$(NODE) $(KIT)/duplication-check.$(KIT_EXT)
+
+suppression-check:
+	$(NODE) $(KIT)/suppression-check.$(KIT_EXT)
+
+divergence-check:
+	$(NODE) $(KIT)/divergence-check.$(KIT_EXT)
+
+# ---- Lint ------------------------------------------------------------------------------------------------------------
+# Each lint utility runs the tools of var/tools or of the kit package, and each tool reads the configuration of fsm by its own
+# discovery: .oxlintrc.json and knip.jsonc, ruff.toml and [tool.vulture] of packages/python/pyproject.toml, phpcs.xml.dist and
+# phpstan.dist.neon, .golangci.yml, and clippy.toml with the [workspace.lints] of packages/rust/Cargo.toml.
+.PHONY: lint-ts lint-php lint-python lint-go lint-rust lint-php-ext
+lint-ts:
+	$(NODE) $(KIT)/lint-ts.$(KIT_EXT)
+
+lint-php:
+	$(NODE) $(KIT)/lint-php.$(KIT_EXT)
+
+lint-python:
+	$(NODE) $(KIT)/lint-python.$(KIT_EXT)
+
+lint-go:
+	$(NODE) $(KIT)/lint-go.$(KIT_EXT)
+
+lint-rust:
+	$(NODE) $(KIT)/lint-rust.$(KIT_EXT)
+
+lint-php-ext:
+	$(NODE) $(KIT)/php-extension.$(KIT_EXT) check
+
+# ---- Build and test of the runtimes ----------------------------------------------------------------------------------
+# The tasks of each runtime that packages/ holds: runtime-targets runs the build or the unit tests of each package of the runtime
+# with the tools of its ecosystem; CASES=<pattern> is the name filter of its runner. fsm adds its own steps to a task as
+# prerequisites (test-go: fsm-go-test). The PHP extension builds with phpize into $(PHP_EXT_MODULE).
+.PHONY: build test lint build-go build-js build-php build-python build-rust build-php-ext test-go test-js test-php test-python test-rust test-php-ext
+build test lint:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) task $@
+
+build-go build-js build-php build-python build-rust:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build $(@:build-%=%)
+
+test-go test-js test-php test-python test-rust:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) $(@:test-%=%)
+
+build-php-ext:
+	$(ONLINE) $(NODE) $(KIT)/php-extension.$(KIT_EXT) build
+
+test-php-ext: build-php-ext
+	$(NODE) $(KIT)/php-extension.$(KIT_EXT) test
+
+# ---- Parity ----------------------------------------------------------------------------------------------------------
 # The kinds are the implementations of config/parity.json, the one list of the languages of fsm (S-44), so the Makefile cannot
-# name a kind that parity lacks. Each kind has test-<kind> (its package tests) as a literal target, added by its package item;
-# kit's parity-check runs the vectors of every kind (S-42-1).
+# name a kind that parity lacks. Each kind has test-<kind> (its package tests) as a literal target, added by its package item.
 KINDS := $(shell node -p "require('./config/parity.json').implementations.map(implementation => implementation.name).join(' ')")
+# parity-check runs every binding of config/parity.json and checks every rule; UNITS and IMPLEMENTATIONS select. CI runs it in
+# full. The phases of the CI pipeline: parity-api-check, and one parity-bindings-<kind>-check for each kind of KINDS.
+.PHONY: parity-check parity-declarations-check parity-api-check $(KINDS:%=parity-bindings-%-check)
+parity-check:
+	$(NODE) $(KIT)/parity.$(KIT_EXT) $(foreach unit,$(UNITS),--unit $(unit)) $(foreach implementation,$(IMPLEMENTATIONS),--implementation $(implementation))
 
-# The kit-gates prerequisites run in the shared gates of CI (kit K870, Decision 9), and CI links nothing (kit K824): the own suite of
-# ci.yml is CHECK_TARGETS without them. make check runs all of CHECK_TARGETS locally.
-KIT_GATE_TARGETS := kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check parity-check bypass-check suppression-check divergence-check lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext link-state-check
+parity-declarations-check:
+	$(NODE) $(KIT)/parity.$(KIT_EXT) --declarations $(foreach unit,$(UNITS),--unit $(unit)) $(foreach rule,$(RULES),--rule $(rule)) $(foreach id,$(IDS),--id $(id))
+
+parity-api-check:
+	$(NODE) $(KIT)/parity.$(KIT_EXT) --phase api
+
+$(KINDS:%=parity-bindings-%-check):
+	$(NODE) $(KIT)/parity.$(KIT_EXT) --phase bindings --implementation $(@:parity-bindings-%-check=%)
+
+# ---- CI --------------------------------------------------------------------------------------------------------------
+# kit-gates is every gate of fsm, and land runs those of them that the changed paths of a branch select. The CI pipeline
+# (.github/workflows/ci-pipeline.yml) runs its partitions, each in a job that installs only what it needs; kit-gates-static runs
+# past failures, so one run names every static gate that fails.
+.PHONY: kit-gates kit-gates-static kit-gates-parity kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext
+KIT_STATIC_GATES := kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check
+KIT_GATE_TARGETS := $(KIT_STATIC_GATES) parity-check lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext
+kit-gates: $(KIT_GATE_TARGETS)
+
+ifneq ($(filter kit-gates-static,$(MAKECMDGOALS)),)
+MAKEFLAGS += -k
+endif
+kit-gates-static: $(KIT_STATIC_GATES)
+	@echo "[kit-gates-static] every shared gate passed"
+kit-gates-parity: parity-check
+kit-gates-runtime-ts: lint-ts
+kit-gates-runtime-php: lint-php
+kit-gates-runtime-python: lint-python
+kit-gates-runtime-go: lint-go
+kit-gates-runtime-rust: lint-rust
+kit-gates-runtime-php-ext: lint-php-ext test-php-ext
+
+# The plan, the setup and the context of the jobs of the CI pipeline, from config/ci.json.
+.PHONY: kit-ci-plan kit-ci-setup kit-ci-context-prepare kit-ci-context-cleanup ci-targets ci-summary
+kit-ci-plan:
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --plan
+
+kit-ci-setup:
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --setup $(GROUP) $(if $(filter parity-binding,$(GROUP)),$(IMPLEMENTATION),$(RUNTIME))
+
+kit-ci-context-prepare:
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-prepare $(GROUP) $(RUNTIME)
+
+kit-ci-context-cleanup:
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-cleanup $(GROUP) $(RUNTIME)
+
+# ci-targets runs TARGETS past failures and writes the report CI_REPORT (logs, record.json, summary.md).
+CI_REPORT ?= var/report/ci-targets
+ci-targets:
+	$(NODE) $(KIT)/ci-targets.$(KIT_EXT) $(CI_REPORT) $(TARGETS)
+
+ci-summary:
+	$(NODE) $(KIT)/ci-targets.$(KIT_EXT) --summary $(CI_REPORT)
+
+# ---- Release ---------------------------------------------------------------------------------------------------------
+# The steps of the release workflow (.github/workflows/release.yml, config/release.json), in its order. release-tag tags the
+# commit of the successful CI run RUN with vX.Y.Z, X.Y.Z the newest section of the change log, and appends TAG and VERSION to
+# GITHUB_ENV; the later steps read TAG. fsm needs no preparation before release-tools, so release-prepare does nothing.
+.PHONY: release-candidate release-prepare release-tools release-tools-path release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage
+release-candidate:
+	$(NODE) $(KIT)/release-run.$(KIT_EXT) prepare "$(VERSION)"
+
+release-prepare:
+	@:
+
+release-tools:
+	$(ONLINE) $(NODE) $(KIT)/release-tools.$(KIT_EXT)
+
+# The steps of the workflow after release-tools run with var/tools/bin and the shims on PATH and with the environment of mise.
+release-tools-path:
+	@test -n "$$GITHUB_PATH" || { echo 'release-tools-path: GITHUB_PATH is not set; run it in the release workflow between steps'; exit 1; }
+	@test -n "$$GITHUB_ENV" || { echo 'release-tools-path: GITHUB_ENV is not set; run it in the release workflow between steps'; exit 1; }
+	@echo "$(KIT_TOOLS)/mise/shims" >> "$$GITHUB_PATH"
+	@echo "$(KIT_TOOLS)/bin" >> "$$GITHUB_PATH"
+	@for name in $(MISE_ENVIRONMENT); do echo "$$name=$$(printenv $$name)"; done >> "$$GITHUB_ENV"
+
+release-tag:
+	@test -n "$$RUN" || { echo "release-tag: RUN is required, for example make release-tag RUN=123"; exit 1; }
+	$(NODE) $(KIT)/release-run.$(KIT_EXT) tag "$$RUN"$(if $(AUTO), --auto)
+
+release-assets:
+	@test -n "$$TAG" || { echo "release-assets: TAG is required, for example make release-assets TAG=v0.0.1"; exit 1; }
+	$(ONLINE) $(NODE) $(KIT)/release.$(KIT_EXT) assets "$$TAG"
+
+release-candidate-assets:
+	@test -n "$$VERSION" || { echo "release-candidate-assets: VERSION is required, for example make release-candidate-assets VERSION=0.0.1"; exit 1; }
+	$(ONLINE) $(NODE) $(KIT)/release.$(KIT_EXT) candidate-assets "$$VERSION"
+
+release-publish:
+	@test -n "$$TAG" || { echo "release-publish: TAG is required, for example make release-publish TAG=v0.0.1"; exit 1; }
+	$(NODE) $(KIT)/release.$(KIT_EXT) publish "$$TAG"
+
+release-undraft:
+	@test -n "$$TAG" || { echo "release-undraft: TAG is required, for example make release-undraft TAG=v0.0.1"; exit 1; }
+	$(NODE) $(KIT)/release.$(KIT_EXT) undraft "$$TAG"
+
+release-coverage:
+	$(NODE) $(KIT)/release.$(KIT_EXT) coverage
+
+# The release builds the released versions, so its Go runs without the go.work that make link writes in each Go module.
+release-prepare release-tools release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage: export GOWORK := off
+
+
+# The targets of the full suite that make check runs, past failures. Each checklist item appends the targets that it defines
+# (docs/plans/fsm-v1/plan.md, Verification). The gates of KIT_GATE_TARGETS run in the jobs of the CI pipeline, and CI links
+# nothing: the own suite of ci.yml is CHECK_TARGETS without them.
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := kit-check owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test parity-declarations-check parity-check rules-check rebuild-check language-check test-markers-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext link-state-check bypass-check divergence-check suppression-check
+CHECK_TARGETS := kit-check owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test parity-declarations-check parity-check rules-check rebuild-check language-check test-markers-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext divergence-check suppression-check
 
-.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test parity-check packages-test test-js test-go test-php test-rust rust-persist-test npm-types test-python test-php-ext gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
-
-
-
-
-
+.PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
 # ---- Package dependencies (docs/plans/fsm-v1/plan.md, Verification; docs/plans/fsm-v1/checklist.md, S-29) ------------------------
 # A dependency is a file target keyed on the lock or manifest it installs from. A fresh clone installs it once; a later run finds
@@ -40,7 +379,7 @@ CHECK_TARGETS := kit-check owner-validate docs-check hooks-check layout-check li
 # so make installs what that target needs before the target's recipe and nothing else. go and cargo leave no file of their own:
 # their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the pylock.toml of packages/python and on the
 # Python 3.14 that install-tools installs with mise, whose shim is var/tools/mise/shims/python3 (S-41, S-44-2).
-# install builds every dependency, with the toolchains of install-tools. ONLINE marks each download, as it does in kit.mk.
+# install builds every dependency, with the toolchains of install-tools. ONLINE marks each download.
 # npm_stamp is the stamp of the npm install of the directory $(1): the first 16 hex digits of the sha256 of its lock.
 npm_stamp = var/deps/npm/$(subst /,-,$(1))-$(shell shasum -a 256 $(1)/package-lock.json | cut -c1-16)
 NPM_DEP := $(call npm_stamp,packages/js)
@@ -115,7 +454,7 @@ $(DOCS_DEP): docs/package-lock.json
 
 # ---- Runtime packages (K245, S-44): the install, gen, build, clean and test of each runtime package are targets of this Makefile,
 # named fsm-<package>-<task> with the folder name of the package. gen writes the generated files of the package, which no checkout tracks.
-# The fixed tasks of kit join them by a prerequisite (test-go: fsm-go-test, K246-2).
+# The tasks of each runtime above join them by a prerequisite (test-go: fsm-go-test, K246-2).
 FSM_GEN := $(NODE) packages/compiler/src/cli/fsm-gen.mjs
 GO_MODULE := github.com/polyspec/fsm/packages/go
 PHP_NAMESPACE := Polyspec\FsmTest
@@ -124,7 +463,7 @@ PHP_EXT_MODULE := var/php-ext/$(PHP_EXT_NAME).so
 PY_VENV := packages/python/.venv
 # uv is the one of config/toolchain.json that install-tools installs (S-44-2), never a uv of PATH.
 UV := $(KIT_TOOLS)/mise/shims/uv
-# The tools of the packages, by the absolute path of their shims: kit-check requires a recipe to start a tool by such a path.
+# The tools of the packages, by the absolute path of their shims, so a recipe never runs a tool of the machine's PATH.
 GO := $(KIT_TOOLS)/mise/shims/go
 COMPOSER := $(KIT_TOOLS)/mise/shims/composer
 
@@ -184,8 +523,8 @@ fsm-php-ext-install:
 	$(MAKE) --no-print-directory install-link
 
 # fsm-php-ext-gen writes the generated files of the extension (src/): fsm-gen writes the C files and the stub, and scripts/php-ext-arginfo.mts
-# writes the arginfo header from the stub with the gen_stub.php of the PHP (ONLINE: it downloads its PHP-Parser once; S-379, as orm does). The extension has no test of its own: kit's test-php-ext runs the
-# PHPUnit files of packages/php with the extension that kit's build-php-ext built from src/, so the model of the php package is
+# writes the arginfo header from the stub with the gen_stub.php of the PHP (ONLINE: it downloads its PHP-Parser once; S-379, as orm does). The extension has no test of its own: test-php-ext runs the
+# PHPUnit files of packages/php with the extension that build-php-ext built from src/, so the model of the php package is
 # generated first.
 fsm-php-ext-gen: $(PHP_EXT_DEP) fsm-php-gen
 fsm-php-ext-gen:
@@ -194,7 +533,7 @@ fsm-php-ext-gen:
 	$(NODE) scripts/php-ext-arginfo.mts
 
 # fsm-python-install makes the venv .venv with the Python of the checkout, var/tools/mise/shims/python3, which install-tools
-# installs with uv. The venv is made by kit's python-venv, and uv fills it with --link-mode copy: the locked packages of pylock.toml
+# installs with uv. The venv is made by python-venv, and uv fills it with --link-mode copy: the locked packages of pylock.toml
 # (PEP 751, written by kit's python-lock), then make link links the install folders of the
 # packages to their checkouts, then the project itself, non-editable: the python extractor of kit reads the modules from the file
 # list of the installed distribution (kit K788), which an editable install does not hold. make link then links the installed
@@ -219,7 +558,7 @@ fsm-python-install:
 fsm-python-src:
 	$(FSM_GEN) gen --project contracts --kind python --out packages/python/src/polyspec_fsm
 
-# The kit build of a fresh worktree builds packages/python, which needs its generated sources first (S-337).
+# build-python of a fresh worktree builds packages/python, which needs its generated sources first (S-337).
 build-python: fsm-python-src
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
@@ -258,13 +597,14 @@ fsm-rust-test: $(RUST_DEP) fsm-rust-gen
 fsm-gen: fsm-go-gen fsm-js-gen fsm-php-gen fsm-php-ext-gen fsm-python-gen fsm-rust-gen
 layout-check parity-declarations-check parity-check: fsm-gen
 
-# install is for a fresh clone and for CI, which runs `make install` once and then `make check`. kit's install runs its bootstrap
-# as install-kit (K246-2); fsm-install adds the package dependencies above, so a later run downloads nothing.
+# install is for a fresh clone and for CI, which runs `make install` once and then `make check`: the bootstrap of install-kit,
+# the package dependencies above, so a later run downloads nothing, and then the links of install-link.
 install: fsm-install
+	$(MAKE) --no-print-directory install-link
 fsm-install: install-kit $(PACKAGE_DEPS)
 
-# check runs the full suite once per committed tree, when no item of docs/plans/fsm-v1/checklist.md is [~] (kit's
-# ci-targets of kit runs the targets to their end; ci.yml runs the same list.
+# check runs the full suite once per committed tree, after the last item is committed; ci-targets runs the targets to their end.
+# ci-suite runs the suite of ci.yml.
 .PHONY: ci-suite
 ci-suite:
 	$(MAKE) ci-targets TARGETS="$(CI_SUITE_TARGETS)"
@@ -402,7 +742,7 @@ packages-test:
 	$(if $(KINDS),,$(error config/parity.json declares no kind))
 	$(MAKE) -j6 test-go test-js test-php test-php-ext test-python test-rust
 
-# test-js is the fixed task of kit; the tests of packages/js are its prerequisite (K246).
+# test-js is the task of its runtime (Build and test of the runtimes); the tests of packages/js are its prerequisite (K246).
 test-js: fsm-js-test
 
 # npm-persist-test runs the persist cases of packages/js on a dialect: the persist vector cases of tests/conformance.test.mjs and
@@ -429,13 +769,13 @@ npm-types: $(NPM_DEP) fsm-js-gen
 	$(RUN_TESTS) node --results .results/npm-types.json --inputs packages/js -- tests/npm-types
 
 
-# test-go is the fixed task of kit; the tests of packages/go are its prerequisite (K246-2).
+# test-go is the task of its runtime (Build and test of the runtimes); the tests of packages/go are its prerequisite (K246-2).
 test-go: fsm-go-test
 
-# test-php is the fixed task of kit; the tests of packages/php are its prerequisite (K246-2).
+# test-php is the task of its runtime (Build and test of the runtimes); the tests of packages/php are its prerequisite (K246-2).
 test-php: fsm-php-test
 
-# test-rust is the fixed task of kit; the tests of packages/rust are its prerequisite (K246-2).
+# test-rust is the task of its runtime (Build and test of the runtimes); the tests of packages/rust are its prerequisite (K246-2).
 test-rust: fsm-rust-test
 # rust-persist-test runs tests/persist.rs of packages/rust on sqlite: two transitions of one row at the same time, and a deadlock
 # runs the persistence transaction again while another database error does not (docs/spec/fsm.md, B-4; S-31, S-44-9).
@@ -447,10 +787,10 @@ rust-persist-test: $(RUST_DEP) fsm-rust-gen
 python-tools-test:
 	$(RUN_TESTS) node --results .results/python-tools-test.json --inputs Makefile --inputs config/parity.json --inputs config/toolchain.json --inputs tests/python-tools -- tests/python-tools
 
-# test-python is the fixed task of kit; the tests of packages/python are its prerequisite (K246-2).
+# test-python is the task of its runtime (Build and test of the runtimes); the tests of packages/python are its prerequisite (K246-2).
 test-python: fsm-python-test
 
-# test-php-ext is the fixed task of kit; the tests of packages/php-ext are its prerequisite (K246-2).
+# test-php-ext is the task of its runtime (Build and test of the runtimes); the tests of packages/php-ext are its prerequisite (K246-2).
 test-php-ext: fsm-php-ext-gen
 build-php-ext: fsm-php-ext-gen
 

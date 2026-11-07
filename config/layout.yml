@@ -1,5 +1,5 @@
-# The folder layout of fsm (S5, S7, S9), checked by make layout-check: the common rules of config/layout.kit.yml (a copy of
-# kit) and the map of this repository. fsm has the runtime ports of its spec and three components: the compiler, the DB
+# The folder layout of fsm (S5, S7, S9), checked by make layout-check: the common rules of config/layout.kit.yml (which fsm
+# took from kit and owns, S-424) and the map of this repository. fsm has the runtime ports of its spec and three components: the compiler, the DB
 # store and the GUI. Each path that this map does not allow is a finding of layout-check until the item that moves it
 # lands (docs/plans/fsm-v1/checklist.md).
 version: 1
@@ -14,6 +14,12 @@ rules:
   - extends_template: go-module-path
     id: layout-go-module-path
     vars: { repo: fsm }
+
+  # The root files of fsm beside the common ones: .npmrc, which allows the release URL of @polyspec/kit for the npm ci of the
+  # root, and knip.jsonc, the knip configuration with the reason of each entry (S-424).
+  - extends_template: root-files
+    id: layout-root-files
+    vars: { root_files: "{.npmrc,knip.jsonc}" }
 
   # The components of fsm beside the runtime ports: the compiler (fsm-gen), the DB store and the GUI (docs/plans/fsm-v1/plan.md, C-5 to C-7).
   - id: layout-packages

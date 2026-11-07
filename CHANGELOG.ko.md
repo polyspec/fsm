@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 7e751caea013ba3be74509f83051d1dcc3527e9c37a060083fa3849b9a605ab9 -->
+<!-- source-sha256: 9eb1b2f244aa80ada6555cd75095c3d364bd6e4e2bcc11659b56b225b34c994a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- S-424: fsm은 kit 0.0.98을 위해 자기 recipe를 소유한다. Makefile은 kit의 recipe를 include하지 않고 fsm과 그 CI, hook이 실행하는 모든 타깃을 직접 적으며, 각 타깃은 kit utility를 명시적인 인자로 실행한다. npm allow-remote는 .npmrc에, mise와 uv 설정은 mise.toml에 두고, 각 lint 도구는 fsm의 설정(.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, Cargo lints, [tool.vulture])을 읽는다. 워크플로와 bootstrap action, config/layout.kit.yml은 fsm의 파일이다(S-424).
 
 ## 0.0.3
 

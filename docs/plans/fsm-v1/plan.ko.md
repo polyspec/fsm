@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 46c57988402d026119c5d17b233b6374bc07970d8ae9e53fdbd58a6ea8a88fad -->
+<!-- source-sha256: cde09c3630d365c4293fb62a8417fc899c24b6e7ad9e5ac48d4c8ae7c1a5fac0 -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -65,7 +65,7 @@
   - 결정은 연관 문서에 기록한다.
 - kit 규칙
   - 영문이 정본이다. `.ko.md`에는 `source-sha256`을 붙이고, 기술 용어는 영어 그대로 쓴다.
-  - kit의 사본(`@polyspec/kit`의 `kit.copies`)은 수정하지 않는다. 같은 트리에서는 같은 결과가 나와야 한다.
+  - fsm이 kit에서 가져온 파일은 fsm의 파일이고, 모든 타깃은 fsm 자신의 Makefile recipe다(S-424). 같은 트리에서는 같은 결과가 나와야 한다.
   - 공용 도구 변경은 kit에서 하고, kit 체크리스트(K 항목)로 운영한다.
 - 개발 사이클: RED 재현 → 구현 → GREEN 검증. 관측 가능한 기준을 항목에 적는다.
 - 루트 도구 테스트(check-name, check-readmes)의 fixture는 테스트가 임시 디렉터리에 만들고 커밋하지 않는다. 그래서 kit gate가 읽지 않는다.
@@ -133,7 +133,7 @@ fsm/
   AGENTS.md(.ko) README.md(.ko) CHANGELOG.md(.ko) Makefile package.json package-lock.json PRINCIPLES.md(.ko) .node-version rust-toolchain.toml .githooks/
   .gitignore            # anchored only: /var/, /.results/, /node_modules/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/python/**/__pycache__/, php-ext phpize output under /packages/php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/gui/build/, /packages/gui/public/assets/, /packages/php*/.phpunit.result.cache, /packages/php*/.phpunit.cache/
   config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review,parity}.json config/layout.yml
-  scripts/kit/kit-bootstrap.mk scripts/kit/bootstrap/ config/layout.kit.yml ...   # copies of @polyspec/kit (kit.copies; make kit-sync, make kit-check)
+  config/layout.kit.yml .github/workflows/ci-pipeline.yml .github/workflows/release.yml ...   # taken from the examples of @polyspec/kit; files of fsm (S-424)
   scripts/check-name.mts scripts/check-readmes.mts   tests/support/ tests/check-name/ tests/check-readmes/ tests/docs-build/ tests/python-tools/
   contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/fsm-v1/checklist.md(.ko)  docs/plans/fsm-v1/plan.md(.ko)
@@ -409,7 +409,7 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
 2. 구현 중 감사 루프는 0절 감사 규칙을 따른다. 감사자는 정확한 수정 위치와 대체 문장을 내고, 근거를 확인해 판정하며, 핵심 이견이 0이 될 때까지 반복한다.
 
 ## Verification
-- 루트 Makefile이 `include scripts/kit/kit-bootstrap.mk` 뒤에 다음 타깃을 정의한다.
+- 루트 Makefile은 kit utility를 실행하는 recipe 곁에 다음 타깃을 정의한다.
   - `CHECK_TARGETS`, `check`
   - kit의 `layout-check`, kit의 `parity-declarations-check`와 `parity-check`
   - `compiler-test`, `db-test`, `gui-test`

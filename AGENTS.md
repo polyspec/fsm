@@ -3,8 +3,8 @@
 
 [한국어](AGENTS.ko.md)
 
-The working principles of every polyspec repository are [PRINCIPLES.md](PRINCIPLES.md), a copy of kit. This file states
-only the rules of fsm.
+The working principles of every polyspec repository are [PRINCIPLES.md](PRINCIPLES.md), which fsm took from kit. This file
+states only the rules of fsm.
 
 ## Purpose
 
@@ -14,13 +14,15 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
 ## Rules
 
 - Own: The shared tools are the package `@polyspec/kit`, a devDependency of the root `package.json` pinned to the asset URL of its
-  release with its integrity. The files of its `kit.copies` (`scripts/kit/kit-bootstrap.mk`, `scripts/kit/bootstrap/`, the
-  release workflow, `PRINCIPLES.md`, `config/layout.kit.yml` and the lint configuration) are copies that `make kit-sync`
-  writes from the installed package and `make kit-check` compares; they are changed in kit, never here. fsm imports no file
-  of kit: it runs a kit tool through its make target or `$(KIT)/<tool>.$(KIT_EXT)`, imports only what the package exports
-  (`@polyspec/kit/tracked-files`), and takes a generic need from its ecosystem library (ajv, picomatch, `node:`) declared in
-  its own `package.json`. Behavior of kit is tested in kit.
-  Enforced by: `make kit-check`
+  release with its integrity. kit provides utilities and examples and includes nothing into fsm
+  (kit `docs/spec/utilities-and-recipes.md`): every target that fsm runs is a recipe of its own `Makefile`, which runs a kit
+  utility as `$(KIT)/<utility>.$(KIT_EXT)` with explicit arguments. The files that fsm took from kit (`PRINCIPLES.md`, the CI
+  pipeline, the release workflow, the bootstrap action, `config/layout.kit.yml` with its schemas and the lint configurations)
+  are files of fsm. A setting of a tool lives in the native file of that tool: `.npmrc`, `[settings]` and `[env]` of
+  `mise.toml`, and the configuration file of each lint tool. fsm imports no file of kit: it imports only what the package
+  exports (`@polyspec/kit/tracked-files`), and takes a generic need from its ecosystem library (ajv, picomatch, `node:`)
+  declared in its own `package.json`. Behavior of kit is tested in kit.
+  Enforced by: none, a judgement at review; `make kit-check` checks only the configuration of the kit utilities against their schemas.
 - Refines S7: The base test of a feature lives in the package that owns it (compiler, DB store, GUI). Language packages hold only
   consumer-side tests. The root holds only the tests of its own tools and their shared helper `tests/support/`. Fixtures of the
   root tool tests are built in temporary directories and never committed.
@@ -50,7 +52,7 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
 ## Generated files
 
 - Own: Generated files are never tracked in Git. This covers dependency installs (`node_modules/`, `vendor/`, virtual environments), build output (`dist/`, `target/`, `*.tsbuildinfo`), caches (`.cache/`, `__pycache__/`, `.pytest_cache/`), test run artifacts (`test-results/`, `playwright-report/`, PHPUnit caches) and tool downloads (`var/`). The only exceptions are the files the repository deliberately needs: lock files (`package-lock.json`, `composer.lock`, `Cargo.lock`, uv locks, `mise.lock`), committed generated documents that this file names, and test fixtures. Each `.gitignore` covers these paths; a new generator adds its ignore entry in the same commit.
-  Enforced by: none, a judgement at review; `make kit-check` checks the copies of kit only.
+  Enforced by: none, a judgement at review; `make layout-check` checks that Git ignores each install folder and tracks no generated file.
 
 ## Checklist
 

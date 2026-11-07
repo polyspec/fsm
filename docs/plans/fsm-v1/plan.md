@@ -64,7 +64,7 @@
   - Record each decision in the related document.
 - kit rules
   - English is canonical. A `.ko.md` file carries `source-sha256`, and technical terms stay in English.
-  - The copies of kit (`kit.copies` of `@polyspec/kit`) are never edited. The same tree gives the same result.
+  - The files that fsm took from kit are files of fsm, and every target is a recipe of its own Makefile (S-424). The same tree gives the same result.
   - Changes to shared tools are made in kit and run through the kit checklist (K items).
 - Development cycle: reproduce with RED → implement → verify with GREEN. Each item states an observable criterion.
 - Fixtures of the root tool tests (check-name, check-readmes) are built by the tests in temporary directories, never committed, so no kit gate reads them.
@@ -132,7 +132,7 @@ fsm/
   AGENTS.md(.ko) README.md(.ko) CHANGELOG.md(.ko) Makefile package.json package-lock.json PRINCIPLES.md(.ko) .node-version rust-toolchain.toml .githooks/
   .gitignore            # anchored only: /var/, /.results/, /node_modules/, /packages/*/node_modules/, /packages/*/vendor/, /packages/*/target/, /packages/python/**/__pycache__/, php-ext phpize output under /packages/php-ext/src/ (exact patterns fixed in S-14; config.m4 and generated sources stay unignored), /packages/gui/build/, /packages/gui/public/assets/, /packages/php*/.phpunit.result.cache, /packages/php*/.phpunit.cache/
   config/{checklist,documents,owner-checks,commits,toolchain,dependency-policy,dependency-review,parity}.json config/layout.yml
-  scripts/kit/kit-bootstrap.mk scripts/kit/bootstrap/ config/layout.kit.yml ...   # copies of @polyspec/kit (kit.copies; make kit-sync, make kit-check)
+  config/layout.kit.yml .github/workflows/ci-pipeline.yml .github/workflows/release.yml ...   # taken from the examples of @polyspec/kit; files of fsm (S-424)
   scripts/check-name.mts scripts/check-readmes.mts   tests/support/ tests/check-name/ tests/check-readmes/ tests/docs-build/ tests/python-tools/
   contracts/features.json
   docs/spec/fsm.md(.ko)  docs/plans/fsm-v1/checklist.md(.ko)  docs/plans/fsm-v1/plan.md(.ko)
@@ -423,7 +423,7 @@ owner-checks mapping (each item adds its own part):
 2. Audits during implementation follow the audit rules of section 0. The auditor gives the exact location and replacement text, each finding is judged against its evidence, and the loop repeats until there are no core disagreements.
 
 ## Verification
-- The root Makefile defines these targets after `include scripts/kit/kit-bootstrap.mk`:
+- The root Makefile defines these targets, beside the recipes that run the kit utilities:
   - `CHECK_TARGETS`, `check`
   - kit's `layout-check`, and kit's `parity-declarations-check` and `parity-check`
   - `compiler-test`, `db-test`, `gui-test`

@@ -27,17 +27,14 @@ function text(value: unknown, what: string): string {
   return value;
 }
 
-// The workflows among the copies of kit (kit.copies of the installed @polyspec/kit: ci-pipeline.yml and release.yml) belong to kit: make kit-check keeps them
-// byte for byte, so the rules of fsm's own workflows below do not read them.
-const KIT_PACKAGE: unknown = JSON.parse(read('node_modules/@polyspec/kit/package.json'));
-const COPIES = field(field(KIT_PACKAGE, 'kit', '@polyspec/kit package.json'), 'copies', '@polyspec/kit package.json kit');
-if (!isRecord(COPIES)) throw new Error('kit.copies of @polyspec/kit package.json must be an object');
-const VENDORED = Object.keys(COPIES).filter(file => file.startsWith('.github/workflows/'));
+// The pipeline and the release workflow, ci-pipeline.yml and release.yml, are the workflows that fsm took from the examples of
+// kit (S-424); they keep the form of those examples, so the rules of the workflows that fsm wrote itself below do not read them.
+const VENDORED = ['.github/workflows/release.yml', '.github/workflows/ci-pipeline.yml'];
 const WORKFLOWS = readdirSync(path.join(ROOT, '.github/workflows')).filter(name => name.endsWith('.yml')).sort().map(name => `.github/workflows/${name}`)
   .filter(file => !VENDORED.includes(file));
 const CI = read('.github/workflows/ci.yml');
 const PAGES = read('.github/workflows/pages.yml');
-// The bootstrap of every job is the kit-bootstrap action that kit vendors (K992); the jobs use it by its uses line.
+// The bootstrap of every job is the kit-bootstrap action of fsm (K992); the jobs use it by its uses line.
 const USES_KIT = 'uses: ./.github/actions/kit-bootstrap';
 const PLAN = read('docs/plans/fsm-v1/plan.md');
 // The PHP minors of config/toolchain.json, the implementations of config/parity.json and the tools of mise.toml.
@@ -136,13 +133,12 @@ test('the parity setup generates the npm sources and the db models (S-393)', () 
   assert.ok(setup.parity.includes('fsm-db-gen'), 'setup.parity does not run fsm-db-gen');
 });
 
-// The check job runs the kit-bootstrap action of kit (K992): the action vendored by kit-sync holds its steps, so this test reads the uses line only.
+// The check job runs the kit-bootstrap action (K992): the action holds its steps, so this test reads the uses line only.
 test('the check job runs the kit-bootstrap action (K992)', () => {
   assert.ok(CHECK_JOB.includes(USES_KIT), 'the check job does not run the kit-bootstrap action');
 });
 
-test('the rules read the own workflows of fsm, ci.yml and pages.yml, and not the ci-pipeline and release workflows that kit vendors', () => {
-  assert.deepEqual(VENDORED, ['.github/workflows/release.yml', '.github/workflows/ci-pipeline.yml']);
+test('the rules read the workflows that fsm wrote, ci.yml and pages.yml, and not the ci-pipeline and release workflows taken from kit', () => {
   assert.deepEqual(WORKFLOWS, ['.github/workflows/ci.yml', '.github/workflows/pages.yml']);
 });
 

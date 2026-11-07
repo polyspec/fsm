@@ -15,15 +15,23 @@ autoexamples = false
 [lints]
 workspace = true
 
-# The package is a workspace of its own, so it holds the lints of kit (config/cargo.schema.json): no unsafe code, and no allow
-# attribute without its reason.
+# The package is a workspace of its own, so it holds the lints of fsm, as the example of kit states them (S-424): every warning
+# fails, no unsafe code, and no hidden error (P8): a dropped must_use value, a `let _` of a must_use or untyped value, a map_err
+# that ignores its error and an allow attribute without its reason. clippy.toml of the root disallows Result::ok and the
+# unwrap_or family.
 [workspace]
 
 [workspace.lints.rust]
+warnings = "deny"
 unsafe_code = "deny"
+unused_must_use = "deny"
 
 [workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
 allow_attributes_without_reason = "deny"
+let_underscore_must_use = "deny"
+let_underscore_untyped = "deny"
+map_err_ignore = "deny"
 
 [[test]]
 name = "conformance"

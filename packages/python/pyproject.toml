@@ -19,3 +19,8 @@ dependencies = [
 [tool.setuptools]
 package-dir = { "" = "src", "polyspec_fsm_examples" = "examples", "polyspec_fsm_examples.model" = "examples/model" }
 packages = ["polyspec_fsm", "polyspec_fsm_examples", "polyspec_fsm_examples.model"]
+
+# vulture of make lint-python reports the unused code of the package from the confidence 60, which reports unused functions and
+# classes (S-424).
+[tool.vulture]
+min_confidence = 60

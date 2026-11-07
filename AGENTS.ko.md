@@ -1,10 +1,10 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 4cc3f8265ff4bb2ca4a38838844ceaf330d5edd954c3da70a77aac0fda7aebdb -->
+<!-- source-sha256: 6c19ad13fd7d585ecee0b05226588e0d2c8535d5e1132816bdf6d06bd60bb01a -->
 # 개발
 
 [English](AGENTS.md)
 
-모든 polyspec 저장소의 작업 원칙은 kit의 사본인 [PRINCIPLES.ko.md](PRINCIPLES.ko.md)다. 이 파일은 fsm의 규칙만 적는다.
+모든 polyspec 저장소의 작업 원칙은 fsm이 kit에서 가져온 [PRINCIPLES.ko.md](PRINCIPLES.ko.md)다. 이 파일은 fsm의 규칙만 적는다.
 
 ## 목적
 
@@ -14,12 +14,14 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
 ## 규칙
 
 - Own: 공용 도구는 package `@polyspec/kit`이다. 루트 `package.json`의 devDependency이며 release asset URL과 integrity로 고정한다.
-  그 `kit.copies`의 파일(`scripts/kit/kit-bootstrap.mk`, `scripts/kit/bootstrap/`, release 워크플로, `PRINCIPLES.md`,
-  `config/layout.kit.yml`, lint 설정)은 `make kit-sync`가 설치된 package에서 쓰고 `make kit-check`가 비교하는 사본이며, kit에서
-  바꾸고 여기서 편집하지 않는다. fsm은 kit의 파일을 import하지 않는다. kit 도구는 make 타깃이나 `$(KIT)/<tool>.$(KIT_EXT)`로
-  실행하고, package가 export하는 것(`@polyspec/kit/tracked-files`)만 import하며, 일반적인 필요는 자기 `package.json`에 선언한
-  생태계 라이브러리(ajv, picomatch, `node:`)로 채운다. kit의 동작은 kit에서 테스트한다.
-  Enforced by: `make kit-check`
+  kit은 utility와 예시를 제공하고 fsm에 아무것도 include하지 않는다(kit `docs/spec/utilities-and-recipes.md`). fsm이 실행하는 모든
+  타깃은 fsm 자신의 `Makefile` recipe이며, recipe는 kit utility를 `$(KIT)/<utility>.$(KIT_EXT)`로 명시적인 인자와 함께 실행한다.
+  fsm이 kit에서 가져온 파일(`PRINCIPLES.md`, CI pipeline, release 워크플로, bootstrap action, schema와 함께인
+  `config/layout.kit.yml`, lint 설정)은 fsm의 파일이다. 도구의 설정은 그 도구의 native 파일에 둔다: `.npmrc`, `mise.toml`의
+  `[settings]`와 `[env]`, 각 lint 도구의 설정 파일. fsm은 kit의 파일을 import하지 않는다. package가 export하는 것
+  (`@polyspec/kit/tracked-files`)만 import하며, 일반적인 필요는 자기 `package.json`에 선언한 생태계 라이브러리(ajv, picomatch,
+  `node:`)로 채운다. kit의 동작은 kit에서 테스트한다.
+  Enforced by: none, 리뷰에서 판단한다. `make kit-check`는 kit utility의 설정만 schema로 검사한다.
 - Refines S7: 기능의 기본 테스트는 그 기능을 소유한 패키지(compiler, DB store, GUI)에 둔다. 언어 패키지에는 소비자 입장 테스트만 둔다.
   루트에는 루트 도구의 테스트와 그 공용 helper `tests/support/`만 둔다. 루트 도구 테스트의 fixture는 임시 디렉터리에 만들고 커밋하지 않는다.
   Enforced by: `make layout-check`, `make parity-declarations-check`
@@ -45,7 +47,7 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
 ## 생성 파일
 
 - Own: 생성 파일은 Git에 추적하지 않는다. 여기에는 의존성 설치(`node_modules/`, `vendor/`, 가상 환경), 빌드 산출물(`dist/`, `target/`, `*.tsbuildinfo`), 캐시(`.cache/`, `__pycache__/`, `.pytest_cache/`), 테스트 실행 산출물(`test-results/`, `playwright-report/`, PHPUnit 캐시), 도구 다운로드(`var/`)가 포함된다. 예외는 저장소가 의도적으로 필요로 하는 파일뿐이며 이것만 추적한다: lock 파일(`package-lock.json`, `composer.lock`, `Cargo.lock`, uv lock, `mise.lock`), 이 문서가 밝히는 커밋된 생성 문서, 테스트 fixture. 각 `.gitignore`가 이 경로를 덮으며, 새 생성기는 같은 commit에서 ignore 항목을 추가한다.
-  Enforced by: none, 리뷰에서 판단한다. `make kit-check`는 kit의 사본만 검사한다.
+  Enforced by: none, 리뷰에서 판단한다. `make layout-check`는 Git이 각 install 폴더를 무시하고 생성 파일을 추적하지 않는지 검사한다.
 
 ## 체크리스트
 

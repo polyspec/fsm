@@ -14,7 +14,6 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import kitPackage from '@polyspec/kit/package.json' with { type: 'json' };
 import picomatch from 'picomatch';
 import { rootOption } from './root-option.mts';
 
@@ -41,8 +40,8 @@ export interface NameFinding {
  */
 export const ALLOWED: readonly Allowed[] = Object.freeze([
   {
-    files: Object.keys(kitPackage.kit.copies),
-    reason: 'the copies of kit (kit.copies of the installed @polyspec/kit): they change only in the kit repository (AGENTS.md, Rules)',
+    files: ['PRINCIPLES.md', 'PRINCIPLES.ko.md'],
+    reason: 'the principles of every polyspec repository, which fsm took from kit (S-424): they name the status of a check in the words of kit',
   },
   {
     files: ['scripts/check-name.mts', 'tests/check-name/**'],

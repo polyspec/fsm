@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-424: fsm owns its recipes for kit 0.0.98: the Makefile includes no recipe of kit and writes every target that fsm, its CI and its hooks run, each running a kit utility with explicit arguments; npm allow-remote is in .npmrc, the mise and uv settings in mise.toml, and each lint tool reads the configuration of fsm (.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, the Cargo lints and [tool.vulture]); the workflows, the bootstrap action and config/layout.kit.yml are files of fsm (S-424).
+
 ## 0.0.3
 
 - fsm 0.0.3 pins the providers of the orm 0.0.22 round in every runtime (S-421) on Kit 0.0.92 (S-419), and make install installs the npm projects first (S-420) (S-422).

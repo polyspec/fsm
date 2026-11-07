@@ -285,8 +285,8 @@ make db-deps && npm install -g ./packages/db   # fsm-db: needs the orm packages
 make gui-build && npm install -g ./packages/gui # fsm-gui: builds the browser assets first
 ```
 
-The first two commands install the shared tools of polyspec, the package `@polyspec/kit`, whose make targets the Makefile
-includes (`scripts/kit/kit-bootstrap.mk`); before them, only these two targets run. `make install` downloads the toolchains of `var/tools` (the Python 3.14 of `pythonBuild` among them) and every package dependency once; a later run finds them installed and
+The first two commands install the shared tools of polyspec, the package `@polyspec/kit`, whose utilities the recipes of the
+Makefile run; before them, only these two targets run. `make install` downloads the toolchains of `var/tools` (the Python 3.14 of `pythonBuild` among them) and every package dependency once; a later run finds them installed and
 downloads nothing. The first `npm install -g` is all that the json and mermaid stores need. `make db-deps` installs the orm
 packages of `packages/db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
 

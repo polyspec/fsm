@@ -296,7 +296,7 @@ test('make check runs the parity check of kit (S-35-3, S-42-1)', () => {
   for (const target of ['parity-declarations-check', 'parity-check']) assert.ok(targets.includes(target), `CHECK_TARGETS does not run ${target}`);
 });
 
-// The full suite runs kit's lint of the TypeScript (oxlint and knip with config/knip-entries.json), which stayed out of
+// The full suite runs the lint of the TypeScript (oxlint and knip with knip.jsonc), which stayed out of
 // CHECK_TARGETS until it passed (S-44-15).
 test('make check runs make lint-ts (S-44-15)', () => {
   const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });

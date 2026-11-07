@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 8edc6d44bd5440a11a9fd2121fadc45f9ecead0af941e4ffcedc71ea08f26719 -->
+<!-- source-sha256: 17aa16ea61d4b8a33d9cdbd815f6cc955e4dd719b0dc556eef21c6197de72f7d -->
 # polyspec/fsm
 
 [English](README.md)
@@ -278,7 +278,7 @@ make db-deps && npm install -g ./packages/db   # fsm-db: needs the orm packages
 make gui-build && npm install -g ./packages/gui # fsm-gui: builds the browser assets first
 ```
 
-처음 두 명령은 polyspec의 공용 도구인 package `@polyspec/kit`을 설치한다. Makefile은 그 make 타깃을 include한다(`scripts/kit/kit-bootstrap.mk`). 그 전에는 이 두 타깃만 실행된다. `make install`은 `var/tools`의 toolchain(`pythonBuild`의 Python 3.14 포함)과 모든 패키지 의존성을 한 번 내려받는다. 나중의 실행은 이미 설치된 것을 찾고 아무것도
+처음 두 명령은 polyspec의 공용 도구인 package `@polyspec/kit`을 설치한다. Makefile의 recipe가 그 utility를 실행한다. 그 전에는 이 두 타깃만 실행된다. `make install`은 `var/tools`의 toolchain(`pythonBuild`의 Python 3.14 포함)과 모든 패키지 의존성을 한 번 내려받는다. 나중의 실행은 이미 설치된 것을 찾고 아무것도
 내려받지 않는다. json과 mermaid store에는 첫 `npm install -g` 명령만 있으면 된다. `make db-deps`는 `packages/db`의 orm 패키지를
 release tarball에서 설치하고, `make gui-build`는 GUI를 설치하고 browser asset을 빌드한다.
 

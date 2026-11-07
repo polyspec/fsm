@@ -1,8 +1,7 @@
-# The one bootstrap of every CI job of a repository (K992): kit-sync vendors it as .github/actions/kit-bootstrap/action.yml,
-# and ci-pipeline.yml, release.yml and the jobs of the repository's own workflows run it after their checkout with
-# `uses: ./.github/actions/kit-bootstrap`, so no workflow carries a copy of these steps that a kit release leaves behind. The
-# parity, runtime and release jobs set PHP up before it; the shared job of ci-pipeline sets it up after, so a repository whose
-# INSTALL_PACKAGES_EXTRA needs PHP declares that in its own job.
+# The one bootstrap of every CI job of fsm (K992), taken from the example of kit and owned by fsm (S-424): ci-pipeline.yml,
+# release.yml, ci.yml and pages.yml run it after their checkout with `uses: ./.github/actions/kit-bootstrap`, so no workflow
+# carries a copy of these steps. The parity, runtime and release jobs set PHP up before it; the shared job of ci-pipeline sets it
+# up after.
 name: kit bootstrap
 description: Sets up the Node.js of mise.toml, installs the locked kit package, then the npm of var/tools and the packages of package-lock.json.
 runs:
@@ -15,7 +14,8 @@ runs:
       with:
         node-version-file: mise.toml
         package-manager-cache: false
-    # Consumers install their locked kit package before Make reads its bootstrap; kit runs its own sources.
+    # The locked kit package is installed before make runs, since the recipes of the Makefile run its utilities. npm reads
+    # allow-remote=root of the .npmrc of the root, which the release URL of @polyspec/kit needs.
     - name: bootstrap the installed kit package
       shell: bash
       run: |
@@ -24,7 +24,7 @@ runs:
           # devEngines runs outside the checkout with --prefix (K938-1).
           root="$PWD"
           version="$(node -p 'require("./package.json").devEngines.packageManager.version')"
-          (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts --allow-remote=root)
+          (cd "${RUNNER_TEMP:?RUNNER_TEMP is not set}" && npm_config_cache="$root/var/bootstrap/npm-cache" npm exec --yes --package="npm@$version" -- npm --prefix "$root" ci --ignore-scripts)
         fi
     # The bootstrap order of a repository (K71-2): the mise, node and npm of mise.toml first, then the packages of
     # package-lock.json with it.

@@ -1,0 +1,81 @@
+// The knip configuration of fsm (S-424): make lint-ts runs knip from the root, which reads this file. It holds the entries of the
+// example of kit and the declarations of fsm that config/knip-entries.json held, each with its reason.
+{
+  "node": {
+    "entry": [
+      // The entries of the example of kit: the tests and the scripts of the root.
+      "**/*.test.{ts,mts,cts,mjs,cjs,js}",
+      "scripts/**/*.{ts,mts,cts,mjs,cjs,js}",
+      // The command line of the compiler (bin fsm-gen), which the gen targets of the root Makefile and the tests of make
+      // compiler-test run by path.
+      "packages/compiler/src/cli/fsm-gen.mjs",
+      // The golden files of the npm kind, which gen-command.test.mjs of make compiler-test compares by path with the output of
+      // fsm-gen.
+      "packages/compiler/tests/golden/npm/**/*.{js,mjs,d.ts}",
+      // The consumer file that tsc of make npm-types compiles against the generated declarations.
+      "tests/npm-types/consumer.ts"
+    ]
+  },
+  "ignoreBinaries": [
+    // packages/compiler/tests/go-backend.test.mjs (make compiler-test) runs go vet on the generated Go package, and
+    // tests/workflows/workflows.test.mts reads the go directive of each go.mod with go mod edit -json.
+    "go",
+    // The tests of the recipes (tests/make-install, tests/python-tools) run make -n on the root Makefile.
+    "make",
+    // packages/compiler/tests/php-backend.test.mjs and php-ext-backend.test.mjs (make compiler-test) lint the generated PHP with
+    // php -l and run it, the extension with php -d extension.
+    "php"
+  ],
+  "ignoreDependencies": [
+    // The shared tools, which only the recipes of the Makefile run.
+    "@polyspec/kit"
+  ],
+  "workspaces": {
+    // fsm-db, the DbStore of fsm: an npm project with its own package.json and lock, which make db-test runs.
+    "packages/db": {
+      "entry": [
+        // The models that orm-gen generates (make fsm-db-gen, never tracked); MANIFEST_TEXT and MANIFEST_HASH are the documented
+        // API of a generated module of orm and stay exported by orm's design.
+        "src/models/models.ts"
+      ],
+      "ignoreDependencies": [
+        // No JavaScript of the project imports it: the overrides of package.json pin it by "$@polyspec/ordered-json", which npm
+        // accepts only for a direct dependency, so that @polyspec/orm installs this release URL.
+        "@polyspec/ordered-json"
+      ]
+    },
+    // fsm-gui, the GUI of fsm: an npm project with its own package.json and lock, which make gui-build, gui-test and
+    // gui-browser-test run.
+    "packages/gui": {
+      "entry": [
+        // The client entry of the GUI, which hyper-build-assets of make gui-build bundles.
+        "client/main.ts"
+      ],
+      "ignoreDependencies": [
+        // No JavaScript of the project imports these: the overrides of package.json pin each by "$<name>", which npm accepts
+        // only for a direct dependency, so that @polyspec/crudui-generator-core, @polyspec/hyper-server and
+        // @polyspec/hyper-build install these release URLs.
+        "@polyspec/crudui-validator",
+        "@polyspec/php-serialize",
+        "@polyspec/template-compiler"
+      ]
+    },
+    // The npm consumer test bed of fsm: an npm project with its own package.json and lock, which make fsm-js-test, npm-types and
+    // npm-persist-test run.
+    "packages/js": {
+      "entry": [
+        // The generated declarations of the npm kind, which tsc of make npm-types compiles tests/npm-types/consumer.ts against.
+        "src/*.d.ts",
+        // The models that orm-gen generates (make fsm-js-gen, never tracked); MANIFEST_TEXT and MANIFEST_HASH are the documented
+        // API of a generated module of orm and stay exported by orm's design.
+        "examples/model/models.ts"
+      ],
+      "ignoreDependencies": [
+        // As in packages/db: the overrides pin it so that @polyspec/orm installs this release URL.
+        "@polyspec/ordered-json"
+      ]
+    },
+    // The documentation site: an npm project with its own package.json and lock, whose vitepress make docs-build runs.
+    "docs": {}
+  }
+}
