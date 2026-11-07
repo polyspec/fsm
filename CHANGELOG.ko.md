@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c092a62e67af16758564144c5dd7f9fea59c55878e20fa3c6a5ad73e9b81b758 -->
+<!-- source-sha256: f16880425e14deffb90caf98d90893d5bfe6eb5ad588acde383dfec429f48f8b -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -12,7 +12,6 @@
 - fsm 0.0.3은 kit 0.0.98을 위해 자기 recipe를 소유하고(S-424) npm 프로젝트에서 제공 라이브러리의 최신 릴리스를 받는다(S-425). 그 전에 Kit 0.0.92(S-419) 위에서 모든 런타임에 orm 0.0.22 라운드의 제공 라이브러리를 고정했고(S-421), make install은 npm 프로젝트를 먼저 설치한다(S-420)(S-422).
 
 - S-427: packages/gui는 template 0.0.21을 받는다. template과 template-compiler는 루트에 그 릴리스를 적고, overrides "$이름"이 hyper 0.0.32가 요구하는 template 0.0.20을 그것으로 대체한다(S-427).
-- S-426: go와 python 런타임은 orm 0.0.22 아래에서 ordered-json 0.0.21을 받는다. go.mod가 그것을 require하고, uv pip compile은 그 wheel을 적은 packages/python/overrides.txt를 orm의 요구에 적용한다. Composer와 Cargo는 orm 0.0.22의 정확한 요구를 대체할 수 없으므로 php, php-ext, rust는 다음 orm 릴리스와 함께 받는다(S-426).
 - S-425: fsm은 제공 라이브러리의 최신 릴리스를 받는다. packages/js와 packages/db는 ordered-json 0.0.21을, packages/gui는 루트에 crudui 0.0.14, hyper 0.0.32, php-serialize 0.0.2와 공개된 최신 릴리스인 template 0.0.20을 적고, overrides "$이름"이 전이 polyspec 패키지를 고정해 각각 한 버전만 해석된다(S-425).
 - S-424: fsm은 kit 0.0.98을 위해 자기 recipe를 소유한다. Makefile은 kit의 recipe를 include하지 않고 fsm과 그 CI, hook이 실행하는 모든 타깃을 직접 적으며, 각 타깃은 kit utility를 명시적인 인자로 실행한다. npm allow-remote는 .npmrc에, mise와 uv 설정은 mise.toml에 두고, 각 lint 도구는 fsm의 설정(.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, Cargo lints, [tool.vulture])을 읽는다. 워크플로와 bootstrap action, config/layout.kit.yml, Git hook, 그리고 kit 0.0.98 사본으로서 Enforced-by 줄이 fsm의 check를 적는 PRINCIPLES.md는 fsm의 파일이다. kit이 hook을 없앤 Claude Code 설정은 제거한다(S-424).
 - S-423: knip-entries는 packages/gui의 @polyspec/php-serialize를 무시한다. 어떤 JavaScript도 import하지 않고, overrides가 hyper-server를 위해 고정한다(S-423).
