@@ -22,6 +22,7 @@
       },
       "ignoreDependencies": {
         "@polyspec/crudui-validator": "no JavaScript of the project imports it: the overrides of package.json pin it by \"$@polyspec/crudui-validator\", which npm accepts only for a direct dependency, so that @polyspec/crudui-generator-core installs this release URL (npm 12 installs a URL dependency only when the root names it, --allow-remote=root)",
+        "@polyspec/php-serialize": "no JavaScript of the project imports it: the overrides of package.json pin it by \"$@polyspec/php-serialize\", which npm accepts only for a direct dependency, so that @polyspec/hyper-server installs this release URL (npm 12 installs a URL dependency only when the root names it, --allow-remote=root)",
         "@polyspec/template-compiler": "no JavaScript of the project imports it: the overrides of package.json pin it by \"$@polyspec/template-compiler\", which npm accepts only for a direct dependency, so that @polyspec/hyper-build installs this release URL (npm 12 installs a URL dependency only when the root names it, --allow-remote=root)"
       }
     },
