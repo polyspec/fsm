@@ -6,13 +6,12 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- S-425: fsm takes the latest provider releases: packages/js and packages/db name ordered-json 0.0.21, and packages/gui names crudui 0.0.14, hyper 0.0.32 and php-serialize 0.0.2 with template 0.0.20, its latest public release, at its root; the overrides "$name" pin the transitive polyspec packages, so one version of each resolves (S-425).
-- S-424: fsm owns its recipes for kit 0.0.98: the Makefile includes no recipe of kit and writes every target that fsm, its CI and its hooks run, each running a kit utility with explicit arguments; npm allow-remote is in .npmrc, the mise and uv settings in mise.toml, and each lint tool reads the configuration of fsm (.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, the Cargo lints and [tool.vulture]); the workflows, the bootstrap action, config/layout.kit.yml, the Git hooks and PRINCIPLES.md, the 0.0.98 copy of kit whose Enforced-by lines name the checks of fsm, are files of fsm; the Claude Code settings, whose hook kit removed, are removed (S-424).
-
 ## 0.0.3
 
-- fsm 0.0.3 pins the providers of the orm 0.0.22 round in every runtime (S-421) on Kit 0.0.92 (S-419), and make install installs the npm projects first (S-420) (S-422).
+- fsm 0.0.3 owns its recipes for kit 0.0.98 (S-424) and takes the latest provider releases in its npm projects (S-425), after it pinned the providers of the orm 0.0.22 round in every runtime (S-421) on Kit 0.0.92 (S-419); make install installs the npm projects first (S-420) (S-422).
 
+- S-425: fsm takes the latest provider releases: packages/js and packages/db name ordered-json 0.0.21, and packages/gui names crudui 0.0.14, hyper 0.0.32 and php-serialize 0.0.2 with template 0.0.20, its latest public release, at its root; the overrides "$name" pin the transitive polyspec packages, so one version of each resolves (S-425).
+- S-424: fsm owns its recipes for kit 0.0.98: the Makefile includes no recipe of kit and writes every target that fsm, its CI and its hooks run, each running a kit utility with explicit arguments; npm allow-remote is in .npmrc, the mise and uv settings in mise.toml, and each lint tool reads the configuration of fsm (.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, the Cargo lints and [tool.vulture]); the workflows, the bootstrap action, config/layout.kit.yml, the Git hooks and PRINCIPLES.md, the 0.0.98 copy of kit whose Enforced-by lines name the checks of fsm, are files of fsm; the Claude Code settings, whose hook kit removed, are removed (S-424).
 - S-423: knip-entries ignores @polyspec/php-serialize of packages/gui, which no JavaScript imports and the overrides pin for hyper-server (S-423).
 - S-421: every manifest and lock of fsm takes the orm 0.0.22 round: crudui 0.0.13, hyper 0.0.31, template 0.0.20 and php-serialize 0.0.1, which hyper-server 0.0.31 requires, in gui, and orm 0.0.22 with ordered-json 0.0.20 in db, js, php, php-ext, python, go and rust (S-421).
 - S-420: make install installs the npm projects before the PHP and Python installs that run install-link, so it passes on a checkout without packages/db and packages/gui installed (S-420).

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 2d1fb770458cf551f66c80b707b3bb6d2419f438bfec03e954b5998715a21ff0 -->
+<!-- source-sha256: f7a731edab06aeb80c6e6b6cab5c6c9ad731ec086fa6196759d099dc2560f715 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,13 +7,12 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- S-425: fsm은 제공 라이브러리의 최신 릴리스를 받는다. packages/js와 packages/db는 ordered-json 0.0.21을, packages/gui는 루트에 crudui 0.0.14, hyper 0.0.32, php-serialize 0.0.2와 공개된 최신 릴리스인 template 0.0.20을 적고, overrides "$이름"이 전이 polyspec 패키지를 고정해 각각 한 버전만 해석된다(S-425).
-- S-424: fsm은 kit 0.0.98을 위해 자기 recipe를 소유한다. Makefile은 kit의 recipe를 include하지 않고 fsm과 그 CI, hook이 실행하는 모든 타깃을 직접 적으며, 각 타깃은 kit utility를 명시적인 인자로 실행한다. npm allow-remote는 .npmrc에, mise와 uv 설정은 mise.toml에 두고, 각 lint 도구는 fsm의 설정(.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, Cargo lints, [tool.vulture])을 읽는다. 워크플로와 bootstrap action, config/layout.kit.yml, Git hook, 그리고 kit 0.0.98 사본으로서 Enforced-by 줄이 fsm의 check를 적는 PRINCIPLES.md는 fsm의 파일이다. kit이 hook을 없앤 Claude Code 설정은 제거한다(S-424).
-
 ## 0.0.3
 
-- fsm 0.0.3은 Kit 0.0.92(S-419) 위에서 모든 런타임에 orm 0.0.22 라운드의 제공 라이브러리를 고정하고(S-421), make install은 npm 프로젝트를 먼저 설치한다(S-420)(S-422).
+- fsm 0.0.3은 kit 0.0.98을 위해 자기 recipe를 소유하고(S-424) npm 프로젝트에서 제공 라이브러리의 최신 릴리스를 받는다(S-425). 그 전에 Kit 0.0.92(S-419) 위에서 모든 런타임에 orm 0.0.22 라운드의 제공 라이브러리를 고정했고(S-421), make install은 npm 프로젝트를 먼저 설치한다(S-420)(S-422).
 
+- S-425: fsm은 제공 라이브러리의 최신 릴리스를 받는다. packages/js와 packages/db는 ordered-json 0.0.21을, packages/gui는 루트에 crudui 0.0.14, hyper 0.0.32, php-serialize 0.0.2와 공개된 최신 릴리스인 template 0.0.20을 적고, overrides "$이름"이 전이 polyspec 패키지를 고정해 각각 한 버전만 해석된다(S-425).
+- S-424: fsm은 kit 0.0.98을 위해 자기 recipe를 소유한다. Makefile은 kit의 recipe를 include하지 않고 fsm과 그 CI, hook이 실행하는 모든 타깃을 직접 적으며, 각 타깃은 kit utility를 명시적인 인자로 실행한다. npm allow-remote는 .npmrc에, mise와 uv 설정은 mise.toml에 두고, 각 lint 도구는 fsm의 설정(.oxlintrc.json, knip.jsonc, ruff.toml, phpcs.xml.dist, phpstan.dist.neon, .golangci.yml, clippy.toml, Cargo lints, [tool.vulture])을 읽는다. 워크플로와 bootstrap action, config/layout.kit.yml, Git hook, 그리고 kit 0.0.98 사본으로서 Enforced-by 줄이 fsm의 check를 적는 PRINCIPLES.md는 fsm의 파일이다. kit이 hook을 없앤 Claude Code 설정은 제거한다(S-424).
 - S-423: knip-entries는 packages/gui의 @polyspec/php-serialize를 무시한다. 어떤 JavaScript도 import하지 않고, overrides가 hyper-server를 위해 고정한다(S-423).
 - S-421: fsm의 모든 manifest와 lock이 orm 0.0.22 라운드를 받는다. gui는 crudui 0.0.13, hyper 0.0.31, template 0.0.20, 그리고 hyper-server 0.0.31이 요구하는 php-serialize 0.0.1을, db, js, php, php-ext, python, go, rust는 orm 0.0.22와 ordered-json 0.0.20을 쓴다(S-421).
 - S-420: make install이 install-link를 실행하는 PHP와 Python 설치보다 npm 프로젝트를 먼저 설치해, packages/db와 packages/gui가 설치되지 않은 체크아웃에서도 통과한다 (S-420).
