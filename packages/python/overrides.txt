@@ -1,0 +1,2 @@
+# The overrides of the requirements of the dependencies of fsm (S-426): uv pip compile --override replaces the requirement of orm 0.0.22 with ordered-json 0.0.21, its latest release.
+polyspec-ordered-json @ https://github.com/polyspec/ordered-json/releases/download/v0.0.21/polyspec_ordered_json-0.0.21-py3-none-any.whl#sha256=091eb4e71ac3569a6117de08ad6f7ccb90d17cec672b3759fe2c075be3384d9f

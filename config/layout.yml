@@ -254,6 +254,8 @@ rules:
       - "!packages/python/pyproject.toml"
       - "!packages/python/constraints.txt"
       - "!packages/python/pylock.toml"
+      # the overrides that uv pip compile --override applies to the requirements of the dependencies (S-426)
+      - "!packages/python/overrides.txt"
       - "!packages/python/tests/test_conformance.py"
       - "!packages/python/tests/test_persist.py"
       - "!packages/python/examples/persist.py"
