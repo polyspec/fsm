@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 40352591bfafbe8a60f964566d5bfdf9b91780370c4aa0547568c537e06b5168 -->
+<!-- source-sha256: 35da30b6f2e4828c5b970006c8a7b38b9f5977c3ecf30f9467cc66d43a57664a -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -192,3 +192,4 @@
 | S-420 | make install이 install-link를 실행하는 단계보다 npm 프로젝트를 먼저 설치한다 | `Makefile`, `CHANGELOG.md(.ko)` | `make -n -B fsm-install` lists the packages/gui install before the first install-link | [o] |
 | S-421 | 모든 런타임에서 orm 0.0.22 라운드의 제공 라이브러리를 고정한다 | every package manifest and lock, `CHANGELOG.md(.ko)` | `make link-check` passes | [o] |
 | S-422 | fsm 0.0.3을 릴리즈한다 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [o] |
+| S-423 | knip이 gui overrides가 고정하는 php-serialize 의존성을 무시한다 | `config/knip-entries.json`, `CHANGELOG.md(.ko)` | `make lint-ts` passes knip | [ ] |
