@@ -26,8 +26,8 @@
     "@polyspec/hyper-client": "https://github.com/polyspec/hyper/releases/download/v0.0.32/polyspec-hyper-client-0.0.32.tgz",
     "@polyspec/hyper-server": "https://github.com/polyspec/hyper/releases/download/v0.0.32/polyspec-hyper-server-0.0.32.tgz",
     "@polyspec/php-serialize": "https://github.com/polyspec/php-serialize/releases/download/v0.0.2/polyspec-php-serialize-0.0.2.tgz",
-    "@polyspec/template": "https://github.com/polyspec/template/releases/download/v0.0.20/polyspec-template-0.0.20.tgz",
-    "@polyspec/template-compiler": "https://github.com/polyspec/template/releases/download/v0.0.20/polyspec-template-compiler-0.0.20.tgz",
+    "@polyspec/template": "https://github.com/polyspec/template/releases/download/v0.0.21/polyspec-template-0.0.21.tgz",
+    "@polyspec/template-compiler": "https://github.com/polyspec/template/releases/download/v0.0.21/polyspec-template-compiler-0.0.21.tgz",
     "htmx.org": "4.0.0",
     "mermaid": "12.2.0",
     "yaml": "2.9.1"
