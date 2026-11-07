@@ -190,4 +190,4 @@
 | S-419 | Adopt Kit 0.0.92 and drop cargo-downloads-fetch from deps-rust | Makefile, package.json, package-lock.json, the kit copies, CHANGELOG.md(.ko) | GREEN: `make kit-inject-check` passes | [o] |
 | S-420 | make install installs the npm projects before the steps that run install-link | `Makefile`, `CHANGELOG.md(.ko)` | `make -n -B fsm-install` lists the packages/gui install before the first install-link | [o] |
 | S-421 | Pin the providers of the orm 0.0.22 round in every runtime | every package manifest and lock, `CHANGELOG.md(.ko)` | `make link-check` passes | [o] |
-| S-422 | Release fsm 0.0.3 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [ ] |
+| S-422 | Release fsm 0.0.3 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes | [~] |
