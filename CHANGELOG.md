@@ -10,7 +10,6 @@
 
 - fsm 0.0.3 pins the providers of the orm 0.0.22 round in every runtime (S-421) on Kit 0.0.92 (S-419), and make install installs the npm projects first (S-420) (S-422).
 
-- S-423: knip-entries ignores @polyspec/php-serialize of packages/gui, which no JavaScript imports and the overrides pin for hyper-server (S-423).
 - S-421: every manifest and lock of fsm takes the orm 0.0.22 round: crudui 0.0.13, hyper 0.0.31, template 0.0.20 and php-serialize 0.0.1, which hyper-server 0.0.31 requires, in gui, and orm 0.0.22 with ordered-json 0.0.20 in db, js, php, php-ext, python, go and rust (S-421).
 - S-420: make install installs the npm projects before the PHP and Python installs that run install-link, so it passes on a checkout without packages/db and packages/gui installed (S-420).
 - S-419: fsm adopts Kit 0.0.92, and deps-rust no longer names cargo-downloads-fetch, which kit deleted with the Rust catch check (S-419).
