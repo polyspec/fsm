@@ -7,9 +7,14 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.3
+
+- fsm 0.0.3은 Kit 0.0.92(S-419) 위에서 모든 런타임에 orm 0.0.22 라운드의 제공 라이브러리를 고정하고(S-421), make install은 npm 프로젝트를 먼저 설치한다(S-420)(S-422).
+
 - S-421: fsm의 모든 manifest와 lock이 orm 0.0.22 라운드를 받는다. gui는 crudui 0.0.13, hyper 0.0.31, template 0.0.20, 그리고 hyper-server 0.0.31이 요구하는 php-serialize 0.0.1을, db, js, php, php-ext, python, go, rust는 orm 0.0.22와 ordered-json 0.0.20을 쓴다(S-421).
 - S-420: make install이 install-link를 실행하는 PHP와 Python 설치보다 npm 프로젝트를 먼저 설치해, packages/db와 packages/gui가 설치되지 않은 체크아웃에서도 통과한다 (S-420).
 - S-419: fsm이 Kit 0.0.92를 채택하고, deps-rust는 kit이 Rust catch check와 함께 삭제한 cargo-downloads-fetch를 더 이상 이름하지 않는다 (S-419).
+
 ## 0.0.2
 
 - fsm 0.0.2는 kit 0.0.89 위에서(S-417) 모든 runtime에 0.0.88 라운드의 provider를 pin합니다(S-416) (S-418).
