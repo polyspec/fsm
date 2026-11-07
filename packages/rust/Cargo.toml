@@ -39,13 +39,13 @@ path = "tests/persist.rs"
 
 # The orm pins of docs/plans/fsm-v1/plan.md, C-1: the model generator runs in build.rs, the runtime is used by the persist example.
 [build-dependencies]
-polyspec-orm-build = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.21" }
+polyspec-orm-build = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.22" }
 
 [dependencies]
 # The decoded value of from_code (docs/spec/fsm.md, B-6): the generated modules take a serde_json::Value.
 serde_json = "1.0.151"
 
 [dev-dependencies]
-polyspec-orm = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.21" }
+polyspec-orm = { git = "https://github.com/polyspec/orm.git", tag = "v0.0.22" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 libtest-mimic = "0.8.2"

@@ -2,8 +2,8 @@ cffi==2.1.1
 cryptography==50.0.2
 deprecation==2.1.0
 packaging==26.3
-polyspec-ordered-json @ https://github.com/polyspec/ordered-json/releases/download/v0.0.18/polyspec_ordered_json-0.0.18-py3-none-any.whl#sha256=9884b9d6bf09a4b6db3abc069c0fe4ee3156cf9f153ddbb5c99c90685a2dae4f
-polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.21/polyspec_orm-0.0.21-py3-none-any.whl#sha256=f10a0e06c5dbedb25ce5782bab6cbda33c469029f49eadf0b12867bd707a071b
+polyspec-ordered-json @ https://github.com/polyspec/ordered-json/releases/download/v0.0.20/polyspec_ordered_json-0.0.20-py3-none-any.whl#sha256=23170cd82dee03274ca43737e8f268ac2a586df1520f5642aaa30a43114f1a2c
+polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.22/polyspec_orm-0.0.22-py3-none-any.whl#sha256=fd0b72de35605fa49f59ffe5774be7ffa93d89cc0b2aad414e409809f84e5919
 psycopg-binary==3.3.6
 psycopg==3.3.6
 pycparser==3.11

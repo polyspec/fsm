@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ef3af5d4c6de7344f94295f6a00a13bb",
+    "content-hash": "c04cad0112f4cdc7eef3db34f79dd3ae",
     "packages": [
         {
             "name": "nikic/php-parser",
@@ -65,11 +65,11 @@
         },
         {
             "name": "polyspec/ordered-json",
-            "version": "0.0.18",
+            "version": "0.0.20",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.18/polyspec-ordered-json-php-0.0.18.zip",
-                "shasum": "9f7f027ef13c5a610b036aeb75c611ae69d89374"
+                "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.20/polyspec-ordered-json-php-0.0.20.zip",
+                "shasum": "2f9403c4093f60084575517773fdcb2cd4f9b4d8"
             },
             "require": {
                 "ext-json": "*",
@@ -103,24 +103,28 @@
         },
         {
             "name": "polyspec/orm",
-            "version": "0.0.21",
+            "version": "0.0.22",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/polyspec/orm/releases/download/v0.0.21/polyspec-orm-php-0.0.21.zip",
-                "shasum": "8bcea8ea069074f8cc9fa3c52df7d1ef38e3e7b4"
+                "url": "https://github.com/polyspec/orm/releases/download/v0.0.22/polyspec-orm-php-0.0.22.zip",
+                "shasum": "a215d041caf66dbe9c6e5fd026cda0fb47e1ce66"
             },
             "require": {
                 "composer-runtime-api": "^2.2",
+                "ext-ctype": "*",
+                "ext-filter": "*",
                 "ext-json": "*",
+                "ext-mbstring": "*",
                 "ext-pdo": "*",
                 "ext-zlib": "*",
                 "nikic/php-parser": "^5.9.0",
                 "php": ">=8.4",
-                "polyspec/ordered-json": "0.0.18",
+                "polyspec/ordered-json": "0.0.20",
                 "purrphp/yaml": "1.0.0-p3"
             },
             "suggest": {
                 "ext-openssl": "host-side AES on PostgreSQL and SQLite (aes columns)",
+                "ext-pcntl": "delivery of process signals while a postgres:// query waits",
                 "ext-pdo_mysql": "mysql:// DSNs",
                 "ext-pdo_pgsql": "postgres:// PDO handle type and DSNs",
                 "ext-pdo_sqlite": "sqlite:// DSNs",
@@ -141,6 +145,7 @@
                 "psr-4": {
                     "Polyspec\\Orm\\Tests\\Model\\": "gen/",
                     "Polyspec\\Orm\\Tests\\MarkdownModel\\": "markdownmodel/",
+                    "Polyspec\\Orm\\Tests\\BindModel\\": "bindmodel/",
                     "Polyspec\\Orm\\Tests\\ComplexModel\\": "complexmodel/"
                 }
             },
