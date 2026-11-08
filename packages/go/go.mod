@@ -2,7 +2,7 @@ module github.com/polyspec/fsm/packages/go
 
 go 1.27.3
 
-require github.com/polyspec/orm/packages/go v0.0.24
+require github.com/polyspec/orm/packages/go v0.0.26
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
@@ -16,7 +16,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/ncruces/go-strftime v1.1.0 // indirect
-	github.com/polyspec/ordered-json/packages/go v0.0.22 // indirect
+	github.com/polyspec/ordered-json/packages/go v0.0.23 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.42.0 // indirect

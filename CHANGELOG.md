@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.8
+
+- fsm 0.0.8 takes the newest provider releases: orm 0.0.26 and ordered-json 0.0.23 in every runtime (packages/db, js, php, php-ext, python, go and rust), and hyper 0.0.37, crudui 0.0.18, template 0.0.23 and php-serialize 0.0.4 in packages/gui; `make lint-ts` takes the setup of the ts runtime first, as CI does (S-439); the install example of packages/js names fsm 0.0.8 (S-440).
+
 ## 0.0.7
 
 - fsm 0.0.7 takes kit 0.0.102, whose uv-install puts back the provider links it removed when the install fails (S-437) (S-438).

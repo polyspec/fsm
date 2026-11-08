@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "662b9b606b4f629298ca269cbce74053",
+    "content-hash": "1e497f169ef29f8ba4a65d4b9cdd6b33",
     "packages": [
         {
             "name": "nikic/php-parser",
@@ -65,11 +65,11 @@
         },
         {
             "name": "polyspec/ordered-json",
-            "version": "0.0.22",
+            "version": "0.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.22/polyspec-ordered-json-php-0.0.22.zip",
-                "shasum": "70a7a19ff68386fc5dd36da19e30d6c22e12a262"
+                "url": "https://github.com/polyspec/ordered-json/releases/download/v0.0.23/polyspec-ordered-json-php-0.0.23.zip",
+                "shasum": "35286b76439fb14c8ab486a22b565803dad1bf34"
             },
             "require": {
                 "ext-json": "*",
@@ -103,11 +103,11 @@
         },
         {
             "name": "polyspec/orm",
-            "version": "0.0.24",
+            "version": "0.0.26",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/polyspec/orm/releases/download/v0.0.24/polyspec-orm-php-0.0.24.zip",
-                "shasum": "5ea708ba14e7c95617edc0dc3a3f6a06ac776009"
+                "url": "https://github.com/polyspec/orm/releases/download/v0.0.26/polyspec-orm-php-0.0.26.zip",
+                "shasum": "c0743e4540a43f7d1b1dfc7f3a5ac611c6849ac1"
             },
             "require": {
                 "composer-runtime-api": "^2.2",
@@ -119,7 +119,7 @@
                 "ext-zlib": "*",
                 "nikic/php-parser": "^5.9.0",
                 "php": ">=8.4",
-                "polyspec/ordered-json": "0.0.22",
+                "polyspec/ordered-json": "0.0.23",
                 "purrphp/yaml": "1.0.0-p3"
             },
             "suggest": {

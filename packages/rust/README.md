@@ -151,7 +151,7 @@ script of this package and the `polyspec-orm` crates.
 From the checkout root:
 
 ```sh
-make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.24 by its git tag)
+make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.26 by its git tag)
 make fsm-rust-test      # cargo test through kit's run-tests
 make test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)

@@ -1,6 +1,6 @@
 {
   "name": "@polyspec/fsm",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "npm consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)",
   "exports": {
     ".": {
@@ -20,8 +20,8 @@
     "node": ">=26.12.0"
   },
   "devDependencies": {
-    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.22/polyspec-ordered-json-0.0.22.tgz",
-    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.24/polyspec-orm-0.0.24.tgz",
+    "@polyspec/ordered-json": "https://github.com/polyspec/ordered-json/releases/download/v0.0.23/polyspec-ordered-json-0.0.23.tgz",
+    "@polyspec/orm": "https://github.com/polyspec/orm/releases/download/v0.0.26/polyspec-orm-0.0.26.tgz",
     "typescript": "7.0.2"
   },
   "overrides": {

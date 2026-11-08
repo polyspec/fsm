@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: dacf3ab940086929ea31a4691164a1a7639005d9e99d9a7ccbcb1ebba1a3ee58 -->
+<!-- source-sha256: 850b942971c184a712c39b0a1fb311bae52227650b808e9c746ec1c085f070de -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.8
+
+- fsm 0.0.8은 최신 provider 릴리스를 받는다: 모든 런타임(packages/db, js, php, php-ext, python, go, rust)에서 orm 0.0.26과 ordered-json 0.0.23을, packages/gui에서 hyper 0.0.37, crudui 0.0.18, template 0.0.23, php-serialize 0.0.4를 받는다. `make lint-ts`는 CI처럼 ts 런타임의 준비를 먼저 한다(S-439). packages/js의 설치 예시는 fsm 0.0.8을 적는다(S-440).
 
 ## 0.0.7
 
