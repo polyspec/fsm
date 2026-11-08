@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: bc2c19ebdb1d5f0046c20b0bfc1fcd9b926e157bf6c8fde6a4cfcc203157d856 -->
+<!-- source-sha256: 5c86a5a3faf109e7f7d6de707ba7a2c9541a14f366868c6290eb345dc57d82da -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -205,3 +205,4 @@
 | S-433 | kit 거부 두 가지만 멈추는 kit 0.0.101을 채택한다: 0.0.101 release asset을 고정하며, recipe 줄은 바뀌지 않는다 | `package.json`, `package-lock.json` | `make docs-check` and `make lint-ts` exit 0 | [o] |
 | S-434 | S-432와 S-433을 담아 fsm 0.0.4를 release하여, 그 release가 kit 0.0.101의 채택을 담게 한다 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes, then the CI run of main and the release workflow succeed | [ ] |
 | S-435 | 모든 런타임에서 제공 라이브러리의 최신 릴리스를 받아 fsm 0.0.5를 릴리즈한다: packages/db, js, php, php-ext, python, go, rust는 orm 0.0.23과 ordered-json 0.0.22를, packages/gui는 hyper 0.0.35, crudui 0.0.16, template 0.0.22, php-serialize 0.0.3을 받고 모든 lock을 다시 만들며, packages/js의 설치 예시는 fsm 0.0.5를 적는다 | the polyspec pins and locks of packages/db, js, gui, php, php-ext, python, go and rust, packages/js/README.md(.ko), packages/rust/README.md(.ko), the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and `go test ./...` of packages/go passes, then the CI run of main and the release workflow succeed | [ ] |
+| S-436 | 모든 런타임에서 orm 0.0.24를 받아 fsm 0.0.6을 릴리즈한다: orm 0.0.23의 Go module은 공개되지 않은 bindmodel package를 import하는 시험을 담아 packages/go의 go mod tidy가 실패했다. orm 0.0.24가 그 module을 고치며, 모든 lock을 다시 만든다 | the orm pins and locks of packages/db, js, php, php-ext, python, go and rust, packages/js/README.md(.ko), packages/rust/README.md(.ko), the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and `go mod tidy` and `go test ./...` of packages/go pass, then the CI run of main and the release workflow succeed | [ ] |

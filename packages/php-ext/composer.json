@@ -1,7 +1,7 @@
 {
     "name": "polyspec/fsm-php-ext",
     "description": "PHP extension of fsm: the generated state machines as one C extension, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "type": "php-ext",
     "license": "MIT",
     "php-ext": {
@@ -10,7 +10,7 @@
     },
     "require": {
         "php": ">=8.4",
-        "polyspec/orm": "0.0.23"
+        "polyspec/orm": "0.0.24"
     },
     "require-dev": {
         "phpunit/phpunit": "13.4.2"
@@ -18,7 +18,7 @@
     "repositories": [
         {
             "type": "composer",
-            "url": "https://github.com/polyspec/orm/releases/download/v0.0.23/packages.json"
+            "url": "https://github.com/polyspec/orm/releases/download/v0.0.24/packages.json"
         },
         {
             "type": "composer",

@@ -140,8 +140,8 @@ archive = { url = "https://github.com/polyspec/ordered-json/releases/download/v0
 
 [[packages]]
 name = "polyspec-orm"
-version = "0.0.23"
-archive = { url = "https://github.com/polyspec/orm/releases/download/v0.0.23/polyspec_orm-0.0.23-py3-none-any.whl", hashes = { sha256 = "9d6e20a66731f689ca91d8ef2963ee29e2da61055059a378316566536d9d375e" } }
+version = "0.0.24"
+archive = { url = "https://github.com/polyspec/orm/releases/download/v0.0.24/polyspec_orm-0.0.24-py3-none-any.whl", hashes = { sha256 = "ac6eba0eabeed8f2040ac5d17ea148fe5b373856eb8f00d6a104d1c18fd68537" } }
 
 [[packages]]
 name = "psycopg"

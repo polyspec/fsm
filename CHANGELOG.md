@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.6
+
+- fsm 0.0.6 takes orm 0.0.24 in every runtime (packages/db, js, php, php-ext, python, go and rust), whose released Go module no longer holds a test that imports an unpublished package, so go mod tidy of packages/go completes; the install example of packages/js names fsm 0.0.6 (S-436).
+
 ## 0.0.5
 
 - fsm 0.0.5 takes the newest provider releases in every runtime: orm 0.0.23 and ordered-json 0.0.22 in packages/db, js, php, php-ext, python, go and rust, and hyper 0.0.35, crudui 0.0.16, template 0.0.22 and php-serialize 0.0.3 in packages/gui; the install example of packages/js names fsm 0.0.5 (S-435).

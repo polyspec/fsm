@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 2e3cc70f8a0e9d70c8868a185f346e7fe5b548a4590c26d2742fea381d4aa31c -->
+<!-- source-sha256: e68cd04b14bcd840962a30fb7addbef0cd35e4e5689dfa23076bcb96680cc3bc -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.6
+
+- fsm 0.0.6은 모든 런타임(packages/db, js, php, php-ext, python, go, rust)에서 orm 0.0.24를 받는다. 그 릴리스의 Go module은 공개되지 않은 package를 import하는 시험을 더는 담지 않으므로 packages/go의 go mod tidy가 끝난다. packages/js의 설치 예시는 fsm 0.0.6을 적는다(S-436).
 
 ## 0.0.5
 
