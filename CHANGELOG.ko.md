@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e68cd04b14bcd840962a30fb7addbef0cd35e4e5689dfa23076bcb96680cc3bc -->
+<!-- source-sha256: dacf3ab940086929ea31a4691164a1a7639005d9e99d9a7ccbcb1ebba1a3ee58 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.7
+
+- fsm 0.0.7은 설치가 실패하면 uv-install이 지운 provider 링크를 되돌리는 kit 0.0.102를 받는다(S-437)(S-438).
 
 ## 0.0.6
 

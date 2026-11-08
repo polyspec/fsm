@@ -10,7 +10,7 @@ against the conformance vectors, and the example shows how it is used.
 Install the release by the URL of its archive, the release asset `polyspec-fsm-0.0.1.tgz`:
 
 ```sh
-npm install https://github.com/polyspec/fsm/releases/download/v0.0.6/polyspec-fsm-0.0.6.tgz
+npm install https://github.com/polyspec/fsm/releases/download/v0.0.7/polyspec-fsm-0.0.7.tgz
 ```
 
 ## Generate into your project

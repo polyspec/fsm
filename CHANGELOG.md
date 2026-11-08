@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.7
+
+- fsm 0.0.7 takes kit 0.0.102, whose uv-install puts back the provider links it removed when the install fails (S-437) (S-438).
+
 ## 0.0.6
 
 - fsm 0.0.6 takes orm 0.0.24 in every runtime (packages/db, js, php, php-ext, python, go and rust), whose released Go module no longer holds a test that imports an unpublished package, so go mod tidy of packages/go completes; the install example of packages/js names fsm 0.0.6 (S-436).
