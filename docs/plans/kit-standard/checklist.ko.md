@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: d698e0624efe70f47eede5db630645341023997b786a92718d0e5b6cbb3dcb50 -->
+<!-- source-sha256: 452dca0ac4ccf366ec174d8cac16029abd19dcc763d373048fd4bc0cf82abc50 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -203,3 +203,4 @@
 | S-431 | python 설치 앞의 install-tools recipe 줄 순서를 단언하는 시험을 지운다: recipe 문구를 맞춰 보며 kit 0.0.99의 install-tools 줄에서 실패했다 | `tests/make-install/make-install.test.mts` | `make lint-ts` and `make docs-check` exit 0 | [o] |
 | S-432 | parity 삭제: kit 0.0.100은 구현들이 서로 어떻게 관계되는지 검사하지 않으며, fsm은 자기 테스트를 실행한다. config/parity.json, parity·divergence·test-markers target과 CI job, 그 owner 항목과 규칙 줄을 지우고 kit 0.0.100을 받는다 | `Makefile`, `.github/workflows/ci-pipeline.yml`, `config/parity.json`, `config/ci.json`, `config/owner-checks.json`, `PRINCIPLES.md(.ko)`, `AGENTS.md(.ko)`, `package.json` | `make owner-validate`, `make docs-check` and `make lint-ts` exit 0; no reference to the deleted kit checks remains | [o] |
 | S-433 | kit 거부 두 가지만 멈추는 kit 0.0.101을 채택한다: 0.0.101 release asset을 고정하며, recipe 줄은 바뀌지 않는다 | `package.json`, `package-lock.json` | `make docs-check` and `make lint-ts` exit 0 | [o] |
+| S-434 | S-432와 S-433을 담아 fsm 0.0.4를 release하여, 그 release가 kit 0.0.101의 채택을 담게 한다 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes, then the CI run of main and the release workflow succeed | [ ] |

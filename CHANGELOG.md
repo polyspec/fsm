@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.4
+
+- fsm 0.0.4 takes kit 0.0.101: parity, its divergence and test-markers targets and their CI jobs are deleted (S-432), and the tests that asserted recipe or workflow text are deleted (S-430, S-431) (S-433) (S-434).
+
 ## 0.0.3
 
 - fsm 0.0.3 owns its recipes for kit 0.0.98 (S-424) and takes the latest provider releases in its npm projects (S-425), after it pinned the providers of the orm 0.0.22 round in every runtime (S-421) on Kit 0.0.92 (S-419); make install installs the npm projects first (S-420) (S-422).

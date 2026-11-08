@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 86d9db9584181cd8c1fd2a7f129a1956465f57f90e8e86f2c329a5658ceb80f6 -->
+<!-- source-sha256: d24430eeb8f8a536b4d3e5616ef4e4f834f5189eb2df5bf8d63075a41d2befed -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.4
+
+- fsm 0.0.4는 kit 0.0.101을 받는다: parity와 그 divergence·test-markers target, CI job을 지우고(S-432), recipe나 workflow 문구를 단언하던 시험을 지운다(S-430, S-431)(S-433)(S-434).
 
 ## 0.0.3
 
