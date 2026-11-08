@@ -1205,7 +1205,7 @@ checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "polyspec-fsm"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "libtest-mimic",
  "polyspec-orm",
@@ -1216,8 +1216,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-ordered-json"
-version = "0.0.20"
-source = "git+https://github.com/polyspec/ordered-json.git?tag=v0.0.20#e3d2e40350003b03d12ae34edb45062e8d273156"
+version = "0.0.22"
+source = "git+https://github.com/polyspec/ordered-json.git?tag=v0.0.22#5dc5efa3857478e40c4fa833cd593d71eabad7f3"
 dependencies = [
  "serde",
  "serde_json",
@@ -1225,8 +1225,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm"
-version = "0.0.22"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.22#b7948d67933f51a67a4b967d3cfab0e579c8d101"
+version = "0.0.23"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.23#99e5276d4d5a9cec6714b901df39d349ac078411"
 dependencies = [
  "aes-gcm",
  "base64",
@@ -1255,8 +1255,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm-build"
-version = "0.0.22"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.22#b7948d67933f51a67a4b967d3cfab0e579c8d101"
+version = "0.0.23"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.23#99e5276d4d5a9cec6714b901df39d349ac078411"
 dependencies = [
  "polyspec-orm-schema",
  "proc-macro2",
@@ -1269,8 +1269,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm-schema"
-version = "0.0.22"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.22#b7948d67933f51a67a4b967d3cfab0e579c8d101"
+version = "0.0.23"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.23#99e5276d4d5a9cec6714b901df39d349ac078411"
 dependencies = [
  "regex",
  "same-file",

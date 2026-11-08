@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: d24430eeb8f8a536b4d3e5616ef4e4f834f5189eb2df5bf8d63075a41d2befed -->
+<!-- source-sha256: 2e3cc70f8a0e9d70c8868a185f346e7fe5b548a4590c26d2742fea381d4aa31c -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.5
+
+- fsm 0.0.5는 모든 런타임에서 제공 라이브러리의 최신 릴리스를 받는다: packages/db, js, php, php-ext, python, go, rust는 orm 0.0.23과 ordered-json 0.0.22를, packages/gui는 hyper 0.0.35, crudui 0.0.16, template 0.0.22, php-serialize 0.0.3을 받으며, packages/js의 설치 예시는 fsm 0.0.5를 적는다(S-435).
 
 ## 0.0.4
 

@@ -6,6 +6,10 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.5
+
+- fsm 0.0.5 takes the newest provider releases in every runtime: orm 0.0.23 and ordered-json 0.0.22 in packages/db, js, php, php-ext, python, go and rust, and hyper 0.0.35, crudui 0.0.16, template 0.0.22 and php-serialize 0.0.3 in packages/gui; the install example of packages/js names fsm 0.0.5 (S-435).
+
 ## 0.0.4
 
 - fsm 0.0.4 takes kit 0.0.101: parity, its divergence and test-markers targets and their CI jobs are deleted (S-432), and the tests that asserted recipe or workflow text are deleted (S-430, S-431) (S-433) (S-434).
