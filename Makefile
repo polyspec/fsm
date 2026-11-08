@@ -226,7 +226,9 @@ suppression-check:
 # discovery: .oxlintrc.json and knip.jsonc, ruff.toml and [tool.vulture] of packages/python/pyproject.toml, phpcs.xml.dist and
 # phpstan.dist.neon, .golangci.yml, and clippy.toml with the [workspace.lints] of packages/rust/Cargo.toml.
 .PHONY: lint-ts lint-php lint-python lint-go lint-rust lint-php-ext
-lint-ts:
+# lint-ts reads the packages of every npm folder, docs/.vitepress/config.mts among them, and the generated TypeScript, so it
+# takes the setup of the ts runtime of config/ci.json first, as CI does (S-439).
+lint-ts: deps-node fsm-js-gen
 	$(NODE) $(KIT)/lint-ts.$(KIT_EXT)
 
 lint-php:
