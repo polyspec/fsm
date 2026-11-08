@@ -267,10 +267,10 @@ lint:
 # The JavaScript and PHP packages have no build step. The runner arguments are those that kit 0.0.98 passed (kit K1094, K1106):
 # go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
 build-go:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/go -- var/tools/bin/go build ./...
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/go -- $(GO) build ./...
 build-js build-php:
 build-python:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/python -- var/tools/bin/uv build
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/python -- $(UV) build
 build-rust:
 	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/rust -- cargo build --locked
 
