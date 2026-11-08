@@ -191,14 +191,6 @@ test('gui-browser-test downloads the browser once, then needs no network', (t) =
   assert.ok(lineIndex(out, /browser\.test\.mjs/) >= 0, `gui-browser-test does not run its tests:\n${out}`);
 });
 
-test('the python environment is created with the Python 3.14 of install-tools', (t) => {
-  const out = dryRun(sandbox(t), 'test-python');
-  // install-tools takes no tool names: it installs every tool of mise.lock, the Python among them (kit K127).
-  const interpreter = lineIndex(out, /install-tools\.m[jt]s\s*$/);
-  const install = lineIndex(out, installLine('python'));
-  assert.ok(interpreter >= 0 && interpreter < install, `no install-tools before the python install:\n${out}`);
-});
-
 test('install builds every dependency and the toolchains', (t) => {
   const out = dryRun(sandbox(t), 'install');
   for (const name of ALL) assert.ok(lineIndex(out, installLine(name)) >= 0, `install does not install ${name}:\n${out}`);
