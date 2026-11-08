@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 6c19ad13fd7d585ecee0b05226588e0d2c8535d5e1132816bdf6d06bd60bb01a -->
+<!-- source-sha256: 68b0564fea86b302785422b45187fc31aaca7e4751f28d2ee54b52471658dd08 -->
 # 개발
 
 [English](AGENTS.md)
@@ -21,7 +21,7 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   `[settings]`와 `[env]`, 각 lint 도구의 설정 파일. fsm은 kit의 파일을 import하지 않는다. package가 export하는 것
   (`@polyspec/kit/tracked-files`)만 import하며, 일반적인 필요는 자기 `package.json`에 선언한 생태계 라이브러리(ajv, picomatch,
   `node:`)로 채운다. kit의 동작은 kit에서 테스트한다.
-  Enforced by: none, 리뷰에서 판단한다. `make kit-check`는 kit utility의 설정만 schema로 검사한다.
+  Enforced by: none, 리뷰에서 판단한다.
 - Refines S7: 기능의 기본 테스트는 그 기능을 소유한 패키지(compiler, DB store, GUI)에 둔다. 언어 패키지에는 소비자 입장 테스트만 둔다.
   루트에는 루트 도구의 테스트와 그 공용 helper `tests/support/`만 둔다. 루트 도구 테스트의 fixture는 임시 디렉터리에 만들고 커밋하지 않는다.
   Enforced by: `make layout-check`, `make parity-declarations-check`

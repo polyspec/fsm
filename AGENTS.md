@@ -22,7 +22,7 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   `mise.toml`, and the configuration file of each lint tool. fsm imports no file of kit: it imports only what the package
   exports (`@polyspec/kit/tracked-files`), and takes a generic need from its ecosystem library (ajv, picomatch, `node:`)
   declared in its own `package.json`. Behavior of kit is tested in kit.
-  Enforced by: none, a judgement at review; `make kit-check` checks only the configuration of the kit utilities against their schemas.
+  Enforced by: none, a judgement at review.
 - Refines S7: The base test of a feature lives in the package that owns it (compiler, DB store, GUI). Language packages hold only
   consumer-side tests. The root holds only the tests of its own tools and their shared helper `tests/support/`. Fixtures of the
   root tool tests are built in temporary directories and never committed.

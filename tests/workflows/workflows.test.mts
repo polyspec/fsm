@@ -237,7 +237,7 @@ test('the node, go, php and rust versions come from the files that declare them'
 });
 
 // .php-version declares the PHP of the checkout for setup-php: the release workflow of kit sets up PHP only when the file
-// exists, and kit-check requires it of a repository that uses PHP (kit K193). Every setup-php step of fsm's own workflows
+// exists. Every setup-php step of fsm's own workflows
 // reads the same file, so the PHP of CI is one declaration that this test ties to config/toolchain.json (S-44-20).
 test('.php-version holds the PHP minor of config/toolchain.json, and every setup-php step of the workflows reads it', () => {
   assert.equal(PHP.length, 1, 'config/toolchain.json must declare one PHP minor, the minimum that .php-version holds');

@@ -28,6 +28,9 @@ export MISE_GLOBAL_CONFIG_FILE := $(CURDIR)/mise.toml
 # mise install records the trust of the root of the global config, the home folder unless this names the checkout.
 export MISE_GLOBAL_CONFIG_ROOT := $(CURDIR)
 MISE_ENVIRONMENT := MISE_DATA_DIR MISE_CACHE_DIR MISE_STATE_DIR MISE_CONFIG_DIR MISE_GLOBAL_CONFIG_FILE MISE_GLOBAL_CONFIG_ROOT
+# kit 0.0.98's run-tests dropped NODE_TEST_CONTEXT, so a node --test that a recipe starts from inside a node test runs as
+# its own run, not as a child of that test (kit K1094); no recipe passes it on.
+unexport NODE_TEST_CONTEXT
 export PATH := $(KIT_TOOLS)/bin:$(KIT_TOOLS)/mise/shims:$(PATH)
 NODE := $(KIT_TOOLS)/bin/node
 NPM := $(KIT_TOOLS)/bin/npm
@@ -48,13 +51,16 @@ install-kit:
 	$(MAKE) --no-print-directory install-tools
 	$(MAKE) --no-print-directory kit-install-declared
 
+# The home and the cache of the Composer that install-tools and install-symbols run, the folders of var/tools that kit 0.0.98
+# set (kit K1095).
+COMPOSER_TOOL_ENV = COMPOSER_HOME=$(CURDIR)/var/tools/composer/home COMPOSER_CACHE_DIR=$(CURDIR)/var/tools/composer/cache
 # TOOLS=npm runs the bootstrap of kit, which imports only the built-ins of Node.js, with the node of the machine: it installs the
 # node of var/tools. Any other TOOLS names tools of mise.toml; without TOOLS every tool is installed.
 install-tools:
 ifeq ($(TOOLS),npm)
 	$(ONLINE) node $(KIT)/bootstrap/bootstrap.$(KIT_EXT)
 else
-	$(ONLINE) $(NODE) $(KIT)/install-tools.$(KIT_EXT) $(TOOLS)
+	$(COMPOSER_TOOL_ENV) $(ONLINE) $(NODE) $(KIT)/install-tools.$(KIT_EXT) --no-self-update $(TOOLS)
 endif
 
 # npm ci of the root lock as it is; npm reads allow-remote=root of .npmrc, since package.json pins @polyspec/kit by the URL of its
@@ -68,10 +74,10 @@ install-link:
 	$(NODE) $(KIT)/link.$(KIT_EXT) link$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
 
 kit-install-declared:
-	$(ONLINE) $(NODE) $(KIT)/install-symbols.$(KIT_EXT) --declared
+	$(COMPOSER_TOOL_ENV) $(ONLINE) $(NODE) $(KIT)/install-symbols.$(KIT_EXT) --declared
 
 kit-install-symbols:
-	$(ONLINE) $(NODE) $(KIT)/install-symbols.$(KIT_EXT) $(EXTRACTORS)
+	$(COMPOSER_TOOL_ENV) $(ONLINE) $(NODE) $(KIT)/install-symbols.$(KIT_EXT) $(EXTRACTORS)
 
 # toolchain-lock writes mise.lock with mise lock for each platform that has the archives of the tools. mise locks a pypi: tool
 # with uv, which takes the first uv on PATH and a managed Python of the home before PATH, so mise first locks and installs uv and
@@ -100,30 +106,42 @@ link-check:
 unlink:
 	$(NODE) $(KIT)/link.$(KIT_EXT) unlink$(if $(PROJECT), --project $(PROJECT))$(if $(RUNTIME), --runtime $(RUNTIME))
 
+# The worktree of a row (kit K1107), as kit 0.0.98 made it: ../<main checkout>-<NAME>-<ID> on <TYPE or fix>/<NAME>-<ID> from main;
+# a worktree without node_modules first gets npm ci of the npm of var/tools, then make install and make link-check run in it. The
+# worktree runs its own tools in a make of its own (kit K858): the recipe drops the flags of this make and this var/tools from PATH.
+WORKTREE_MAIN = $(patsubst %/.git,%,$(shell git rev-parse --path-format=absolute --git-common-dir))
+WORKTREE_DECLARATION = --folder $(WORKTREE_MAIN)-$(NAME)-$(ID) --branch $(or $(TYPE),fix)/$(NAME)-$(ID) --base main --prepare 'test -d node_modules || PATH="$(KIT_TOOLS)/bin:$$PATH" $(NPM) ci --ignore-scripts' --make install --make link-check
+WORKTREE_ENVIRONMENT = env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL PATH="$$(printf '%s' "$$PATH" | awk -v RS=: -v ORS=: -v tools='$(KIT_TOOLS)' 'index($$0, tools) != 1' | sed 's/:$$//')"
 # worktree-setup creates or reuses the worktree of a row from main, runs make install and make link-check in it.
 worktree-setup:
-	$(ONLINE) $(NODE) $(KIT)/worktree-setup.$(KIT_EXT) $(NAME) $(ID) $(or $(TYPE),fix)
+	$(ONLINE) $(WORKTREE_ENVIRONMENT) $(NODE) $(KIT)/worktree-setup.$(KIT_EXT) $(WORKTREE_DECLARATION)
 
 # land merges the branch BRANCH into main fast-forward after the static gates of kit-gates that its changed paths select.
 land:
-	$(NODE) $(KIT)/land.$(KIT_EXT) $(BRANCH)
+	$(NODE) $(KIT)/land.$(KIT_EXT) $(BRANCH) main
 
 # ---- Git hooks and merge drivers -------------------------------------------------------------------------------------
-# The hooks of fsm are its own files under .githooks, which config/checklist.json lists: pre-commit runs staged-generated-hook
+# The hooks of fsm are its own files under .githooks, which HOOK_DECLARATION lists: pre-commit runs staged-generated-hook
 # and commit-msg runs commit-msg-hook. make hooks points core.hooksPath at .githooks, makes each listed hook executable and
 # declares the merge drivers of the changelogs and checklists, which git runs as make twin-merge.
 .PHONY: hooks hooks-check staged-generated-hook commit-msg-hook twin-merge
+# The declaration of make hooks (kit K1099): the hooks pre-commit and commit-msg of .githooks,
+# the merges of the changelogs and checklists (kit K354) and their drivers, which run twin-merge of this checkout.
+TWIN_MERGE_DRIVER := make --no-print-directory twin-merge MERGE="%O %A %B %P"
+HOOK_DECLARATION := --hooks-path .githooks --hook pre-commit --hook commit-msg --merge 'CHANGELOG.md=kit-changelog' --merge 'CHANGELOG.ko.md=kit-twin' \
+	--merge 'docs/plans/*/checklist.md=kit-checklist' --merge 'docs/plans/*/checklist.ko.md=kit-twin' \
+	--driver 'kit-twin=$(TWIN_MERGE_DRIVER)' --driver 'kit-changelog=$(TWIN_MERGE_DRIVER)' --driver 'kit-checklist=$(TWIN_MERGE_DRIVER)'
 hooks:
-	$(NODE) $(KIT)/git-hooks.$(KIT_EXT) install
+	$(NODE) $(KIT)/git-hooks.$(KIT_EXT) install $(HOOK_DECLARATION)
 
 hooks-check:
-	$(NODE) $(KIT)/git-hooks.$(KIT_EXT) check
+	$(NODE) $(KIT)/git-hooks.$(KIT_EXT) check $(HOOK_DECLARATION)
 
 staged-generated-hook:
-	$(NODE) $(KIT)/generated-files.$(KIT_EXT) staged
+	$(NODE) $(KIT)/generated-files.$(KIT_EXT) staged --binary ELF --binary Mach-O --binary PE
 
 commit-msg-hook:
-	$(NODE) $(KIT)/check-commits.$(KIT_EXT) --message $(MESSAGE)
+	$(NODE) $(KIT)/check-commits.$(KIT_EXT) --message $(MESSAGE) --rules commit-ai-footer,commit-ai-identity
 
 twin-merge:
 	@$(NODE) $(KIT)/twin-merge.$(KIT_EXT) $(MERGE)
@@ -135,7 +153,7 @@ twin-merge:
 raw_text = $(foreach v,$(1),$(if $(filter undefined,$(origin $(v))),,$(v)='$(subst ','\'',$(value $(v)))'))
 
 plan-new:
-	$(NODE) $(KIT)/plan.$(KIT_EXT) plan-new
+	NAME_PATTERN='^[a-z][a-z0-9-]*$$' $(NODE) $(KIT)/plan.$(KIT_EXT) plan-new
 
 plan-split:
 	$(NODE) $(KIT)/plan.$(KIT_EXT) plan-split
@@ -144,7 +162,7 @@ item-new:
 	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION) $(NODE) $(KIT)/plan.$(KIT_EXT) item-new
 
 item-edit:
-	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION CAUSE RETRY CAUSE_KO RETRY_KO) $(NODE) $(KIT)/plan.$(KIT_EXT) item-edit
+	$(call raw_text,TASK TASK_KO DELIVERABLES VERIFICATION CAUSE RETRY CAUSE_KO RETRY_KO) DONE_STAYS=1 $(NODE) $(KIT)/plan.$(KIT_EXT) item-edit
 
 item-state:
 	$(NODE) $(KIT)/plan.$(KIT_EXT) item-state
@@ -166,35 +184,36 @@ text-absent:
 	$(NODE) $(KIT)/text-absent.$(KIT_EXT)
 
 # ---- Checks ----------------------------------------------------------------------------------------------------------
-.PHONY: kit-check layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check test-markers-check duplication-check suppression-check divergence-check
-kit-check:
-	$(NODE) $(KIT)/kit-check.$(KIT_EXT)
-
+.PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check test-markers-check duplication-check suppression-check divergence-check
 # alint checks the tree against config/layout.yml, which extends config/layout.kit.yml, the common layout rules that fsm took from
 # kit, with the map of fsm; then Git must ignore each install folder and track no generated file.
 layout-check:
 	@test -x $(ALINT) || { echo "layout-check: $(ALINT) is missing; run make install-tools"; exit 1; }
 	$(ALINT) check --config config/layout.yml --color never --compact .
-	$(NODE) $(KIT)/generated-files.$(KIT_EXT) installs
-	$(NODE) $(KIT)/generated-files.$(KIT_EXT) tracked
+	$(NODE) $(KIT)/generated-files.$(KIT_EXT) installs var package.json=node_modules pyproject.toml=.venv composer.json=vendor
+	$(NODE) $(KIT)/generated-files.$(KIT_EXT) tracked --binary ELF --binary Mach-O --binary PE
 
 docs-check:
-	$(NODE) $(KIT)/check-documents.$(KIT_EXT)
+	$(NODE) $(KIT)/check-documents.$(KIT_EXT) --checklist-place --private-path /Users/ --private-path /home/ --kit-rows
 
 rules-check:
 	$(NODE) $(KIT)/check-rules.$(KIT_EXT)
 
 owner-check:
-	$(NODE) $(KIT)/owner-check.$(KIT_EXT) $(if $(PATHS),--paths "$(PATHS)") $(if $(BASE),--base $(BASE))
+	$(NODE) $(KIT)/owner-check.$(KIT_EXT) --every-path $(if $(PATHS),--paths "$(PATHS)") $(if $(BASE),--base $(BASE))
 
 owner-validate:
-	$(NODE) $(KIT)/owner-check.$(KIT_EXT) --validate
+	$(NODE) $(KIT)/owner-check.$(KIT_EXT) --every-path --validate
 
+# The tool sources of rebuild-check, the values that kit 0.0.98 fixed (kit K1080): the scripts and generators, each glob quoted.
+REBUILD_SOURCES := --source 'scripts/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'packages/*/{scripts,tools,bin}/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'packages/*/*/{scripts,tools,bin}/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source '**/*_generate.go' --source '**/*.generate.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'benchmarks/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'examples/**/*.{mts,mjs,cjs,js,ts,py,php,sh,mk}' --source 'tests/fixtures/*/generate.*'
+# The files among the sources that are no tool source (kit K1080): the .d.ts declarations and the tests.
+REBUILD_EXCLUDES := --exclude '**/*.d.ts' --exclude '*/**/{test,tests}/**' --exclude 'test/**' --exclude 'tests/**/{*_generate.go,*.generate.*}' --exclude '**/*.{test,spec}.{js,jsx,ts,tsx,cjs,cts,mjs,mts}' --exclude '**/{*_test.go,test_*.py,*_test.py,*Test.php}'
 rebuild-check:
-	$(NODE) $(KIT)/rebuild-check.$(KIT_EXT)
+	$(NODE) $(KIT)/rebuild-check.$(KIT_EXT) $(REBUILD_SOURCES) $(REBUILD_EXCLUDES)
 
 language-check:
-	$(NODE) $(KIT)/language-check.$(KIT_EXT)
+	$(NODE) $(KIT)/language-check.$(KIT_EXT) --forbid '\p{Script=Hangul}'
 
 test-markers-check:
 	$(NODE) $(KIT)/test-markers.$(KIT_EXT)
@@ -206,7 +225,7 @@ suppression-check:
 	$(NODE) $(KIT)/suppression-check.$(KIT_EXT)
 
 divergence-check:
-	$(NODE) $(KIT)/divergence-check.$(KIT_EXT)
+	$(NODE) $(KIT)/divergence-check.$(KIT_EXT) --reason-kind generated --reason-kind fixture --reason-kind test --reason-kind harness --reason-kind ecosystem --reason-kind external --feature-state partial --feature-state unsupported --parity config/parity.json
 
 # ---- Lint ------------------------------------------------------------------------------------------------------------
 # Each lint utility runs the tools of var/tools or of the kit package, and each tool reads the configuration of fsm by its own
@@ -217,7 +236,7 @@ lint-ts:
 	$(NODE) $(KIT)/lint-ts.$(KIT_EXT)
 
 lint-php:
-	$(NODE) $(KIT)/lint-php.$(KIT_EXT)
+	$(NODE) $(KIT)/lint-php.$(KIT_EXT) --memory-limit=-1
 
 lint-python:
 	$(NODE) $(KIT)/lint-python.$(KIT_EXT)
@@ -226,30 +245,51 @@ lint-go:
 	$(NODE) $(KIT)/lint-go.$(KIT_EXT)
 
 lint-rust:
-	$(NODE) $(KIT)/lint-rust.$(KIT_EXT)
+	$(NODE) $(KIT)/lint-rust.$(KIT_EXT) --locked
 
 lint-php-ext:
-	$(NODE) $(KIT)/php-extension.$(KIT_EXT) check
+	$(NODE) $(KIT)/php-extension.$(KIT_EXT) check --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php
 
 # ---- Build and test of the runtimes ----------------------------------------------------------------------------------
 # The tasks of each runtime that packages/ holds: runtime-targets runs the build or the unit tests of each package of the runtime
 # with the tools of its ecosystem; CASES=<pattern> is the name filter of its runner. fsm adds its own steps to a task as
 # prerequisites (test-go: fsm-go-test). The PHP extension builds with phpize into $(PHP_EXT_MODULE).
 .PHONY: build test lint build-go build-js build-php build-python build-rust build-php-ext test-go test-js test-php test-python test-rust test-php-ext
-build test lint:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) task $@
+# build, test and lint run the target of each runtime of packages/ (go, js, php, php-ext, python, rust); the lint of the
+# JavaScript package is lint-ts (kit K1106).
+build:
+	$(MAKE) --no-print-directory build-go build-js build-php build-php-ext build-python build-rust
+test:
+	$(MAKE) --no-print-directory test-go test-js test-php test-php-ext test-python test-rust
+lint:
+	$(MAKE) --no-print-directory lint-go lint-php lint-php-ext lint-python lint-rust lint-ts
 
-build-go build-js build-php build-python build-rust:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build $(@:build-%=%)
+# The JavaScript and PHP packages have no build step. The runner arguments are those that kit 0.0.98 passed (kit K1094, K1106):
+# go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
+build-go:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/go -- var/tools/bin/go build ./...
+build-js build-php:
+build-python:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/python -- var/tools/bin/uv build
+build-rust:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/rust -- cargo build --locked
 
-test-go test-js test-php test-python test-rust:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) $(@:test-%=%)
+test-go:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner go --roots packages/go -- -count=1 -timeout=0
+test-js:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner node --roots packages/js -- --test-timeout=30000 --test-concurrency=1
+test-php:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner php --roots packages/php
+test-python:
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner python --roots packages/python --venv .venv
+test-rust:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner cargo --roots packages/rust -- -- --test-threads=1
 
 build-php-ext:
-	$(ONLINE) $(NODE) $(KIT)/php-extension.$(KIT_EXT) build
+	$(ONLINE) $(NODE) $(KIT)/php-extension.$(KIT_EXT) build --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php
 
 test-php-ext: build-php-ext
-	$(NODE) $(KIT)/php-extension.$(KIT_EXT) test
+	$(NODE) $(KIT)/php-extension.$(KIT_EXT) test --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php -- --roots packages/php
 
 # ---- Parity ----------------------------------------------------------------------------------------------------------
 # The kinds are the implementations of config/parity.json, the one list of the languages of fsm (S-44), so the Makefile cannot
@@ -275,7 +315,7 @@ $(KINDS:%=parity-bindings-%-check):
 # (.github/workflows/ci-pipeline.yml) runs its partitions, each in a job that installs only what it needs; kit-gates-static runs
 # past failures, so one run names every static gate that fails.
 .PHONY: kit-gates kit-gates-static kit-gates-parity kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext
-KIT_STATIC_GATES := kit-check layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check
+KIT_STATIC_GATES := layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check
 KIT_GATE_TARGETS := $(KIT_STATIC_GATES) parity-check lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext
 kit-gates: $(KIT_GATE_TARGETS)
 
@@ -295,21 +335,21 @@ kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # The plan, the setup and the context of the jobs of the CI pipeline, from config/ci.json.
 .PHONY: kit-ci-plan kit-ci-setup kit-ci-context-prepare kit-ci-context-cleanup ci-targets ci-summary
 kit-ci-plan:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --plan
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --parity config/parity.json --plan
 
 kit-ci-setup:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --setup $(GROUP) $(if $(filter parity-binding,$(GROUP)),$(IMPLEMENTATION),$(RUNTIME))
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --parity config/parity.json --setup $(GROUP) $(if $(filter parity-binding,$(GROUP)),$(IMPLEMENTATION),$(RUNTIME))
 
 kit-ci-context-prepare:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-prepare $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --parity config/parity.json --context-prepare $(GROUP) $(RUNTIME)
 
 kit-ci-context-cleanup:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-cleanup $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --parity config/parity.json --context-cleanup $(GROUP) $(RUNTIME)
 
 # ci-targets runs TARGETS past failures and writes the report CI_REPORT (logs, record.json, summary.md).
 CI_REPORT ?= var/report/ci-targets
 ci-targets:
-	$(NODE) $(KIT)/ci-targets.$(KIT_EXT) $(CI_REPORT) $(TARGETS)
+	$(NODE) $(KIT)/ci-targets.$(KIT_EXT) -k $(CI_REPORT) $(TARGETS)
 
 ci-summary:
 	$(NODE) $(KIT)/ci-targets.$(KIT_EXT) --summary $(CI_REPORT)
@@ -320,7 +360,7 @@ ci-summary:
 # GITHUB_ENV; the later steps read TAG. fsm needs no preparation before release-tools, so release-prepare does nothing.
 .PHONY: release-candidate release-prepare release-tools release-tools-path release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage
 release-candidate:
-	$(NODE) $(KIT)/release-run.$(KIT_EXT) prepare "$(VERSION)"
+	RELEASE_ASSETS=var/release/assets $(NODE) $(KIT)/release-run.$(KIT_EXT) prepare "$(VERSION)"
 
 release-prepare:
 	@:
@@ -338,23 +378,23 @@ release-tools-path:
 
 release-tag:
 	@test -n "$$RUN" || { echo "release-tag: RUN is required, for example make release-tag RUN=123"; exit 1; }
-	$(NODE) $(KIT)/release-run.$(KIT_EXT) tag "$$RUN"$(if $(AUTO), --auto)
+	RELEASE_MAIN=origin/main $(NODE) $(KIT)/release-run.$(KIT_EXT) tag "$$RUN"$(if $(AUTO), --auto)
 
 release-assets:
 	@test -n "$$TAG" || { echo "release-assets: TAG is required, for example make release-assets TAG=v0.0.1"; exit 1; }
-	$(ONLINE) $(NODE) $(KIT)/release.$(KIT_EXT) assets "$$TAG"
+	RELEASE_ASSETS=var/release/assets $(ONLINE) $(NODE) $(KIT)/release.$(KIT_EXT) assets "$$TAG"
 
 release-candidate-assets:
 	@test -n "$$VERSION" || { echo "release-candidate-assets: VERSION is required, for example make release-candidate-assets VERSION=0.0.1"; exit 1; }
-	$(ONLINE) $(NODE) $(KIT)/release.$(KIT_EXT) candidate-assets "$$VERSION"
+	RELEASE_ASSETS=var/release/assets $(ONLINE) $(NODE) $(KIT)/release.$(KIT_EXT) candidate-assets "$$VERSION"
 
 release-publish:
 	@test -n "$$TAG" || { echo "release-publish: TAG is required, for example make release-publish TAG=v0.0.1"; exit 1; }
-	$(NODE) $(KIT)/release.$(KIT_EXT) publish "$$TAG"
+	RELEASE_ASSETS=var/release/assets RELEASE_RECORDS=var/release $(NODE) $(KIT)/release.$(KIT_EXT) publish "$$TAG"
 
 release-undraft:
 	@test -n "$$TAG" || { echo "release-undraft: TAG is required, for example make release-undraft TAG=v0.0.1"; exit 1; }
-	$(NODE) $(KIT)/release.$(KIT_EXT) undraft "$$TAG"
+	RELEASE_RECORDS=var/release $(NODE) $(KIT)/release.$(KIT_EXT) undraft "$$TAG"
 
 release-coverage:
 	$(NODE) $(KIT)/release.$(KIT_EXT) coverage
@@ -368,7 +408,7 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 # nothing: the own suite of ci.yml is CHECK_TARGETS without them.
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := kit-check owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test parity-declarations-check parity-check rules-check rebuild-check language-check test-markers-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext divergence-check suppression-check
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test parity-declarations-check parity-check rules-check rebuild-check language-check test-markers-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext divergence-check suppression-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
@@ -481,7 +521,7 @@ fsm-go-gen:
 
 # fsm-go-test runs the conformance cases and the persist example with GOPROXY=off, so that the modules must already be downloaded.
 fsm-go-test: $(GO_DEP) fsm-go-gen
-	GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests
+	GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests
 
 # fsm-js-install installs the dependencies of package-lock.json (the orm release); gen and test need them.
 .PHONY: fsm-js-install fsm-js-gen fsm-js-test
@@ -495,7 +535,7 @@ fsm-js-gen:
 
 # fsm-js-test runs the conformance cases of the npm package; the kit reporter names every file from the checkout root.
 fsm-js-test: $(NPM_DEP) fsm-js-gen
-	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- packages/js/tests/conformance.test.mjs
+	$(RUN_TESTS) node --timeout 30 --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --test-concurrency=1 packages/js/tests/conformance.test.mjs
 
 # fsm-php-install installs the Composer dependencies of packages/php from the release packages.json of composer.json (K865,
 # K871), then installs the dependencies of composer.lock, and links right after the install (P30), so the vendor
@@ -574,7 +614,7 @@ fsm-python-test: $(PYTHON_DEP) fsm-python-gen
 fsm-python-test: export PYTHONDONTWRITEBYTECODE := 1
 fsm-python-test:
 	@test -x $(PY_VENV)/bin/python || { echo "fsm-python-test: $(PY_VENV) is missing; run make install first"; exit 1; }
-	$(RUN_TESTS) python --venv $(CURDIR)/$(PY_VENV) --results .results/python.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv $(CURDIR)/$(PY_VENV) --results .results/python.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests
 
 # fsm-rust-install fetches the crates of Cargo.lock (the orm release from its git tag); gen and test need them.
 .PHONY: fsm-rust-install fsm-rust-gen fsm-rust-test
@@ -588,7 +628,7 @@ fsm-rust-gen:
 
 # fsm-rust-test runs cargo on the conformance test of packages/rust through the kit reporter.
 fsm-rust-test: $(RUST_DEP) fsm-rust-gen
-	$(RUN_TESTS) cargo --results .results/rust.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance
+	$(RUN_TESTS) cargo --results .results/rust.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance -- --test-threads=1
 
 # fsm-gen generates the files of every kind, which no checkout tracks: fsm-gen and orm-gen write them (AGENTS.md, Generated files). The
 # gates that read them (the layout, the parity declarations and the parity check) and every test of a kind depend on the gen of
@@ -615,23 +655,23 @@ check:
 # make-install-test runs the tests of the package dependencies (tests/make-install): a target that needs a dependency installs it
 # first, and a present dependency is not installed again (docs/plans/fsm-v1/checklist.md, S-29).
 make-install-test:
-	$(RUN_TESTS) node --results .results/make-install-test.json --inputs Makefile --inputs config/parity.json --inputs packages --inputs tests/make-install -- $(or $(TESTS),tests/make-install)
+	$(RUN_TESTS) node --timeout 30 --results .results/make-install-test.json --inputs Makefile --inputs config/parity.json --inputs packages --inputs tests/make-install -- --test-concurrency=1 $(or $(TESTS),tests/make-install)
 
 # package-names-test runs the tests of the polyspec names of the released runtimes (tests/package-names, S-410): the TS runtime, the Python
 # wheel and the Rust crate name their packages polyspec-fsm, as the other polyspec packages do.
 package-names-test:
-	$(RUN_TESTS) node --results .results/package-names-test.json --inputs packages/js/package.json --inputs packages/python/pyproject.toml --inputs packages/rust/Cargo.toml --inputs tests/package-names -- $(or $(TESTS),tests/package-names/package-names.test.mts)
+	$(RUN_TESTS) node --timeout 30 --results .results/package-names-test.json --inputs packages/js/package.json --inputs packages/python/pyproject.toml --inputs packages/rust/Cargo.toml --inputs tests/package-names -- --test-concurrency=1 $(or $(TESTS),tests/package-names/package-names.test.mts)
 
 # workflows-test runs the tests of the CI and Pages workflows (.github/workflows): every action is pinned to a verified commit,
 # the check job runs make install and make check with the services of plan C-6, and each version comes from the file that
 # declares it (docs/plans/fsm-v1/plan.md, C-10; docs/plans/fsm-v1/checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
-	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs tests/workflows -- tests/workflows/workflows.test.mts
+	$(RUN_TESTS) node --timeout 30 --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts
 
 # name-test runs the tests of scripts/check-name.mts; name-check fails while a tracked file or path names the library by its old
 # outside the allowlist of the checker (docs/plans/fsm-v1/checklist.md, S-18; the library is named fsm).
 name-test:
-	$(RUN_TESTS) node --results .results/name-test.json --inputs scripts/check-name.mts --inputs tests/check-name -- tests/check-name
+	$(RUN_TESTS) node --timeout 30 --results .results/name-test.json --inputs scripts/check-name.mts --inputs tests/check-name -- --test-concurrency=1 tests/check-name
 
 name-check:
 	$(NODE) scripts/check-name.mts
@@ -639,7 +679,7 @@ name-check:
 # readme-test runs the tests of scripts/check-readmes.mts; readme-check requires every declared README pair to have its required
 # sections and a Korean twin with the same headings (docs/plans/fsm-v1/plan.md, C-9; docs/plans/fsm-v1/checklist.md, S-19).
 readme-test:
-	$(RUN_TESTS) node --results .results/readme-test.json --inputs scripts/check-readmes.mts --inputs tests/check-readmes -- tests/check-readmes
+	$(RUN_TESTS) node --timeout 30 --results .results/readme-test.json --inputs scripts/check-readmes.mts --inputs tests/check-readmes -- --test-concurrency=1 tests/check-readmes
 
 readme-check:
 	$(NODE) scripts/check-readmes.mts
@@ -656,12 +696,12 @@ docs-build: $(DOCS_DEP)
 # docs-build-test runs the tests of the site: a dead link fails the build, and the real build produces its pages and the GitHub
 # rewrite of a link to a repository file (tests/docs-build, docs/plans/fsm-v1/plan.md, C-8). Its record names the inputs it reads.
 docs-build-test: $(DOCS_DEP)
-	$(RUN_TESTS) node --timeout 600 --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- tests/docs-build
+	$(RUN_TESTS) node --timeout 600 --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- --test-concurrency=1 tests/docs-build
 
 # compiler-test runs the tests of packages/compiler, the core validation of a definition (docs/plans/fsm-v1/plan.md, C-5)
 # with the editor schema contracts/schema/fsm.schema.json, which the tests check against the core.
 compiler-test:
-	$(RUN_TESTS) node --results .results/compiler-test.json --inputs packages/compiler --inputs contracts -- packages/compiler/tests
+	$(RUN_TESTS) node --timeout 30 --results .results/compiler-test.json --inputs packages/compiler --inputs contracts -- --test-concurrency=1 packages/compiler/tests
 
 # db-test-postgres and db-test-mysql run the DB store tests on the server dialects that the documents name (docs/plans/fsm-v1/plan.md, C-6):
 # db-store.test.mjs and store-contract-all.test.mjs, which open the database of FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN through the dialect
@@ -673,12 +713,12 @@ DB_DIALECT_TESTS := packages/db/tests/db-store.test.mjs packages/db/tests/store-
 db-test-postgres: $(DB_DEP) fsm-db-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	@$(call require_dsn,FSM_TEST_PG_ADMIN_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --timeout 30 --results .results/db-test-postgres.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 db-test-mysql: $(DB_DEP) fsm-db-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	@$(call require_dsn,FSM_TEST_MYSQL_ADMIN_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --timeout 30 --results .results/db-test-mysql.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 # fsm-db-gen writes the models of packages/db/src/models with the orm-gen of its package (npm run gen): they are generated output, and
 # no checkout tracks them (AGENTS.md, Generated files). The db store, its tests, the GUI and the dialect helper of the npm persist
@@ -694,7 +734,7 @@ fsm-db-gen: $(DB_DEP)
 db-deps: $(DB_DEP)
 
 db-test: $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- packages/db/tests
+	$(RUN_TESTS) node --timeout 30 --results .results/db-test.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 packages/db/tests
 
 # gui-deps installs the packages of packages/gui (hyper v0.0.13, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
 # yaml, pinned in its package.json and package-lock.json; docs/plans/fsm-v1/plan.md, C-1). The db store of the GUI is the one of
@@ -712,7 +752,7 @@ gui-build: $(GUI_DEP)
 # built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI. The
 # browser test is in tests/browser and runs with gui-browser-test, so gui-test takes the test files of tests/ only.
 gui-test: gui-build $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --results .results/gui-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- $(wildcard packages/gui/tests/*.test.mjs)
+	$(RUN_TESTS) node --timeout 30 --results .results/gui-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 $(wildcard packages/gui/tests/*.test.mjs)
 
 # GUI_BROWSERS is the stamp of the Chromium that the GUI browser test drives, keyed on the Playwright version that
 # packages/gui/package-lock.json pins (devDependency, exact). A new version is a new stamp, so it downloads once; a later run
@@ -734,7 +774,7 @@ gui-browsers: $(GUI_BROWSERS)
 # gui-browser-test runs the tests of tests/browser (browser.test.mjs, diagram.test.mjs; S-38 adds the drawn diagram) of packages/gui: the GUI forms in a headless Chromium on a temporary project
 # (docs/plans/fsm-v1/checklist.md, S-22-1 and S-22-2). It needs the browser of gui-browsers and the built assets of gui-build.
 gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --timeout 120 --results .results/gui-browser-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
+	$(RUN_TESTS) node --timeout 120 --results .results/gui-browser-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
 
 # packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1/plan.md, Verification). It refuses an empty kind list,
 # because make with no goal would run the default goal, check, from inside check.
@@ -752,21 +792,21 @@ test-js: fsm-js-test
 # The two files run one after the other: on a server dialect they share the persist table, which each case clears.
 NPM_PERSIST_TESTS := --test-concurrency=1 --test-name-pattern=persist packages/js/tests/conformance.test.mjs packages/js/tests/persist.test.mjs
 npm-persist-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
-	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --timeout 30 --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --timeout 30 --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --timeout 30 --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 # npm-types runs tests/npm-types: tsc compiles tests/npm-types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/fsm-v1/checklist.md, S-09-2). It is a tool test with
 # its own record, so the conformance test of the npm kind holds only vector cases for kit's parity check.
 npm-types: $(NPM_DEP) fsm-js-gen
-	$(RUN_TESTS) node --results .results/npm-types.json --inputs packages/js -- tests/npm-types
+	$(RUN_TESTS) node --timeout 30 --results .results/npm-types.json --inputs packages/js -- --test-concurrency=1 tests/npm-types
 
 
 # test-go is the task of its runtime (Build and test of the runtimes); the tests of packages/go are its prerequisite (K246-2).
@@ -780,12 +820,12 @@ test-rust: fsm-rust-test
 # rust-persist-test runs tests/persist.rs of packages/rust on sqlite: two transitions of one row at the same time, and a deadlock
 # runs the persistence transaction again while another database error does not (docs/spec/fsm.md, B-4; S-31, S-44-9).
 rust-persist-test: $(RUST_DEP) fsm-rust-gen
-	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test persist
+	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test persist -- --test-threads=1
 # python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/mise/shims/python3
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
 python-tools-test:
-	$(RUN_TESTS) node --results .results/python-tools-test.json --inputs Makefile --inputs config/parity.json --inputs config/toolchain.json --inputs tests/python-tools -- tests/python-tools
+	$(RUN_TESTS) node --timeout 30 --results .results/python-tools-test.json --inputs Makefile --inputs config/parity.json --inputs config/toolchain.json --inputs tests/python-tools -- --test-concurrency=1 tests/python-tools
 
 # test-python is the task of its runtime (Build and test of the runtimes); the tests of packages/python are its prerequisite (K246-2).
 test-python: fsm-python-test
@@ -804,19 +844,19 @@ endef
 
 go-persist-test-postgres: $(GO_DEP) fsm-go-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-postgres.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
+	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-postgres.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests -run 'TestConformance/test_persist__|TestPersist'
 
 go-persist-test-mysql: $(GO_DEP) fsm-go-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-mysql.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- ./tests -run 'TestConformance/test_persist__|TestPersist'
+	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-mysql.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests -run 'TestConformance/test_persist__|TestPersist'
 
 rust-persist-test-postgres: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist -- --test-threads=1
 
 rust-persist-test-mysql: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist -- --test-threads=1
 
 php-persist-test-postgres: $(PHP_DEP) fsm-php-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
@@ -836,11 +876,11 @@ php-ext-persist-test-mysql: $(PHP_EXT_DEP) fsm-php-gen build-php-ext
 
 python-persist-test-postgres: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-postgres.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
+	FSM_TEST_DIALECT=postgres PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-postgres.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
 
 python-persist-test-mysql: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-mysql.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
+	FSM_TEST_DIALECT=mysql PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-mysql.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
 
 # examples-model generates the ignored examples/model of the Go examples before build-go compiles them (S-304): the build does not
 # depend on a leftover of an earlier run. It runs the orm-gen of packages/go with the Go of the checkout's tools, as fsm-go-gen does.

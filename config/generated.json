@@ -33,12 +33,23 @@
     "**/playwright-report/**",
     "**/coverage/**",
     "**/go.work",
-    "**/go.work.sum"
+    "**/go.work.sum",
+    "**/node_modules/**",
+    "**/vendor/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/__pycache__/**",
+    "**/target/**",
+    "**/dist/**",
+    "**/*.egg-info/**"
   ],
   "exceptions": [
     {
       "path": "packages/compiler/tests/golden/**",
       "reason": "the golden outputs of the compiler that its tests compare with, tracked as test fixtures (S-308)"
     }
+  ],
+  "headers": [
+    "Code generated .* DO NOT EDIT"
   ]
 }

@@ -1,5 +1,6 @@
 {
   "schema": 1,
+  "runtimes": ["go", "php", "php-ext", "python", "rust", "ts"],
   "runner": "ubuntu-26.04-arm",
   "setup": {
     "shared": [],

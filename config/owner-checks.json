@@ -34,7 +34,6 @@
         "mise.toml"
       ],
       "targets": [
-        "kit-check",
         "owner-validate",
         "docs-check"
       ]
@@ -195,7 +194,6 @@
         ".php-version"
       ],
       "targets": [
-        "kit-check",
         "owner-validate",
         "docs-check"
       ]

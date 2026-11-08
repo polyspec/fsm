@@ -3,5 +3,12 @@
   "comment": "Every Markdown document of the repository has a Korean twin, the copies PRINCIPLES.md(.ko) of kit among them.",
   "include": ["**/*.md"],
   "siteLinks": true,
-  "changelogs": ["CHANGELOG.md"]
+  "changelogs": ["CHANGELOG.md"],
+  "changelogRules": [
+    "unreleased-first",
+    "unreleased-once",
+    "versions-only",
+    "newest-first",
+    "unreleased-empty-at-release"
+  ]
 }
