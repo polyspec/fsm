@@ -3,7 +3,7 @@
 // notation of packages/js/src/*.d.ts and holds the lines that must fail to compile under @ts-expect-error. tsc, the TypeScript
 // of the devDependencies of packages/js, compiles it in strict mode and the test asserts that it exits with status 0: a
 // declaration that is too loose makes a directive unused, and a declaration that is too narrow makes a line of the consumer
-// fail. It compiles and runs no case, so it is a tool test of the root tests/, a tools root of config/parity.json, with its own
+// fail. It compiles and runs no case, so it is a tool test of the root tests/, with its own
 // record (make npm-types).
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';

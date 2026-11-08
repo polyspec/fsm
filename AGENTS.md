@@ -26,7 +26,7 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
 - Refines S7: The base test of a feature lives in the package that owns it (compiler, DB store, GUI). Language packages hold only
   consumer-side tests. The root holds only the tests of its own tools and their shared helper `tests/support/`. Fixtures of the
   root tool tests are built in temporary directories and never committed.
-  Enforced by: `make layout-check`, `make parity-declarations-check`
+  Enforced by: `make layout-check`
 - Refines S3: Every test of the `Makefile` runs through `$(RUN_TESTS)`, kit's test runner, which prints the start, the progress, the result and
   the elapsed time of each case and gives each case its own timeout. No run has an overall timeout, and no test process runs
   longer than 10 minutes; a longer one is reported with its reason.

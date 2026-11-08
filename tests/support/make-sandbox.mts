@@ -4,8 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 
-/** The files that a copy of the Makefile reads: the Makefile, the kit targets and the kinds of config/parity.json. */
-const MAKE_FILES = ['Makefile', 'config/parity.json'];
+/** The files that a copy of the Makefile reads: the Makefile and the kit targets. */
+const MAKE_FILES = ['Makefile'];
 
 // The lock or manifest that each dependency is keyed on: an empty file in the copy of a make -n test.
 export const LOCKS = [

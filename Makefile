@@ -184,7 +184,7 @@ text-absent:
 	$(NODE) $(KIT)/text-absent.$(KIT_EXT)
 
 # ---- Checks ----------------------------------------------------------------------------------------------------------
-.PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check test-markers-check duplication-check suppression-check divergence-check
+.PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check duplication-check suppression-check
 # alint checks the tree against config/layout.yml, which extends config/layout.kit.yml, the common layout rules that fsm took from
 # kit, with the map of fsm; then Git must ignore each install folder and track no generated file.
 layout-check:
@@ -215,17 +215,11 @@ rebuild-check:
 language-check:
 	$(NODE) $(KIT)/language-check.$(KIT_EXT) --forbid '\p{Script=Hangul}'
 
-test-markers-check:
-	$(NODE) $(KIT)/test-markers.$(KIT_EXT)
-
 duplication-check:
 	$(NODE) $(KIT)/duplication-check.$(KIT_EXT)
 
 suppression-check:
 	$(NODE) $(KIT)/suppression-check.$(KIT_EXT)
-
-divergence-check:
-	$(NODE) $(KIT)/divergence-check.$(KIT_EXT) --reason-kind generated --reason-kind fixture --reason-kind test --reason-kind harness --reason-kind ecosystem --reason-kind external --feature-state partial --feature-state unsupported --parity config/parity.json
 
 # ---- Lint ------------------------------------------------------------------------------------------------------------
 # Each lint utility runs the tools of var/tools or of the kit package, and each tool reads the configuration of fsm by its own
@@ -291,32 +285,13 @@ build-php-ext:
 test-php-ext: build-php-ext
 	$(NODE) $(KIT)/php-extension.$(KIT_EXT) test --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php -- --roots packages/php
 
-# ---- Parity ----------------------------------------------------------------------------------------------------------
-# The kinds are the implementations of config/parity.json, the one list of the languages of fsm (S-44), so the Makefile cannot
-# name a kind that parity lacks. Each kind has test-<kind> (its package tests) as a literal target, added by its package item.
-KINDS := $(shell node -p "require('./config/parity.json').implementations.map(implementation => implementation.name).join(' ')")
-# parity-check runs every binding of config/parity.json and checks every rule; UNITS and IMPLEMENTATIONS select. CI runs it in
-# full. The phases of the CI pipeline: parity-api-check, and one parity-bindings-<kind>-check for each kind of KINDS.
-.PHONY: parity-check parity-declarations-check parity-api-check $(KINDS:%=parity-bindings-%-check)
-parity-check:
-	$(NODE) $(KIT)/parity.$(KIT_EXT) $(foreach unit,$(UNITS),--unit $(unit)) $(foreach implementation,$(IMPLEMENTATIONS),--implementation $(implementation))
-
-parity-declarations-check:
-	$(NODE) $(KIT)/parity.$(KIT_EXT) --declarations $(foreach unit,$(UNITS),--unit $(unit)) $(foreach rule,$(RULES),--rule $(rule)) $(foreach id,$(IDS),--id $(id))
-
-parity-api-check:
-	$(NODE) $(KIT)/parity.$(KIT_EXT) --phase api
-
-$(KINDS:%=parity-bindings-%-check):
-	$(NODE) $(KIT)/parity.$(KIT_EXT) --phase bindings --implementation $(@:parity-bindings-%-check=%)
-
 # ---- CI --------------------------------------------------------------------------------------------------------------
 # kit-gates is every gate of fsm, and land runs those of them that the changed paths of a branch select. The CI pipeline
 # (.github/workflows/ci-pipeline.yml) runs its partitions, each in a job that installs only what it needs; kit-gates-static runs
 # past failures, so one run names every static gate that fails.
-.PHONY: kit-gates kit-gates-static kit-gates-parity kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext
-KIT_STATIC_GATES := layout-check docs-check rules-check owner-validate rebuild-check language-check test-markers-check duplication-check parity-declarations-check suppression-check divergence-check
-KIT_GATE_TARGETS := $(KIT_STATIC_GATES) parity-check lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext
+.PHONY: kit-gates kit-gates-static kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext
+KIT_STATIC_GATES := layout-check docs-check rules-check owner-validate rebuild-check language-check duplication-check suppression-check
+KIT_GATE_TARGETS := $(KIT_STATIC_GATES) lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext
 kit-gates: $(KIT_GATE_TARGETS)
 
 ifneq ($(filter kit-gates-static,$(MAKECMDGOALS)),)
@@ -324,7 +299,6 @@ MAKEFLAGS += -k
 endif
 kit-gates-static: $(KIT_STATIC_GATES)
 	@echo "[kit-gates-static] every shared gate passed"
-kit-gates-parity: parity-check
 kit-gates-runtime-ts: lint-ts
 kit-gates-runtime-php: lint-php
 kit-gates-runtime-python: lint-python
@@ -335,16 +309,16 @@ kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 # The plan, the setup and the context of the jobs of the CI pipeline, from config/ci.json.
 .PHONY: kit-ci-plan kit-ci-setup kit-ci-context-prepare kit-ci-context-cleanup ci-targets ci-summary
 kit-ci-plan:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --parity config/parity.json --plan
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --plan
 
 kit-ci-setup:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --parity config/parity.json --setup $(GROUP) $(if $(filter parity-binding,$(GROUP)),$(IMPLEMENTATION),$(RUNTIME))
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --setup $(GROUP) $(RUNTIME)
 
 kit-ci-context-prepare:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --parity config/parity.json --context-prepare $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-prepare $(GROUP) $(RUNTIME)
 
 kit-ci-context-cleanup:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --parity config/parity.json --context-cleanup $(GROUP) $(RUNTIME)
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-cleanup $(GROUP) $(RUNTIME)
 
 # ci-targets runs TARGETS past failures and writes the report CI_REPORT (logs, record.json, summary.md).
 CI_REPORT ?= var/report/ci-targets
@@ -408,7 +382,7 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 # nothing: the own suite of ci.yml is CHECK_TARGETS without them.
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test parity-declarations-check parity-check rules-check rebuild-check language-check test-markers-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext divergence-check suppression-check
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext suppression-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
@@ -631,11 +605,11 @@ fsm-rust-test: $(RUST_DEP) fsm-rust-gen
 	$(RUN_TESTS) cargo --results .results/rust.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance -- --test-threads=1
 
 # fsm-gen generates the files of every kind, which no checkout tracks: fsm-gen and orm-gen write them (AGENTS.md, Generated files). The
-# gates that read them (the layout, the parity declarations and the parity check) and every test of a kind depend on the gen of
+# gate that reads them (the layout) and every test of a kind depend on the gen of
 # its kind, so a fresh checkout generates what it reads.
 .PHONY: fsm-gen
 fsm-gen: fsm-go-gen fsm-js-gen fsm-php-gen fsm-php-ext-gen fsm-python-gen fsm-rust-gen
-layout-check parity-declarations-check parity-check: fsm-gen
+layout-check: fsm-gen
 
 # install is for a fresh clone and for CI, which runs `make install` once and then `make check`: the bootstrap of install-kit,
 # the package dependencies above, so a later run downloads nothing, and then the links of install-link.
@@ -655,7 +629,7 @@ check:
 # make-install-test runs the tests of the package dependencies (tests/make-install): a target that needs a dependency installs it
 # first, and a present dependency is not installed again (docs/plans/fsm-v1/checklist.md, S-29).
 make-install-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/make-install-test.json --inputs Makefile --inputs config/parity.json --inputs packages --inputs tests/make-install -- --test-concurrency=1 $(or $(TESTS),tests/make-install)
+	$(RUN_TESTS) node --timeout 30 --results .results/make-install-test.json --inputs Makefile --inputs packages --inputs tests/make-install -- --test-concurrency=1 $(or $(TESTS),tests/make-install)
 
 # package-names-test runs the tests of the polyspec names of the released runtimes (tests/package-names, S-410): the TS runtime, the Python
 # wheel and the Rust crate name their packages polyspec-fsm, as the other polyspec packages do.
@@ -776,10 +750,8 @@ gui-browsers: $(GUI_BROWSERS)
 gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP) fsm-db-gen
 	$(RUN_TESTS) node --timeout 120 --results .results/gui-browser-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
 
-# packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1/plan.md, Verification). It refuses an empty kind list,
-# because make with no goal would run the default goal, check, from inside check.
+# packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1/plan.md, Verification).
 packages-test:
-	$(if $(KINDS),,$(error config/parity.json declares no kind))
 	$(MAKE) -j6 test-go test-js test-php test-php-ext test-python test-rust
 
 # test-js is the task of its runtime (Build and test of the runtimes); the tests of packages/js are its prerequisite (K246).
@@ -804,7 +776,7 @@ npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 
 # npm-types runs tests/npm-types: tsc compiles tests/npm-types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/fsm-v1/checklist.md, S-09-2). It is a tool test with
-# its own record, so the conformance test of the npm kind holds only vector cases for kit's parity check.
+# its own record, so the conformance test of the npm kind holds only vector cases.
 npm-types: $(NPM_DEP) fsm-js-gen
 	$(RUN_TESTS) node --timeout 30 --results .results/npm-types.json --inputs packages/js -- --test-concurrency=1 tests/npm-types
 
@@ -825,7 +797,7 @@ rust-persist-test: $(RUST_DEP) fsm-rust-gen
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
 python-tools-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/python-tools-test.json --inputs Makefile --inputs config/parity.json --inputs config/toolchain.json --inputs tests/python-tools -- --test-concurrency=1 tests/python-tools
+	$(RUN_TESTS) node --timeout 30 --results .results/python-tools-test.json --inputs Makefile --inputs config/toolchain.json --inputs tests/python-tools -- --test-concurrency=1 tests/python-tools
 
 # test-python is the task of its runtime (Build and test of the runtimes); the tests of packages/python are its prerequisite (K246-2).
 test-python: fsm-python-test

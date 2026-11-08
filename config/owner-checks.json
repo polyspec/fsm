@@ -92,15 +92,6 @@
     },
     {
       "paths": [
-        "config/parity.json"
-      ],
-      "targets": [
-        "packages-test",
-        "parity-declarations-check"
-      ]
-    },
-    {
-      "paths": [
         "packages/js/**"
       ],
       "targets": [

@@ -1,8 +1,8 @@
 """The persistence tests of the python package beyond the vector cases (docs/spec/fsm.md, B-4).
 
 Two transitions of one row that run at the same time, each in its own thread on its own connection, give the outcome that the
-pattern promises, and a deadlock runs the transaction again while another database error does not. Each method is named by its
-feature unit of config/parity.json. They run on the dialect of FSM_TEST_DIALECT (open_persist_database of test_conformance).
+pattern promises, and a deadlock runs the transaction again while another database error does not. Each method is named by the case
+it tests. They run on the dialect of FSM_TEST_DIALECT (open_persist_database of test_conformance).
 """
 
 import tempfile

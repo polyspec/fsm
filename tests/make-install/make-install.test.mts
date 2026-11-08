@@ -1,7 +1,7 @@
 // Tests of the package dependencies of the root Makefile (docs/plans/fsm-v1/checklist.md, S-29; docs/plans/fsm-v1/plan.md,
 // Verification): a target that needs a package dependency installs it first, once, and a later run with the dependency
 // present installs nothing. The tests run `make -n` on a copy of the Makefile, the kit targets of the installed
-// @polyspec/kit and config/parity.json (the kinds) in a temporary directory, with the lock or manifest
+// @polyspec/kit in a temporary directory, with the lock or manifest
 // of each dependency and, per case, the installed stamps. No dependency is installed and no network is used: make only prints the recipes.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -252,9 +252,9 @@ test('the targets that read the models of packages/db generate them after the in
   }
 });
 
-test('the gates that read generated files generate the files of every kind first', (t) => {
+test('the gate that reads generated files generates the files of every kind first', (t) => {
   const dir = sandbox(t);
-  for (const gate of ['layout-check', 'parity-declarations-check', 'parity-check UNITS=vectors']) {
+  for (const gate of ['layout-check']) {
     const out = dryRun(dir, gate);
     for (const kind of ['go', 'npm', 'php', 'php-ext', 'python', 'rust']) assert.ok(lineIndex(out, genLine(kind)) >= 0, `${gate} does not generate the ${kind} files:\n${out}`);
   }

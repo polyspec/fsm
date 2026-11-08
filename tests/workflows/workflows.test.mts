@@ -36,11 +36,9 @@ const CI = read('.github/workflows/ci.yml');
 const PAGES = read('.github/workflows/pages.yml');
 // The bootstrap of every job is the kit-bootstrap action of fsm (K992); the jobs use it by its uses line.
 const USES_KIT = 'uses: ./.github/actions/kit-bootstrap';
-// The PHP minors of config/toolchain.json, the implementations of config/parity.json and the tools of mise.toml.
+// The PHP minors of config/toolchain.json and the tools of mise.toml.
 const PHP: unknown = field(JSON.parse(read('config/toolchain.json')), 'php', 'config/toolchain.json');
 if (!Array.isArray(PHP)) throw new Error('php of config/toolchain.json must be a list');
-const IMPLEMENTATIONS: unknown = field(JSON.parse(read('config/parity.json')), 'implementations', 'config/parity.json');
-if (!Array.isArray(IMPLEMENTATIONS)) throw new Error('implementations of config/parity.json must be a list');
 const MISE_TOOLS: unknown = parse(read('mise.toml')).tools;
 /** The release of the tool `name` of mise.toml. */
 const miseTool = (name: string): unknown => field(MISE_TOOLS, name, 'tools of mise.toml');
@@ -121,11 +119,9 @@ test('the node, go, php and rust versions come from the files that declare them'
   assert.match(text(miseTool('node'), 'node of mise.toml'), /^\d+\.\d+\.\d+$/);
 
   // Go is a tool of mise.toml, which make install installs with mise (S-44-6): the workflow sets up no Go of its own, and the
-  // go directive of the go kind's go.mod (the first root of the implementation go in config/parity.json) is that release.
+  // go directive of packages/go/go.mod is that release.
   assert.doesNotMatch(CHECK_JOB, /setup-go|go-version/, 'the check job sets up a Go of its own');
-  const goRoots = field(IMPLEMENTATIONS.find((implementation: unknown) => field(implementation, 'name', 'an implementation of config/parity.json') === 'go'), 'roots', 'the implementation go');
-  if (!Array.isArray(goRoots)) throw new Error('roots of the implementation go must be a list');
-  const goRoot = text(goRoots[0], 'the first root of the implementation go');
+  const goRoot = 'packages/go';
   const edit = spawnSync('go', ['mod', 'edit', '-json'], { cwd: path.join(ROOT, goRoot), encoding: 'utf8' });
   assert.equal(edit.status, 0, edit.stderr);
   const goMod: unknown = JSON.parse(edit.stdout);

@@ -2,8 +2,8 @@
 
 // The persistence tests of the php package beyond the vector cases (docs/spec/fsm.md, B-4): two transitions of one row
 // that run at the same time, each in its own process on its own connection, give the outcome that the pattern promises,
-// and a deadlock runs the transaction again while another database error does not. Each method is named by its feature
-// unit of config/parity.json. They run on the dialect of FSM_TEST_DIALECT (persistDsn of ConformanceCase). PHP runs one
+// and a deadlock runs the transaction again while another database error does not. Each method is named by the case
+// it tests. They run on the dialect of FSM_TEST_DIALECT (persistDsn of ConformanceCase). PHP runs one
 // thread, so the two transitions run in two processes that pcntl_fork makes; a child opens its own connection, writes
 // its outcome to a file and ends with SIGKILL, so it never closes a connection of the parent that it inherited. The
 // file names no path, so the package and the php extension run the same file.

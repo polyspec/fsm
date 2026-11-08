@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 68b0564fea86b302785422b45187fc31aaca7e4751f28d2ee54b52471658dd08 -->
+<!-- source-sha256: ca7b75a4718efa67ac6339fc3a9faa4c9eeda5ad3c9df6a33da683a0af474d37 -->
 # 개발
 
 [English](AGENTS.md)
@@ -24,7 +24,7 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   Enforced by: none, 리뷰에서 판단한다.
 - Refines S7: 기능의 기본 테스트는 그 기능을 소유한 패키지(compiler, DB store, GUI)에 둔다. 언어 패키지에는 소비자 입장 테스트만 둔다.
   루트에는 루트 도구의 테스트와 그 공용 helper `tests/support/`만 둔다. 루트 도구 테스트의 fixture는 임시 디렉터리에 만들고 커밋하지 않는다.
-  Enforced by: `make layout-check`, `make parity-declarations-check`
+  Enforced by: `make layout-check`
 - Refines S3: `Makefile`의 모든 테스트는 kit의 test runner인 `$(RUN_TESTS)`로 실행한다. 이 runner는 케이스마다 시작, 진행, 결과, 경과 시간을 출력하고
   케이스별 timeout을 준다. 전체 timeout은 없으며, 테스트 프로세스는 10분을 넘지 않는다. 넘으면 이유와 함께 보고한다.
   Enforced by: none, runner의 사용은 테스트 스크립트에 대한 판단이다.

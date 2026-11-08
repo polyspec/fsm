@@ -1,7 +1,6 @@
 // The polyspec names of the released runtimes of fsm (S-406, S-407, S-408): the TS runtime is @polyspec/fsm, the Python wheel is
 // polyspec-fsm and the Rust crate is polyspec-fsm, as the other polyspec packages name their product. The first release fixes the
-// names. The packages declare no test of their own, so the parity check of kit reads them as no binding (R5); this root test reads
-// their manifests instead.
+// names. This root test reads their manifests.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';

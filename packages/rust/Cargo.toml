@@ -39,7 +39,7 @@ path = "tests/conformance/main.rs"
 # libtest-mimic runs one trial per case of contracts/conformance/vectors.json, which is read when the test runs.
 harness = false
 
-# tests/persist.rs holds the concurrency and retry tests of the persist example, the feature units of config/parity.json
+# tests/persist.rs holds the concurrency and retry tests of the persist example,
 # beyond the vector cases (docs/spec/fsm.md, B-4).
 [[test]]
 name = "persist"

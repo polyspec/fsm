@@ -1,5 +1,5 @@
 # Continuous integration (docs/plans/fsm-v1/plan.md, C-10 and Verification; docs/plans/fsm-v1/checklist.md, S-21). The job kit calls the pipeline ci-pipeline.yml of fsm (K910), and the job check runs
-# `make install` and then its suite targets through `make ci-targets` (the shared, parity and runtime targets run in the job kit), with the
+# `make install` and then its suite targets through `make ci-targets` (the shared and runtime targets run in the job kit), with the
 # PostgreSQL and MySQL services of plan C-6.
 # The versions come from the files that declare them: PHP from config/toolchain.json, Rust from rust-toolchain.toml, and
 # Node.js, Go, Python and uv from mise.toml, which mise installs at the digests of mise.lock: Node.js with make install-tools

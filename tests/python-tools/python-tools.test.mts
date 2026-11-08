@@ -2,7 +2,7 @@
 // The Python 3.14 of the python package comes from `make install-tools`: kit installs the tools of mise.toml with mise at the
 // digests of mise.lock, Python and uv among them, and their shims are var/tools/mise/shims/python3 and uv (S-44-6, kit K127).
 // No recipe of fsm installs an interpreter, and the Makefile has no install-python target. The tests run `make -n` on a copy of the
-// Makefile, the kit targets of the installed @polyspec/kit and config/parity.json (the kinds) in a temporary directory: make only
+// Makefile, the kit targets of the installed @polyspec/kit in a temporary directory: make only
 // prints the recipes, so no network is used and nothing is installed. The package targets are targets of the root Makefile (K245).
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';

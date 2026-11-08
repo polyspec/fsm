@@ -1,6 +1,6 @@
 // The persistence tests of the rust package beyond the vector cases (docs/spec/fsm.md, B-4): two transitions of one row that run
 // at the same time, each on its own connection, give the outcome that the pattern promises, and a deadlock runs the transaction
-// again while another database error does not. Each test is named by its feature unit of config/parity.json. They run on the
+// again while another database error does not. Each test is named by the case it tests. They run on the
 // dialect of FSM_TEST_DIALECT (tests/common/mod.rs).
 
 mod common;
