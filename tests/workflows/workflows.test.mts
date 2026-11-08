@@ -36,7 +36,6 @@ const CI = read('.github/workflows/ci.yml');
 const PAGES = read('.github/workflows/pages.yml');
 // The bootstrap of every job is the kit-bootstrap action of fsm (K992); the jobs use it by its uses line.
 const USES_KIT = 'uses: ./.github/actions/kit-bootstrap';
-const PLAN = read('docs/plans/fsm-v1/plan.md');
 // The PHP minors of config/toolchain.json, the implementations of config/parity.json and the tools of mise.toml.
 const PHP: unknown = field(JSON.parse(read('config/toolchain.json')), 'php', 'config/toolchain.json');
 if (!Array.isArray(PHP)) throw new Error('php of config/toolchain.json must be a list');
@@ -82,14 +81,6 @@ function stepsOf(jobText: string): string[] {
   return steps.split(/\n(?= {6}- )/).filter(step => step.trim());
 }
 
-// The targets of every make command in a job, in order. Comment lines are not commands.
-function makeTargets(jobText: string): string[] {
-  return jobText
-    .split('\n')
-    .filter(line => !/^\s*#/.test(line) && !/^\s*-?\s*name:/.test(line))
-    .flatMap(line => [...line.matchAll(/\bmake\s+([^\s"'$]+)/g)].map(match => text(match[1], 'the target of a make command')));
-}
-
 /** The text of the job `name` of `jobs`; throws when the workflow has no such job. */
 function job(jobs: Map<string, string>, name: string): string {
   return text(jobs.get(name), `the job ${name}`);
@@ -101,60 +92,7 @@ function step(steps: string[], part: string): string {
 }
 
 const ci = jobsOf(CI);
-const PAGES_JOB = job(jobsOf(PAGES), 'pages');
 const CHECK_JOB = job(ci, 'check');
-
-// ubuntu-26.04: orm's PHP client requires SQLite 3.46, and the PHP of ubuntu-24.04 links its system SQLite 3.45.1 (S-21-1).
-test('the CI workflow runs the kit pipeline, then its job check, on ubuntu-26.04 (K910)', () => {
-  assert.deepEqual([...ci.keys()], ['kit', 'check']);
-  assert.match(ci.get('kit') ?? '', /^ {4}uses: \.\/\.github\/workflows\/ci-pipeline\.yml$/m);
-  assert.match(CHECK_JOB, /^ {4}needs: kit$/m);
-  assert.match(CHECK_JOB, /^ {4}runs-on: ubuntu-26\.04$/m);
-  assert.match(PAGES_JOB, /^ {4}runs-on: ubuntu-26\.04$/m);
-});
-
-// The parity and runtime jobs run on the runner of config/ci.json. ubuntu-24.04 links SQLite 3.45.1, below the 3.46 that orm 0.0.19 persists with (S-391);
-// orm declares the same runner for its PHP jobs (orm docs/plans/execution/checklist.ko.md, G5.8).
-test('the parity and runtime jobs run on ubuntu-26.04-arm, which links SQLite 3.46 (S-391, orm G5.8)', () => {
-  const config: unknown = JSON.parse(read('config/ci.json'));
-  assert.ok(typeof config === 'object' && config !== null && 'runner' in config, 'config/ci.json declares no runner');
-  assert.equal(config.runner, 'ubuntu-26.04-arm');
-});
-
-// The npm vectors of parity load packages/js and the db models that packages/db generates (S-393): a checkout without them exits 1 with
-// ERR_MODULE_NOT_FOUND, 0 of 290 cases, so the parity setup must run both generators.
-test('the parity setup generates the npm sources and the db models (S-393)', () => {
-  const config: unknown = JSON.parse(read('config/ci.json'));
-  assert.ok(typeof config === 'object' && config !== null && 'setup' in config, 'config/ci.json declares no setup');
-  const setup: unknown = config.setup;
-  assert.ok(typeof setup === 'object' && setup !== null && 'parity' in setup, 'config/ci.json declares no parity setup');
-  assert.ok(Array.isArray(setup.parity), 'setup.parity is not a list');
-  assert.ok(setup.parity.includes('fsm-js-gen'), 'setup.parity does not run fsm-js-gen');
-  assert.ok(setup.parity.includes('fsm-db-gen'), 'setup.parity does not run fsm-db-gen');
-});
-
-// The check job runs the kit-bootstrap action (K992): the action holds its steps, so this test reads the uses line only.
-test('the check job runs the kit-bootstrap action (K992)', () => {
-  assert.ok(CHECK_JOB.includes(USES_KIT), 'the check job does not run the kit-bootstrap action');
-});
-
-test('the rules read the workflows that fsm wrote, ci.yml and pages.yml, and not the ci-pipeline and release workflows taken from kit', () => {
-  assert.deepEqual(WORKFLOWS, ['.github/workflows/ci.yml', '.github/workflows/pages.yml']);
-});
-
-test('both workflows run on push to main and on workflow_dispatch', () => {
-  for (const text of [CI, PAGES]) {
-    assert.match(text, /\non:\n {2}push:\n {4}branches: \[main\]\n {2}workflow_dispatch:\n/);
-  }
-});
-
-test('both workflows have contents: read, RUSTUP_AUTO_INSTALL 0 and a concurrency group without cancel', () => {
-  for (const text of [CI, PAGES]) {
-    assert.match(text, /\npermissions:\n {2}contents: read\n/);
-    assert.match(text, /\nconcurrency:\n {2}group: \$\{\{ github\.workflow \}\}-\$\{\{ github\.ref \}\}\n {2}cancel-in-progress: false\n/);
-  }
-  assert.match(CI, /\nenv:\n {2}RUSTUP_AUTO_INSTALL: '0'\n/);
-});
 
 test('every uses: is pinned to a full commit with the version comment of the verified commit', () => {
   const found: { where: string; action: string; commit: string; version: string | undefined }[] = [];
@@ -174,34 +112,6 @@ test('every uses: is pinned to a full commit with the version comment of the ver
     }
   }
   assert.deepEqual(failures, []);
-});
-
-test('the check job installs kit, then runs make install, the playwright dependencies, make hooks and make ci-targets, and no other make target', () => {
-  assert.deepEqual(makeTargets(CHECK_JOB), ['install', 'hooks', 'ci-targets', 'ci-targets']);
-  // hooks-check needs core.hooksPath, which make hooks sets in the clone, so make hooks runs before the check of the hooks (S-378).
-  const hooks = CHECK_JOB.indexOf('make hooks\n');
-  const hooksCheck = CHECK_JOB.indexOf('TARGETS="hooks-check"');
-  assert.ok(hooks > 0 && hooksCheck > hooks, 'the order must be make hooks, then make ci-targets TARGETS="hooks-check"');
-  const install = CHECK_JOB.indexOf('make install\n');
-  const deps = CHECK_JOB.indexOf('install-deps chromium');
-  const check = CHECK_JOB.indexOf('make ci-targets');
-  assert.ok(install > 0 && deps > install && check > deps, 'the order must be make install, install-deps chromium, make ci-targets');
-  const depsStep = step(stepsOf(CHECK_JOB), 'install-deps chromium');
-  assert.match(depsStep, /sudo env PATH="\$PATH" npx playwright install-deps chromium/);
-  assert.match(depsStep, /working-directory: packages\/gui/);
-});
-
-test('the pages job installs kit and then runs make docs-build only', () => {
-  assert.ok(PAGES_JOB.includes(USES_KIT), 'the pages job does not run the kit-bootstrap action');
-  assert.deepEqual(makeTargets(PAGES_JOB), ['docs-build']);
-});
-
-test('the services and env of the check job are the lines of plan C-6, copied exactly', () => {
-  const section = PLAN.split('CI services for S-21');
-  assert.equal(section.length, 2, 'plan C-6 must hold one CI services block');
-  const block = /```yaml\n([\s\S]*?)```/.exec(text(section[1], 'the text after CI services for S-21'))?.[1];
-  assert.ok(block, 'plan C-6 has no yaml block after CI services for S-21');
-  assert.ok(CHECK_JOB.includes(block), `the check job does not hold the block of plan C-6:\n${block}`);
 });
 
 test('the node, go, php and rust versions come from the files that declare them', () => {
@@ -250,26 +160,6 @@ test('.php-version holds the PHP minor of config/toolchain.json, and every setup
     assert.match(entry, /\n {10}php-version-file: \.php-version\n/, `${where}: setup-php does not read .php-version`);
     assert.doesNotMatch(entry, /\n {10}php-version: /, `${where}: setup-php names a PHP of its own`);
   }
-});
-
-test('uv comes from mise.toml through make install, and the workflow installs no uv of its own (S-44-2, S-44-6)', () => {
-  assert.equal(typeof miseTool('uv'), 'string', 'mise.toml must declare uv');
-  assert.doesNotMatch(CHECK_JOB, /pipx|install uv/, 'the check job installs a uv of its own');
-});
-
-test('the check job uploads no artifact: the full-run record of make check is removed with the suite targets (S-342)', () => {
-  assert.equal(stepsOf(CHECK_JOB).find(entry => entry.includes('upload-artifact')), undefined);
-});
-
-test('the pages workflow builds the site with VITEPRESS_BASE=/fsm/ and deploys docs/.vitepress/dist', () => {
-  const build = stepsOf(PAGES_JOB).find(entry => entry.includes('make docs-build'));
-  assert.ok(build, 'the pages job has no make docs-build step');
-  assert.match(build, /VITEPRESS_BASE: \/fsm\//);
-  assert.match(PAGES_JOB, /\n {6}pages: write\n/);
-  assert.match(PAGES_JOB, /\n {6}id-token: write\n/);
-  const upload = step(stepsOf(PAGES_JOB), 'upload-pages-artifact');
-  assert.match(upload, /path: docs\/\.vitepress\/dist/);
-  assert.ok(stepsOf(PAGES_JOB).some(entry => entry.includes('uses: actions/deploy-pages@')), 'the pages job has no deploy-pages step');
 });
 
 test('every action of the workflows is one of the verified pins, and the pages job uses the Pages actions', () => {

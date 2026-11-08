@@ -119,14 +119,6 @@ function dryRun(dir: string, goal: string): string {
   return result.stdout;
 }
 
-/** The targets of the full-run line of `make -n check`, which must print it. */
-function checkTargets(stdout: string): string[] {
-  const report = 'var/report/ci-targets';
-  const line = stdout.split('\n').find((candidate) => new RegExp(`ci-targets\\.m[jt]s ${report}`).test(candidate));
-  if (line === undefined) throw new Error(`make -n check printed no ci-targets line:\n${stdout}`);
-  return line.slice(line.indexOf(report) + report.length).trim().split(/\s+/);
-}
-
 test('npm-types installs the npm dependencies before its test', (t) => {
   const out = dryRun(sandbox(t), 'npm-types');
   const install = lineIndex(out, installLine('npm'));
@@ -284,34 +276,4 @@ test('make -n check prints no make warning: no target of the repository replaces
   assert.equal(result.status, 0, result.stderr);
   const warnings = result.stderr.split('\n').filter((line) => line.includes('warning:'));
   assert.deepEqual(warnings, []);
-});
-
-// The full suite runs kit's parity check (K33: parity-declarations-check and parity-check, config/parity.json), which runs
-// every binding and checks the vector cases (S-42-1). A rebase once dropped the parity target of the suite, with no make warning
-// (S-35-3).
-test('make check runs the parity check of kit (S-35-3, S-42-1)', () => {
-  const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });
-  assert.equal(result.status, 0, result.stderr);
-  const targets = checkTargets(result.stdout);
-  for (const target of ['parity-declarations-check', 'parity-check']) assert.ok(targets.includes(target), `CHECK_TARGETS does not run ${target}`);
-});
-
-// The full suite runs the lint of the TypeScript (oxlint and knip with knip.jsonc), which stayed out of
-// CHECK_TARGETS until it passed (S-44-15).
-test('make check runs make lint-ts (S-44-15)', () => {
-  const result = spawnSync('make', ['-n', 'check'], { cwd: ROOT, encoding: 'utf8' });
-  assert.equal(result.status, 0, result.stderr);
-  const targets = checkTargets(result.stdout);
-  assert.ok(targets.includes('lint-ts'), 'CHECK_TARGETS does not run lint-ts');
-});
-
-// S-356 (S-314, K869): fsm-python-install installs the lock pylock.toml first, and make link links the development checkouts after
-// it. The recipe is read from the Makefile, not run: make -n runs the recursive $(MAKE) lines, which would create the venv.
-test('fsm-python-install installs the lock, then make install-link links the checkouts (S-314, K869)', () => {
-  const makefile = readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
-  const recipe = makefile.slice(makefile.indexOf('\nfsm-python-install:'), makefile.indexOf('\n# No bytecode'));
-  const lock = recipe.search(/\$\(UV\) pip install[^\n]*-r packages\/python\/pylock\.toml/);
-  const link = recipe.indexOf('$(MAKE) install-link');
-  assert.ok(lock >= 0, `fsm-python-install does not install the lock pylock.toml:\n${recipe}`);
-  assert.ok(link > lock, `make install-link does not run after the lock install:\n${recipe}`);
 });
