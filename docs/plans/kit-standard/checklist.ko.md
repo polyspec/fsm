@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: c016d278ac9a1108fbfdd05f798f150ced951eb7233ee0ecd0cc303b80053ada -->
+<!-- source-sha256: 1569f287ceafac7fdd6d65118578510add26abbf0609b9fceffdd0464c6a3f4a -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -141,7 +141,7 @@
 | S-366 | 로컬 packages/rust clippy가 통과하게 한다: orm 핀이 ordered-json 0.0.9를 개발 checkout 0.0.14와 맞지 않게 해결한다 | CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make lint-rust` | [ ] |
 | S-367 | 제거된 artifact zip을 가리키는 Composer lock을 갱신한다: ordered-json을 packages.json에서 다시 lock한다 | packages/php/composer.lock packages/php-ext/composer.lock CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make fsm-php-install && make fsm-php-ext-install` | [o] |
 | S-368 | fsm의 릴리스 패키지를 config/release.json에 선언한다(생성 소스: S-369 python, S-370 php-ext, S-371 php, go, rust) | config/release.json packages/php/composer.json packages/php-ext/composer.json packages/python/pyproject.toml packages/rust/Cargo.toml CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make release-coverage` | [v] |
-| S-369 | fsm python wheel의 생성 소스에 release 경로를 준다 | packages/python config/release.json docs/plans/kit-standard/checklist.md | `make release-candidate-assets VERSION=0.0.79` | [ ] |
+| S-369 | fsm python wheel의 생성 소스에 release 경로를 준다 | packages/python config/release.json docs/plans/kit-standard/checklist.md | `make release-candidate-assets VERSION=0.0.79` | [o] |
 | S-370 | fsm php-ext release archive에 생성된 C 확장을 담는다 | packages/php-ext config/release.json docs/plans/kit-standard/checklist.md | `make php-ext-release-check` | [ ] |
 | S-371 | kit P34에 따라 fsm의 php 패키지, go 모듈, rust crate의 생성 소스를 릴리스한다. go 모듈과 rust crate는 태그된 트리 그대로 설치되므로 생성 소스를 추적하고 config/generated.json에 이유와 함께 선언한다(tracked, kit K930). php 패키지는 생성 경로와 그것을 만드는 make target을 config/release.json에 선언한다(kit K930). kit K930이 새 P34와 함께 들어온 뒤에 시작하며, go와 rust의 생성 소스를 추적하지 않는다는 S-45-8-3의 검사를 대체한다 | .gitignore config/generated.json config/release.json packages/go packages/rust packages/php Makefile CHANGELOG.md CHANGELOG.ko.md | `make release-coverage` | [ ] |
 | S-372 | fsm 0.0.1 릴리스: Unreleased 항목을 ## 0.0.1로 옮기고, 설치 절을 쓰며, README.md:41-42, README.ko.md:41, docs/plans/fsm-v1/plan.md:14와 :43, packages/php, php-ext, python, go, rust README 쌍의 2번째 줄의 test bed 문구를 릴리스 라이브러리 문구로 바꾼다 | CHANGELOG.md CHANGELOG.ko.md README.md README.ko.md docs/plans/fsm-v1/plan.md docs/plans/fsm-v1/plan.ko.md packages/php packages/php-ext packages/python packages/go packages/rust | `make release-candidate-assets VERSION=0.0.1` | [ ] |
