@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 8ae3480937bd795a1da0f14b78c0955eaf1dabd64ceb151b6a2517850375b65f -->
+<!-- source-sha256: 4b52fa64674dfba71870abd9cc596b277ea3140131292bcbd58202ac160831ee -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- fsm 문서의 자리표시자는 코드 표기다. kit K895의 raw-tag 규칙이 통과한다(S-341).
 - Rust 크레이트 이름 polyspec-fsm(lib polyspec_fsm)은 Rust 예제의 use 경로와 맞는다(S-339).
 - kit 0.0.77이 더 이상 제공하지 않는 prepare-commit-msg hook은 없다. .githooks에는 commit-msg와 pre-commit만 있다(S-357).
 

@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: d687d56fe4b806b7583b7309e1c2579f4d55a166f65c0a9be808a5ee42198604 -->
+<!-- source-sha256: cf8e4ca384ac0c1cec4f3d3e6c072ecce72b2d4863c0c18ff0e50db717509180 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -113,7 +113,7 @@
 | S-337 | 새 worktree의 kit build 전에 python 소스를 생성한다 | Makefile | `make build-python` | [o] |
 | S-338 | php-ext 생성 전에 arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [o] |
 | S-339 | rust 예제의 use 경로와 크레이트 이름을 맞춘다 | packages/rust/Cargo.toml | `make kit-ci-plan` | [o] |
-| S-341 | kit K895에 맞춰 fsm 문서의 자리표시자를 코드 표기로 쓴다 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md docs/plans/kit-standard/checklist.ko.md docs/plans/kit-standard/checklist.md | `make docs-check` | [ ] |
+| S-341 | kit K895에 맞춰 fsm 문서의 자리표시자를 코드 표기로 쓴다 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md docs/plans/kit-standard/checklist.ko.md docs/plans/kit-standard/checklist.md | `make docs-check` | [o] |
 | S-342 | CI check 잡을 kit처럼 make ci-targets로 돌린다 | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [o] |
 | S-343 | pages 설치 전에 고정된 kit 패키지를 부트스트랩한다 | .github/workflows/pages.yml | `make kit-ci-plan` | [o] |
 | S-344 | kit 0.0.77 채택: @polyspec/kit 0.0.77, @polyspec/ordered-json 0.0.14(루트, js, db package), @polyspec/template 0.0.15(gui)를 고정하고, fsm의 Composer package를 release-assets-fetch(K865) 대신 ordered-json의 release packages.json에서 설치하며(K871), CHECK_TARGETS와 KIT_GATE_TARGETS에서 toolchain-check를 뺀다(K854). tests/make-install은 새 동작(K865, K871, kit 0.0.77의 .mjs)을 단언한다 | package.json package-lock.json packages/js/package.json packages/js/package-lock.json packages/db/package.json packages/db/package-lock.json packages/gui/package.json packages/gui/package-lock.json packages/php/composer.json packages/php-ext/composer.json Makefile config/release-assets.json tests/make-install/make-install.test.mts .github/workflows/gates.yml PRINCIPLES.md PRINCIPLES.ko.md CHANGELOG.md CHANGELOG.ko.md | `var/tools/bin/node --test tests/make-install/make-install.test.mts` | [o] |
