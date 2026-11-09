@@ -11,7 +11,17 @@
       "directory": "packages/php",
       "name": "polyspec/fsm",
       "product": "fsm",
-      "runtime": "php"
+      "runtime": "php",
+      "generated": [
+        {
+          "kind": "make",
+          "target": "fsm-php-gen",
+          "outputs": [
+            "src",
+            "examples/model"
+          ]
+        }
+      ]
     },
     {
       "kind": "composer",

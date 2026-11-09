@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 2017aeb0ff32692d7ea23cfb1601d6a5d6a20f16eb864af7e734a5cbdbfaab03 -->
+<!-- source-sha256: 82f9711fa584533a3709d4e81660213b3d0aa990943b75e78f01a5cb789aac50 -->
 # polyspec-fsm
 
 [English](README.md)
@@ -157,4 +157,4 @@ make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_D
 
 실행 결과는 89개 case 중 89개 통과이며, crate 컴파일을 포함해 약 100초가 걸린다. `tests/conformance/main.rs`에는 libtest harness가 없다. libtest-mimic이
 `contracts/conformance/vectors.json`의 vector case마다 trial 하나를 실행하며 이름은 case 이름 `<feature>__<id>`다(`vectors::<feature>__<id>`). 각 trial은 `tests/conformance/vectors.rs`에 있는 자기 machine의 adapter를 거쳐 `main.rs`의 검사 함수를 부른다. 영속화 case는 자기 tokio runtime에서 실행된다. toolchain은
-루트의 `rust-toolchain.toml`(Rust 1.99.0)이다. 생성 파일은 추적하지 않는다. `make fsm-rust-gen`이 생성하며 `make test-rust`가 먼저 실행한다.
+루트의 `rust-toolchain.toml`(Rust 1.99.0)이다. 소비자가 git tag로 crate의 tag된 tree를 설치하므로 `src/`의 생성 module은 추적한다. `make fsm-rust-gen`이 생성하고 `make test-rust`가 먼저 실행하며, 추적 파일이 그 출력과 다르면 `make layout-check`가 실패한다.

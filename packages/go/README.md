@@ -187,5 +187,5 @@ make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_D
 ```
 
 The run passes 89 of 89 cases: `tests/conformance_test.go` runs one subtest per vector case of `contracts/conformance/vectors.json`, named
-by its case name `<feature>__<id>`. The generated files are not tracked: `make fsm-go-gen` writes them, and `make test-go` runs it first. The go
+by its case name `<feature>__<id>`. The generated packages of `src/` are tracked, since a consumer installs the tagged tree of the module: `make fsm-go-gen` writes them, `make test-go` runs it first, and `make layout-check` fails when the tracked files differ from what it writes. The go
 release is the go line of `packages/go/go.mod` (`go 1.27.2`, the Go pin of kit).

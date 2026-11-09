@@ -1,5 +1,5 @@
 <!-- doc-id: readme-go -->
-<!-- source-sha256: e9acb8397ff7367fb54e43664b021fd37055f1e40dc646e081e92eba272f0ae6 -->
+<!-- source-sha256: 81409b62f1f61dccfe6f5affb69c565273bd0904d7f592347ff6c0a3494cdfdf -->
 # github.com/polyspec/fsm/packages/go
 
 [English](README.md)
@@ -185,5 +185,5 @@ make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_D
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/conformance_test.go`는 `contracts/conformance/vectors.json`의 vector case마다 하나의 subtest를
-case 이름 `<feature>__<id>`로 실행한다. 생성 파일은 추적하지 않는다. `make fsm-go-gen`이 생성하며 `make test-go`가 먼저 실행한다. go
+case 이름 `<feature>__<id>`로 실행한다. 소비자가 module의 tag된 tree를 설치하므로 `src/`의 생성 패키지는 추적한다. `make fsm-go-gen`이 생성하고 `make test-go`가 먼저 실행하며, 추적 파일이 그 출력과 다르면 `make layout-check`가 실패한다. go
 release는 `packages/go/go.mod`의 go 줄(`go 1.27.2`, kit의 Go pin)이다.

@@ -160,5 +160,6 @@ make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_D
 
 The run passes 89 of 89 cases in about 100 seconds, which includes the compilation of the crate. `tests/conformance/main.rs` has no libtest harness: libtest-mimic runs one
 trial per vector case of `contracts/conformance/vectors.json`, named by its case name `<feature>__<id>` (`vectors::<feature>__<id>`), and each calls a
-check function of `main.rs` through the adapter of its machine in `tests/conformance/vectors.rs`; the persist cases run on a tokio runtime of their own. The toolchain is `rust-toolchain.toml` at the root (Rust 1.99.0). The generated files are not
-tracked: `make fsm-rust-gen` writes them, and `make test-rust` runs it first.
+check function of `main.rs` through the adapter of its machine in `tests/conformance/vectors.rs`; the persist cases run on a tokio runtime of their own. The toolchain is `rust-toolchain.toml` at the root (Rust 1.99.0). The generated modules
+of `src/` are tracked, since a consumer installs the tagged tree of the crate by its git tag: `make fsm-rust-gen` writes them, `make test-rust`
+runs it first, and `make layout-check` fails when the tracked files differ from what it writes.

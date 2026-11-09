@@ -186,12 +186,16 @@ text-absent:
 # ---- Checks ----------------------------------------------------------------------------------------------------------
 .PHONY: layout-check docs-check rules-check owner-check owner-validate rebuild-check language-check duplication-check suppression-check
 # alint checks the tree against config/layout.yml, which extends config/layout.kit.yml, the common layout rules that fsm took from
-# kit, with the map of fsm; then Git must ignore each install folder and track no generated file.
+# kit, with the map of fsm; then Git must ignore each install folder and track no generated file except the generated sources
+# that config/generated.json tracks, which the Go module and the Rust crate release as their tagged tree (P34), and those must
+# equal what fsm-gen, a prerequisite of layout-check, has just written.
+TRACKED_GENERATED := packages/go/src packages/rust/src
 layout-check:
 	@test -x $(ALINT) || { echo "layout-check: $(ALINT) is missing; run make install-tools"; exit 1; }
 	$(ALINT) check --config config/layout.yml --color never --compact .
 	$(NODE) $(KIT)/generated-files.$(KIT_EXT) installs var package.json=node_modules pyproject.toml=.venv composer.json=vendor
 	$(NODE) $(KIT)/generated-files.$(KIT_EXT) tracked --binary ELF --binary Mach-O --binary PE
+	@git diff --quiet -- $(TRACKED_GENERATED) && test -z "$$(git ls-files --others --exclude-standard -- $(TRACKED_GENERATED))" || { git status --short -- $(TRACKED_GENERATED); echo "layout-check: the tracked generated sources $(TRACKED_GENERATED) differ from what make fsm-go-gen and fsm-rust-gen write; commit the written files (P34, S-371)"; exit 1; }
 
 docs-check:
 	$(NODE) $(KIT)/check-documents.$(KIT_EXT) --checklist-place --private-path /Users/ --private-path /home/ --kit-rows

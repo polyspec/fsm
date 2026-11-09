@@ -5,7 +5,6 @@
     ".results/**",
     "docs/.vitepress/cache/**",
     "packages/db/src/models/**",
-    "packages/go/src/**",
     "packages/go/examples/model/**",
     "packages/js/src/**",
     "packages/js/examples/model/**",
@@ -16,7 +15,6 @@
     "packages/php-ext/examples/**",
     "packages/python/src/polyspec_fsm/**",
     "packages/python/examples/model/**",
-    "packages/rust/src/**",
     "packages/gui/build/**",
     "packages/gui/public/assets/**",
     "**/dist.next/**",
@@ -42,6 +40,20 @@
     "**/target/**",
     "**/dist/**",
     "**/*.egg-info/**"
+  ],
+  "tracked": [
+    {
+      "path": "packages/go/src/**",
+      "reason": "the packages that make fsm-go-gen writes: a consumer of the Go module github.com/polyspec/fsm/packages/go installs the tagged tree packages/go/vX.Y.Z itself, so its generated sources are in that tree (P34, S-371); make layout-check fails when they differ from make fsm-go-gen"
+    },
+    {
+      "path": "packages/rust/src/**",
+      "reason": "the modules that make fsm-rust-gen writes: a consumer of the crate polyspec-fsm installs the tagged tree vX.Y.Z by its git tag, so its generated sources are in that tree (P34, S-371); make layout-check fails when they differ from make fsm-rust-gen"
+    }
+  ],
+  "moduleFiles": [
+    "go.mod",
+    "Cargo.toml"
   ],
   "exceptions": [
     {

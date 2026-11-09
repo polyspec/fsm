@@ -1,5 +1,5 @@
 <!-- doc-id: readme -->
-<!-- source-sha256: 48a70dcb1aad90cd68e93caa1115a51fede4d5cc431ca8561b285d980527cb09 -->
+<!-- source-sha256: 833f7137e0d6a077a764c3abdff0aef22478bd12ef425a13a36f22291eff428b -->
 # polyspec/fsm
 
 [English](README.md)
@@ -439,4 +439,4 @@ $ fsm-gen check --project ./broken
 CI(`.github/workflows/ci.yml`)는 main에 push될 때마다 kit을 설치하고(`make install-tools TOOLS=npm`, `make install-packages`) `make install`과 `make check`를 실행하며, PostgreSQL과 MySQL 서비스를 띄운다. 문서 사이트는 `.github/workflows/pages.yml`이 https://polyspec.github.io/fsm/ 에 게시한다.
 
 각 언어 패키지의 conformance 테스트는 같은 vector case를 실행한다. case마다 test 하나이며 이름은 case 이름 `<feature>__<id>`다(php는 method `testConformance` 하나의 data set `<feature>__<id>`, python은 method `test_<feature>__<id>`).
-패키지의 생성 파일은 추적하지 않는다. `make fsm-gen`이 생성하며, `make compiler-test`가 order 예제의 출력을 `packages/compiler/tests/golden`의 golden 파일과 byte 단위로 비교한다.
+패키지의 생성 파일은 추적하지 않는다. 단 Go module과 Rust crate가 tag된 tree로 릴리스하는 `packages/go/src`와 `packages/rust/src`는 추적한다(`make fsm-gen`이 쓰는 것과 다르면 `make layout-check`가 실패한다). `make fsm-gen`이 생성하며, `make compiler-test`가 order 예제의 출력을 `packages/compiler/tests/golden`의 golden 파일과 byte 단위로 비교한다.

@@ -14,9 +14,9 @@
 /packages/python/.venv/
 /packages/python/src/*.egg-info/
 # The files that fsm-gen and orm-gen write (make fsm-gen and make fsm-db-gen; AGENTS.md, Generated files). The golden files of
-# packages/compiler/tests/golden are their tracked proof. /packages/php-ext/src/ holds the phpize output too.
+# packages/compiler/tests/golden are their tracked proof. /packages/php-ext/src/ holds the phpize output too. packages/go/src and
+# packages/rust/src are tracked: the Go module and the Rust crate are installed as the tagged tree (P34, config/generated.json).
 /packages/db/src/models/
-/packages/go/src/
 /packages/go/examples/model/
 /packages/js/src/
 /packages/js/examples/model/
@@ -27,7 +27,6 @@
 /packages/php-ext/examples/
 /packages/python/src/polyspec_fsm/
 /packages/python/examples/model/
-/packages/rust/src/
 /packages/gui/build/
 /packages/gui/public/assets/
 /packages/php*/.phpunit.result.cache

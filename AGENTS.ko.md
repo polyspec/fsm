@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: ca7b75a4718efa67ac6339fc3a9faa4c9eeda5ad3c9df6a33da683a0af474d37 -->
+<!-- source-sha256: 0000c1350ac2c6b5d81205e8ffd46ea4d2034bf03f049ba24f10283a354719ce -->
 # 개발
 
 [English](AGENTS.md)
@@ -46,7 +46,7 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
 
 ## 생성 파일
 
-- Own: 생성 파일은 Git에 추적하지 않는다. 여기에는 의존성 설치(`node_modules/`, `vendor/`, 가상 환경), 빌드 산출물(`dist/`, `target/`, `*.tsbuildinfo`), 캐시(`.cache/`, `__pycache__/`, `.pytest_cache/`), 테스트 실행 산출물(`test-results/`, `playwright-report/`, PHPUnit 캐시), 도구 다운로드(`var/`)가 포함된다. 예외는 저장소가 의도적으로 필요로 하는 파일뿐이며 이것만 추적한다: lock 파일(`package-lock.json`, `composer.lock`, `Cargo.lock`, uv lock, `mise.lock`), 이 문서가 밝히는 커밋된 생성 문서, 테스트 fixture. 각 `.gitignore`가 이 경로를 덮으며, 새 생성기는 같은 commit에서 ignore 항목을 추가한다.
+- Own: 생성 파일은 Git에 추적하지 않는다. 여기에는 의존성 설치(`node_modules/`, `vendor/`, 가상 환경), 빌드 산출물(`dist/`, `target/`, `*.tsbuildinfo`), 캐시(`.cache/`, `__pycache__/`, `.pytest_cache/`), 테스트 실행 산출물(`test-results/`, `playwright-report/`, PHPUnit 캐시), 도구 다운로드(`var/`)가 포함된다. 예외는 저장소가 의도적으로 필요로 하는 파일뿐이며 이것만 추적한다: lock 파일(`package-lock.json`, `composer.lock`, `Cargo.lock`, uv lock, `mise.lock`), 이 문서가 밝히는 커밋된 생성 문서, 테스트 fixture, 그리고 Go module과 Rust crate가 tag된 tree로 릴리스하는 생성 소스 `packages/go/src`와 `packages/rust/src`(P34)다. `config/generated.json`이 이유와 함께 이들을 추적하고, `make fsm-gen`이 쓰는 것과 다르면 `make layout-check`가 실패한다(S-371). 각 `.gitignore`가 나머지 경로를 덮으며, 새 생성기는 같은 commit에서 ignore 항목을 추가한다.
   Enforced by: none, 리뷰에서 판단한다. `make layout-check`는 Git이 각 install 폴더를 무시하고 생성 파일을 추적하지 않는지 검사한다.
 
 ## 체크리스트
