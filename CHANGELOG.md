@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The Composer locks of packages/php and php-ext name the existing release zips of ordered-json and orm, so the PHP installs pass (S-367).
 - orm-gen writes the go example model: make examples-model passes (S-362).
 - The placeholders of the fsm documents are code spans, so the raw-tag rule of kit K895 passes (S-341).
 - The Rust crate name polyspec-fsm (lib polyspec_fsm) matches the use paths of the Rust examples (S-339).
