@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c0135869acb6c4a0e1a448f006136a60e3eba7eb1caf0bd4cc8a8c90d58bbdda -->
+<!-- source-sha256: dbedfdc877342d5ed4549d0d6dcc3792c7715409d173eba9f52a5530971845d2 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 모든 런타임(packages/db, js, php, php-ext, python, go, rust)이 orm 0.0.27을 받고 모든 lock을 다시 만들었으므로, make lint-rust가 orm checkout에 대해 통과한다(S-366).
 - Go module과 Rust crate는 생성 소스를 릴리스한다. packages/go/src와 packages/rust/src는 P34에 따라 추적하며 fsm-gen 출력과 다르면 layout-check가 실패한다. php archive는 make 항목 fsm-php-gen으로 src와 examples/model을 담는다(S-371).
 - php-ext 릴리스 archive는 생성된 extension을 담는다. config/release.json이 출력 src와 함께 fsm-php-ext-gen을 선언하고, release-prepare가 arginfo header를 쓰는 gen_stub.php의 PHP를 설치한다(S-370).
 - packages/php와 php-ext의 Composer lock은 있는 ordered-json과 orm 릴리스 zip을 적는다. PHP 설치가 통과한다(S-367).
