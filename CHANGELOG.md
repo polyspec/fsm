@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The Go module and the Rust crate release their generated sources: packages/go/src and packages/rust/src are tracked under P34 and layout-check fails when they differ from fsm-gen; the php archive carries src and examples/model through the make entry fsm-php-gen (S-371).
 - The php-ext release archive carries the generated extension: config/release.json declares fsm-php-ext-gen with the output src, and release-prepare installs the PHP whose gen_stub.php writes its arginfo header (S-370).
 - The Composer locks of packages/php and php-ext name the existing release zips of ordered-json and orm, so the PHP installs pass (S-367).
 - orm-gen writes the go example model: make examples-model passes (S-362).
