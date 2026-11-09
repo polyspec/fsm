@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: b33e0a376a2d7a0a2d3362bd0e35cf86a53fef4ed6ee0573cc3439697f37997f -->
+<!-- source-sha256: 6be38880254884de6b6328f58db2878e974fb9bea408c8ab02293bb3671c0e07 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -129,7 +129,7 @@
 | S-354 | kit 내부를 단언하는 python-tools 검사를 지운다 | tests/python-tools/python-tools.test.mts tests/support/make-sandbox.mts tests/make-install/make-install.test.mts | `node --test tests/python-tools/python-tools.test.mts` | [o] |
 | S-355 | 같은 CI 잡 123889807196의 make-install 테스트 두 원인을 한 파일(tests/make-install/make-install.test.mts)에서 고친다: checkTargets가 make -n check의 ci-targets 줄을 읽도록 한다(S-342가 full-run 줄을 바꿈, 원인 1: :298과 :307); S-54 단언(pylock.toml의 릴리스 휠을 받지 않음)을 현재 규칙으로 바꾼다. lock을 먼저 설치하고 그 뒤에 make link가 링크한다. S-314와 K869가 S-54 기준을 대체했다(원인 2: :316; S-356은 이 행에 합침) | tests/make-install/make-install.test.mts CHANGELOG.md CHANGELOG.ko.md | `node --test tests/make-install/make-install.test.mts` | [o] |
 | S-356 | S-355에 합침(같은 테스트 파일, 같은 CI 잡의 두 원인) | tests/make-install/make-install.test.mts | — | [-] 원인: fsm-python-install의 S-54 단언을 현재 규칙(S-314, K869)으로 바꾼다. 변경은 S-355 커밋에 있다 |
-| S-357 | kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 | .githooks/prepare-commit-msg | `test ! -e .githooks/prepare-commit-msg` | [ ] |
+| S-357 | kit 0.0.77이 더 제공하지 않는 prepare-commit-msg 훅 파일을 제거한다 | .githooks/prepare-commit-msg | `test ! -e .githooks/prepare-commit-msg` | [o] |
 | S-358 | fsm의 npm 설치 stamp를 lock 파일 내용으로 키잉한다 | Makefile tests/make-install/make-install.test.mts CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make -n install` | [o] |
 | S-359 | orm 0.0.19(composer lock 포함), hyper 0.0.22, crudui 0.0.9를 각 릴리스 발표 때 fsm에 고정한다 | packages/php/composer.json packages/php/composer.lock packages/php-ext/composer.json packages/php-ext/composer.lock packages/gui/package.json packages/gui/package-lock.json CHANGELOG.md CHANGELOG.ko.md | `var/tools/bin/node --test tests/make-install/make-install.test.mts` | [ ] |
 | S-360 | config/ci.json이 비운 rust와 ts runtime을 위해 deps-rust와 deps-node를 Makefile에 잠금 설치로 정의한다 | Makefile CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make kit-ci-plan` | [o] |

@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 850b942971c184a712c39b0a1fb311bae52227650b808e9c746ec1c085f070de -->
+<!-- source-sha256: c912ea61c8a74e051ba20a513cf623ccf09e7b8cbcb451fb56323251ea228c49 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- kit 0.0.77이 더 이상 제공하지 않는 prepare-commit-msg hook은 없다. .githooks에는 commit-msg와 pre-commit만 있다(S-357).
 
 ## 0.0.8
 

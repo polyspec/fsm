@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The prepare-commit-msg hook that kit 0.0.77 no longer serves is gone: .githooks holds only commit-msg and pre-commit (S-357).
+
 ## 0.0.8
 
 - fsm 0.0.8 takes the newest provider releases: orm 0.0.26 and ordered-json 0.0.23 in every runtime (packages/db, js, php, php-ext, python, go and rust), and hyper 0.0.37, crudui 0.0.18, template 0.0.23 and php-serialize 0.0.4 in packages/gui; `make lint-ts` takes the setup of the ts runtime first, as CI does (S-439); the install example of packages/js names fsm 0.0.8 (S-440).
