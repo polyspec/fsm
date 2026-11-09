@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: cf8e4ca384ac0c1cec4f3d3e6c072ecce72b2d4863c0c18ff0e50db717509180 -->
+<!-- source-sha256: 02cf12d52dfcdbcbae44e315ed75df8cd8c9fa8d03d1c329878015fa1524dd67 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -134,7 +134,7 @@
 | S-359 | orm 0.0.19(composer lock 포함), hyper 0.0.22, crudui 0.0.9를 각 릴리스 발표 때 fsm에 고정한다 | packages/php/composer.json packages/php/composer.lock packages/php-ext/composer.json packages/php-ext/composer.lock packages/gui/package.json packages/gui/package-lock.json CHANGELOG.md CHANGELOG.ko.md | `var/tools/bin/node --test tests/make-install/make-install.test.mts` | [ ] |
 | S-360 | config/ci.json이 비운 rust와 ts runtime을 위해 deps-rust와 deps-node를 Makefile에 잠금 설치로 정의한다 | Makefile CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make kit-ci-plan` | [o] |
 | S-361 | fsm의 P30 링크 규칙 보충을 삭제한다: kit의 P30이 이를 다루고, link-check는 중첩 project를 검사한다. 다루지 않는 것: 선언에 없는 link (stray link는 이 row가 아니라 kit.mk:442의 몫이다) | AGENTS.md AGENTS.ko.md CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make rules-check && make docs-check` | [o] |
-| S-362 | parity, runtime, shared 잡에서 orm-gen이 거부하는 go 예제 모델을 고친다 | examples/persist.go CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make examples-model` | [ ] |
+| S-362 | parity, runtime, shared 잡에서 orm-gen이 거부하는 go 예제 모델을 고친다 | examples/persist.go CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make examples-model` | [o] |
 | S-363 | conformance와 example 테스트가 fsm_rust를 찾도록 rust 테스트 전에 crate를 생성한다 | config/ci.json CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make fsm-rust-gen && cargo test --manifest-path packages/rust/Cargo.toml --test conformance --no-run` | [o] |
 | S-364 | runtime ts 잡에서 lint-ts 전에 npm 선언을 생성한다 | Makefile config/ci.json CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make lint-ts` | [o] |
 | S-365 | deps-rust가 kit의 cargo 다운로드를 가져와서 lint-rust의 offline catch check가 실행되게 한다 | Makefile CHANGELOG.md CHANGELOG.ko.md docs/plans/kit-standard/checklist.md docs/plans/kit-standard/checklist.ko.md | `make -n deps-rust \| grep -q fetch-cargo-downloads && H=$(mktemp -d) && CARGO_HOME=$H make deps-rust && CARGO_HOME=$H CARGO_TARGET_DIR=var/kit/catch-check-rust cargo run --quiet --offline --locked --manifest-path node_modules/@polyspec/kit/scripts/kit/catch-check-rust/Cargo.toml -- $(git ls-files '*.rs')` | [o] |

@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4b52fa64674dfba71870abd9cc596b277ea3140131292bcbd58202ac160831ee -->
+<!-- source-sha256: eb085a55a3338f53cf183c2f9ef25472ab40096c394a83a8ad9d6a25a31dd819 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- orm-gen이 go 예제 모델을 쓴다. make examples-model이 통과한다(S-362).
 - fsm 문서의 자리표시자는 코드 표기다. kit K895의 raw-tag 규칙이 통과한다(S-341).
 - Rust 크레이트 이름 polyspec-fsm(lib polyspec_fsm)은 Rust 예제의 use 경로와 맞는다(S-339).
 - kit 0.0.77이 더 이상 제공하지 않는 prepare-commit-msg hook은 없다. .githooks에는 commit-msg와 pre-commit만 있다(S-357).
