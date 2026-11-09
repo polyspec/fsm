@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b097ded9dfb4c78c50fdd38e031f217216584888b26fdee3e88bf7da12aa1ded -->
+<!-- source-sha256: 6409cb56a5f4419f467b7703ed30013a858c34aef06d5cc1cb6cca92a65ff1ae -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- php-ext 릴리스 archive는 생성된 extension을 담는다. config/release.json이 출력 src와 함께 fsm-php-ext-gen을 선언하고, release-prepare가 arginfo header를 쓰는 gen_stub.php의 PHP를 설치한다(S-370).
 - packages/php와 php-ext의 Composer lock은 있는 ordered-json과 orm 릴리스 zip을 적는다. PHP 설치가 통과한다(S-367).
 - orm-gen이 go 예제 모델을 쓴다. make examples-model이 통과한다(S-362).
 - fsm 문서의 자리표시자는 코드 표기다. kit K895의 raw-tag 규칙이 통과한다(S-341).
