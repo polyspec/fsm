@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The Rust crate name polyspec-fsm (lib polyspec_fsm) matches the use paths of the Rust examples (S-339).
 - The prepare-commit-msg hook that kit 0.0.77 no longer serves is gone: .githooks holds only commit-msg and pre-commit (S-357).
 
 ## 0.0.8

@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 6be38880254884de6b6328f58db2878e974fb9bea408c8ab02293bb3671c0e07 -->
+<!-- source-sha256: d687d56fe4b806b7583b7309e1c2579f4d55a166f65c0a9be808a5ee42198604 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -112,7 +112,7 @@
 | S-336 | python 설치 후 build 디렉터리를 제거한다 | Makefile | `make fsm-python-install` | [o] |
 | S-337 | 새 worktree의 kit build 전에 python 소스를 생성한다 | Makefile | `make build-python` | [o] |
 | S-338 | php-ext 생성 전에 arginfo 생성기를 설치한다 | config/ci.json | `make kit-ci-plan` | [o] |
-| S-339 | rust 예제의 use 경로와 크레이트 이름을 맞춘다 | packages/rust/Cargo.toml | `make kit-ci-plan` | [ ] |
+| S-339 | rust 예제의 use 경로와 크레이트 이름을 맞춘다 | packages/rust/Cargo.toml | `make kit-ci-plan` | [o] |
 | S-341 | kit K895에 맞춰 fsm 문서의 자리표시자를 코드 표기로 쓴다 | docs/plans/fsm-v1/checklist.ko.md docs/plans/fsm-v1/checklist.md docs/plans/kit-standard/checklist.ko.md docs/plans/kit-standard/checklist.md | `make docs-check` | [ ] |
 | S-342 | CI check 잡을 kit처럼 make ci-targets로 돌린다 | .github/workflows/ci.yml Makefile | `make kit-ci-plan` | [o] |
 | S-343 | pages 설치 전에 고정된 kit 패키지를 부트스트랩한다 | .github/workflows/pages.yml | `make kit-ci-plan` | [o] |
