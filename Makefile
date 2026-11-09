@@ -416,6 +416,8 @@ DB_DEP := $(call npm_stamp,packages/db)
 GUI_DEP := $(call npm_stamp,packages/gui)
 DOCS_DEP := $(call npm_stamp,docs)
 # The npm projects install first: the PHP and Python installs run install-link, which needs every linked project installed.
+# Each npm install links its own project right after npm ci (PROJECT, S-366-1), so an npm ci of a changed lock leaves no copy
+# in place of a link of .links (P30).
 PACKAGE_DEPS := $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP)
 
 $(NPM_DEP): packages/js/package-lock.json
@@ -461,17 +463,20 @@ $(RUST_DEP): packages/rust/Cargo.lock
 $(DB_DEP): packages/db/package-lock.json
 	mkdir -p $(dir $@)
 	cd packages/db && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
+	$(MAKE) --no-print-directory install-link PROJECT=packages/db
 	touch $@
 
 # The GUI installs after the db packages, because its tests run the db store (order only: a db install does not reinstall the GUI).
 $(GUI_DEP): packages/gui/package-lock.json | $(DB_DEP)
 	mkdir -p $(dir $@)
 	cd packages/gui && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
+	$(MAKE) --no-print-directory install-link PROJECT=packages/gui
 	touch $@
 
 $(DOCS_DEP): docs/package-lock.json
 	mkdir -p $(dir $@)
 	cd docs && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
+	$(MAKE) --no-print-directory install-link PROJECT=docs
 	touch $@
 
 # ---- Runtime packages (K245, S-44): the install, gen, build, clean and test of each runtime package are targets of this Makefile,
@@ -505,10 +510,12 @@ fsm-go-gen:
 fsm-go-test: $(GO_DEP) fsm-go-gen
 	GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests
 
-# fsm-js-install installs the dependencies of package-lock.json (the orm release); gen and test need them.
+# fsm-js-install installs the dependencies of package-lock.json (the orm release); gen and test need them. It links the project
+# right after npm ci (P30), as the PHP and Python installs do, so the copies of the tracked lock never replace the links (S-366-1).
 .PHONY: fsm-js-install fsm-js-gen fsm-js-test
 fsm-js-install:
 	cd packages/js && $(NPM) ci --allow-remote=root --no-audit --no-fund
+	$(MAKE) --no-print-directory install-link PROJECT=packages/js
 
 fsm-js-gen: $(NPM_DEP)
 fsm-js-gen:

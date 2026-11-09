@@ -162,6 +162,17 @@ test('the php installs link right after composer install, so a vendor from the t
   }
 });
 
+test('each npm install of deps-node links its project right after npm ci, so a copy from the tracked lock never replaces the links (S-366-1, P30)', (t) => {
+  const lines = dryRun(sandbox(t), 'deps-node').split('\n');
+  for (const npmDir of NPM_DIRS) {
+    const install = lines.findIndex(line => line.includes(`cd ${npmDir} && `) && /\bnpm ci\b/.test(line));
+    assert.ok(install >= 0, `no npm ci of ${npmDir} in deps-node:\n${lines.join('\n')}`);
+    const next = lines.findIndex((line, index) => index > install && /\bnpm ci\b/.test(line));
+    const link = lines.findIndex((line, index) => index > install && (next < 0 || index < next) && new RegExp(`link\\.m[jt]s link --project ${npmDir}( |$)`).test(line));
+    assert.ok(link > install, `no link of ${npmDir} right after its npm ci in deps-node:\n${lines.join('\n')}`);
+  }
+});
+
 test('an npm dependency is keyed on the content of its lock: a changed lock installs again even when its mtime is older (S-358)', (t) => {
   const dir = sandbox(t, { installed: true });
   assert.equal(lineIndex(dryRun(dir, 'npm-types'), installLine('npm')), -1, 'an installed npm dependency installs again');
