@@ -333,13 +333,15 @@ ci-summary:
 # ---- Release ---------------------------------------------------------------------------------------------------------
 # The steps of the release workflow (.github/workflows/release.yml, config/release.json), in its order. release-tag tags the
 # commit of the successful CI run RUN with vX.Y.Z, X.Y.Z the newest section of the change log, and appends TAG and VERSION to
-# GITHUB_ENV; the later steps read TAG. fsm needs no preparation before release-tools, so release-prepare does nothing.
+# GITHUB_ENV; the later steps read TAG. release-prepare installs the PHP of var/tools (install-tools TOOLS=php), whose phpize and
+# gen_stub.php fsm-php-ext-gen runs for the arginfo header of the generated extension that the php-ext archive carries (S-370);
+# release-tools installs no tool for a make entry (kit K930).
 .PHONY: release-candidate release-prepare release-tools release-tools-path release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage
 release-candidate:
 	RELEASE_ASSETS=var/release/assets $(NODE) $(KIT)/release-run.$(KIT_EXT) prepare "$(VERSION)"
 
 release-prepare:
-	@:
+	$(MAKE) --no-print-directory install-tools TOOLS=php
 
 release-tools:
 	$(ONLINE) $(NODE) $(KIT)/release-tools.$(KIT_EXT)

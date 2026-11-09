@@ -18,7 +18,16 @@
       "directory": "packages/php-ext",
       "name": "polyspec/fsm-php-ext",
       "product": "fsm",
-      "runtime": "php-ext"
+      "runtime": "php-ext",
+      "generated": [
+        {
+          "kind": "make",
+          "target": "fsm-php-ext-gen",
+          "outputs": [
+            "src"
+          ]
+        }
+      ]
     },
     {
       "kind": "wheel",

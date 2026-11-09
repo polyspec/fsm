@@ -17,7 +17,7 @@
 #                    tag vX.Y.Z and the tag of every Go module at that commit, or passes for a tag there already (K269), and
 #                    appends TAG and VERSION to GITHUB_ENV; a tag pushed with the token of the run starts no run
 #   checkout of the tag, then the bootstrap, npm and the packages of the tagged commit again
-#   release-prepare  the preparation that the release of fsm needs (none)
+#   release-prepare  installs the PHP of var/tools, whose phpize and gen_stub.php write the arginfo header of the php-ext archive
 #   release-tools    installs the tools that config/release.json needs for the packages of this repository; a make entry adds none
 #   release-tools-path puts var/tools/bin on the PATH of the steps that follow, through GITHUB_PATH
 #   release-assets  builds the archive of every package, and packages.json of the Composer packages, into var/release/assets
