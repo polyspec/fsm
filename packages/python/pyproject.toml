@@ -11,7 +11,7 @@ description = "python package of fsm: the generated state machines, the conforma
 license = "MIT"
 requires-python = ">=3.14"
 dependencies = [
-    "polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.26/polyspec_orm-0.0.26-py3-none-any.whl",
+    "polyspec-orm @ https://github.com/polyspec/orm/releases/download/v0.0.27/polyspec_orm-0.0.27-py3-none-any.whl",
 ]
 
 # The examples are a package of the project, so that their tests import them from the installed package (S3): the persist example
