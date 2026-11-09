@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 1569f287ceafac7fdd6d65118578510add26abbf0609b9fceffdd0464c6a3f4a -->
+<!-- source-sha256: 50ccfe4a7e71e8b525f351ef01fef386a310a77ae97b76bb5753fe77aea4d604 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -203,7 +203,7 @@
 | S-431 | python 설치 앞의 install-tools recipe 줄 순서를 단언하는 시험을 지운다: recipe 문구를 맞춰 보며 kit 0.0.99의 install-tools 줄에서 실패했다 | `tests/make-install/make-install.test.mts` | `make lint-ts` and `make docs-check` exit 0 | [o] |
 | S-432 | parity 삭제: kit 0.0.100은 구현들이 서로 어떻게 관계되는지 검사하지 않으며, fsm은 자기 테스트를 실행한다. config/parity.json, parity·divergence·test-markers target과 CI job, 그 owner 항목과 규칙 줄을 지우고 kit 0.0.100을 받는다 | `Makefile`, `.github/workflows/ci-pipeline.yml`, `config/parity.json`, `config/ci.json`, `config/owner-checks.json`, `PRINCIPLES.md(.ko)`, `AGENTS.md(.ko)`, `package.json` | `make owner-validate`, `make docs-check` and `make lint-ts` exit 0; no reference to the deleted kit checks remains | [o] |
 | S-433 | kit 거부 두 가지만 멈추는 kit 0.0.101을 채택한다: 0.0.101 release asset을 고정하며, recipe 줄은 바뀌지 않는다 | `package.json`, `package-lock.json` | `make docs-check` and `make lint-ts` exit 0 | [o] |
-| S-434 | S-432와 S-433을 담아 fsm 0.0.4를 release하여, 그 release가 kit 0.0.101의 채택을 담게 한다 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes, then the CI run of main and the release workflow succeed | [ ] |
+| S-434 | S-432와 S-433을 담아 fsm 0.0.4를 release하여, 그 release가 kit 0.0.101의 채택을 담게 한다 | the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes, then the CI run of main and the release workflow succeed | [o] |
 | S-435 | 모든 런타임에서 제공 라이브러리의 최신 릴리스를 받아 fsm 0.0.5를 릴리즈한다: packages/db, js, php, php-ext, python, go, rust는 orm 0.0.23과 ordered-json 0.0.22를, packages/gui는 hyper 0.0.35, crudui 0.0.16, template 0.0.22, php-serialize 0.0.3을 받고 모든 lock을 다시 만들며, packages/js의 설치 예시는 fsm 0.0.5를 적는다 | the polyspec pins and locks of packages/db, js, gui, php, php-ext, python, go and rust, packages/js/README.md(.ko), packages/rust/README.md(.ko), the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and `go test ./...` of packages/go passes, then the CI run of main and the release workflow succeed | [ ] |
 | S-436 | 모든 런타임에서 orm 0.0.24를 받아 fsm 0.0.6을 릴리즈한다: orm 0.0.23의 Go module은 공개되지 않은 bindmodel package를 import하는 시험을 담아 packages/go의 go mod tidy가 실패했다. orm 0.0.24가 그 module을 고치며, 모든 lock을 다시 만든다 | the orm pins and locks of packages/db, js, php, php-ext, python, go and rust, packages/js/README.md(.ko), packages/rust/README.md(.ko), the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and `go mod tidy` and `go test ./...` of packages/go pass, then the CI run of main and the release workflow succeed | [ ] |
 | S-437 | 설치가 실패하면 uv-install이 지운 provider 링크를 되돌리는 kit 0.0.102(K1134)를 채택한다: 0.0.102 릴리스 asset을 고정하며, recipe 줄은 바뀌지 않는다 | package.json, package-lock.json | GREEN: `make docs-check` and `make lint-ts` pass | [o] |
