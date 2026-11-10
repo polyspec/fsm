@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 0119560f142208aff3c3464d3758a093e4cdc0dd1c14d0d988d8891c76fd0df7 -->
+<!-- source-sha256: 8ad40ae4f68fd6cf280014a7dfcfe05521892e8348795099fcff34573d371c5d -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -216,3 +216,4 @@
 | S-443 | 0.0.9 release | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |
 | S-444 | php-ext backend는 event helper event_case와 push_event를 전이가 있는 machine에만 낸다: kit 0.0.103은 compiler warning을 읽고, 전이가 없는 standby의 C 코드는 둘을 쓰지 않은 채 정의해 0.0.9 CI run의 build-php-ext가 -Wunused-function으로 실패했다 | packages/compiler/src/backends/php-ext.mjs, packages/compiler/tests/php-ext-backend.test.mjs | RED: 전이가 없는 machine의 test가 standby_event_case와 standby_push_event를 찾고, `make build-php-ext`가 warning으로 2로 끝난다; GREEN: test가 통과하고 `make build-php-ext`, `make test-php-ext`, `make compiler-test`가 0으로 끝난다 | [o] |
 | S-445 | 모든 runtime은 최신 orm release인 orm 0.0.28을 받고, 모든 lock은 그 package manager가 다시 만든다: packages/db와 packages/js의 release URL, packages/php와 php-ext의 requirement와 packages.json, packages/python의 wheel URL과 sha256, Go module, Rust crate의 git tag. orm 0.0.28의 breaking change(`assigns` parameter, `state_machine`·`checkbox`·`key_prefix` setting, RuntimeModel FORMAT 2)는 fsm이 쓰는 것에 닿지 않는다; ordered-json은 orm 0.0.28이 요구하는 0.0.23에 머문다 | packages/db, js, php, php-ext, python, go, rust의 orm pin과 lock, packages/rust/README.md(.ko) | RED: 최신 orm release는 v0.0.28이고 packages/go/go.mod는 v0.0.27을 요구한다; GREEN: `make docs-check`, `make layout-check`, `make db-test`, `make npm-persist-test`, `make gui-test`, `make rust-persist-test`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust`, `make fsm-js-test`와 GOWORK=off인 packages/go의 `go test ./...`가 통과한다; server dialect는 CI가 설정하는 FSM_TEST_PG_DSN과 FSM_TEST_MYSQL_DSN이 필요하다 | [o] |
+| S-446 | S-445를 실은 0.0.10 release, 그 release가 orm 0.0.28을 싣도록; packages/js의 install 예시는 fsm 0.0.10을 적는다 | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |
