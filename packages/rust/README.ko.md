@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 82f9711fa584533a3709d4e81660213b3d0aa990943b75e78f01a5cb789aac50 -->
+<!-- source-sha256: 769c0fa32db2ef5b5e2163fb7f027b8139913df0bed098863cd5bb5b3281f192 -->
 # polyspec-fsm
 
 [English](README.md)
@@ -99,7 +99,7 @@ E_CONFLICT Some(1) Some(3) Some(1)
 
 `Error`는 `Display`(`E_CONFLICT: the stored state ...`)와 `std::error::Error`를 구현한다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `contracts/conformance/vectors.json`의 vector가 이를 단언한다:
+필드가 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며, `contracts/conformance/vectors.json`의 vector가 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
 |---|---|---|---|
@@ -109,7 +109,7 @@ E_CONFLICT Some(1) Some(3) Some(1)
 
 ## 영속화
 
-`examples/persist.rs`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다. `transition`은
+`examples/persist.rs`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다(`open`에 준 DSN이 dialect를 정한다). 저장된 상태는 row의 code다. `transition`은
 한 전이의 transaction을 실행한다. row를 잠금(`for_update`) 아래 읽고, 저장된 code를 호출자의 `decide` closure에 넘기며,
 closure가 변화를 알릴 때만 row를 쓴다. deadlock이면 transaction을 다시 실행한다(orm `transaction`, 기본 세 번 재시도. closure는
 순수하므로 재실행해도 안전하다). machine 오류는 쓰기 없이 돌려주고, deadlock이 아닌 데이터베이스 오류는 한 번 시도한 뒤 돌려준다:
