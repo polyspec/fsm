@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6a4b2fc8a71d13a6dea983366f819c76f451bd4fee8d96a69139fad7474cb439 -->
+<!-- source-sha256: 609a1ac69efc9316b2599695dd19f49ceca2afa8b25eb7e1d23691322d418eaf -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- fsm은 run-tests의 시간 제한을 없앤 kit 0.0.105(kit K1175)를 채택해 run-tests에 `--timeout`을 넘기지 않고, packages/gui는 hyper 0.0.39, crudui 0.0.20, template 0.0.26, php-serialize 0.0.6을 받는다(S-447).
 
 ## 0.0.10
 

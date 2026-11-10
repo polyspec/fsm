@@ -524,7 +524,7 @@ fsm-js-gen:
 
 # fsm-js-test runs the conformance cases of the npm package; the kit reporter names every file from the checkout root.
 fsm-js-test: $(NPM_DEP) fsm-js-gen
-	$(RUN_TESTS) node --timeout 30 --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --test-concurrency=1 packages/js/tests/conformance.test.mjs
+	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --test-concurrency=1 packages/js/tests/conformance.test.mjs
 
 # fsm-php-install installs the Composer dependencies of packages/php from the release packages.json of composer.json (K865,
 # K871), then installs the dependencies of composer.lock, and links right after the install (P30), so the vendor
@@ -644,23 +644,23 @@ check:
 # make-install-test runs the tests of the package dependencies (tests/make-install): a target that needs a dependency installs it
 # first, and a present dependency is not installed again (docs/plans/fsm-v1/checklist.md, S-29).
 make-install-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/make-install-test.json --inputs Makefile --inputs packages --inputs tests/make-install -- --test-concurrency=1 $(or $(TESTS),tests/make-install)
+	$(RUN_TESTS) node --results .results/make-install-test.json --inputs Makefile --inputs packages --inputs tests/make-install -- --test-concurrency=1 $(or $(TESTS),tests/make-install)
 
 # package-names-test runs the tests of the polyspec names of the released runtimes (tests/package-names, S-410): the TS runtime, the Python
 # wheel and the Rust crate name their packages polyspec-fsm, as the other polyspec packages do.
 package-names-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/package-names-test.json --inputs packages/js/package.json --inputs packages/python/pyproject.toml --inputs packages/rust/Cargo.toml --inputs tests/package-names -- --test-concurrency=1 $(or $(TESTS),tests/package-names/package-names.test.mts)
+	$(RUN_TESTS) node --results .results/package-names-test.json --inputs packages/js/package.json --inputs packages/python/pyproject.toml --inputs packages/rust/Cargo.toml --inputs tests/package-names -- --test-concurrency=1 $(or $(TESTS),tests/package-names/package-names.test.mts)
 
 # workflows-test runs the tests of the CI and Pages workflows (.github/workflows): every action is pinned to a verified commit,
 # the check job runs make install and make check with the services of plan C-6, and each version comes from the file that
 # declares it (docs/plans/fsm-v1/plan.md, C-10; docs/plans/fsm-v1/checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts
+	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts
 
 # name-test runs the tests of scripts/check-name.mts; name-check fails while a tracked file or path names the library by its old
 # outside the allowlist of the checker (docs/plans/fsm-v1/checklist.md, S-18; the library is named fsm).
 name-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/name-test.json --inputs scripts/check-name.mts --inputs tests/check-name -- --test-concurrency=1 tests/check-name
+	$(RUN_TESTS) node --results .results/name-test.json --inputs scripts/check-name.mts --inputs tests/check-name -- --test-concurrency=1 tests/check-name
 
 name-check:
 	$(NODE) scripts/check-name.mts
@@ -668,7 +668,7 @@ name-check:
 # readme-test runs the tests of scripts/check-readmes.mts; readme-check requires every declared README pair to have its required
 # sections and a Korean twin with the same headings (docs/plans/fsm-v1/plan.md, C-9; docs/plans/fsm-v1/checklist.md, S-19).
 readme-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/readme-test.json --inputs scripts/check-readmes.mts --inputs tests/check-readmes -- --test-concurrency=1 tests/check-readmes
+	$(RUN_TESTS) node --results .results/readme-test.json --inputs scripts/check-readmes.mts --inputs tests/check-readmes -- --test-concurrency=1 tests/check-readmes
 
 readme-check:
 	$(NODE) scripts/check-readmes.mts
@@ -685,12 +685,12 @@ docs-build: $(DOCS_DEP)
 # docs-build-test runs the tests of the site: a dead link fails the build, and the real build produces its pages and the GitHub
 # rewrite of a link to a repository file (tests/docs-build, docs/plans/fsm-v1/plan.md, C-8). Its record names the inputs it reads.
 docs-build-test: $(DOCS_DEP)
-	$(RUN_TESTS) node --timeout 600 --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- --test-concurrency=1 tests/docs-build
+	$(RUN_TESTS) node --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- --test-concurrency=1 tests/docs-build
 
 # compiler-test runs the tests of packages/compiler, the core validation of a definition (docs/plans/fsm-v1/plan.md, C-5)
 # with the editor schema contracts/schema/fsm.schema.json, which the tests check against the core.
 compiler-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/compiler-test.json --inputs packages/compiler --inputs contracts -- --test-concurrency=1 packages/compiler/tests
+	$(RUN_TESTS) node --results .results/compiler-test.json --inputs packages/compiler --inputs contracts -- --test-concurrency=1 packages/compiler/tests
 
 # db-test-postgres and db-test-mysql run the DB store tests on the server dialects that the documents name (docs/plans/fsm-v1/plan.md, C-6):
 # db-store.test.mjs and store-contract-all.test.mjs, which open the database of FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN through the dialect
@@ -702,12 +702,12 @@ DB_DIALECT_TESTS := packages/db/tests/db-store.test.mjs packages/db/tests/store-
 db-test-postgres: $(DB_DEP) fsm-db-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	@$(call require_dsn,FSM_TEST_PG_ADMIN_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --timeout 30 --results .results/db-test-postgres.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 db-test-mysql: $(DB_DEP) fsm-db-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	@$(call require_dsn,FSM_TEST_MYSQL_ADMIN_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --timeout 30 --results .results/db-test-mysql.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 # fsm-db-gen writes the models of packages/db/src/models with the orm-gen of its package (npm run gen): they are generated output, and
 # no checkout tracks them (AGENTS.md, Generated files). The db store, its tests, the GUI and the dialect helper of the npm persist
@@ -723,7 +723,7 @@ fsm-db-gen: $(DB_DEP)
 db-deps: $(DB_DEP)
 
 db-test: $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --timeout 30 --results .results/db-test.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 packages/db/tests
+	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 packages/db/tests
 
 # gui-deps installs the packages of packages/gui (hyper v0.0.13, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
 # yaml, pinned in its package.json and package-lock.json; docs/plans/fsm-v1/plan.md, C-1). The db store of the GUI is the one of
@@ -741,7 +741,7 @@ gui-build: $(GUI_DEP)
 # built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI. The
 # browser test is in tests/browser and runs with gui-browser-test, so gui-test takes the test files of tests/ only.
 gui-test: gui-build $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --timeout 30 --results .results/gui-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 $(wildcard packages/gui/tests/*.test.mjs)
+	$(RUN_TESTS) node --results .results/gui-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 $(wildcard packages/gui/tests/*.test.mjs)
 
 # GUI_BROWSERS is the stamp of the Chromium that the GUI browser test drives, keyed on the Playwright version that
 # packages/gui/package-lock.json pins (devDependency, exact). A new version is a new stamp, so it downloads once; a later run
@@ -763,7 +763,7 @@ gui-browsers: $(GUI_BROWSERS)
 # gui-browser-test runs the tests of tests/browser (browser.test.mjs, diagram.test.mjs; S-38 adds the drawn diagram) of packages/gui: the GUI forms in a headless Chromium on a temporary project
 # (docs/plans/fsm-v1/checklist.md, S-22-1 and S-22-2). It needs the browser of gui-browsers and the built assets of gui-build.
 gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --timeout 120 --results .results/gui-browser-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
+	$(RUN_TESTS) node --results .results/gui-browser-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
 
 # packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1/plan.md, Verification).
 packages-test:
@@ -779,21 +779,21 @@ test-js: fsm-js-test
 # The two files run one after the other: on a server dialect they share the persist table, which each case clears.
 NPM_PERSIST_TESTS := --test-concurrency=1 --test-name-pattern=persist packages/js/tests/conformance.test.mjs packages/js/tests/persist.test.mjs
 npm-persist-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
-	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --timeout 30 --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --timeout 30 --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --timeout 30 --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 # npm-types runs tests/npm-types: tsc compiles tests/npm-types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/fsm-v1/checklist.md, S-09-2). It is a tool test with
 # its own record, so the conformance test of the npm kind holds only vector cases.
 npm-types: $(NPM_DEP) fsm-js-gen
-	$(RUN_TESTS) node --timeout 30 --results .results/npm-types.json --inputs packages/js -- --test-concurrency=1 tests/npm-types
+	$(RUN_TESTS) node --results .results/npm-types.json --inputs packages/js -- --test-concurrency=1 tests/npm-types
 
 
 # test-go is the task of its runtime (Build and test of the runtimes); the tests of packages/go are its prerequisite (K246-2).
@@ -812,7 +812,7 @@ rust-persist-test: $(RUST_DEP) fsm-rust-gen
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
 python-tools-test:
-	$(RUN_TESTS) node --timeout 30 --results .results/python-tools-test.json --inputs Makefile --inputs config/toolchain.json --inputs tests/python-tools -- --test-concurrency=1 tests/python-tools
+	$(RUN_TESTS) node --results .results/python-tools-test.json --inputs Makefile --inputs config/toolchain.json --inputs tests/python-tools -- --test-concurrency=1 tests/python-tools
 
 # test-python is the task of its runtime (Build and test of the runtimes); the tests of packages/python are its prerequisite (K246-2).
 test-python: fsm-python-test

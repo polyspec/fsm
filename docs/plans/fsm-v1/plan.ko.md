@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: cde09c3630d365c4293fb62a8417fc899c24b6e7ad9e5ac48d4c8ae7c1a5fac0 -->
+<!-- source-sha256: b7bf86019cd2d50bef292d374bae818f4a0012d691b8c7644c6f13002553c485 -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -77,9 +77,9 @@
   - 언어 패키지에는 소비자 입장 테스트만 둔다.
   - 루트에는 루트 도구(C-1)의 테스트와 그 helper `tests/support/`만 둔다.
 - 테스트 실행
-  - 모든 테스트는 kit `run-tests.mjs`로 실행한다. 이 runner가 케이스별 진행·경과시간 출력과 케이스별 timeout을 강제한다. 전체 timeout은 없다.
+  - 모든 테스트는 kit `run-tests.mjs`로 실행한다. 이 runner는 케이스별 진행·경과시간을 출력하고 시간 제한을 두지 않는다.
   - 벡터 케이스 1개 = 언어 테스트 1개다.
-  - compiler-test, db-test, gui-test와 모든 언어 테스트는 `run-tests --results`로 `.results/<target>.json`을 쓴다. run-tests는 case마다 timeout을 준다. 목표는 초 단위다.
+  - compiler-test, db-test, gui-test와 모든 언어 테스트는 `run-tests --results`로 `.results/<target>.json`을 쓴다. 목표는 초 단위다.
   - 병렬 실행은 `packages-test`의 `make -j6`로만 한다.
   - 항목 개발 중에는 owner-checks 매핑(D 절)의 소유 검사만 돌린다.
   - 전체 스위트는 마지막 항목을 커밋한 뒤 `full-run.mjs`로 트리당 1회 돌린다. 체크리스트 항목이 아니다.

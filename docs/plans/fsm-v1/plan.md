@@ -76,9 +76,9 @@
   - Language packages hold only consumer-side tests.
   - The root holds only the tests of the root tools (C-1) and their helper `tests/support/`.
 - Test execution
-  - Every test runs through kit `run-tests.mjs`. That runner enforces per-case progress and elapsed-time output and a per-case timeout. There is no overall timeout.
+  - Every test runs through kit `run-tests.mjs`. That runner prints per-case progress and elapsed time and sets no time limit.
   - One vector case = one language test.
-  - compiler-test, db-test, gui-test and every language test write `.results/<target>.json` through `run-tests --results`. run-tests gives every case its own timeout. The target is seconds.
+  - compiler-test, db-test, gui-test and every language test write `.results/<target>.json` through `run-tests --results`. The target is seconds.
   - Parallel runs happen only through `make -j6` in `packages-test`.
   - While an item is in development, only the owner checks of the owner-checks mapping (section D) run.
   - The full suite runs once per tree with `full-run.mjs` after the last item is committed. It is not a checklist item.
