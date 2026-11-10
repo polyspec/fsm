@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: c7e85e81ff2104f4bcce7689a5e644b9b479a83c3ca937a5ba2423e9291872a1 -->
+<!-- source-sha256: 15cedc58d97c765799f00520f47d124ece1875a412fafadd83f9f0768f13133e -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -214,3 +214,4 @@
 | S-441 | kit이 조용히 버리던 출력, 오류, 실패를 남기는 kit 0.0.103(kit K1136–K1165)를 채택한다: 0.0.103 release asset을 고정한다 | `package.json`, `package-lock.json` | `make docs-check` and `make lint-ts` exit 0 | [o] |
 | S-442 | packages/gui는 provider의 최신 release인 hyper 0.0.38, crudui 0.0.19, template 0.0.24, php-serialize 0.0.5를 받는다. ordered-json 0.0.24가 orm 0.0.27이 쓰는 API를 바꾸므로 orm과 ordered-json은 0.0.27과 0.0.23에 머문다 | packages/gui/package.json과 packages/gui/package-lock.json | `make gui-test` exit 0 | [o] |
 | S-443 | 0.0.9 release | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |
+| S-444 | php-ext backend는 event helper event_case와 push_event를 전이가 있는 machine에만 낸다: kit 0.0.103은 compiler warning을 읽고, 전이가 없는 standby의 C 코드는 둘을 쓰지 않은 채 정의해 0.0.9 CI run의 build-php-ext가 -Wunused-function으로 실패했다 | packages/compiler/src/backends/php-ext.mjs, packages/compiler/tests/php-ext-backend.test.mjs | RED: 전이가 없는 machine의 test가 standby_event_case와 standby_push_event를 찾고, `make build-php-ext`가 warning으로 2로 끝난다; GREEN: test가 통과하고 `make build-php-ext`, `make test-php-ext`, `make compiler-test`가 0으로 끝난다 | [o] |

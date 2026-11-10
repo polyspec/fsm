@@ -13,6 +13,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { files } from '../src/backends/php-ext.mjs';
 import { files as phpFiles } from '../src/backends/php.mjs';
+import { normalize } from '../src/core/normalize.mjs';
 import { backendTests, orderIrs } from './backend-support.mjs';
 
 const NAMESPACE = 'Polyspec\\FsmTest';
@@ -84,4 +85,10 @@ test('every name of the output derives from the namespace and the extension name
   const fsm = out.find(file => file.path === 'fsm.c').content;
   assert.match(fsm, /^ZEND_METHOD\(Acme_Tool_Fsm_Error, __construct\)$/m);
   assert.match(fsm, /^\tZEND_ME\(Acme_Tool_Fsm_Error, __construct, /m);
+});
+
+test('a machine without transitions has no event helpers (event_case, push_event), which its C code would not use', () => {
+  const ir = normalize({ machine: 'standby', states: [{ key: 'ready', code: 1, initial: true, final: true }], events: [] });
+  const c = files([ir], { standby: { reserved: [] } }, { phpNamespace: NAMESPACE, phpExtName: EXT }).find(file => file.path === 'standby.c');
+  assert.doesNotMatch(c.content, /standby_(event_case|push_event)/);
 });

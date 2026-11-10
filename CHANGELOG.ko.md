@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 236d01c07b5a15607e11dbb49364304d7ea9163542da753cd05b5affd7b6af1f -->
+<!-- source-sha256: ba6959f269ed97c7f5511c13b3f6851b43d1a4b7b7ca3418bcb80d597fdfe963 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,8 @@
 ## Unreleased
 
 ## 0.0.9
+
+- php-ext backend는 event helper를 전이가 있는 machine에만 내므로, extension은 kit 0.0.103에서 compiler warning 없이 빌드된다(S-444).
 
 - packages/gui는 hyper 0.0.38, crudui 0.0.19, template 0.0.24와 php-serialize 0.0.5를 받는다(S-442).
 

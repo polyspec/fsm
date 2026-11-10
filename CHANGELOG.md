@@ -8,6 +8,8 @@
 
 ## 0.0.9
 
+- The php-ext backend emits the event helpers only for a machine that has transitions, so the extension builds without compiler warnings under kit 0.0.103 (S-444).
+
 - packages/gui takes hyper 0.0.38, crudui 0.0.19, template 0.0.24 and php-serialize 0.0.5 (S-442).
 
 - The repository adopts kit 0.0.103, which keeps the output, errors and failures that kit used to drop silently (kit K1136–K1165) (S-441).
