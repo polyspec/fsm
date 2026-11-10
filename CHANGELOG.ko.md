@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 971eda05ca34e0108fb2a1595ba6f42dc916abceee00cc6fab0d56b6b0af62c3 -->
+<!-- source-sha256: a109921728e5aa5625be707d23d05c4e9cb6804185d4ed9fb94b91d96de3cecd -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 저장소는 kit이 조용히 버리던 출력, 오류, 실패를 남기는 kit 0.0.103(kit K1136–K1165)를 채택한다(S-441).
 
 - make deps-node의 npm 설치(packages/js, packages/db, packages/gui, docs)는 PHP와 Python 설치처럼 npm ci 바로 뒤에 자기 project를 link한다. 따라서 lock이 바뀐 npm ci가 .links의 link 자리에 copy를 남기지 않는다(S-366-1).
 - 모든 런타임(packages/db, js, php, php-ext, python, go, rust)이 orm 0.0.27을 받고 모든 lock을 다시 만들었으므로, make lint-rust가 orm checkout에 대해 통과한다(S-366).

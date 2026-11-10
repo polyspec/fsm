@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The repository adopts kit 0.0.103, which keeps the output, errors and failures that kit used to drop silently (kit K1136–K1165) (S-441).
+
 - The npm installs of make deps-node (packages/js, packages/db, packages/gui and docs) link their project right after npm ci, as the PHP and Python installs do, so an npm ci of a changed lock leaves no copy in place of a link of .links (S-366-1).
 - Every runtime takes orm 0.0.27 (packages/db, js, php, php-ext, python, go and rust), with every lock regenerated, so make lint-rust passes against the orm checkout (S-366).
 - The Go module and the Rust crate release their generated sources: packages/go/src and packages/rust/src are tracked under P34 and layout-check fails when they differ from fsm-gen; the php archive carries src and examples/model through the make entry fsm-php-gen (S-371).
