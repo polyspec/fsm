@@ -1163,8 +1163,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm"
-version = "0.0.27"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.27#99303d9e7c155d3fad04410d59d177bddd389393"
+version = "0.0.28"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.28#678757d4edcec7c993d403fbc784482fdad841b1"
 dependencies = [
  "aes-gcm",
  "base64",
@@ -1192,8 +1192,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm-build"
-version = "0.0.27"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.27#99303d9e7c155d3fad04410d59d177bddd389393"
+version = "0.0.28"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.28#678757d4edcec7c993d403fbc784482fdad841b1"
 dependencies = [
  "polyspec-orm-schema",
  "proc-macro2",
@@ -1206,8 +1206,8 @@ dependencies = [
 
 [[package]]
 name = "polyspec-orm-schema"
-version = "0.0.27"
-source = "git+https://github.com/polyspec/orm.git?tag=v0.0.27#99303d9e7c155d3fad04410d59d177bddd389393"
+version = "0.0.28"
+source = "git+https://github.com/polyspec/orm.git?tag=v0.0.28#678757d4edcec7c993d403fbc784482fdad841b1"
 dependencies = [
  "regex",
  "same-file",

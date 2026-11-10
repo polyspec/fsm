@@ -2,7 +2,7 @@ module github.com/polyspec/fsm/packages/go
 
 go 1.27.3
 
-require github.com/polyspec/orm/packages/go v0.0.27
+require github.com/polyspec/orm/packages/go v0.0.28
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "613609c2652f54ec72ebae462fcd3e30",
+    "content-hash": "43a69ab82a0d35a30cb582befcc7c504",
     "packages": [
         {
             "name": "nikic/php-parser",
@@ -103,11 +103,11 @@
         },
         {
             "name": "polyspec/orm",
-            "version": "0.0.27",
+            "version": "0.0.28",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/polyspec/orm/releases/download/v0.0.27/polyspec-orm-php-0.0.27.zip",
-                "shasum": "a33815e4d6f0ec9777a626b50639b24111d09235"
+                "url": "https://github.com/polyspec/orm/releases/download/v0.0.28/polyspec-orm-php-0.0.28.zip",
+                "shasum": "5c278afa62bf4db32a9ac2fb218ed09b85de2ead"
             },
             "require": {
                 "composer-runtime-api": "^2.2",

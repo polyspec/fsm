@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: ba6959f269ed97c7f5511c13b3f6851b43d1a4b7b7ca3418bcb80d597fdfe963 -->
+<!-- source-sha256: cc2f12257339379846c11e4b0a41f284dbafc2ec1d8b7b3f96e0a97dd88accc9 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 모든 runtime은 orm 0.0.28을 받고 모든 lock을 다시 만든다; ordered-json은 0.0.23에 머문다(S-445).
 
 ## 0.0.9
 

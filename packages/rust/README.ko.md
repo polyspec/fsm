@@ -148,7 +148,7 @@ pub async fn transition_with_fault(
 checkout 루트에서 실행한다:
 
 ```sh
-make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.27 by its git tag)
+make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.28 by its git tag)
 make fsm-rust-test      # cargo test through kit's run-tests
 make test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)

@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- Every runtime takes orm 0.0.28, with every lock regenerated; ordered-json stays 0.0.23 (S-445).
+
 ## 0.0.9
 
 - The php-ext backend emits the event helpers only for a machine that has transitions, so the extension builds without compiler warnings under kit 0.0.103 (S-444).
