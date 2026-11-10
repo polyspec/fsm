@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 42e6190180dc49e4446224c1bc3bdd5bb2d7b3b30a1b375140657b2fb9271cd0 -->
+<!-- source-sha256: f9042deb9def1df912f3ec48f6358ba00ed285f13417ca9619e38a91d0a5cbda -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -218,3 +218,4 @@
 | S-445 | 모든 runtime은 최신 orm release인 orm 0.0.28을 받고, 모든 lock은 그 package manager가 다시 만든다: packages/db와 packages/js의 release URL, packages/php와 php-ext의 requirement와 packages.json, packages/python의 wheel URL과 sha256, Go module, Rust crate의 git tag. orm 0.0.28의 breaking change(`assigns` parameter, `state_machine`·`checkbox`·`key_prefix` setting, RuntimeModel FORMAT 2)는 fsm이 쓰는 것에 닿지 않는다; ordered-json은 orm 0.0.28이 요구하는 0.0.23에 머문다 | packages/db, js, php, php-ext, python, go, rust의 orm pin과 lock, packages/rust/README.md(.ko) | RED: 최신 orm release는 v0.0.28이고 packages/go/go.mod는 v0.0.27을 요구한다; GREEN: `make docs-check`, `make layout-check`, `make db-test`, `make npm-persist-test`, `make gui-test`, `make rust-persist-test`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust`, `make fsm-js-test`와 GOWORK=off인 packages/go의 `go test ./...`가 통과한다; server dialect는 CI가 설정하는 FSM_TEST_PG_DSN과 FSM_TEST_MYSQL_DSN이 필요하다 | [o] |
 | S-446 | S-445를 실은 0.0.10 release, 그 release가 orm 0.0.28을 싣도록; packages/js의 install 예시는 fsm 0.0.10을 적는다 | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |
 | S-447 | run-tests의 시간 제한을 없앤 kit 0.0.105(kit K1175)를 채택하고 packages/gui에서 최신 hyper 0.0.39, crudui 0.0.20, template 0.0.26, php-serialize 0.0.6을 받는다: kit 0.0.105 release asset을 고정하고, Makefile recipe 18개에서 0.0.105가 알 수 없는 option으로 거부하는 `--timeout`을 run-tests에 넘기지 않으며, fsm-v1 plan에 runner가 시간 제한을 두지 않는다고 적는다. orm과 ordered-json은 다음 orm release까지 orm 0.0.28이 쓰는 0.0.28과 0.0.23에 머문다 | `package.json`, `package-lock.json`, `Makefile`, `packages/gui/package.json`, `packages/gui/package-lock.json`, `docs/plans/fsm-v1/plan.md(.ko)` | `make gui-test`, `make lint-ts`, `make docs-check` exit 0; Makefile의 `--timeout`과 packages/gui의 hyper 0.0.38, crudui 0.0.19, template 0.0.24, php-serialize 0.0.5의 `git grep`이 exit 1 | [o] |
+| S-448 | 0.0.11 release | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |

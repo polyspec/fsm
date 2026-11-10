@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.11
+
 - fsm adopts kit 0.0.105, which removed the time limits of run-tests (kit K1175), passes no `--timeout` to run-tests, and packages/gui takes hyper 0.0.39, crudui 0.0.20, template 0.0.26 and php-serialize 0.0.6 (S-447).
 
 ## 0.0.10
