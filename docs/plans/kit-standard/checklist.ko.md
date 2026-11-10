@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 3e379c91246049bec9c742a466d08d9424f3af34a1355f6714fa479780bad55d -->
+<!-- source-sha256: c7e85e81ff2104f4bcce7689a5e644b9b479a83c3ca937a5ba2423e9291872a1 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -213,3 +213,4 @@
 | S-440 | 최신 provider 릴리스와 S-439를 담아 fsm 0.0.8을 릴리즈한다: packages/db, js, php, php-ext, python(constraints, wheel sha256, pylock), go, rust에서 orm 0.0.26과 ordered-json 0.0.23을, packages/gui에서 hyper 0.0.37, crudui 0.0.18, template 0.0.23, php-serialize 0.0.4를 받는다. 모든 lock을 다시 만들고 packages/js의 설치 예시는 fsm 0.0.8을 적는다 | the provider pins and locks of packages/db, gui, js, php, php-ext, python, go and rust, packages/js/README.md(.ko), packages/rust/README.md(.ko), the versions of every package manifest and lock, CHANGELOG.md(.ko) | GREEN: `make docs-check` passes and `go mod tidy` and `go test ./tests` of packages/go pass, then the CI run of main and the release workflow succeed | [o] |
 | S-441 | kit이 조용히 버리던 출력, 오류, 실패를 남기는 kit 0.0.103(kit K1136–K1165)를 채택한다: 0.0.103 release asset을 고정한다 | `package.json`, `package-lock.json` | `make docs-check` and `make lint-ts` exit 0 | [o] |
 | S-442 | packages/gui는 provider의 최신 release인 hyper 0.0.38, crudui 0.0.19, template 0.0.24, php-serialize 0.0.5를 받는다. ordered-json 0.0.24가 orm 0.0.27이 쓰는 API를 바꾸므로 orm과 ordered-json은 0.0.27과 0.0.23에 머문다 | packages/gui/package.json과 packages/gui/package-lock.json | `make gui-test` exit 0 | [o] |
+| S-443 | 0.0.9 release | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |

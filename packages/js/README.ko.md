@@ -1,5 +1,5 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: cd3731688d5548d86e432cedc094623c1abbf1f04475f95ae912b15337f89ec0 -->
+<!-- source-sha256: 96aa0701f849d5c62cbe67863fbd000edb12616be75c9dda89565413ff8a78dd -->
 # @polyspec/fsm
 
 [English](README.md)
@@ -12,7 +12,7 @@ fsm의 TS 런타임(`docs/plans/fsm-v1/plan.md`, C-2)이며 @polyspec/fsm으로 
 릴리스는 아카이브의 URL로 설치한다. 릴리스 자산 `polyspec-fsm-0.0.1.tgz`이다:
 
 ```sh
-npm install https://github.com/polyspec/fsm/releases/download/v0.0.8/polyspec-fsm-0.0.8.tgz
+npm install https://github.com/polyspec/fsm/releases/download/v0.0.9/polyspec-fsm-0.0.9.tgz
 ```
 ## 프로젝트에 생성
 

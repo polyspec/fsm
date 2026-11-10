@@ -1143,7 +1143,7 @@ checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "polyspec-fsm"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "libtest-mimic",
  "polyspec-orm",

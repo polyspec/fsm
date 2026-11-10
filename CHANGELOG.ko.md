@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 7e9b1540feddb0c0442fa932f05767fdddd3fa2f75bb97621209bb6ce662a9be -->
+<!-- source-sha256: 236d01c07b5a15607e11dbb49364304d7ea9163542da753cd05b5affd7b6af1f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.9
 
 - packages/gui는 hyper 0.0.38, crudui 0.0.19, template 0.0.24와 php-serialize 0.0.5를 받는다(S-442).
 
