@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a109921728e5aa5625be707d23d05c4e9cb6804185d4ed9fb94b91d96de3cecd -->
+<!-- source-sha256: 7e9b1540feddb0c0442fa932f05767fdddd3fa2f75bb97621209bb6ce662a9be -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- packages/gui는 hyper 0.0.38, crudui 0.0.19, template 0.0.24와 php-serialize 0.0.5를 받는다(S-442).
 
 - 저장소는 kit이 조용히 버리던 출력, 오류, 실패를 남기는 kit 0.0.103(kit K1136–K1165)를 채택한다(S-441).
 

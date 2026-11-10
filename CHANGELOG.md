@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- packages/gui takes hyper 0.0.38, crudui 0.0.19, template 0.0.24 and php-serialize 0.0.5 (S-442).
+
 - The repository adopts kit 0.0.103, which keeps the output, errors and failures that kit used to drop silently (kit K1136–K1165) (S-441).
 
 - The npm installs of make deps-node (packages/js, packages/db, packages/gui and docs) link their project right after npm ci, as the PHP and Python installs do, so an npm ci of a changed lock leaves no copy in place of a link of .links (S-366-1).
