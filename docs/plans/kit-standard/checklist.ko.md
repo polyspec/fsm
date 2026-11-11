@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 0dfc1d3b11b211390f867d449aab204ed31afb92ecc0652f382861dc621ca072 -->
+<!-- source-sha256: 1b9b6bbacd8ede837db528634c9fe3e1f032190d2e72129707d7a97bba940124 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -223,4 +223,4 @@
 | S-450 | 모든 runtime에서 orm 0.0.29와 ordered-json 0.0.25를 받는다: packages/db와 packages/js의 release URL, packages/php와 php-ext의 requirement와 packages.json, packages/python의 wheel URL과 sha256, Go module과 Rust crate의 git tag를 바꾸고 각 lock을 그 도구로 다시 만든다 | `packages/{db,js}/package.json` and locks, `packages/go/go.mod` and `go.sum`, `packages/{php,php-ext}/composer.json` and locks, `packages/python/{pyproject.toml,constraints.txt,pylock.toml}`, `packages/rust/Cargo.toml` and `Cargo.lock`, `packages/rust/README.md(.ko)` | `git grep` of orm 0.0.28 and ordered-json 0.0.23 in the manifests exits 1; the owner checks of the changed paths, `make lint-ts` and the typecheck exit 0 | [o] |
 | S-451 | 0.0.12 release | The version commit and the release assets | `make release-coverage` and the release of the CI run of the version commit | [o] |
 | S-452 | packages/php와 packages/php-ext에서 phpunit 13.4.6을 받아 advisory CVE-2026-119193(phpunit >=13.4.0,<13.4.4) 밖으로 나가고, 각 package의 composer로 lock을 쓰며, kit 0.0.106을 받는다 | `packages/php/composer.json(.lock)`, `packages/php-ext/composer.json(.lock)`, kit in `package.json` and `package-lock.json`, `CHANGELOG.md(.ko)` | `composer audit --locked` in packages/php and packages/php-ext | [o] |
-| S-453 | S-452 행을 담아 fsm 0.0.13을 릴리즈한다 | the versions of the packages and their locks, `CHANGELOG.md(.ko)` | `make docs-check` | [ ] |
+| S-453 | S-452 행을 담아 fsm 0.0.13을 릴리즈한다 | the versions of the packages and their locks, `CHANGELOG.md(.ko)` | `make docs-check` | [o] |

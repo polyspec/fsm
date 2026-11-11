@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.13
+
 - packages/php and packages/php-ext take phpunit 13.4.6, past the advisory CVE-2026-119193 of phpunit >=13.4.0,<13.4.4, and fsm takes kit 0.0.106 (S-452).
 
 ## 0.0.12
