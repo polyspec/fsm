@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 6d1aee75d75c9becaff2a8aba034dd15e9cbac95c994a384e7df55d247ca03c4 -->
+<!-- source-sha256: 4681bced3ced1f9cd2d0a7470aada12fa5f591225ab0b1218a66eddfd3c2a9c1 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -220,3 +220,4 @@
 | S-447 | run-tests의 시간 제한을 없앤 kit 0.0.105(kit K1175)를 채택하고 packages/gui에서 최신 hyper 0.0.39, crudui 0.0.20, template 0.0.26, php-serialize 0.0.6을 받는다: kit 0.0.105 release asset을 고정하고, Makefile recipe 18개에서 0.0.105가 알 수 없는 option으로 거부하는 `--timeout`을 run-tests에 넘기지 않으며, fsm-v1 plan에 runner가 시간 제한을 두지 않는다고 적는다. orm과 ordered-json은 다음 orm release까지 orm 0.0.28이 쓰는 0.0.28과 0.0.23에 머문다 | `package.json`, `package-lock.json`, `Makefile`, `packages/gui/package.json`, `packages/gui/package-lock.json`, `docs/plans/fsm-v1/plan.md(.ko)` | `make gui-test`, `make lint-ts`, `make docs-check` exit 0; Makefile의 `--timeout`과 packages/gui의 hyper 0.0.38, crudui 0.0.19, template 0.0.24, php-serialize 0.0.5의 `git grep`이 exit 1 | [o] |
 | S-448 | 0.0.11 release | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |
 | S-449 | packages/js/README.ko.md와 packages/rust/README.ko.md를 현재 영어 원문에서 다시 번역하고 그 두 twin만 stamp한다: js twin에 예제가 코드의 사용법을 보인다는 문장을 더하고, rust twin은 dialect를 정하는 `open`의 DSN을 적으며 `Error`의 필드를 필드라고 부른다 | `packages/js/README.ko.md`, `packages/rust/README.ko.md` | `make documents-stamp` with no PATHS reports 0 moved, and `make docs-check` exits 0 | [o] |
+| S-450 | 모든 runtime에서 orm 0.0.29와 ordered-json 0.0.25를 받는다: packages/db와 packages/js의 release URL, packages/php와 php-ext의 requirement와 packages.json, packages/python의 wheel URL과 sha256, Go module과 Rust crate의 git tag를 바꾸고 각 lock을 그 도구로 다시 만든다 | `packages/{db,js}/package.json` and locks, `packages/go/go.mod` and `go.sum`, `packages/{php,php-ext}/composer.json` and locks, `packages/python/{pyproject.toml,constraints.txt,pylock.toml}`, `packages/rust/Cargo.toml` and `Cargo.lock`, `packages/rust/README.md(.ko)` | `git grep` of orm 0.0.28 and ordered-json 0.0.23 in the manifests exits 1; the owner checks of the changed paths, `make lint-ts` and the typecheck exit 0 | [ ] |
