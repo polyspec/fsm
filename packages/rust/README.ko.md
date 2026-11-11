@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 769c0fa32db2ef5b5e2163fb7f027b8139913df0bed098863cd5bb5b3281f192 -->
+<!-- source-sha256: 4f6527767e25bd2b8c4bf5fb2ac58f0a933b0be490a009f913b88b7268b272c2 -->
 # polyspec-fsm
 
 [English](README.md)
@@ -148,7 +148,7 @@ pub async fn transition_with_fault(
 checkout 루트에서 실행한다:
 
 ```sh
-make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.28 by its git tag)
+make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.29 by its git tag)
 make fsm-rust-test      # cargo test through kit's run-tests
 make test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)

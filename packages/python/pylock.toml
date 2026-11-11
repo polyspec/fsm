@@ -121,13 +121,13 @@ wheels = [
 
 [[packages]]
 name = "polyspec-ordered-json"
-version = "0.0.23"
-archive = { url = "https://github.com/polyspec/ordered-json/releases/download/v0.0.23/polyspec_ordered_json-0.0.23-py3-none-any.whl", hashes = { sha256 = "eed9593dbfe6bbddf0942ab7479b3e95fadcb82ca6543f214662f37820524db6" } }
+version = "0.0.25"
+archive = { url = "https://github.com/polyspec/ordered-json/releases/download/v0.0.25/polyspec_ordered_json-0.0.25-py3-none-any.whl", hashes = { sha256 = "d64801de501f15b90a2f2f2ec0d86e78f0a4e66a65f6157b3dc807998f1bb1ab" } }
 
 [[packages]]
 name = "polyspec-orm"
-version = "0.0.28"
-archive = { url = "https://github.com/polyspec/orm/releases/download/v0.0.28/polyspec_orm-0.0.28-py3-none-any.whl", hashes = { sha256 = "6a7c2d8e76d8c01dbd6e8718f83c9c5b721a25aa0a530f97a400fdbb72b8ff90" } }
+version = "0.0.29"
+archive = { url = "https://github.com/polyspec/orm/releases/download/v0.0.29/polyspec_orm-0.0.29-py3-none-any.whl", hashes = { sha256 = "1e961c737643ddf38428114a0d0574ce4b670a2bf047ce4b9117620a1c1579b5" } }
 
 [[packages]]
 name = "psycopg"
