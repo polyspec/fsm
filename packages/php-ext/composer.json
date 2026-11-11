@@ -13,7 +13,7 @@
         "polyspec/orm": "0.0.29"
     },
     "require-dev": {
-        "phpunit/phpunit": "13.4.2"
+        "phpunit/phpunit": "13.4.6"
     },
     "repositories": [
         {

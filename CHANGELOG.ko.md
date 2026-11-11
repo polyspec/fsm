@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e233625b4444477bdb44537621ec5fb70bea0bfa959003d42aac5ab9e1114242 -->
+<!-- source-sha256: 9102e26d663014220bfa25949c7a8c541a4f30a4f937e43328cb6e570bd4964a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- packages/php와 packages/php-ext는 phpunit 13.4.6을 받아 phpunit >=13.4.0,<13.4.4의 advisory CVE-2026-119193 밖으로 나가고, fsm은 kit 0.0.106을 받는다(S-452).
 
 ## 0.0.12
 
