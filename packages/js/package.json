@@ -1,6 +1,6 @@
 {
   "name": "@polyspec/fsm",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "npm consumer test bed of fsm: the generated state machines, the conformance vectors and the B-4 persistence example (docs/plans/fsm-v1/plan.md, C-2)",
   "exports": {
     ".": {

@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 023e17d89d507c8fc16611e55e8fc7f324ad15622a1db78d8ea9fa556f387e11 -->
+<!-- source-sha256: e233625b4444477bdb44537621ec5fb70bea0bfa959003d42aac5ab9e1114242 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.12
 
 - 모든 runtime은 orm 0.0.29와 ordered-json 0.0.25를 받고, 모든 lock을 그 도구로 다시 만든다(S-450).
 - packages/js와 packages/rust의 한국어 README를 현재 영어 원문에서 다시 번역한다(S-449).

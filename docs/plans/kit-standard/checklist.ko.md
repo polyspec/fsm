@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-kit-standard -->
-<!-- source-sha256: 08a6dc9f234beb3258ce195c70377d42e1c68cc2ed4cd5564a24495d849f19cb -->
+<!-- source-sha256: 1095ffda07f0db2bfa09321a4466a7701238596785e76e345c86dce735add485 -->
 # kit 표준 0.0.54 채택 체크리스트
 
 | ID | Task | Deliverables | Verification | State |
@@ -221,4 +221,4 @@
 | S-448 | 0.0.11 release | version commit과 release asset | `make release-coverage`와 version commit의 CI run에서 만들어진 release | [o] |
 | S-449 | packages/js/README.ko.md와 packages/rust/README.ko.md를 현재 영어 원문에서 다시 번역하고 그 두 twin만 stamp한다: js twin에 예제가 코드의 사용법을 보인다는 문장을 더하고, rust twin은 dialect를 정하는 `open`의 DSN을 적으며 `Error`의 필드를 필드라고 부른다 | `packages/js/README.ko.md`, `packages/rust/README.ko.md` | `make documents-stamp` with no PATHS reports 0 moved, and `make docs-check` exits 0 | [o] |
 | S-450 | 모든 runtime에서 orm 0.0.29와 ordered-json 0.0.25를 받는다: packages/db와 packages/js의 release URL, packages/php와 php-ext의 requirement와 packages.json, packages/python의 wheel URL과 sha256, Go module과 Rust crate의 git tag를 바꾸고 각 lock을 그 도구로 다시 만든다 | `packages/{db,js}/package.json` and locks, `packages/go/go.mod` and `go.sum`, `packages/{php,php-ext}/composer.json` and locks, `packages/python/{pyproject.toml,constraints.txt,pylock.toml}`, `packages/rust/Cargo.toml` and `Cargo.lock`, `packages/rust/README.md(.ko)` | `git grep` of orm 0.0.28 and ordered-json 0.0.23 in the manifests exits 1; the owner checks of the changed paths, `make lint-ts` and the typecheck exit 0 | [o] |
-| S-451 | 0.0.12 release | The version commit and the release assets | `make release-coverage` and the release of the CI run of the version commit | [ ] |
+| S-451 | 0.0.12 release | The version commit and the release assets | `make release-coverage` and the release of the CI run of the version commit | [o] |
