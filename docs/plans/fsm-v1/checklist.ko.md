@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: d73981d4f56edb948070fda0db4b22b57f0540c1a6ea5df5f7167e30da8bc0e5 -->
+<!-- source-sha256: 13e20c389ae89ffc346290cfb8ba9a5f5151d413476a66abc83bb0650f12f87e -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -125,3 +125,4 @@
 | S-454 | 계획 f6 단계 3a의 계약 부분: 인터페이스 계약 `packages/rust/interface.json`이 crate packages/rust의 공개 member를 다섯 target php, python, node, go, wasm으로 묶고, 그 case `contracts/cases.json`은 `contracts/conformance/vectors.json`에서 옮기며, Makefile에 바인딩 대상이 있고, packages/ts/tests에 Node와 WASM의 case runner가 있다. 바인딩 package와 루트 Cargo workspace는 단계 3-2를 기다린다 (AGENTS.md, Rules) | `packages/rust/interface.json`, `contracts/cases.json`, `Makefile`, `packages/ts/tests/cases.mjs`, `packages/ts/tests/cases.test.mjs`, `packages/ts/tests/cases.wasm.test.mjs` | `make bindings-check BINDING=<cli of binding>` | [~] |
 | S-455 | `fsm-js-test`가 `fsm-db-gen`과 db 설치를 선행 조건으로 이름한다: 그 case는 `packages/db/tests/dialect.mjs`를 import하고, 그 파일은 `fsm-db-gen`이 쓰는 model을 import하므로, model이 없는 checkout에서는 시험이 하나도 돌지 않았다 (HR-85) | `Makefile` | `make test-js` | [o] |
 | S-456 | 계획 f6 단계 3-2: package compiler, db, go, js, php, php-ext, python, rust가 `legacy/packages/`로 옮겨 가고(FP-6), 그 대상은 Go `-timeout=0`을 지킨 `legacy-<task>-<runtime>`이며(ST-38), 릴리스에서 빠지고, 모든 시험이 새 경로에서 돌고, runtime 시험은 앞 commit의 시험 수로 돈다. GUI는 단계 9a까지 `packages/gui/src/forms.mjs:10`, `packages/gui/src/handlers.mjs:11-12`, `packages/gui/src/store.mjs:9-10,41-42`, `packages/gui/tests/edit-support.mjs:9-11,17`, `packages/gui/tests/handlers.test.mjs:8`, `packages/gui/tests/mermaid-parse.test.mjs:22`에서 legacy를 읽는다. F5S-4의 검사가 아직 없으므로 이 행이 그 목록이다 | `Makefile`, `legacy/packages/**`, `packages/gui/**`, `config/*`, `tests/**`, `scripts/*` | `make packages-test compiler-test db-test gui-test` | [o] |
+| S-457 | 계획 f6 단계 3a: 루트 Cargo workspace와 그 lock, 코어 crate `packages/rust`의 manifest, class `machine`의 계약과 그 case(`docs/spec/fsm.md`, B-7), 추적하는 binding scaffold, 코어에서 도는 `make test-rust`, 바인딩 crate를 뺀 `make lint-rust`. polyspec-binding-core의 고정을 f63a655에서 옮기는 binding commit을 기다린다(CK-20) | `Cargo.toml`, `Cargo.lock`, `packages/rust/Cargo.toml`, `packages/rust/interface.json`, `contracts/cases.json`, `packages/{ts,python,php-ext,go}/**`, `Makefile` | `make bindings-check BINDING=<cli of binding>` | [~] |

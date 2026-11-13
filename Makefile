@@ -244,11 +244,13 @@ lint-python:
 lint-go:
 	$(NODE) $(KIT)/lint-go.$(KIT_EXT)
 
+# lint-rust lints the Rust workspaces of the checkout: the root workspace without the binding crates, which lint-bindings lints
+# with their test features after make bindings writes their generated folders, and the workspace of legacy/packages/rust.
 lint-rust:
-	$(NODE) $(KIT)/lint-rust.$(KIT_EXT) --locked
+	$(NODE) $(KIT)/lint-rust.$(KIT_EXT) --locked $(foreach crate,$(BINDING_CRATES),--exclude $(crate))
 
-# lint-php-ext and test-php-ext are the gates of the PHP extension that PRINCIPLES.md names (S10). The only extension is the
-# legacy one until plan f6, step 3a points them at the binding package packages/php-ext.
+# lint-php-ext and test-php-ext are the gates of the PHP extension that PRINCIPLES.md names (S10). They run the legacy extension
+# until the binding package packages/php-ext passes them.
 lint-php-ext: legacy-lint-php-ext
 test-php-ext: legacy-test-php-ext
 legacy-lint-php-ext:
@@ -264,11 +266,16 @@ legacy-lint-php-ext:
 # legacy-build and legacy-test run the target of each legacy runtime (go, js, php, php-ext, python, rust); lint runs the lint of
 # each runtime over the checkout, and the lint of the JavaScript package is lint-ts (kit K1106).
 build: legacy-build
-test: legacy-test
+test: legacy-test test-rust
 legacy-build:
 	$(MAKE) --no-print-directory legacy-build-go legacy-build-js legacy-build-php legacy-build-php-ext legacy-build-python legacy-build-rust
 legacy-test:
 	$(MAKE) --no-print-directory legacy-test-go legacy-test-js legacy-test-php legacy-test-php-ext legacy-test-python legacy-test-rust
+
+# test-rust runs the tests of the core crate packages/rust: one trial per case of contracts/cases.json (plan f6, step 3a).
+.PHONY: test-rust
+test-rust:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner cargo --roots packages/rust -- -p polyspec-fsm -- --test-threads=1
 lint:
 	$(MAKE) --no-print-directory lint-go lint-php lint-php-ext lint-python lint-rust lint-ts
 
@@ -309,9 +316,8 @@ legacy-test-php-ext: legacy-build-php-ext
 # Go files zz_generated_*.go of packages/go, which Git ignores; bindings-check runs the contract check, which also compares the
 # tracked binding packages with what binding scaffold writes (binding L-2, CK-19) and the commit of polyspec-binding-core in the
 # root Cargo.lock with the commit of the cli (CK-20).
-# The binding packages and the root workspace that holds them are not tracked until plan f6, step 3a, so bindings-check names each
-# of their files and the targets that build a binding crate fail. Plan f6, step 3-2 moved the hand-written packages that held the
-# same folders to legacy/packages.
+# The binding packages and the root workspace that holds them are tracked since plan f6, step 3a; plan f6, step 3-2 moved the
+# hand-written packages that held the same folders to legacy/packages.
 .PHONY: bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-wasm \
 	test-python-binding test-php-binding test-go-binding
 BINDING ?=
@@ -887,7 +893,7 @@ gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP) fsm-db-gen
 	$(RUN_TESTS) node --results .results/gui-browser-test.json --inputs packages/gui --inputs legacy/packages/compiler/src --inputs legacy/packages/db -- --test-concurrency=1 packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
 
 # packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1/plan.md, Verification); the PHP extension runs through
-# test-php-ext, its gate of PRINCIPLES.md (S10), which runs legacy-test-php-ext until plan f6, step 3a.
+# test-php-ext, its gate of PRINCIPLES.md (S10), which runs legacy-test-php-ext until the binding package passes it.
 packages-test:
 	$(MAKE) -j6 legacy-test-go legacy-test-js legacy-test-php test-php-ext legacy-test-python legacy-test-rust
 

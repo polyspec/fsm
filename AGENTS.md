@@ -57,11 +57,10 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   exist yet.
   Enforced by: none, the list of the GUI imports of legacy is kept by review until the check of F5S-4 exists.
 - Own: The interface contract of the bindings is `packages/rust/interface.json`. It names the five targets php, python, node, go
-  and wasm from the start, and its cases are `contracts/cases.json`, taken from the inputs and expectations of
-  `contracts/conformance/vectors.json`, because a case that the contract invents tests no behavior that fsm has. The binding
-  packages and the root Cargo workspace that holds them are tracked from plan f6 step 3a, the step after step 3-2 moved the
-  hand-written language packages to `legacy/`; until then `make bindings-check` names each binding file that is missing or
-  differs.
+  and wasm from the start, and its cases are `contracts/cases.json`: the inputs and expectations of
+  `contracts/conformance/vectors.json`, because a case that the contract invents tests no behavior that fsm has, and the cases of
+  the kinds that only the core has (`docs/spec/fsm.md`, B-7). The binding packages and the root Cargo workspace that holds them
+  are tracked since plan f6 step 3a, and `make bindings-check` compares them with what binding scaffold writes.
   Enforced by: none, binding is not yet a package that a lock pins, so no CI job can run `make bindings-check`, which needs
   BINDING set to the cli of a binding checkout.
 

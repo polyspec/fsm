@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 5e088ab8245cc8df97b73b829869888f833b62e3b183de2f10e6f2a015488bc3 -->
+<!-- source-sha256: e3b289488a8149b9e0529169a83d76c342106dabcdabfaf9d048f70143d27d45 -->
 # 개발
 
 [English](AGENTS.md)
@@ -51,10 +51,9 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   checklist의 S-456 행이다. 구조 계획이 요구하는 커밋된 검사(F5S-4)가 아직 없기 때문이다.
   Enforced by: none, F5S-4의 검사가 생길 때까지 GUI의 legacy import 목록은 리뷰가 지킨다.
 - Own: 바인딩의 인터페이스 계약은 `packages/rust/interface.json`이다. 계약은 처음부터 다섯 target php, python, node, go, wasm을
-  적고, 그 case는 `contracts/cases.json`이며 `contracts/conformance/vectors.json`의 입력과 기대값에서 옮긴다. 계약이 지어낸 case는
-  fsm에 있는 동작을 시험하지 않기 때문이다. 바인딩 package와 그것을 담는 루트 Cargo workspace는
-  계획 f6 단계 3a부터 추적한다. 단계 3a는 단계 3-2가 손으로 쓴 언어 package를 `legacy/`로 옮긴 다음 단계다. 그때까지
-  `make bindings-check`가 없거나 다른 바인딩 파일을 하나씩 이름한다.
+  적고, 그 case는 `contracts/cases.json`이다: `contracts/conformance/vectors.json`의 입력과 기대값이다. 계약이 지어낸 case는 fsm에
+  있는 동작을 시험하지 않기 때문이다. 그리고 코어에만 있는 kind의 case다(`docs/spec/fsm.md`, B-7). 바인딩 package와 그것을 담는
+  루트 Cargo workspace는 계획 f6 단계 3a부터 추적하며, `make bindings-check`가 binding scaffold가 쓰는 것과 비교한다.
   Enforced by: none, binding은 아직 lock이 고정하는 package가 아니므로 어떤 CI job도 `make bindings-check`를 돌릴 수 없다. 이
   대상은 BINDING에 binding checkout의 cli를 받아야 한다.
 

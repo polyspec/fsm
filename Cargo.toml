@@ -1,0 +1,22 @@
+# One workspace: the core crate and the binding crates, which binding scaffold writes (binding design L-2). One Cargo.lock at the
+# root pins every dependency of all of them, the commit of polyspec-binding-core included. The crate of legacy/packages/rust is a
+# workspace of its own until plan V-6 (5) removes it.
+[workspace]
+resolver = "2"
+members = ["packages/rust", "packages/ts", "packages/ts/wasm", "packages/python", "packages/php-ext", "packages/go/internal/ffi"]
+exclude = ["legacy/packages/rust"]
+
+# The lints of fsm (S-424): every warning fails, no unsafe code, and no hidden error (P8): a dropped must_use value, a `let _` of a
+# must_use or untyped value, a map_err that ignores its error and an allow attribute without its reason. clippy.toml disallows
+# Result::ok and the unwrap_or family. The binding crates carry the lints that binding writes into their manifests.
+[workspace.lints.rust]
+warnings = "deny"
+unsafe_code = "deny"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+allow_attributes_without_reason = "deny"
+let_underscore_must_use = "deny"
+let_underscore_untyped = "deny"
+map_err_ignore = "deny"
