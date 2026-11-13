@@ -98,7 +98,8 @@ final class ConformanceTest extends TestCase
     private static function holds(string $name, array $case): bool
     {
         return match ($name) {
-            'input_not_int' => array_key_exists('input_type', $case) || abs((float) $case['input']) > self::INT_MAX,
+            'input_not_int' => array_key_exists('input', $case)
+                && (array_key_exists('input_type', $case) || abs((float) $case['input']) > self::INT_MAX),
             default => throw new \RuntimeException(
                 "the predicate {$name} of contracts/conformance/changes.json is not known",
             ),

@@ -19,7 +19,7 @@ INT_MAX = 2**53 - 1
 
 PREDICATES = {
     "input_not_int": lambda case: (
-        "input_type" in case or abs(int(case["input"])) > INT_MAX
+        "input" in case and ("input_type" in case or abs(int(case["input"])) > INT_MAX)
     ),
 }
 """The predicates of the rows of contracts/conformance/changes.json, by name."""

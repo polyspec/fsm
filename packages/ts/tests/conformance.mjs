@@ -16,7 +16,7 @@ const INT_MAX = 2 ** 53 - 1;
 
 /** The predicates of the rows of contracts/conformance/changes.json, by name. */
 const PREDICATES = {
-  input_not_int: (vector) => vector.input_type !== undefined || Math.abs(Number(vector.input)) > INT_MAX,
+  input_not_int: (vector) => vector.input !== undefined && (vector.input_type !== undefined || Math.abs(Number(vector.input)) > INT_MAX),
 };
 
 /** The kind of the binding in the place of the error of `vector`: the first row of the mapping table `rows` that applies. */
