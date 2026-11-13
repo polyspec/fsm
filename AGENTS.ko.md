@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 0000c1350ac2c6b5d81205e8ffd46ea4d2034bf03f049ba24f10283a354719ce -->
+<!-- source-sha256: 22d0bcc31c93b8239a3a4d69f8ca102e0277d3c7f3778df0ddaf0720624e97a4 -->
 # 개발
 
 [English](AGENTS.md)
@@ -43,6 +43,13 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   Enforced by: `make name-check`
 - Own: 모든 README 쌍(root, compiler, db, GUI, 언어 패키지)에는 필수 절과 같은 제목을 가진 한국어 짝이 있다(`scripts/check-readmes.mts`).
   Enforced by: `make readme-check`
+- Own: 바인딩의 인터페이스 계약은 `packages/rust/interface.json`이다. 계약은 처음부터 다섯 target php, python, node, go, wasm을
+  적고, 그 case는 `contracts/cases.json`이며 `contracts/conformance/vectors.json`의 입력과 기대값에서 옮긴다. 계약이 지어낸 case는
+  fsm에 있는 동작을 시험하지 않기 때문이다. 바인딩 package와 그것을 담는 루트 Cargo workspace는 계획 f6 단계 3-2가 손으로 쓴
+  언어 package를 `legacy/`로 옮긴 뒤에만 추적한다. binding scaffold가 `packages/php-ext`, `packages/python`, `packages/go`의
+  manifest와 `packages/php-ext/src` 폴더를 쓰는데, 이것들은 그 package의 것이기 때문이다. 그때까지 `make bindings-check`가 없거나
+  다른 바인딩 파일을 하나씩 이름한다.
+  Enforced by: `make bindings-check`, BINDING에 binding checkout의 cli를 준다.
 
 ## 생성 파일
 

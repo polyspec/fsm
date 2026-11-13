@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The interface contract `packages/rust/interface.json` binds the public members of the crate packages/rust for the five targets php, python, node, go and wasm: for each of the five machines its state and event enums, its step record and the functions initial, code, key, from_code, is_final, events_from, target and apply. Its 212 cases in `contracts/cases.json` come from `contracts/conformance/vectors.json`. The Makefile has the targets bindings, bindings-check, lint-bindings, test-bindings, check-declarations, node-package, test-node, test-wasm, test-python-binding, test-php-binding and test-go-binding, and packages/ts/tests holds the case runners of Node and WASM. The binding packages and the root Cargo workspace are not tracked until plan f6 step 3-2 (S-454).
+
 ## 0.0.13
 
 - packages/php and packages/php-ext take phpunit 13.4.6, past the advisory CVE-2026-119193 of phpunit >=13.4.0,<13.4.4, and fsm takes kit 0.0.106 (S-452).

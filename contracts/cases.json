@@ -1,0 +1,1904 @@
+{
+  "in_review.initial": [
+    {
+      "id": "in_review_initial",
+      "returns": "to_do"
+    }
+  ],
+  "in_review.code": [
+    {
+      "id": "in_review_code_s0",
+      "state": "to_do",
+      "returns": 1
+    },
+    {
+      "id": "in_review_code_s1",
+      "state": "in_progress",
+      "returns": 2
+    },
+    {
+      "id": "in_review_code_s2",
+      "state": "done_now",
+      "returns": 3
+    }
+  ],
+  "in_review.key": [
+    {
+      "id": "in_review_key_s0",
+      "state": "to_do",
+      "returns": "to_do"
+    },
+    {
+      "id": "in_review_key_s1",
+      "state": "in_progress",
+      "returns": "in_progress"
+    },
+    {
+      "id": "in_review_key_s2",
+      "state": "done_now",
+      "returns": "done_now"
+    }
+  ],
+  "in_review.from_code": [
+    {
+      "id": "in_review_from_code_s0",
+      "value": 1,
+      "returns": "to_do"
+    },
+    {
+      "id": "in_review_from_code_s1",
+      "value": 2,
+      "returns": "in_progress"
+    },
+    {
+      "id": "in_review_from_code_s2",
+      "value": 3,
+      "returns": "done_now"
+    },
+    {
+      "id": "in_review_from_code_zero",
+      "value": 0,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_from_code_unknown",
+      "value": 4,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_from_code_negative",
+      "value": -1,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_from_code_int32_overflow",
+      "value": 2147483648,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_from_code_int64_max",
+      "value": 9223372036854775807,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "in_review.is_final": [
+    {
+      "id": "in_review_is_final_s0",
+      "state": "to_do",
+      "returns": false
+    },
+    {
+      "id": "in_review_is_final_s1",
+      "state": "in_progress",
+      "returns": false
+    },
+    {
+      "id": "in_review_is_final_s2",
+      "state": "done_now",
+      "returns": true
+    }
+  ],
+  "in_review.events_from": [
+    {
+      "id": "in_review_events_from_s0",
+      "state": "to_do",
+      "returns": [
+        "start_work"
+      ]
+    },
+    {
+      "id": "in_review_events_from_s1",
+      "state": "in_progress",
+      "returns": [
+        "finish_work",
+        "reopen_work"
+      ]
+    },
+    {
+      "id": "in_review_events_from_s2",
+      "state": "done_now",
+      "returns": []
+    }
+  ],
+  "in_review.target": [
+    {
+      "id": "in_review_target_s0_e0",
+      "expected": "to_do",
+      "event": "start_work",
+      "returns": "in_progress"
+    },
+    {
+      "id": "in_review_target_s0_e1",
+      "expected": "to_do",
+      "event": "finish_work",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_target_s0_e2",
+      "expected": "to_do",
+      "event": "reopen_work",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_target_s1_e0",
+      "expected": "in_progress",
+      "event": "start_work",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_target_s1_e1",
+      "expected": "in_progress",
+      "event": "finish_work",
+      "returns": "done_now"
+    },
+    {
+      "id": "in_review_target_s1_e2",
+      "expected": "in_progress",
+      "event": "reopen_work",
+      "returns": "to_do"
+    },
+    {
+      "id": "in_review_target_s2_e0",
+      "expected": "done_now",
+      "event": "start_work",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_target_s2_e1",
+      "expected": "done_now",
+      "event": "finish_work",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_target_s2_e2",
+      "expected": "done_now",
+      "event": "reopen_work",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "in_review.apply": [
+    {
+      "id": "in_review_apply_s0_e0_s0",
+      "expected": "to_do",
+      "event": "start_work",
+      "actual": "to_do",
+      "returns": {
+        "to": "in_progress",
+        "changed": true
+      }
+    },
+    {
+      "id": "in_review_apply_s0_e0_s1",
+      "expected": "to_do",
+      "event": "start_work",
+      "actual": "in_progress",
+      "returns": {
+        "to": "in_progress",
+        "changed": false
+      }
+    },
+    {
+      "id": "in_review_apply_s0_e0_s2",
+      "expected": "to_do",
+      "event": "start_work",
+      "actual": "done_now",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_apply_s1_e1_s1",
+      "expected": "in_progress",
+      "event": "finish_work",
+      "actual": "in_progress",
+      "returns": {
+        "to": "done_now",
+        "changed": true
+      }
+    },
+    {
+      "id": "in_review_apply_s1_e1_s2",
+      "expected": "in_progress",
+      "event": "finish_work",
+      "actual": "done_now",
+      "returns": {
+        "to": "done_now",
+        "changed": false
+      }
+    },
+    {
+      "id": "in_review_apply_s1_e1_s0",
+      "expected": "in_progress",
+      "event": "finish_work",
+      "actual": "to_do",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_apply_s1_e2_s1",
+      "expected": "in_progress",
+      "event": "reopen_work",
+      "actual": "in_progress",
+      "returns": {
+        "to": "to_do",
+        "changed": true
+      }
+    },
+    {
+      "id": "in_review_apply_s1_e2_s0",
+      "expected": "in_progress",
+      "event": "reopen_work",
+      "actual": "to_do",
+      "returns": {
+        "to": "to_do",
+        "changed": false
+      }
+    },
+    {
+      "id": "in_review_apply_s1_e2_s2",
+      "expected": "in_progress",
+      "event": "reopen_work",
+      "actual": "done_now",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_apply_s0_e1_s0",
+      "expected": "to_do",
+      "event": "finish_work",
+      "actual": "to_do",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_apply_s0_e2_s0",
+      "expected": "to_do",
+      "event": "reopen_work",
+      "actual": "to_do",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_apply_s1_e0_s1",
+      "expected": "in_progress",
+      "event": "start_work",
+      "actual": "in_progress",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_apply_s2_e0_s2",
+      "expected": "done_now",
+      "event": "start_work",
+      "actual": "done_now",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_apply_s2_e1_s2",
+      "expected": "done_now",
+      "event": "finish_work",
+      "actual": "done_now",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "in_review_apply_s2_e2_s2",
+      "expected": "done_now",
+      "event": "reopen_work",
+      "actual": "done_now",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "limits.initial": [
+    {
+      "id": "limits_initial",
+      "returns": "floor"
+    }
+  ],
+  "limits.code": [
+    {
+      "id": "limits_code_s0",
+      "state": "floor",
+      "returns": 1
+    },
+    {
+      "id": "limits_code_s1",
+      "state": "ceiling",
+      "returns": 2147483647
+    }
+  ],
+  "limits.key": [
+    {
+      "id": "limits_key_s0",
+      "state": "floor",
+      "returns": "floor"
+    },
+    {
+      "id": "limits_key_s1",
+      "state": "ceiling",
+      "returns": "ceiling"
+    }
+  ],
+  "limits.from_code": [
+    {
+      "id": "limits_from_code_s0",
+      "value": 1,
+      "returns": "floor"
+    },
+    {
+      "id": "limits_from_code_s1",
+      "value": 2147483647,
+      "returns": "ceiling"
+    },
+    {
+      "id": "limits_from_code_zero",
+      "value": 0,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "limits_from_code_unknown",
+      "value": 2,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "limits_from_code_negative",
+      "value": -1,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "limits_from_code_int32_overflow",
+      "value": 2147483648,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "limits_from_code_int64_max",
+      "value": 9223372036854775807,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "limits.is_final": [
+    {
+      "id": "limits_is_final_s0",
+      "state": "floor",
+      "returns": false
+    },
+    {
+      "id": "limits_is_final_s1",
+      "state": "ceiling",
+      "returns": true
+    }
+  ],
+  "limits.events_from": [
+    {
+      "id": "limits_events_from_s0",
+      "state": "floor",
+      "returns": [
+        "rise"
+      ]
+    },
+    {
+      "id": "limits_events_from_s1",
+      "state": "ceiling",
+      "returns": []
+    }
+  ],
+  "limits.target": [
+    {
+      "id": "limits_target_s0_e0",
+      "expected": "floor",
+      "event": "rise",
+      "returns": "ceiling"
+    },
+    {
+      "id": "limits_target_s1_e0",
+      "expected": "ceiling",
+      "event": "rise",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "limits.apply": [
+    {
+      "id": "limits_apply_s0_e0_s0",
+      "expected": "floor",
+      "event": "rise",
+      "actual": "floor",
+      "returns": {
+        "to": "ceiling",
+        "changed": true
+      }
+    },
+    {
+      "id": "limits_apply_s0_e0_s1",
+      "expected": "floor",
+      "event": "rise",
+      "actual": "ceiling",
+      "returns": {
+        "to": "ceiling",
+        "changed": false
+      }
+    },
+    {
+      "id": "limits_apply_s1_e0_s1",
+      "expected": "ceiling",
+      "event": "rise",
+      "actual": "ceiling",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "order.initial": [
+    {
+      "id": "order_initial",
+      "returns": "draft"
+    }
+  ],
+  "order.code": [
+    {
+      "id": "order_code_s0",
+      "state": "draft",
+      "returns": 1
+    },
+    {
+      "id": "order_code_s1",
+      "state": "paid",
+      "returns": 2
+    },
+    {
+      "id": "order_code_s2",
+      "state": "shipped",
+      "returns": 3
+    },
+    {
+      "id": "order_code_s3",
+      "state": "done",
+      "returns": 4
+    },
+    {
+      "id": "order_code_s4",
+      "state": "canceled",
+      "returns": 5
+    }
+  ],
+  "order.key": [
+    {
+      "id": "order_key_s0",
+      "state": "draft",
+      "returns": "draft"
+    },
+    {
+      "id": "order_key_s1",
+      "state": "paid",
+      "returns": "paid"
+    },
+    {
+      "id": "order_key_s2",
+      "state": "shipped",
+      "returns": "shipped"
+    },
+    {
+      "id": "order_key_s3",
+      "state": "done",
+      "returns": "done"
+    },
+    {
+      "id": "order_key_s4",
+      "state": "canceled",
+      "returns": "canceled"
+    }
+  ],
+  "order.from_code": [
+    {
+      "id": "order_from_code_s0",
+      "value": 1,
+      "returns": "draft"
+    },
+    {
+      "id": "order_from_code_s1",
+      "value": 2,
+      "returns": "paid"
+    },
+    {
+      "id": "order_from_code_s2",
+      "value": 3,
+      "returns": "shipped"
+    },
+    {
+      "id": "order_from_code_s3",
+      "value": 4,
+      "returns": "done"
+    },
+    {
+      "id": "order_from_code_s4",
+      "value": 5,
+      "returns": "canceled"
+    },
+    {
+      "id": "order_from_code_zero",
+      "value": 0,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_from_code_unknown",
+      "value": 6,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_from_code_negative",
+      "value": -1,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_from_code_int32_overflow",
+      "value": 2147483648,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_from_code_int64_max",
+      "value": 9223372036854775807,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "order.is_final": [
+    {
+      "id": "order_is_final_s0",
+      "state": "draft",
+      "returns": false
+    },
+    {
+      "id": "order_is_final_s1",
+      "state": "paid",
+      "returns": false
+    },
+    {
+      "id": "order_is_final_s2",
+      "state": "shipped",
+      "returns": false
+    },
+    {
+      "id": "order_is_final_s3",
+      "state": "done",
+      "returns": true
+    },
+    {
+      "id": "order_is_final_s4",
+      "state": "canceled",
+      "returns": true
+    }
+  ],
+  "order.events_from": [
+    {
+      "id": "order_events_from_s0",
+      "state": "draft",
+      "returns": [
+        "next",
+        "cancel"
+      ]
+    },
+    {
+      "id": "order_events_from_s1",
+      "state": "paid",
+      "returns": [
+        "next",
+        "prev",
+        "cancel"
+      ]
+    },
+    {
+      "id": "order_events_from_s2",
+      "state": "shipped",
+      "returns": [
+        "next",
+        "prev"
+      ]
+    },
+    {
+      "id": "order_events_from_s3",
+      "state": "done",
+      "returns": []
+    },
+    {
+      "id": "order_events_from_s4",
+      "state": "canceled",
+      "returns": []
+    }
+  ],
+  "order.target": [
+    {
+      "id": "order_target_s0_e0",
+      "expected": "draft",
+      "event": "next",
+      "returns": "paid"
+    },
+    {
+      "id": "order_target_s0_e1",
+      "expected": "draft",
+      "event": "prev",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_target_s0_e2",
+      "expected": "draft",
+      "event": "cancel",
+      "returns": "canceled"
+    },
+    {
+      "id": "order_target_s1_e0",
+      "expected": "paid",
+      "event": "next",
+      "returns": "shipped"
+    },
+    {
+      "id": "order_target_s1_e1",
+      "expected": "paid",
+      "event": "prev",
+      "returns": "draft"
+    },
+    {
+      "id": "order_target_s1_e2",
+      "expected": "paid",
+      "event": "cancel",
+      "returns": "canceled"
+    },
+    {
+      "id": "order_target_s2_e0",
+      "expected": "shipped",
+      "event": "next",
+      "returns": "done"
+    },
+    {
+      "id": "order_target_s2_e1",
+      "expected": "shipped",
+      "event": "prev",
+      "returns": "paid"
+    },
+    {
+      "id": "order_target_s2_e2",
+      "expected": "shipped",
+      "event": "cancel",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_target_s3_e0",
+      "expected": "done",
+      "event": "next",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_target_s3_e1",
+      "expected": "done",
+      "event": "prev",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_target_s3_e2",
+      "expected": "done",
+      "event": "cancel",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_target_s4_e0",
+      "expected": "canceled",
+      "event": "next",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_target_s4_e1",
+      "expected": "canceled",
+      "event": "prev",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_target_s4_e2",
+      "expected": "canceled",
+      "event": "cancel",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "order.apply": [
+    {
+      "id": "order_apply_s0_e0_s0",
+      "expected": "draft",
+      "event": "next",
+      "actual": "draft",
+      "returns": {
+        "to": "paid",
+        "changed": true
+      }
+    },
+    {
+      "id": "order_apply_s0_e0_s1",
+      "expected": "draft",
+      "event": "next",
+      "actual": "paid",
+      "returns": {
+        "to": "paid",
+        "changed": false
+      }
+    },
+    {
+      "id": "order_apply_s0_e0_s2",
+      "expected": "draft",
+      "event": "next",
+      "actual": "shipped",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s0_e0_s3",
+      "expected": "draft",
+      "event": "next",
+      "actual": "done",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s0_e0_s4",
+      "expected": "draft",
+      "event": "next",
+      "actual": "canceled",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s0_e2_s0",
+      "expected": "draft",
+      "event": "cancel",
+      "actual": "draft",
+      "returns": {
+        "to": "canceled",
+        "changed": true
+      }
+    },
+    {
+      "id": "order_apply_s0_e2_s4",
+      "expected": "draft",
+      "event": "cancel",
+      "actual": "canceled",
+      "returns": {
+        "to": "canceled",
+        "changed": false
+      }
+    },
+    {
+      "id": "order_apply_s0_e2_s1",
+      "expected": "draft",
+      "event": "cancel",
+      "actual": "paid",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s0_e2_s2",
+      "expected": "draft",
+      "event": "cancel",
+      "actual": "shipped",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s0_e2_s3",
+      "expected": "draft",
+      "event": "cancel",
+      "actual": "done",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e0_s1",
+      "expected": "paid",
+      "event": "next",
+      "actual": "paid",
+      "returns": {
+        "to": "shipped",
+        "changed": true
+      }
+    },
+    {
+      "id": "order_apply_s1_e0_s2",
+      "expected": "paid",
+      "event": "next",
+      "actual": "shipped",
+      "returns": {
+        "to": "shipped",
+        "changed": false
+      }
+    },
+    {
+      "id": "order_apply_s1_e0_s0",
+      "expected": "paid",
+      "event": "next",
+      "actual": "draft",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e0_s3",
+      "expected": "paid",
+      "event": "next",
+      "actual": "done",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e0_s4",
+      "expected": "paid",
+      "event": "next",
+      "actual": "canceled",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e1_s1",
+      "expected": "paid",
+      "event": "prev",
+      "actual": "paid",
+      "returns": {
+        "to": "draft",
+        "changed": true
+      }
+    },
+    {
+      "id": "order_apply_s1_e1_s0",
+      "expected": "paid",
+      "event": "prev",
+      "actual": "draft",
+      "returns": {
+        "to": "draft",
+        "changed": false
+      }
+    },
+    {
+      "id": "order_apply_s1_e1_s2",
+      "expected": "paid",
+      "event": "prev",
+      "actual": "shipped",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e1_s3",
+      "expected": "paid",
+      "event": "prev",
+      "actual": "done",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e1_s4",
+      "expected": "paid",
+      "event": "prev",
+      "actual": "canceled",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e2_s1",
+      "expected": "paid",
+      "event": "cancel",
+      "actual": "paid",
+      "returns": {
+        "to": "canceled",
+        "changed": true
+      }
+    },
+    {
+      "id": "order_apply_s1_e2_s4",
+      "expected": "paid",
+      "event": "cancel",
+      "actual": "canceled",
+      "returns": {
+        "to": "canceled",
+        "changed": false
+      }
+    },
+    {
+      "id": "order_apply_s1_e2_s0",
+      "expected": "paid",
+      "event": "cancel",
+      "actual": "draft",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e2_s2",
+      "expected": "paid",
+      "event": "cancel",
+      "actual": "shipped",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s1_e2_s3",
+      "expected": "paid",
+      "event": "cancel",
+      "actual": "done",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s2_e0_s2",
+      "expected": "shipped",
+      "event": "next",
+      "actual": "shipped",
+      "returns": {
+        "to": "done",
+        "changed": true
+      }
+    },
+    {
+      "id": "order_apply_s2_e0_s3",
+      "expected": "shipped",
+      "event": "next",
+      "actual": "done",
+      "returns": {
+        "to": "done",
+        "changed": false
+      }
+    },
+    {
+      "id": "order_apply_s2_e0_s0",
+      "expected": "shipped",
+      "event": "next",
+      "actual": "draft",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s2_e0_s1",
+      "expected": "shipped",
+      "event": "next",
+      "actual": "paid",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s2_e0_s4",
+      "expected": "shipped",
+      "event": "next",
+      "actual": "canceled",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s2_e1_s2",
+      "expected": "shipped",
+      "event": "prev",
+      "actual": "shipped",
+      "returns": {
+        "to": "paid",
+        "changed": true
+      }
+    },
+    {
+      "id": "order_apply_s2_e1_s1",
+      "expected": "shipped",
+      "event": "prev",
+      "actual": "paid",
+      "returns": {
+        "to": "paid",
+        "changed": false
+      }
+    },
+    {
+      "id": "order_apply_s2_e1_s0",
+      "expected": "shipped",
+      "event": "prev",
+      "actual": "draft",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s2_e1_s3",
+      "expected": "shipped",
+      "event": "prev",
+      "actual": "done",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s2_e1_s4",
+      "expected": "shipped",
+      "event": "prev",
+      "actual": "canceled",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s0_e1_s0",
+      "expected": "draft",
+      "event": "prev",
+      "actual": "draft",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s2_e2_s2",
+      "expected": "shipped",
+      "event": "cancel",
+      "actual": "shipped",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s3_e0_s3",
+      "expected": "done",
+      "event": "next",
+      "actual": "done",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s3_e1_s3",
+      "expected": "done",
+      "event": "prev",
+      "actual": "done",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s3_e2_s3",
+      "expected": "done",
+      "event": "cancel",
+      "actual": "done",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s4_e0_s4",
+      "expected": "canceled",
+      "event": "next",
+      "actual": "canceled",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s4_e1_s4",
+      "expected": "canceled",
+      "event": "prev",
+      "actual": "canceled",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "order_apply_s4_e2_s4",
+      "expected": "canceled",
+      "event": "cancel",
+      "actual": "canceled",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "standby.initial": [
+    {
+      "id": "standby_initial",
+      "returns": "ready"
+    }
+  ],
+  "standby.code": [
+    {
+      "id": "standby_code_s0",
+      "state": "ready",
+      "returns": 1
+    }
+  ],
+  "standby.key": [
+    {
+      "id": "standby_key_s0",
+      "state": "ready",
+      "returns": "ready"
+    }
+  ],
+  "standby.from_code": [
+    {
+      "id": "standby_from_code_s0",
+      "value": 1,
+      "returns": "ready"
+    },
+    {
+      "id": "standby_from_code_zero",
+      "value": 0,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "standby_from_code_unknown",
+      "value": 2,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "standby_from_code_negative",
+      "value": -1,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "standby_from_code_int32_overflow",
+      "value": 2147483648,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "standby_from_code_int64_max",
+      "value": 9223372036854775807,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "standby.is_final": [
+    {
+      "id": "standby_is_final_s0",
+      "state": "ready",
+      "returns": true
+    }
+  ],
+  "ticket.initial": [
+    {
+      "id": "ticket_initial",
+      "returns": "open"
+    }
+  ],
+  "ticket.code": [
+    {
+      "id": "ticket_code_s0",
+      "state": "open",
+      "returns": 1
+    },
+    {
+      "id": "ticket_code_s1",
+      "state": "review",
+      "returns": 3
+    },
+    {
+      "id": "ticket_code_s2",
+      "state": "closed",
+      "returns": 5
+    }
+  ],
+  "ticket.key": [
+    {
+      "id": "ticket_key_s0",
+      "state": "open",
+      "returns": "open"
+    },
+    {
+      "id": "ticket_key_s1",
+      "state": "review",
+      "returns": "review"
+    },
+    {
+      "id": "ticket_key_s2",
+      "state": "closed",
+      "returns": "closed"
+    }
+  ],
+  "ticket.from_code": [
+    {
+      "id": "ticket_from_code_s0",
+      "value": 1,
+      "returns": "open"
+    },
+    {
+      "id": "ticket_from_code_s1",
+      "value": 3,
+      "returns": "review"
+    },
+    {
+      "id": "ticket_from_code_s2",
+      "value": 5,
+      "returns": "closed"
+    },
+    {
+      "id": "ticket_from_code_zero",
+      "value": 0,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_from_code_unknown",
+      "value": 6,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_from_code_r2",
+      "value": 2,
+      "raises": {
+        "kind": "reserved_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_from_code_r4",
+      "value": 4,
+      "raises": {
+        "kind": "reserved_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_from_code_negative",
+      "value": -1,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_from_code_int32_overflow",
+      "value": 2147483648,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_from_code_int64_max",
+      "value": 9223372036854775807,
+      "raises": {
+        "kind": "unknown_code",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "ticket.is_final": [
+    {
+      "id": "ticket_is_final_s0",
+      "state": "open",
+      "returns": false
+    },
+    {
+      "id": "ticket_is_final_s1",
+      "state": "review",
+      "returns": false
+    },
+    {
+      "id": "ticket_is_final_s2",
+      "state": "closed",
+      "returns": true
+    }
+  ],
+  "ticket.events_from": [
+    {
+      "id": "ticket_events_from_s0",
+      "state": "open",
+      "returns": [
+        "submit"
+      ]
+    },
+    {
+      "id": "ticket_events_from_s1",
+      "state": "review",
+      "returns": [
+        "approve",
+        "reject"
+      ]
+    },
+    {
+      "id": "ticket_events_from_s2",
+      "state": "closed",
+      "returns": []
+    }
+  ],
+  "ticket.target": [
+    {
+      "id": "ticket_target_s0_e0",
+      "expected": "open",
+      "event": "submit",
+      "returns": "review"
+    },
+    {
+      "id": "ticket_target_s0_e1",
+      "expected": "open",
+      "event": "approve",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_target_s0_e2",
+      "expected": "open",
+      "event": "reject",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_target_s1_e0",
+      "expected": "review",
+      "event": "submit",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_target_s1_e1",
+      "expected": "review",
+      "event": "approve",
+      "returns": "closed"
+    },
+    {
+      "id": "ticket_target_s1_e2",
+      "expected": "review",
+      "event": "reject",
+      "returns": "open"
+    },
+    {
+      "id": "ticket_target_s2_e0",
+      "expected": "closed",
+      "event": "submit",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_target_s2_e1",
+      "expected": "closed",
+      "event": "approve",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_target_s2_e2",
+      "expected": "closed",
+      "event": "reject",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "ticket.apply": [
+    {
+      "id": "ticket_apply_s0_e0_s0",
+      "expected": "open",
+      "event": "submit",
+      "actual": "open",
+      "returns": {
+        "to": "review",
+        "changed": true
+      }
+    },
+    {
+      "id": "ticket_apply_s0_e0_s1",
+      "expected": "open",
+      "event": "submit",
+      "actual": "review",
+      "returns": {
+        "to": "review",
+        "changed": false
+      }
+    },
+    {
+      "id": "ticket_apply_s0_e0_s2",
+      "expected": "open",
+      "event": "submit",
+      "actual": "closed",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_apply_s1_e1_s1",
+      "expected": "review",
+      "event": "approve",
+      "actual": "review",
+      "returns": {
+        "to": "closed",
+        "changed": true
+      }
+    },
+    {
+      "id": "ticket_apply_s1_e1_s2",
+      "expected": "review",
+      "event": "approve",
+      "actual": "closed",
+      "returns": {
+        "to": "closed",
+        "changed": false
+      }
+    },
+    {
+      "id": "ticket_apply_s1_e1_s0",
+      "expected": "review",
+      "event": "approve",
+      "actual": "open",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_apply_s1_e2_s1",
+      "expected": "review",
+      "event": "reject",
+      "actual": "review",
+      "returns": {
+        "to": "open",
+        "changed": true
+      }
+    },
+    {
+      "id": "ticket_apply_s1_e2_s0",
+      "expected": "review",
+      "event": "reject",
+      "actual": "open",
+      "returns": {
+        "to": "open",
+        "changed": false
+      }
+    },
+    {
+      "id": "ticket_apply_s1_e2_s2",
+      "expected": "review",
+      "event": "reject",
+      "actual": "closed",
+      "raises": {
+        "kind": "conflict",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_apply_s0_e1_s0",
+      "expected": "open",
+      "event": "approve",
+      "actual": "open",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_apply_s0_e2_s0",
+      "expected": "open",
+      "event": "reject",
+      "actual": "open",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_apply_s1_e0_s1",
+      "expected": "review",
+      "event": "submit",
+      "actual": "review",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_apply_s2_e0_s2",
+      "expected": "closed",
+      "event": "submit",
+      "actual": "closed",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_apply_s2_e1_s2",
+      "expected": "closed",
+      "event": "approve",
+      "actual": "closed",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    },
+    {
+      "id": "ticket_apply_s2_e2_s2",
+      "expected": "closed",
+      "event": "reject",
+      "actual": "closed",
+      "raises": {
+        "kind": "invalid_transition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ]
+}

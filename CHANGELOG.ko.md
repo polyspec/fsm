@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 68a07e5378aab5dd163589232722df4e98914074f583b3319e3612acb75facab -->
+<!-- source-sha256: dde784be099fca54ebafba462020b1c85976ed930d86866f6b2ccf97452af3a6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 인터페이스 계약 `packages/rust/interface.json`이 crate packages/rust의 공개 member를 다섯 target php, python, node, go, wasm으로 묶는다: 다섯 기계마다 state와 event enum, step record, 함수 initial, code, key, from_code, is_final, events_from, target, apply. 그 case 212개는 `contracts/cases.json`에 있고 `contracts/conformance/vectors.json`에서 옮겼다. Makefile에 대상 bindings, bindings-check, lint-bindings, test-bindings, check-declarations, node-package, test-node, test-wasm, test-python-binding, test-php-binding, test-go-binding이 있고, packages/ts/tests에 Node와 WASM의 case runner가 있다. 바인딩 package와 루트 Cargo workspace는 계획 f6 단계 3-2까지 추적하지 않는다 (S-454).
 
 ## 0.0.13
 

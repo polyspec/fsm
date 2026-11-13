@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: e1a1fb171ec8509e145c22ff031495f2badf9569ba8e50b65b8cd537268172c8 -->
+<!-- source-sha256: 4e8b4de4677405158bfb47dfaee81af3e5c0fd3c14401a06c6c13fa9777f4db8 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -122,3 +122,4 @@
 | S-376 | `config/duplication.json`: `config/generated.json`이 이미 나열하고 kit의 duplication-check가 이미 제외하는 `packages/compiler/tests/golden/**` 제외 항목을 삭제한다 (K640) | `config/duplication.json` without the golden exclude | `make duplication-check` | [o] |
 | S-377 | `config/parity.json`: `packages/compiler`의 tools 항목 종류가 `test:`인데 사유는 모든 kind의 코드를 내는 코드 생성기(fsm-gen)를 설명한다. 생성기 구성요소의 test에 kit이 정의하는 `generated:` 종류를 쓰고(`docs/operations/tool-inventory.md`), 항목은 compiler가 계약 unit을 구현하지 않으므로 `tools`에 남는다 (잘못된 전제였다, plan C-5) | `config/parity.json`: the tools entry of packages/compiler takes the kind `generated:` and a reason that states it is the generator | `make divergence-check`, `node node_modules/@polyspec/kit/dist/parity.mjs --declarations` | [o] |
 | S-378 | CI의 check 작업이 `.github/workflows/ci.yml`에서 `make hooks-check` 전에 `make hooks`를 실행한다. template, hyper, crudui 워크플로와 같다 (S-346이 제거했다) | `.github/workflows/ci.yml` runs make hooks, then make hooks-check | `make workflows-test` | [o] |
+| S-454 | 계획 f6 단계 3a의 계약 부분: 인터페이스 계약 `packages/rust/interface.json`이 crate packages/rust의 공개 member를 다섯 target php, python, node, go, wasm으로 묶고, 그 case `contracts/cases.json`은 `contracts/conformance/vectors.json`에서 옮기며, Makefile에 바인딩 대상이 있고, packages/ts/tests에 Node와 WASM의 case runner가 있다. 바인딩 package와 루트 Cargo workspace는 단계 3-2를 기다린다 (AGENTS.md, Rules) | `packages/rust/interface.json`, `contracts/cases.json`, `Makefile`, `packages/ts/tests/cases.mjs`, `packages/ts/tests/cases.test.mjs`, `packages/ts/tests/cases.wasm.test.mjs` | `make bindings-check BINDING=<cli of binding>` | [~] |

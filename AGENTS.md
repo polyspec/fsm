@@ -48,6 +48,14 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
 - Own: Every README pair (root, compiler, db, GUI, language packages) has its required sections and a Korean twin with the same
   headings (`scripts/check-readmes.mts`).
   Enforced by: `make readme-check`
+- Own: The interface contract of the bindings is `packages/rust/interface.json`. It names the five targets php, python, node, go
+  and wasm from the start, and its cases are `contracts/cases.json`, taken from the inputs and expectations of
+  `contracts/conformance/vectors.json`, because a case that the contract invents tests no behavior that fsm has. The binding
+  packages and the root Cargo workspace that holds them are tracked only after plan f6 step 3-2 moves the hand-written language
+  packages to `legacy/`, because binding scaffold writes the manifests of `packages/php-ext`, `packages/python` and `packages/go`
+  and the folder `packages/php-ext/src`, which those packages own; until then `make bindings-check` names each binding file that
+  is missing or differs.
+  Enforced by: `make bindings-check`, with BINDING set to the cli of a binding checkout.
 
 ## Generated files
 

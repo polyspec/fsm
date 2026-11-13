@@ -213,6 +213,8 @@ rules:
       - "!packages/rust/README.ko.md"
       - "!packages/rust/Cargo.toml"
       - "!packages/rust/Cargo.lock"
+      # the interface contract of the bindings, which binding reads beside the core crate (binding I-1, S-454)
+      - "!packages/rust/interface.json"
       - "!packages/rust/build.rs"
       - "!packages/rust/tests/conformance/main.rs"
       - "!packages/rust/tests/conformance/vectors.rs"

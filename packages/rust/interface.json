@@ -1,0 +1,1804 @@
+{
+  "schema": "polyspec/interface@1",
+  "library": "fsm",
+  "core": {
+    "crate": "polyspec-fsm",
+    "path": "packages/rust"
+  },
+  "targets": [
+    "php",
+    "python",
+    "node",
+    "go",
+    "wasm"
+  ],
+  "packages": {
+    "php": {
+      "package": "polyspec/fsm",
+      "namespace": "Polyspec\\Fsm"
+    },
+    "python": {
+      "package": "polyspec-fsm",
+      "module": "polyspec.fsm"
+    },
+    "node": {
+      "package": "@polyspec/fsm",
+      "entries": {
+        ".": {
+          "conditions": {
+            "node": "napi",
+            "browser": "wasm"
+          },
+          "formats": [
+            "import",
+            "require"
+          ]
+        }
+      }
+    },
+    "go": {
+      "module": "github.com/polyspec/fsm/packages/go"
+    }
+  },
+  "naming": {
+    "exceptions": []
+  },
+  "types": {},
+  "errors": {
+    "classes": {
+      "value": {
+        "php": "Polyspec\\Fsm\\FsmValueError",
+        "python": "FSMValueError",
+        "node": "FsmValueError",
+        "wasm": "FsmValueError"
+      },
+      "type": {
+        "php": "Polyspec\\Fsm\\FsmTypeError",
+        "python": "FSMTypeError",
+        "node": "FsmTypeError",
+        "wasm": "FsmTypeError"
+      },
+      "io": {
+        "php": "Polyspec\\Fsm\\FsmIoError",
+        "python": "FSMIoError",
+        "node": "FsmIoError",
+        "wasm": "FsmIoError"
+      },
+      "store": {
+        "php": "Polyspec\\Fsm\\FsmStoreError",
+        "python": "FSMStoreError",
+        "node": "FsmStoreError",
+        "wasm": "FsmStoreError"
+      },
+      "busy": {
+        "php": "Polyspec\\Fsm\\FsmBusyError",
+        "python": "FSMBusyError",
+        "node": "FsmBusyError",
+        "wasm": "FsmBusyError"
+      },
+      "internal": {
+        "php": "Polyspec\\Fsm\\FsmInternalError",
+        "python": "FSMInternalError",
+        "node": "FsmInternalError",
+        "wasm": "FsmInternalError"
+      }
+    },
+    "fixed": [
+      {
+        "lang": "php",
+        "class": "ArgumentCountError"
+      },
+      {
+        "lang": "php",
+        "class": "Error"
+      },
+      {
+        "lang": "python",
+        "class": "TypeError"
+      },
+      {
+        "lang": "node",
+        "class": "TypeError"
+      },
+      {
+        "lang": "wasm",
+        "class": "TypeError"
+      }
+    ],
+    "kinds": [
+      {
+        "variant": "polyspec_fsm::fsm::Code::Conflict",
+        "category": "value"
+      },
+      {
+        "variant": "polyspec_fsm::fsm::Code::InvalidTransition",
+        "category": "value"
+      },
+      {
+        "variant": "polyspec_fsm::fsm::Code::UnknownCode",
+        "category": "value"
+      },
+      {
+        "variant": "polyspec_fsm::fsm::Code::ReservedCode",
+        "category": "value"
+      }
+    ],
+    "binding": [],
+    "wrapped": []
+  },
+  "units": [
+    {
+      "id": "in_review_state",
+      "name": [
+        "in",
+        "review",
+        "state"
+      ],
+      "module": "in_review",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::in_review::State",
+      "variants": [
+        {
+          "name": [
+            "to",
+            "do"
+          ],
+          "value": "to_do"
+        },
+        {
+          "name": [
+            "in",
+            "progress"
+          ],
+          "value": "in_progress"
+        },
+        {
+          "name": [
+            "done",
+            "now"
+          ],
+          "value": "done_now"
+        }
+      ]
+    },
+    {
+      "id": "in_review_event",
+      "name": [
+        "in",
+        "review",
+        "event"
+      ],
+      "module": "in_review",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::in_review::Event",
+      "variants": [
+        {
+          "name": [
+            "start",
+            "work"
+          ],
+          "value": "start_work"
+        },
+        {
+          "name": [
+            "finish",
+            "work"
+          ],
+          "value": "finish_work"
+        },
+        {
+          "name": [
+            "reopen",
+            "work"
+          ],
+          "value": "reopen_work"
+        }
+      ]
+    },
+    {
+      "id": "in_review_step",
+      "name": [
+        "in",
+        "review",
+        "step"
+      ],
+      "module": "in_review",
+      "kind": "record",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::in_review::Step",
+      "fields": [
+        {
+          "name": [
+            "to"
+          ],
+          "type": {
+            "unit": "in_review_state"
+          },
+          "required": true
+        },
+        {
+          "name": [
+            "changed"
+          ],
+          "type": "bool",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "in_review",
+      "name": [
+        "in",
+        "review"
+      ],
+      "module": "in_review",
+      "kind": "functions",
+      "visibility": "public",
+      "origin": "generated",
+      "members": [
+        {
+          "id": "in_review.initial",
+          "name": [
+            "initial"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "unit": "in_review_state"
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::in_review::initial"
+        },
+        {
+          "id": "in_review.code",
+          "name": [
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "in_review_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "int",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::in_review::code"
+        },
+        {
+          "id": "in_review.key",
+          "name": [
+            "key"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "in_review_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "text",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::in_review::key"
+        },
+        {
+          "id": "in_review.from_code",
+          "name": [
+            "from",
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "value"
+              ],
+              "type": "int",
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "in_review_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::UnknownCode"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::in_review::from_code"
+        },
+        {
+          "id": "in_review.is_final",
+          "name": [
+            "is",
+            "final"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "in_review_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "bool",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::in_review::is_final"
+        },
+        {
+          "id": "in_review.events_from",
+          "name": [
+            "events",
+            "from"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "in_review_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "list": {
+              "unit": "in_review_event"
+            }
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::in_review::events_from"
+        },
+        {
+          "id": "in_review.target",
+          "name": [
+            "target"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "expected"
+              ],
+              "type": {
+                "unit": "in_review_state"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "event"
+              ],
+              "type": {
+                "unit": "in_review_event"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "in_review_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::InvalidTransition"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::in_review::target"
+        },
+        {
+          "id": "in_review.apply",
+          "name": [
+            "apply"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "expected"
+              ],
+              "type": {
+                "unit": "in_review_state"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "event"
+              ],
+              "type": {
+                "unit": "in_review_event"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "actual"
+              ],
+              "type": {
+                "unit": "in_review_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "in_review_step"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::InvalidTransition",
+            "polyspec_fsm::fsm::Code::Conflict"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::in_review::apply"
+        }
+      ]
+    },
+    {
+      "id": "limits_state",
+      "name": [
+        "limits",
+        "state"
+      ],
+      "module": "limits",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::limits::State",
+      "variants": [
+        {
+          "name": [
+            "floor"
+          ],
+          "value": "floor"
+        },
+        {
+          "name": [
+            "ceiling"
+          ],
+          "value": "ceiling"
+        }
+      ]
+    },
+    {
+      "id": "limits_event",
+      "name": [
+        "limits",
+        "event"
+      ],
+      "module": "limits",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::limits::Event",
+      "variants": [
+        {
+          "name": [
+            "rise"
+          ],
+          "value": "rise"
+        }
+      ]
+    },
+    {
+      "id": "limits_step",
+      "name": [
+        "limits",
+        "step"
+      ],
+      "module": "limits",
+      "kind": "record",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::limits::Step",
+      "fields": [
+        {
+          "name": [
+            "to"
+          ],
+          "type": {
+            "unit": "limits_state"
+          },
+          "required": true
+        },
+        {
+          "name": [
+            "changed"
+          ],
+          "type": "bool",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "limits",
+      "name": [
+        "limits"
+      ],
+      "module": "limits",
+      "kind": "functions",
+      "visibility": "public",
+      "origin": "generated",
+      "members": [
+        {
+          "id": "limits.initial",
+          "name": [
+            "initial"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "unit": "limits_state"
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::limits::initial"
+        },
+        {
+          "id": "limits.code",
+          "name": [
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "limits_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "int",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::limits::code"
+        },
+        {
+          "id": "limits.key",
+          "name": [
+            "key"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "limits_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "text",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::limits::key"
+        },
+        {
+          "id": "limits.from_code",
+          "name": [
+            "from",
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "value"
+              ],
+              "type": "int",
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "limits_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::UnknownCode"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::limits::from_code"
+        },
+        {
+          "id": "limits.is_final",
+          "name": [
+            "is",
+            "final"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "limits_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "bool",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::limits::is_final"
+        },
+        {
+          "id": "limits.events_from",
+          "name": [
+            "events",
+            "from"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "limits_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "list": {
+              "unit": "limits_event"
+            }
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::limits::events_from"
+        },
+        {
+          "id": "limits.target",
+          "name": [
+            "target"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "expected"
+              ],
+              "type": {
+                "unit": "limits_state"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "event"
+              ],
+              "type": {
+                "unit": "limits_event"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "limits_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::InvalidTransition"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::limits::target"
+        },
+        {
+          "id": "limits.apply",
+          "name": [
+            "apply"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "expected"
+              ],
+              "type": {
+                "unit": "limits_state"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "event"
+              ],
+              "type": {
+                "unit": "limits_event"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "actual"
+              ],
+              "type": {
+                "unit": "limits_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "limits_step"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::InvalidTransition"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::limits::apply"
+        }
+      ]
+    },
+    {
+      "id": "order_state",
+      "name": [
+        "order",
+        "state"
+      ],
+      "module": "order",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::order::State",
+      "variants": [
+        {
+          "name": [
+            "draft"
+          ],
+          "value": "draft"
+        },
+        {
+          "name": [
+            "paid"
+          ],
+          "value": "paid"
+        },
+        {
+          "name": [
+            "shipped"
+          ],
+          "value": "shipped"
+        },
+        {
+          "name": [
+            "done"
+          ],
+          "value": "done"
+        },
+        {
+          "name": [
+            "canceled"
+          ],
+          "value": "canceled"
+        }
+      ]
+    },
+    {
+      "id": "order_event",
+      "name": [
+        "order",
+        "event"
+      ],
+      "module": "order",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::order::Event",
+      "variants": [
+        {
+          "name": [
+            "next"
+          ],
+          "value": "next"
+        },
+        {
+          "name": [
+            "prev"
+          ],
+          "value": "prev"
+        },
+        {
+          "name": [
+            "cancel"
+          ],
+          "value": "cancel"
+        }
+      ]
+    },
+    {
+      "id": "order_step",
+      "name": [
+        "order",
+        "step"
+      ],
+      "module": "order",
+      "kind": "record",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::order::Step",
+      "fields": [
+        {
+          "name": [
+            "to"
+          ],
+          "type": {
+            "unit": "order_state"
+          },
+          "required": true
+        },
+        {
+          "name": [
+            "changed"
+          ],
+          "type": "bool",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "order",
+      "name": [
+        "order"
+      ],
+      "module": "order",
+      "kind": "functions",
+      "visibility": "public",
+      "origin": "generated",
+      "members": [
+        {
+          "id": "order.initial",
+          "name": [
+            "initial"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "unit": "order_state"
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::order::initial"
+        },
+        {
+          "id": "order.code",
+          "name": [
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "order_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "int",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::order::code"
+        },
+        {
+          "id": "order.key",
+          "name": [
+            "key"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "order_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "text",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::order::key"
+        },
+        {
+          "id": "order.from_code",
+          "name": [
+            "from",
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "value"
+              ],
+              "type": "int",
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "order_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::UnknownCode"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::order::from_code"
+        },
+        {
+          "id": "order.is_final",
+          "name": [
+            "is",
+            "final"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "order_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "bool",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::order::is_final"
+        },
+        {
+          "id": "order.events_from",
+          "name": [
+            "events",
+            "from"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "order_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "list": {
+              "unit": "order_event"
+            }
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::order::events_from"
+        },
+        {
+          "id": "order.target",
+          "name": [
+            "target"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "expected"
+              ],
+              "type": {
+                "unit": "order_state"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "event"
+              ],
+              "type": {
+                "unit": "order_event"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "order_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::InvalidTransition"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::order::target"
+        },
+        {
+          "id": "order.apply",
+          "name": [
+            "apply"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "expected"
+              ],
+              "type": {
+                "unit": "order_state"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "event"
+              ],
+              "type": {
+                "unit": "order_event"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "actual"
+              ],
+              "type": {
+                "unit": "order_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "order_step"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::InvalidTransition",
+            "polyspec_fsm::fsm::Code::Conflict"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::order::apply"
+        }
+      ]
+    },
+    {
+      "id": "standby_state",
+      "name": [
+        "standby",
+        "state"
+      ],
+      "module": "standby",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::standby::State",
+      "variants": [
+        {
+          "name": [
+            "ready"
+          ],
+          "value": "ready"
+        }
+      ]
+    },
+    {
+      "id": "standby_step",
+      "name": [
+        "standby",
+        "step"
+      ],
+      "module": "standby",
+      "kind": "record",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::standby::Step",
+      "fields": [
+        {
+          "name": [
+            "to"
+          ],
+          "type": {
+            "unit": "standby_state"
+          },
+          "required": true
+        },
+        {
+          "name": [
+            "changed"
+          ],
+          "type": "bool",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "standby",
+      "name": [
+        "standby"
+      ],
+      "module": "standby",
+      "kind": "functions",
+      "visibility": "public",
+      "origin": "generated",
+      "members": [
+        {
+          "id": "standby.initial",
+          "name": [
+            "initial"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "unit": "standby_state"
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::standby::initial"
+        },
+        {
+          "id": "standby.code",
+          "name": [
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "standby_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "int",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::standby::code"
+        },
+        {
+          "id": "standby.key",
+          "name": [
+            "key"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "standby_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "text",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::standby::key"
+        },
+        {
+          "id": "standby.from_code",
+          "name": [
+            "from",
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "value"
+              ],
+              "type": "int",
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "standby_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::UnknownCode"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::standby::from_code"
+        },
+        {
+          "id": "standby.is_final",
+          "name": [
+            "is",
+            "final"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "standby_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "bool",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::standby::is_final"
+        }
+      ]
+    },
+    {
+      "id": "ticket_state",
+      "name": [
+        "ticket",
+        "state"
+      ],
+      "module": "ticket",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::ticket::State",
+      "variants": [
+        {
+          "name": [
+            "open"
+          ],
+          "value": "open"
+        },
+        {
+          "name": [
+            "review"
+          ],
+          "value": "review"
+        },
+        {
+          "name": [
+            "closed"
+          ],
+          "value": "closed"
+        }
+      ]
+    },
+    {
+      "id": "ticket_event",
+      "name": [
+        "ticket",
+        "event"
+      ],
+      "module": "ticket",
+      "kind": "enum",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::ticket::Event",
+      "variants": [
+        {
+          "name": [
+            "submit"
+          ],
+          "value": "submit"
+        },
+        {
+          "name": [
+            "approve"
+          ],
+          "value": "approve"
+        },
+        {
+          "name": [
+            "reject"
+          ],
+          "value": "reject"
+        }
+      ]
+    },
+    {
+      "id": "ticket_step",
+      "name": [
+        "ticket",
+        "step"
+      ],
+      "module": "ticket",
+      "kind": "record",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::ticket::Step",
+      "fields": [
+        {
+          "name": [
+            "to"
+          ],
+          "type": {
+            "unit": "ticket_state"
+          },
+          "required": true
+        },
+        {
+          "name": [
+            "changed"
+          ],
+          "type": "bool",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "ticket",
+      "name": [
+        "ticket"
+      ],
+      "module": "ticket",
+      "kind": "functions",
+      "visibility": "public",
+      "origin": "generated",
+      "members": [
+        {
+          "id": "ticket.initial",
+          "name": [
+            "initial"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [],
+          "returns": {
+            "unit": "ticket_state"
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::ticket::initial"
+        },
+        {
+          "id": "ticket.code",
+          "name": [
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "ticket_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "int",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::ticket::code"
+        },
+        {
+          "id": "ticket.key",
+          "name": [
+            "key"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "ticket_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "text",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::ticket::key"
+        },
+        {
+          "id": "ticket.from_code",
+          "name": [
+            "from",
+            "code"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "value"
+              ],
+              "type": "int",
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "ticket_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::UnknownCode",
+            "polyspec_fsm::fsm::Code::ReservedCode"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::ticket::from_code"
+        },
+        {
+          "id": "ticket.is_final",
+          "name": [
+            "is",
+            "final"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "ticket_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": "bool",
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::ticket::is_final"
+        },
+        {
+          "id": "ticket.events_from",
+          "name": [
+            "events",
+            "from"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "state"
+              ],
+              "type": {
+                "unit": "ticket_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "list": {
+              "unit": "ticket_event"
+            }
+          },
+          "raises": [],
+          "wait": "none",
+          "core": "polyspec_fsm::ticket::events_from"
+        },
+        {
+          "id": "ticket.target",
+          "name": [
+            "target"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "expected"
+              ],
+              "type": {
+                "unit": "ticket_state"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "event"
+              ],
+              "type": {
+                "unit": "ticket_event"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "ticket_state"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::InvalidTransition"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::ticket::target"
+        },
+        {
+          "id": "ticket.apply",
+          "name": [
+            "apply"
+          ],
+          "kind": "function",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "expected"
+              ],
+              "type": {
+                "unit": "ticket_state"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "event"
+              ],
+              "type": {
+                "unit": "ticket_event"
+              },
+              "required": true
+            },
+            {
+              "name": [
+                "actual"
+              ],
+              "type": {
+                "unit": "ticket_state"
+              },
+              "required": true
+            }
+          ],
+          "returns": {
+            "unit": "ticket_step"
+          },
+          "raises": [
+            "polyspec_fsm::fsm::Code::InvalidTransition",
+            "polyspec_fsm::fsm::Code::Conflict"
+          ],
+          "wait": "none",
+          "core": "polyspec_fsm::ticket::apply"
+        }
+      ]
+    }
+  ],
+  "changes": [],
+  "cases": [
+    {
+      "member": "in_review.initial",
+      "file": "contracts/cases.json",
+      "group": "in_review.initial"
+    },
+    {
+      "member": "in_review.code",
+      "file": "contracts/cases.json",
+      "group": "in_review.code"
+    },
+    {
+      "member": "in_review.key",
+      "file": "contracts/cases.json",
+      "group": "in_review.key"
+    },
+    {
+      "member": "in_review.from_code",
+      "file": "contracts/cases.json",
+      "group": "in_review.from_code"
+    },
+    {
+      "member": "in_review.is_final",
+      "file": "contracts/cases.json",
+      "group": "in_review.is_final"
+    },
+    {
+      "member": "in_review.events_from",
+      "file": "contracts/cases.json",
+      "group": "in_review.events_from"
+    },
+    {
+      "member": "in_review.target",
+      "file": "contracts/cases.json",
+      "group": "in_review.target"
+    },
+    {
+      "member": "in_review.apply",
+      "file": "contracts/cases.json",
+      "group": "in_review.apply"
+    },
+    {
+      "member": "limits.initial",
+      "file": "contracts/cases.json",
+      "group": "limits.initial"
+    },
+    {
+      "member": "limits.code",
+      "file": "contracts/cases.json",
+      "group": "limits.code"
+    },
+    {
+      "member": "limits.key",
+      "file": "contracts/cases.json",
+      "group": "limits.key"
+    },
+    {
+      "member": "limits.from_code",
+      "file": "contracts/cases.json",
+      "group": "limits.from_code"
+    },
+    {
+      "member": "limits.is_final",
+      "file": "contracts/cases.json",
+      "group": "limits.is_final"
+    },
+    {
+      "member": "limits.events_from",
+      "file": "contracts/cases.json",
+      "group": "limits.events_from"
+    },
+    {
+      "member": "limits.target",
+      "file": "contracts/cases.json",
+      "group": "limits.target"
+    },
+    {
+      "member": "limits.apply",
+      "file": "contracts/cases.json",
+      "group": "limits.apply"
+    },
+    {
+      "member": "order.initial",
+      "file": "contracts/cases.json",
+      "group": "order.initial"
+    },
+    {
+      "member": "order.code",
+      "file": "contracts/cases.json",
+      "group": "order.code"
+    },
+    {
+      "member": "order.key",
+      "file": "contracts/cases.json",
+      "group": "order.key"
+    },
+    {
+      "member": "order.from_code",
+      "file": "contracts/cases.json",
+      "group": "order.from_code"
+    },
+    {
+      "member": "order.is_final",
+      "file": "contracts/cases.json",
+      "group": "order.is_final"
+    },
+    {
+      "member": "order.events_from",
+      "file": "contracts/cases.json",
+      "group": "order.events_from"
+    },
+    {
+      "member": "order.target",
+      "file": "contracts/cases.json",
+      "group": "order.target"
+    },
+    {
+      "member": "order.apply",
+      "file": "contracts/cases.json",
+      "group": "order.apply"
+    },
+    {
+      "member": "standby.initial",
+      "file": "contracts/cases.json",
+      "group": "standby.initial"
+    },
+    {
+      "member": "standby.code",
+      "file": "contracts/cases.json",
+      "group": "standby.code"
+    },
+    {
+      "member": "standby.key",
+      "file": "contracts/cases.json",
+      "group": "standby.key"
+    },
+    {
+      "member": "standby.from_code",
+      "file": "contracts/cases.json",
+      "group": "standby.from_code"
+    },
+    {
+      "member": "standby.is_final",
+      "file": "contracts/cases.json",
+      "group": "standby.is_final"
+    },
+    {
+      "member": "ticket.initial",
+      "file": "contracts/cases.json",
+      "group": "ticket.initial"
+    },
+    {
+      "member": "ticket.code",
+      "file": "contracts/cases.json",
+      "group": "ticket.code"
+    },
+    {
+      "member": "ticket.key",
+      "file": "contracts/cases.json",
+      "group": "ticket.key"
+    },
+    {
+      "member": "ticket.from_code",
+      "file": "contracts/cases.json",
+      "group": "ticket.from_code"
+    },
+    {
+      "member": "ticket.is_final",
+      "file": "contracts/cases.json",
+      "group": "ticket.is_final"
+    },
+    {
+      "member": "ticket.events_from",
+      "file": "contracts/cases.json",
+      "group": "ticket.events_from"
+    },
+    {
+      "member": "ticket.target",
+      "file": "contracts/cases.json",
+      "group": "ticket.target"
+    },
+    {
+      "member": "ticket.apply",
+      "file": "contracts/cases.json",
+      "group": "ticket.apply"
+    }
+  ]
+}

@@ -291,6 +291,120 @@ build-php-ext:
 test-php-ext: build-php-ext
 	$(NODE) $(KIT)/php-extension.$(KIT_EXT) test --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php -- --roots packages/php
 
+# ---- Bindings: generated from packages/rust/interface.json by binding (plan f6, step 3a; S-454) --------------------------------
+# The contract packages/rust/interface.json binds the public members of the crate packages/rust for the five targets php, python,
+# node, go and wasm, and contracts/cases.json holds its cases, taken from contracts/conformance/vectors.json. binding is not yet a
+# package that package-lock.json pins, and fsm pins none of the tools that only the bindings use: until both are pinned, BINDING
+# names the cli (packages/ts/src/cli.ts) of a binding checkout, WASM_BINDGEN the wasm-bindgen CLI of the release of
+# packages/ts/wasm/Cargo.toml, MATURIN the maturin and TSC the TypeScript compiler of that checkout, and each target that needs one
+# refuses to run without it. bindings writes the generated folders of packages/{ts,ts/wasm,python,php-ext,go/internal/ffi} and the
+# Go files zz_generated_*.go of packages/go, which Git ignores; bindings-check runs the contract check, which also compares the
+# tracked binding packages with what binding scaffold writes (binding L-2, CK-19) and the commit of polyspec-binding-core in the
+# root Cargo.lock with the commit of the cli (CK-20).
+# The binding packages and the root workspace that holds them are not tracked yet, so bindings-check names each of their files and
+# the targets that build a binding crate fail: binding scaffold writes composer.json of packages/php-ext, pyproject.toml of
+# packages/python, go.mod of packages/go and the entry packages/php-ext/src/lib.rs, which are the manifests and the generated
+# source folder of the hand-written packages of the same folders, and kit's lint-cargo-lints (config/layout.kit.yml) refuses the
+# [lints] tables that binding writes into each binding manifest. Plan f6, step 3-2 moves the hand-written packages to legacy/.
+.PHONY: bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-wasm \
+	test-python-binding test-php-binding test-go-binding
+BINDING ?=
+WASM_BINDGEN ?=
+MATURIN ?=
+TSC ?=
+# require_tool stops the target $@ when the variable $(1) is empty, naming the variable and what it holds ($(2)).
+require_tool = test -n "$($(1))" || { echo "$@ needs $(1): $(2)" >&2; exit 2; }
+BINDING_CRATES := polyspec-fsm-node polyspec-fsm-wasm polyspec-fsm-python polyspec-fsm-php-ext polyspec-fsm-go
+BINDING_FEATURES := polyspec-fsm-node/panic-test,polyspec-fsm-wasm/panic-test,polyspec-fsm-python/panic-test,polyspec-fsm-php-ext/panic-test,polyspec-fsm-go/panic-test,polyspec-fsm-go/codec-test
+BINDING_CASES := $(CURDIR)/contracts/cases.json
+BINDING_VAR := $(CURDIR)/var/bindings
+BINDING_TARGET := $(CURDIR)/target
+# The file name extension of a library that Cargo builds as a cdylib: dylib on macOS, so on Linux.
+CDYLIB := $(if $(filter Darwin,$(shell uname -s)),dylib,so)
+
+bindings:
+	@$(call require_tool,BINDING,the cli packages/ts/src/cli.ts of a binding checkout)
+	$(NODE) $(BINDING) generate --root $(CURDIR)
+
+bindings-check:
+	@$(call require_tool,BINDING,the cli packages/ts/src/cli.ts of a binding checkout)
+	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json
+
+# The lint of the binding crates with their test features, after make bindings writes their generated folders; lint-rust lints
+# the core crate alone.
+lint-bindings: bindings
+	cargo clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets --features $(BINDING_FEATURES) -- -D warnings
+
+test-bindings: lint-bindings check-declarations test-python-binding test-node test-wasm test-php-binding test-go-binding
+
+# The TypeScript compiler checks the generated declarations of the Node and WASM bindings in strict mode.
+check-declarations: bindings
+	@$(call require_tool,TSC,the TypeScript compiler of a binding checkout)
+	$(TSC) --noEmit --strict packages/ts/generated/index.d.ts
+	$(TSC) --noEmit --strict packages/ts/wasm/generated/index.d.ts
+
+# The wheel, built by maturin for the Python of mise.toml and installed into var/bindings/venv; the generated tests (binding G-5)
+# on unittest.
+test-python-binding: bindings
+	@$(call require_tool,MATURIN,the maturin of a binding checkout)
+	$(PYTHON_BIN) -m venv --clear $(BINDING_VAR)/venv
+	rm -rf $(BINDING_VAR)/wheels
+	cd packages/python && $(MATURIN) build --locked --interpreter $(BINDING_VAR)/venv/bin/python --features panic-test --out $(BINDING_VAR)/wheels
+	$(BINDING_VAR)/venv/bin/pip install -q --no-index --force-reinstall $(BINDING_VAR)/wheels/*.whl
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv $(BINDING_VAR)/venv --results .results/test-python-binding.json --inputs packages/python/generated -- discover -s packages/python/generated/tests -t packages/python/generated/tests
+
+# The npm package and the platform package of the addon, packed and installed into var/bindings/node (binding T-2): the addon is
+# the npm package of this machine's platform, which the package names in optionalDependencies, and the package also holds the WASM
+# module and its glue, which wasm-bindgen writes into packages/ts/wasm/generated before the package is packed (binding GN-18, P-5).
+PLATFORM = $(shell $(NODE) -p 'process.platform + "-" + process.arch + (process.platform === "linux" ? "-gnu" : "")')
+WASM_BINDGEN_RELEASE = $(shell sed -n 's/^wasm-bindgen = "=\(.*\)"$$/\1/p' packages/ts/wasm/Cargo.toml)
+node-package: bindings
+	@$(call require_tool,WASM_BINDGEN,the wasm-bindgen CLI of the release of packages/ts/wasm/Cargo.toml)
+	test "$$($(WASM_BINDGEN) --version)" = "wasm-bindgen $(WASM_BINDGEN_RELEASE)"
+	cargo build --locked -p polyspec-fsm-wasm --target wasm32-unknown-unknown --features panic-test
+	$(WASM_BINDGEN) --target web --out-dir packages/ts/wasm/generated --out-name fsm_wasm \
+		$(BINDING_TARGET)/wasm32-unknown-unknown/debug/polyspec_fsm_wasm.wasm
+	cargo build --locked -p polyspec-fsm-node --features panic-test
+	rm -rf $(BINDING_VAR)/node $(BINDING_VAR)/node-platform
+	mkdir -p $(BINDING_VAR)/node $(BINDING_VAR)/node-platform
+	cp $(BINDING_TARGET)/debug/libpolyspec_fsm_node.$(CDYLIB) $(BINDING_VAR)/node-platform/fsm.$(PLATFORM).node
+	$(NODE) -e 'const p = require("./packages/ts/package.json"); require("fs").writeFileSync("$(BINDING_VAR)/node-platform/package.json", JSON.stringify({ name: p.name + "-$(PLATFORM)", version: p.version, os: [process.platform], cpu: [process.arch], main: "fsm.$(PLATFORM).node", files: ["fsm.$(PLATFORM).node"] }, null, 2) + "\n")'
+	cd $(BINDING_VAR)/node-platform && $(NPM) pack --pack-destination $(BINDING_VAR)/node
+	cd packages/ts && $(NPM) pack --pack-destination $(BINDING_VAR)/node
+	echo '{ "private": true }' > $(BINDING_VAR)/node/package.json
+	cd $(BINDING_VAR)/node && $(NPM) install --no-audit --no-fund --omit=optional ./*.tgz
+
+# The generated tests and the contract cases of the Node binding on node --test, against the installed package.
+test-node: node-package
+	cp packages/ts/generated/tests/generated.test.mjs packages/ts/tests/cases.mjs packages/ts/tests/cases.test.mjs $(BINDING_VAR)/node/
+	FSM_CASES=$(BINDING_CASES) $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-node.json --inputs packages/ts --inputs contracts/cases.json -- --test-concurrency=1 generated.test.mjs cases.test.mjs
+
+# The generated tests and the contract cases of the WASM binding through the subpath ./wasm of the installed package (binding
+# P-5); --expose-gc serves the generated tests that collect instances (binding GN-18a).
+test-wasm: node-package
+	cp packages/ts/wasm/generated/tests/generated.test.mjs $(BINDING_VAR)/node/generated.wasm.test.mjs
+	cp packages/ts/tests/cases.mjs packages/ts/tests/cases.wasm.test.mjs $(BINDING_VAR)/node/
+	FSM_CASES=$(BINDING_CASES) $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-wasm.json --inputs packages/ts --inputs contracts/cases.json -- --expose-gc --test-concurrency=1 generated.wasm.test.mjs cases.wasm.test.mjs
+
+# The extension of the PHP binding, built against the PHP of var/tools and loaded into it; the stub is linted, then the generated
+# tests run on the PHPUnit of packages/php-ext.
+test-php-binding: bindings packages/php-ext/vendor/composer/installed.json
+	cargo build --locked -p polyspec-fsm-php-ext --features panic-test
+	$(KIT_TOOLS)/bin/php -l packages/php-ext/generated/polyspec_fsm.stub.php
+	$(RUN_TESTS) phpunit --cwd packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-binding.json --inputs packages/php-ext/generated -- generated/tests
+
+# The static library with the test features (binding GN-13b), which Go links through CGO_LDFLAGS; gofmt and go vet of the Go
+# packages of the binding, then their generated tests on go test, with the Go of mise.toml and GOTOOLCHAIN=local. The Go module
+# packages/go holds the hand-written package too, so the recipes name the packages of the binding.
+GO_BINDING_DIRS := errors internal in_review limits order standby ticket
+GO_BINDING_PACKAGES := $(foreach dir,$(GO_BINDING_DIRS),./$(dir)/...)
+GO_BINDING_ENV := GOTOOLCHAIN=local GOPROXY=off CGO_LDFLAGS=-L$(BINDING_TARGET)/debug GOFLAGS=-tags=polyspec_panic_test,polyspec_codec_test
+test-go-binding: bindings
+	cargo build --locked -p polyspec-fsm-go --features panic-test,codec-test
+	cd packages/go && test -z "$$($(KIT_TOOLS)/mise/shims/gofmt -l $(GO_BINDING_DIRS))"
+	cd packages/go && $(GO_BINDING_ENV) $(GO) vet $(GO_BINDING_PACKAGES)
+	$(GO_BINDING_ENV) $(RUN_TESTS) go --cwd packages/go --results .results/test-go-binding.json --inputs packages/go -- -count=1 -timeout=0 $(GO_BINDING_PACKAGES)
+
 # ---- CI --------------------------------------------------------------------------------------------------------------
 # kit-gates is every gate of fsm, and land runs those of them that the changed paths of a branch select. The CI pipeline
 # (.github/workflows/ci-pipeline.yml) runs its partitions, each in a job that installs only what it needs; kit-gates-static runs
