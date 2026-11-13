@@ -38,8 +38,9 @@
 // command, 1 for a step that failed before it, and 130 or 143 for the two signals.
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { accessSync, constants, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { BayError, bayOutput, bayVersion, requireContract } from './bay.mts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const PINS = path.join(ROOT, 'config/containers.json');
@@ -248,12 +249,14 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     'cd "$directory" || exit 1',
     'directory=$PWD',
     `project=${quoted(name)}`,
+    '# The words that start bay on this machine: those of the variable BAY, which the one who starts the run sets.',
+    'bay=${BAY:-bay}',
     '# child is the command of bay that runs, started is set once bay up was started, and code is the exit code of the run.',
     'child=',
     'started=',
     'code=1',
     'step() {',
-    '\tbay -f "$directory" -p "$project" "$@" &',
+    '\t$bay "$@" &',
     '\tchild=$!',
     '\twait "$child"',
     '\tended=$?',
@@ -271,7 +274,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\t\twait "$child"',
     '\tfi',
     '\tif [ -n "$started" ]; then',
-    '\t\tif bay -f "$directory" -p "$project" down; then',
+    '\t\tif $bay -f "$directory" -p "$project" down; then',
     '\t\t\techo "persist-servers: removed the project $project" >&2',
     '\t\telse',
     `\t\t\t: > "$directory/${DOWN_FAILED}"`,
@@ -288,8 +291,8 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     'case "${1:-run}" in',
     'run) ;;',
     'pull)',
-    '\tstep version || exit',
-    '\tstep pull',
+    '\tstep version --json || exit',
+    '\tstep -f "$directory" -p "$project" pull',
     '\tcode=$?',
     '\texit',
     '\t;;',
@@ -299,35 +302,24 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\texit',
     '\t;;',
     'esac',
-    '# The release of the bay that runs, for the record of the run.',
-    'step version || exit',
+    '# The release and the contract of the bay that runs, for the record of the run. Nothing is compared: the bay of the',
+    '# machine is used as it is.',
+    'step version --json || exit',
     '# bay images fetches nothing and fails when the store lacks an image.',
-    'step images || {',
+    'step -f "$directory" -p "$project" images || {',
     '\techo "persist-servers: an image of the project $project is not installed: run make persist-images, or sh $directory/run.sh pull" >&2',
     '\texit',
     '}',
     '# bay up returns after each server is healthy; it pulls nothing and changes no machine setup.',
     'started=1',
-    'step up -no-pull || {',
+    'step -f "$directory" -p "$project" up -no-pull || {',
     '\techo "persist-servers: bay up failed before the servers of the project $project were healthy" >&2',
     '\texit',
     '}',
-    `step ${exec.join(' ')}`,
+    `step -f "$directory" -p "$project" ${exec.join(' ')}`,
     'code=$?',
     'exit',
   ].join('\n')}\n`;
-}
-
-/** Whether a directory of PATH holds the executable file `name`. */
-function onPath(name: string): boolean {
-  return (process.env.PATH ?? '').split(path.delimiter).filter(directory => directory !== '').some(directory => {
-    try {
-      accessSync(path.join(directory, name), constants.X_OK);
-      return true;
-    } catch {
-      return false;
-    }
-  });
 }
 
 /** Runs `program` with `args` in the checkout and returns its standard output; fails when it did not start or ended with another code than 0. */
@@ -360,7 +352,11 @@ function write(command: readonly string[]): string {
   const composed = composeFile();
   packages();
   nodeVersion();
-  if (!onPath('bay')) throw new Failure('persist-servers: bay is not found on PATH: install bay and apply its machine setup with bay install');
+  // The bay of the machine is used as it is: its version is shown for the record of the run, and only the schema of its
+  // contract is required.
+  const version = bayVersion();
+  process.stderr.write(`persist-servers: bay version: ${version.text}\n`);
+  requireContract(version);
   const branch = output('git', ['symbolic-ref', '--short', 'HEAD']).trim();
   if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(branch)) throw new Failure(`persist-servers: the checkout is on no branch that a line of sh can name: ${JSON.stringify(branch)}`);
   const name = `fsm-persist-${String(process.pid)}-${randomBytes(4).toString('hex')}`;
@@ -368,7 +364,7 @@ function write(command: readonly string[]): string {
   mkdirSync(directory, { recursive: true });
   try {
     writeFileSync(path.join(directory, 'compose.yaml'), composed);
-    const hosts = addresses(output('bay', ['-f', directory, '-p', name, 'plan', '--json']));
+    const hosts = addresses(bayOutput(['-f', directory, '-p', name, 'plan', '--json']));
     const variables: Record<string, string> = {};
     for (const kind of KINDS) Object.assign(variables, SERVERS[kind].variables(hosts[kind]));
     output('git', ['bundle', 'create', path.join(directory, 'tree.bundle'), branch]);
@@ -424,7 +420,7 @@ if (import.meta.main) {
     else if (verb === 'pull' && separator === undefined) process.exitCode = await execute(['true'], ['pull']);
     else throw new Failure(USAGE, 2);
   } catch (error) {
-    if (!(error instanceof Failure)) throw error;
+    if (!(error instanceof Failure) && !(error instanceof BayError)) throw error;
     process.stderr.write(`${error.message}\n`);
     process.exitCode = error.code;
   }

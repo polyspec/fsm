@@ -2,8 +2,8 @@
 # `make install` and then `make ci-suite`, the targets of make check that the job kit does not run (S-474). The
 # job holds no block services: `make persist-images` pulls the images of PostgreSQL and MySQL that config/containers.json pins
 # by their digests, through bay, and `make persist-servers` starts both servers through bay as a Compose project of the run, runs the
-# targets in the service runner of that project with their DSNs and removes the project (plan C-6, S-472-1, S-475, S-475-7). No step installs bay, so both steps fail on the
-# runner until S-475-5. The job uploads the report of its targets. The last job ci-passed
+# targets in the service runner of that project with their DSNs and removes the project (plan C-6, S-472-1, S-475, S-475-7). `make bay-install` installs bay
+# before them (S-475-5). The job uploads the report of its targets. The last job ci-passed
 # passes only when every other job succeeded (S-472); every job runs on ubuntu-26.04-arm, and each run step is one make target
 # (make workflows-test).
 # The versions come from the files that declare them: PHP from config/toolchain.json, Rust from rust-toolchain.toml, and
@@ -49,13 +49,24 @@ jobs:
         run: make gui-browser-libraries
       - name: Install the git hooks of fsm
         run: make hooks
+      # bay runs the servers of the suite. A runner holds none, so make bay-install downloads the release that
+      # config/toolchain.json names, verifies its sha256 and applies the machine setup. On the runner the state of bay belongs
+      # to root and the user of the job has sudo without a password, so each step that starts bay sets BAY (plan C-6, S-475-5).
+      - name: Install bay
+        run: make bay-install
+        env:
+          BAY: sudo -n bay
       - name: Pull the images of the PostgreSQL and MySQL servers
         run: make persist-images
+        env:
+          BAY: sudo -n bay
       # make ci-suite runs the targets of make check that no job of the pipeline runs (CI_SUITE_TARGETS of the Makefile, S-474),
       # the check of the hooks among them, to their end, so one run names every failed target.
       - name: Run the suite targets through make ci-targets with the PostgreSQL and MySQL servers
         if: ${{ !cancelled() }}
         run: make ci-suite
+        env:
+          BAY: sudo -n bay
       # The report of make ci-targets, var/report/ci-targets, also of a run whose target failed.
       - name: report
         if: ${{ !cancelled() }}

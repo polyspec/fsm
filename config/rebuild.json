@@ -26,6 +26,10 @@
       "kind": "ecosystem",
       "tool": "node:util"
     },
+    "scripts/bay.mts": {
+      "kind": "ecosystem",
+      "tool": "bay"
+    },
     "scripts/persist-servers.mts": {
       "kind": "ecosystem",
       "tool": "bay"

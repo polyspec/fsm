@@ -465,8 +465,20 @@
     },
     {
       "paths": [
+        "scripts/bay.mts",
+        "config/toolchain.json",
+        "tests/bay/**"
+      ],
+      "targets": [
+        "bay-test"
+      ]
+    },
+    {
+      "paths": [
         "scripts/persist-servers.mts",
+        "scripts/bay.mts",
         "config/containers.json",
+        "config/toolchain.json",
         "mise.toml",
         "tests/persist-servers/**"
       ],
@@ -481,6 +493,7 @@
       ],
       "targets": [
         "workflows-test",
+        "bay-test",
         "persist-servers-test"
       ]
     }
