@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 9e27dc374877d926744fbbf7552548547dd96ec338ea69b907bd15b90db7058f -->
+<!-- source-sha256: bf685b973a6499f1eaf79fe35bec581fae1958c28af8867a0d297c53a1318445 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make test-php-binding`와 `make test-python-binding`이 무시되는 폴더 `packages/<target>/generated`만 입력으로 이름 붙여서, 시험이 통과한 뒤 test runner가 실패시켰고(`--inputs packages/php-ext/generated names no tracked or new file`), 이에 의존하는 conformance 대상은 돌지 않았다. 이제 `make test-node`처럼 생성된 시험의 출처인 package, `contracts/cases.json`, `packages/rust/interface.json`을 이름 붙인다: PHP 557개와 Python 556개가 통과한다 (S-462, S-463).
 - S-460, S-461, S-465, S-466이 끝났다: commit된 tree  binding ae511fd로 `make test-node`는 567개, `make test-wasm`은 566개, `make test-node-conformance`는 vector 279개 중 279개, `make test-rust`는 533개를 통과했다.
 - Node·WASM 바인딩의 case runner(`packages/ts/tests/cases.mjs`)가 모든 error에 category class를 기대해서, error unit `machine_error`(S-465) 뒤 7개 group이 실패했다: `in_review_key_v0`은 `FsmValueError`의 subclass인 `MachineError`를 던진다. 이제 runner는 kind에 대한 `errors.kinds` 행이 이름 붙인 error unit을, 없으면 category class를 기대하고, category는 `instanceof`로 확인한다. `make test-node`는 567개, `make test-wasm`은 566개를 통과한다 (S-460).
 - S-454와 S-457이 끝났다: commit된 tree  binding ae511fd로 `make bindings-check`가 통과했다.

@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make test-php-binding` and `make test-python-binding` named only the ignored folder `packages/<target>/generated` as their inputs, so the test runner failed them after the tests passed (`--inputs packages/php-ext/generated names no tracked or new file`), and the conformance targets that depend on them did not run. They now name the package, `contracts/cases.json` and `packages/rust/interface.json`, from which the generated tests come, as `make test-node` does: 557 PHP tests and 556 Python tests pass (S-462, S-463).
 - S-460, S-461, S-465 and S-466 are done: on the committed tree f28da9c with binding ae511fd, `make test-node` passed 567, `make test-wasm` 566, `make test-node-conformance` 279 of the 279 vectors and `make test-rust` 533.
 - The case runner of the Node and the WASM binding (`packages/ts/tests/cases.mjs`) expected the class of the category for every error, so 7 groups failed after the error unit `machine_error` (S-465): `in_review_key_v0` raises `MachineError`, a subclass of `FsmValueError`. The runner now expects the error unit that the row of `errors.kinds` names for the kind and else the class of the category, and checks the category by `instanceof`. `make test-node` passes 567 and `make test-wasm` 566 (S-460).
 - S-454 and S-457 are done: `make bindings-check` with binding ae511fd passed on the committed tree af0bc91.

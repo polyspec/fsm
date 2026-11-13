@@ -369,7 +369,7 @@ test-python-binding: bindings-python
 	rm -rf $(BINDING_VAR)/wheels
 	cd packages/python && $(MATURIN) build --locked --interpreter $(BINDING_VAR)/venv/bin/python --features panic-test --out $(BINDING_VAR)/wheels
 	$(BINDING_VAR)/venv/bin/pip install -q --no-index --force-reinstall $(BINDING_VAR)/wheels/*.whl
-	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv $(BINDING_VAR)/venv --results .results/test-python-binding.json --inputs packages/python/generated -- discover -s packages/python/generated/tests -t packages/python/generated/tests
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv $(BINDING_VAR)/venv --results .results/test-python-binding.json --inputs packages/python --inputs contracts/cases.json --inputs packages/rust/interface.json -- discover -s packages/python/generated/tests -t packages/python/generated/tests
 
 # The common suite of the legacy tests, contracts/conformance/vectors.json, with its expectations on the Python binding that
 # test-python-binding installs into var/bindings/venv (plan f6, step 7a-1; S-463).
@@ -421,7 +421,7 @@ test-wasm: node-package
 test-php-binding: bindings-php legacy/packages/php-ext/vendor/composer/installed.json
 	cargo build --locked -p polyspec-fsm-php-ext --features panic-test
 	$(KIT_TOOLS)/bin/php -l packages/php-ext/generated/polyspec_fsm.stub.php
-	$(RUN_TESTS) phpunit --cwd legacy/packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-binding.json --inputs packages/php-ext/generated -- $(CURDIR)/packages/php-ext/generated/tests
+	$(RUN_TESTS) phpunit --cwd legacy/packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-binding.json --inputs packages/php-ext --inputs contracts/cases.json --inputs packages/rust/interface.json -- $(CURDIR)/packages/php-ext/generated/tests
 
 # The common suite of the legacy tests, contracts/conformance/vectors.json, with its expectations on the PHP binding that
 # test-php-binding builds (plan f6, step 7a-1; S-462).
