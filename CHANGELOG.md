@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-460, S-461, S-465 and S-466 are done: on the committed tree f28da9c with binding ae511fd, `make test-node` passed 567, `make test-wasm` 566, `make test-node-conformance` 279 of the 279 vectors and `make test-rust` 533.
 - The case runner of the Node and the WASM binding (`packages/ts/tests/cases.mjs`) expected the class of the category for every error, so 7 groups failed after the error unit `machine_error` (S-465): `in_review_key_v0` raises `MachineError`, a subclass of `FsmValueError`. The runner now expects the error unit that the row of `errors.kinds` names for the kind and else the class of the category, and checks the category by `instanceof`. `make test-node` passes 567 and `make test-wasm` 566 (S-460).
 - S-454 and S-457 are done: `make bindings-check` with binding ae511fd passed on the committed tree af0bc91.
 - The legacy suites of PHP and Python test the decoding that the tests of the PHP and the Python binding use: for every `from_code` input of the vectors, the text of a string input and else the JSON value of its text is the value that the legacy test decodes, type included (`testJsonValueOfEveryInputIsItsDecodedValue`, `test_json_value_of_every_input_is_its_decoded_value`). `make legacy-test-php` and `make legacy-test-python` pass 295 each (S-462).

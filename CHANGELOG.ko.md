@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 740f8dbbcc12aceade5a74a6f6d179f968927c0d28d510ae81da92a58de68320 -->
+<!-- source-sha256: 9e27dc374877d926744fbbf7552548547dd96ec338ea69b907bd15b90db7058f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-460, S-461, S-465, S-466이 끝났다: commit된 tree  binding ae511fd로 `make test-node`는 567개, `make test-wasm`은 566개, `make test-node-conformance`는 vector 279개 중 279개, `make test-rust`는 533개를 통과했다.
 - Node·WASM 바인딩의 case runner(`packages/ts/tests/cases.mjs`)가 모든 error에 category class를 기대해서, error unit `machine_error`(S-465) 뒤 7개 group이 실패했다: `in_review_key_v0`은 `FsmValueError`의 subclass인 `MachineError`를 던진다. 이제 runner는 kind에 대한 `errors.kinds` 행이 이름 붙인 error unit을, 없으면 category class를 기대하고, category는 `instanceof`로 확인한다. `make test-node`는 567개, `make test-wasm`은 566개를 통과한다 (S-460).
 - S-454와 S-457이 끝났다: commit된 tree  binding ae511fd로 `make bindings-check`가 통과했다.
 - PHP와 Python의 legacy suite가 PHP·Python 바인딩 시험이 쓰는 decode를 시험한다: vector의 모든 `from_code` 입력에서, string 입력이면 그 텍스트, 아니면 텍스트의 JSON 값이 legacy 시험이 decode하는 값과 타입까지 같다(`testJsonValueOfEveryInputIsItsDecodedValue`, `test_json_value_of_every_input_is_its_decoded_value`). `make legacy-test-php`와 `make legacy-test-python`은 각각 295개를 통과한다 (S-462).
