@@ -1,6 +1,6 @@
 // The run of scripts/persist-servers.mts (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1, S-475): it
 // writes the Compose project of the PostgreSQL and the MySQL server into a temporary directory of its own, starts it with bay
-// up, whose return is the ready event, reads the address of each service from the JSON of `bay status --json`, runs its
+// up, whose return is the ready event because each service declares its health, reads the address of each service from the JSON of `bay status --json`, runs its
 // command with the four FSM_TEST_* variables of those addresses, and runs bay down and removes the
 // directory when the command ends, fails or the run gets SIGINT or SIGTERM. The test runs the script with stand-ins that it
 // writes into a directory of its own, the only programs of PATH: a uname that names the platform, a bay that records its
@@ -43,6 +43,11 @@ services:
       POSTGRES_USER: "fsm"
       POSTGRES_PASSWORD: "fsm"
       POSTGRES_DB: "fsm_test"
+    healthcheck:
+      test: ["CMD", "pg_isready", "--host=127.0.0.1", "--port=5432", "--username=fsm", "--dbname=fsm_test"]
+      interval: "1s"
+      timeout: "5s"
+      retries: 300
   mysql:
     image: "${reference('mysql')}"
     expose: ["3306"]
@@ -51,6 +56,11 @@ services:
       MYSQL_USER: "fsm"
       MYSQL_PASSWORD: "fsm"
       MYSQL_DATABASE: "fsm_test"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--protocol=tcp", "--host=127.0.0.1", "--port=3306"]
+      interval: "1s"
+      timeout: "5s"
+      retries: 300
 `;
 }
 
@@ -269,6 +279,25 @@ test('the Compose file publishes no port, mounts nothing and names each image by
   const images = [...composed.matchAll(/^ {4}image: "(.*)"$/gm)].map(match => match[1]);
   assert.deepEqual(images, KINDS.map(reference));
   for (const kind of KINDS) assert.match(reference(kind), /^docker\.io\/library\/[a-z]+@sha256:[0-9a-f]{64}$/);
+});
+
+// bay checks the declared health of a service before it returns from up. Each check runs the program of its server over TCP:
+// the temporary server of the initialization of each image listens on its socket alone, so a check over the socket would
+// pass before the accounts exist.
+test('each service declares a health check that asks its server over TCP in the container', async t => {
+  const staged = stage(t, 'Linux', { engine: 'docker' });
+  await script(staged, writes(path.join(staged.directory, 'variables')));
+  const composed = staged.composed();
+  assert.ok(composed !== undefined, 'bay up did not run');
+  assert.deepEqual(composed.match(/^ {6}test: .*$/gm), [
+    '      test: ["CMD", "pg_isready", "--host=127.0.0.1", "--port=5432", "--username=fsm", "--dbname=fsm_test"]',
+    '      test: ["CMD", "mysqladmin", "ping", "--protocol=tcp", "--host=127.0.0.1", "--port=3306"]',
+  ]);
+  assert.equal(composed.match(/^ {4}healthcheck:$/gm)?.length, 2);
+  for (const declared of ['      interval: "1s"', '      timeout: "5s"', '      retries: 300']) {
+    assert.equal(composed.split('\n').filter(line => line === declared).length, 2, `each service does not declare ${declared.trim()}`);
+  }
+  assert.doesNotMatch(composed, /--socket|--protocol=socket|start_period|disable/);
 });
 
 test('a bay up that fails fails the run with the last lines of each service, without the command, and the project is removed', async t => {
