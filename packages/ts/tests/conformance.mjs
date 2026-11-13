@@ -1,22 +1,30 @@
 // The common suite of the legacy tests, contracts/conformance/vectors.json, with its expectations on a binding of fsm (plan f6,
-// step 7a-1; docs/plans/fsm-v1/checklist.md, S-461): conformance.test.mjs runs it against the Node binding. FSM_CONTRACTS is the
-// path of the folder contracts; make test-node-conformance sets it. Each machine is Machine.parse of its file and the reserved
-// codes of its lock entry. A state and an event are their keys; a raw code of a vector (value, expected_value, actual_value) goes
-// through key first, as the legacy tests send it through fromCode. An error is compared by the kind of the core that the B-6 code
-// of the vector names, and by the fields expected, actual and event of the vector (null where the field does not apply), as the
-// legacy tests compare them. The persist vectors are the cases of step 7p, which binds the store.
+// step 7a-1; docs/plans/fsm-v1/checklist.md, S-461): conformance.test.mjs runs it against the Node binding. FSM_CONTRACTS is
+// the path of the folder contracts; make test-node-conformance sets it. Each machine is Machine.parse of its file and the
+// reserved codes of its lock entry. A state and an event are their keys; a raw code of a vector (value, expected_value,
+// actual_value) goes through key first, as the legacy tests send it through fromCode. An error is compared by its kind and by
+// the fields expected, actual and event of the vector (null where the field does not apply), as the legacy tests compare them;
+// the kind is the one that the mapping table contracts/conformance/changes.json gives for the vector (docs/spec/fsm.md,
+// FSM-B7-6). The persist vectors are the cases of step 7p, which binds the store.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
-/** The kind of the core for each B-6 code of the vectors (docs/spec/fsm.md, B-7). */
-const KINDS = {
-  E_CONFLICT: 'conflict',
-  E_INVALID_TRANSITION: 'invalid_transition',
-  E_UNKNOWN_CODE: 'unknown_code',
-  E_RESERVED_CODE: 'reserved_code',
+/** The largest integer of the contract int: the same value in every target (docs/spec/fsm.md, B-7). */
+const INT_MAX = 2 ** 53 - 1;
+
+/** The predicates of the rows of contracts/conformance/changes.json, by name. */
+const PREDICATES = {
+  input_not_int: (vector) => vector.input_type !== undefined || Math.abs(Number(vector.input)) > INT_MAX,
 };
+
+/** The kind of the binding in the place of the error of `vector`: the first row of the mapping table `rows` that applies. */
+function kindOf(rows, vector) {
+  const row = rows.find(({ from }) => from.error === vector.expect.error && (from.when === undefined || PREDICATES[from.when](vector)));
+  assert.ok(row !== undefined, `no row of contracts/conformance/changes.json maps ${vector.expect.error} of ${vector.id}`);
+  return row.to.kind;
+}
 
 /** The input of a from_code vector as the legacy npm test decodes it (legacy/packages/js/tests/conformance.test.mjs, inputOf). */
 function inputOf(vector) {
@@ -39,19 +47,23 @@ function errorOf(call) {
   return assert.fail('the call must throw');
 }
 
-/** Asserts that an error has the kind of the B-6 code of `expect` and the fields of `expect` (null where the field does not apply). */
-function assertFields(error, expect) {
+/**
+ * Asserts that an error has the kind that the mapping table gives for `vector` and the fields of its expectation (null where
+ * the field does not apply).
+ */
+function assertFields(rows, error, vector) {
+  const expect = vector.expect;
   assert.deepEqual(
     { kind: error.kind, expected: error.expected ?? null, actual: error.actual ?? null, event: error.event ?? null },
-    { kind: KINDS[expect.error], expected: expect.expected, actual: expect.actual, event: expect.event },
+    { kind: kindOf(rows, vector), expected: expect.expected, actual: expect.actual, event: expect.event },
   );
 }
 
-/** Runs the vector `vector` on `machine`, an instance of Machine. */
-function check(machine, vector) {
+/** Runs the vector `vector` on `machine`, an instance of Machine, with the mapping table `rows`. */
+function check(rows, machine, vector) {
   const expect = vector.expect;
   const fails = typeof expect === 'object' && expect !== null && expect.error !== undefined;
-  const run = (call, compare) => (fails ? assertFields(errorOf(call), expect) : compare(call()));
+  const run = (call, compare) => (fails ? assertFields(rows, errorOf(call), vector) : compare(call()));
   switch (vector.feature) {
     case 'initial':
       return assert.equal(machine.initial(), expect.state);
@@ -82,12 +94,13 @@ export function runVectors(fsm) {
   const contracts = process.env.FSM_CONTRACTS;
   const { machines } = JSON.parse(readFileSync(path.join(contracts, 'conformance/vectors.json'), 'utf8'));
   const lock = JSON.parse(readFileSync(path.join(contracts, 'fsm.lock.json'), 'utf8'));
+  const { rows } = JSON.parse(readFileSync(path.join(contracts, 'conformance/changes.json'), 'utf8'));
   let count = 0;
   for (const { machine: name, cases } of machines) {
     const definition = readFileSync(path.join(contracts, `machines/${name}.fsm.json`), 'utf8');
     for (const vector of cases.filter((item) => item.feature !== 'persist')) {
       count += 1;
-      test(vector.name, () => check(fsm.Machine.parse(definition, lock[name].reserved), vector));
+      test(vector.name, () => check(rows, fsm.Machine.parse(definition, lock[name].reserved), vector));
     }
   }
   assert.ok(count > 0, 'the vectors hold cases');

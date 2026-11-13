@@ -4,9 +4,10 @@
 // fsm (plan f6, step 7a-1; docs/plans/fsm-v1/checklist.md, S-462): the checks of
 // legacy/packages/php/tests/ConformanceCase.php on the class Polyspec\Fsm\Machine of the extension. Each machine is
 // Machine::parse of its file and the reserved codes of its lock entry. A state and an event are their keys; a raw code
-// of a vector goes through key first, as the legacy test sends it through fromCode. An error is compared by the kind of
-// the core that the B-6 code of the vector names, and by the fields expected, actual and event (null where the field
-// does not apply). The persist vectors are the cases of step 7p, which binds the store.
+// of a vector goes through key first, as the legacy test sends it through fromCode. An error is compared by its kind,
+// the one that the mapping table contracts/conformance/changes.json gives for the vector (docs/spec/fsm.md, FSM-B7-6),
+// and by the fields expected, actual and event (null where the field does not apply), the methods of the error class
+// machine_error (FSM-B7-5). The persist vectors are the cases of step 7p, which binds the store.
 
 namespace Polyspec\FsmBindingTest;
 
@@ -16,13 +17,8 @@ use Polyspec\Fsm\Machine;
 
 final class ConformanceTest extends TestCase
 {
-    /** The kind of the core for each B-6 code of the vectors (docs/spec/fsm.md, B-7). */
-    private const KINDS = [
-        'E_CONFLICT' => 'conflict',
-        'E_INVALID_TRANSITION' => 'invalid_transition',
-        'E_UNKNOWN_CODE' => 'unknown_code',
-        'E_RESERVED_CODE' => 'reserved_code',
-    ];
+    /** The largest integer of the contract int: the same value in every target (docs/spec/fsm.md, B-7). */
+    private const INT_MAX = 9007199254740991;
 
     /**
      * The folder contracts of the repository: the nearest parent folder of the test that holds
@@ -93,27 +89,64 @@ final class ConformanceTest extends TestCase
     }
 
     /**
-     * Asserts that `$call` throws an error with the kind of the B-6 code of `$expect` and the fields of `$expect`.
+     * Whether the predicate `$name` of a row of contracts/conformance/changes.json holds for the vector `$case`:
+     * input_not_int is a from_code input that is no value of the contract int (an input_type, or an integer outside
+     * ±(2^53 − 1)).
      *
-     * @param array<string, mixed> $expect
+     * @param array<string, mixed> $case
      */
-    private static function assertError(array $expect, callable $call): void
+    private static function holds(string $name, array $case): bool
     {
+        return match ($name) {
+            'input_not_int' => array_key_exists('input_type', $case) || abs((float) $case['input']) > self::INT_MAX,
+            default => throw new \RuntimeException(
+                "the predicate {$name} of contracts/conformance/changes.json is not known",
+            ),
+        };
+    }
+
+    /**
+     * The kind of the binding in the place of the error of `$case`: the first row of the mapping table that applies
+     * (docs/spec/fsm.md, FSM-B7-6).
+     *
+     * @param array<string, mixed> $case
+     */
+    private static function kind(array $case): string
+    {
+        foreach (self::json(self::contracts() . '/conformance/changes.json')['rows'] as $row) {
+            $from = $row['from'];
+            $applies = !isset($from['when']) || self::holds($from['when'], $case);
+            if ($from['error'] === $case['expect']['error'] && $applies) {
+                return $row['to']['kind'];
+            }
+        }
+        self::fail("no row of contracts/conformance/changes.json maps {$case['expect']['error']} of {$case['id']}");
+    }
+
+    /**
+     * Asserts that `$call` throws an error with the kind that the mapping table gives for `$case` and the fields of its
+     * expectation.
+     *
+     * @param array<string, mixed> $case
+     */
+    private static function assertError(array $case, callable $call): void
+    {
+        $expect = $case['expect'];
         try {
             $call();
         } catch (\Throwable $error) {
             self::assertSame(
                 [
-                    'kind' => self::KINDS[$expect['error']],
+                    'kind' => self::kind($case),
                     'expected' => $expect['expected'],
                     'actual' => $expect['actual'],
                     'event' => $expect['event'],
                 ],
                 [
                     'kind' => method_exists($error, 'kind') ? $error->kind() : $error::class,
-                    'expected' => $error->expected ?? null,
-                    'actual' => $error->actual ?? null,
-                    'event' => $error->event ?? null,
+                    'expected' => method_exists($error, 'expected') ? $error->expected() : null,
+                    'actual' => method_exists($error, 'actual') ? $error->actual() : null,
+                    'event' => method_exists($error, 'event') ? $error->event() : null,
                 ],
             );
             return;
@@ -133,9 +166,9 @@ final class ConformanceTest extends TestCase
         $machine = Machine::parse($definition, $reserved);
         $expect = $case['expect'];
         $fails = is_array($expect) && array_key_exists('error', $expect);
-        $run = static function (callable $call, callable $compare) use ($fails, $expect): void {
+        $run = static function (callable $call, callable $compare) use ($fails, $case): void {
             if ($fails) {
-                self::assertError($expect, $call);
+                self::assertError($case, $call);
             } else {
                 $compare($call());
             }
