@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 82d4e349d2fdd5a3e19f9824c9acffbea70066af6c64b4db8344ff6401c871ad -->
+<!-- source-sha256: 7b19d59be9d9729c30b36256ff30e9a07992d8cb16389a443c0b0c837d3d28a3 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- checklist에 열린 행 S-472가 있고, 그 실패하는 시험이 tree에 있다. `make workflows-test`가 실행하는 `tests/workflows/rules.test.mts`는 추적되는 workflow와 Makefile에서 polyspec 저장소의 GitHub workflow 규칙을 읽는다(runner `ubuntu-26.04-arm`, 릴리스를 적고 전체 commit으로 고정한 action, `timeout-minutes` 없음, `run` step마다 make target 하나, workflow `ci`의 trigger, 마지막 job `ci-passed`, `services` 블록 없음). `make workflows-test`는 10개 통과, 1개 실패에 finding 27개다. `ci-pipeline.yml` 16개, `ci.yml` 4개, `release.yml` 4개, `pages.yml` 1개, bootstrap action 2개다. workflow는 아직 바꾸지 않았으므로 이 target은 S-472가 끝날 때까지 실패한다.
 - 저장소가 자기 라이선스의 본문을 갖는다(S-471). `LICENSE`는 polyspec 저장소의 저작권 줄 `Copyright (c) 2026 Polyspec`을 쓴 MIT 라이선스다. 이전에는 `package.json`, `packages/gui/package.json`, `packages/ts/package.json`, `packages/php-ext/composer.json`이 라이선스 `MIT`를 적었고, 어떤 추적 파일도 그 본문을 갖지 않았다. `config/layout.kit.yml`이 루트의 이 파일을 허용하고, `make name-check`의 규칙이 이 파일을 소유한다. 라이선스의 본문을 읽는 검사는 없으므로 이 변경에는 실패하는 Red가 없다. `make owner-validate`(경로 374개), `make layout-check`, `make owner-check PATHS=LICENSE`로 확인했다.
 - S-469가 commit 이름을 뺀 항목이 사실을 직접 적는다(S-469-1). 이전에는 영어 변경 기록의 9개 줄이 binding을 `the binding of that run`으로, 항목 2개가 `a newer commit of binding`으로, 항목 1개가 `the commit of the change`로 적었고, 한국어 변경 기록은 그 문장에서 `binding`만 적었다. 이제 각 항목은 binding을 `Cargo.lock`이 고정한 것으로, 또는 그 binding이 생성하는 것(Go target, Go의 class unit, GN-13g)으로 적고, tree를 commit된 tree로 적고, CK-20을 그 finding으로 적는다. 곧 `Cargo.lock`의 고정이 검사를 실행하는 binding의 commit이 아니라는 것이다. S-461의 suite 항목은 binding의 commit 하나를 적고 있었는데, 이름 뒤에 `:`가 와서 `make commit-names-check`가 보고하지 않았다. 그 항목은 이제 commit을 적지 않는다. `CHANGELOG.md`의 문장 15개, `CHANGELOG.ko.md`의 문장 16개, `docs/plans/fsm-v1`의 각 checklist의 문장 2개가 바뀌었다. Red: `make text-absent`가 첫 문구를 9개 줄에서, S-461 항목의 commit을 1개 줄에서 찾았다. 각 문구에 대한 `make text-absent`, `make commit-names-check`, `make docs-check`로 확인했다.
 - checklist에 열린 행 S-470이 있다. release가 바인딩 package(PIE 확장 `polyspec/fsm`, wheel `polyspec-fsm`, npm package `@polyspec/fsm`과 그 플랫폼 package, Rust crate의 tag, Go module)를 담으며, kit 0.0.111과 Go module의 tag 형태를 기다린다. `config/release.json`의 `notReleased`에 있는 코어 crate와 바인딩 package의 각 manifest 사유가 그 행과 조건을 적는다. `make release-coverage`와 `make docs-check`로 확인했다.
