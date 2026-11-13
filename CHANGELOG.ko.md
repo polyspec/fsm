@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 86f5356d71f10d7a067d7d10bafdcfa46eda4f12a3812716e517dc84bb9ee6e4 -->
+<!-- source-sha256: f403dba8ae854bb38f38dc3e8723b5bda86b3e0a732cefde5bc7198009a09fcb -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- PHP와 Python의 legacy suite가 PHP·Python 바인딩 시험이 쓰는 decode를 시험한다: vector의 모든 `from_code` 입력에서, string 입력이면 그 텍스트, 아니면 텍스트의 JSON 값이 legacy 시험이 decode하는 값과 타입까지 같다(`testJsonValueOfEveryInputIsItsDecodedValue`, `test_json_value_of_every_input_is_its_decoded_value`). `make legacy-test-php`와 `make legacy-test-python`은 각각 295개를 통과한다 (S-462).
 - `Cargo.lock`이 polyspec-binding-core를 f63a655 대신 binding commit ae511fd로 고정하고, 추적하는 `packages/{ts,ts/wasm,python,php-ext,go/internal/ffi}`의 binding scaffold는 binding ae511fd가 쓰는 것이다: 각 바인딩 crate는 workspace의 lint를 받는다(`[lints] workspace = true`). `binding check`가 아무것도 보고하지 않으므로 CK-19(scaffold)와 CK-20(pin)은 더 실패하지 않고, 다섯 바인딩 manifest에서 `lint-cargo-lints`가 실패하던 `make layout-check`도 통과한다. 새 pin에서 `make test-rust`는 533개를 통과하고 `make lint-rust`도 통과한다 (S-457).
 - `contracts/conformance/changes.json`은 계획 f6 단계 2의 대응표다(FSM-B7-6): legacy vector의 각 오류를 바인딩의 kind로 대응시키며, 각 B-6 code는 같은 이름의 kind로, 계약 `int`의 값이 아닌 `from_code` 입력의 `E_UNKNOWN_CODE`는 `invalid_number`로 대응시킨다(계획 f2 FP-7). S-461의 vector 25개가 `invalid_number`를 낸다. Node, PHP, Python 바인딩의 runner는 vector의 기대 kind를 이 표에서 읽고, 어느 행도 대응시키지 않는 오류의 vector를 실패시킨다. PHP runner는 `machine_error`의 field를 그 method로 읽는다 (S-466).
 - `conflict`, `invalid_transition`, `unknown_code`, `reserved_code`의 바인딩 오류에는 코어 오류가 갖고 legacy `fsm.Error`가 주던 field `expected`, `actual`, `event`가 없어, S-461의 vector 69개가 그 때문에 실패했다. 계약은 읽기 전용 property `expected`, `actual`, `event`(optional int)를 가진 error unit `machine_error`를 선언하고, 네 kind가 그것을 class로 이름하며, 코어 오류가 세 값을 준다(`Error::expected`, `Error::actual`, `Error::event`; FSM-B7-5). binding 1bf0025는 이것을 php, python, node, wasm에 생성하고 go에서는 거부한다: "machine_error: an error unit is not generated for go yet (E-2, E-7)" (S-465).

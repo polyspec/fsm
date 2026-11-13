@@ -270,5 +270,24 @@ for entry in vectors:
         )
 
 
+class InputDecodingTest(unittest.TestCase):
+    """The decoding of the test of the Python binding (packages/python/tests/test_conformance.py) against input_of."""
+
+    def test_json_value_of_every_input_is_its_decoded_value(self):
+        """For every from_code input, the text of a string input and else the JSON value of its text is input_of, type included."""
+        inputs = [
+            case for entry in vectors for case in entry["cases"] if "input" in case
+        ]
+        self.assertGreater(len(inputs), 0, "the vectors hold from_code inputs")
+        for case in inputs:
+            value = (
+                case["input"]
+                if case.get("input_type") == "string"
+                else json.loads(case["input"])
+            )
+            decoded = input_of(case)
+            self.assertEqual((type(decoded), decoded), (type(value), value), case["id"])
+
+
 if __name__ == "__main__":
     unittest.main()

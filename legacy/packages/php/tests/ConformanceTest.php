@@ -72,6 +72,30 @@ final class ConformanceTest extends ConformanceCase
      *
      * @param array<string, mixed> $case
      */
+    /**
+     * The decoding of the test of the PHP binding (packages/php-ext/tests/ConformanceTest.php) against decoded: for
+     * every from_code input, the text of a string input and else the JSON value of its text is the decoded input, type
+     * included.
+     */
+    public function testJsonValueOfEveryInputIsItsDecodedValue(): void
+    {
+        $count = 0;
+        $vectors = json_decode((string) file_get_contents(self::vectorsFile()), true, 512, JSON_THROW_ON_ERROR);
+        foreach ($vectors['machines'] as $entry) {
+            foreach ($entry['cases'] as $case) {
+                if (!array_key_exists('input', $case)) {
+                    continue;
+                }
+                $value = ($case['input_type'] ?? null) === 'string'
+                    ? $case['input']
+                    : json_decode($case['input'], false, 512, JSON_THROW_ON_ERROR);
+                self::assertSame($value, self::decoded($case)['input'], $case['id']);
+                $count++;
+            }
+        }
+        self::assertGreaterThan(0, $count, 'the vectors hold from_code inputs');
+    }
+
     #[DataProvider('cases')]
     // FSM-B4-5: every apply case of the vector file gives the result of the B-4 table (docs/spec/fsm.md).
     public function testConformance(string $machine, array $case): void
