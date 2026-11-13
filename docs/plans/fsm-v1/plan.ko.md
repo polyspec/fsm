@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: c2ba0123daf80cf301940b5124f5b900508cd4db47a3309bc26f3e1558c7ffe7 -->
+<!-- source-sha256: 758f588d1b5254330c2727dd728167bed8f30f10f7fb4c82850b8d14a3c4ec0b -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -267,35 +267,21 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - 테스트(S-37): `make db-test`는 패키지의 모든 테스트를 SQLite에서 실행한다. `make db-test-postgres`와 `make db-test-mysql`은 `tests/db-store.test.mjs`, `tests/store-contract-all.test.mjs`, `tests/cli.test.mjs`와 `tests/command.test.mjs`를 PostgreSQL과 MySQL에서 실행한다. 두 파일은 `tests/dialect.mjs`로 database를 연다. `FSM_TEST_DIALECT`가 dialect를 고른다(기본 `sqlite`, `postgres` 또는 `mysql`). `FSM_TEST_PG_DSN`과 `FSM_TEST_MYSQL_DSN`이 database를 가리키며, DSN이 없으면 throw하므로 target이 실패하고 case를 건너뛰지 않는다. 각 파일은 schema를 설치하고(database가 이미 schema를 가지면 install은 아무것도 바꾸지 않는다) case 전에 여섯 table을 비우므로, case는 자신이 쓴 것만 읽는다. 파일들은 서버를 공유하므로 `--test-concurrency=1`로 실행한다. CLI와 command 테스트는 자기 빈 database를 쓴다(다음 항목).
 - 빈 database(S-37-2, 결정): CLI와 command 테스트는 fsm table이 없는 database가 필요하며, 공유 서버에는 그런 database가 없다. case마다 자신의 빈 database를 쓴다. SQLite에서는 case의 임시 디렉터리에 있는 새 파일이다. PostgreSQL과 MySQL에서는 `createEmptyDatabase`(`packages/db/tests/dialect.mjs`)가 admin DSN(`FSM_TEST_PG_ADMIN_DSN` 또는 `FSM_TEST_MYSQL_ADMIN_DSN`, 로컬에서는 `postgres://fsm@127.0.0.1:55432/fsm_test?sslmode=disable`와 `mysql://root@127.0.0.1:33306/mysql`)을 통해 `fsm_test_<pid>_<time>_<random>` 이름의 database를 만든다. PostgreSQL은 `FSM_TEST_PG_DSN`의 사용자를 새 database의 owner로 두고, MySQL은 `FSM_TEST_MYSQL_DSN`의 사용자 각 account(`mysql.user`에서 찾는다)에 그 database의 모든 권한을 준다. case는 자기 dialect의 DSN에 새 database를 경로로 넣어 연결하므로, 서버와 사용자는 변수의 것 그대로다. 파일의 `after` hook이 자기가 만든 database를 모두 지운다(PostgreSQL에서는 `DROP DATABASE ... WITH (FORCE)`). orm이 주지 않는 문(부분 schema의 `DROP TABLE`)은 dialect의 driver로 실행한다(`runStatement`). driver는 fsm-db의 devDependencies `pg` 8.23.1과 `mysql2` 3.24.5이며, orm v0.0.7이 쓰는 버전이다. 검토했으나 택하지 않은 방법: 파일마다 database 하나(case가 table을 바꾸므로 case마다 빈 database가 필요하다), case 전에 여섯 table을 지우기(install case는 table이 없어야 하고 orm에는 drop이 없다), case마다 schema 하나(MySQL에는 database 아래 schema가 없다). 테이블 없음 검사는 각 메시지에 있는 인용된 table 이름 `machine`을 확인한다. 테스트의 PostgreSQL 서버가 메시지를 한국어로 쓰기 때문이다.
 - 로컬 서버(S-37, 이 항목의 실행): PostgreSQL 17.11(`initdb`, `pg_ctl`, 실행마다 data 디렉터리와 socket 디렉터리)과 MySQL 8.4.11(`mysqld --initialize-insecure`, `--daemonize`)을 각각 포트 55432와 33306에 띄웠다. database는 `fsm_test`, 사용자는 `fsm`이다. DSN은 `postgres://fsm@127.0.0.1:55432/fsm_test?sslmode=disable`와 `mysql://fsm:fsm@127.0.0.1:33306/fsm_test`였다. 실행 뒤 서버를 멈추고 data 디렉터리를 지웠다.
-- S-21을 위한 CI service(`make install`과 `make check`를 실행하는 job에 복사할 줄; 이미지는 위 버전이다):
-```yaml
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_USER: fsm
-          POSTGRES_PASSWORD: fsm
-          POSTGRES_DB: fsm_test
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd "pg_isready -U fsm -d fsm_test"
-          --health-interval 5s --health-timeout 5s --health-retries 10
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_USER: fsm
-          MYSQL_PASSWORD: fsm
-          MYSQL_DATABASE: fsm_test
-        ports: ['3306:3306']
-        options: >-
-          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval 5s --health-timeout 5s --health-retries 10
-    env:
-      FSM_TEST_PG_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
-      FSM_TEST_MYSQL_DSN: mysql://fsm:fsm@127.0.0.1:3306/fsm_test
-      FSM_TEST_PG_ADMIN_DSN: postgres://fsm:fsm@127.0.0.1:5432/fsm_test?sslmode=disable
-      FSM_TEST_MYSQL_ADMIN_DSN: mysql://root:root@127.0.0.1:3306/mysql
+- CI와 `make check`의 서버(S-472-1, 결정): 테스트의 PostgreSQL과 MySQL 서버는 make target 하나가 소유하는 container에서 실행하고, job `check`에는 `services` 블록이 없다. 머신에 설치된 서버는 쓰지 않는다.
+  - pin: `config/containers.json`이 두 이미지를 index의 digest로 고정한다. `docker.io/library/postgres`는 17.11, `docker.io/library/mysql`은 8.4.11이고, 위 로컬 서버의 release와 같다. 이 파일은 각 pin의 이유와 제거 조건을 적는다. 이미지와 digest는 두 플랫폼에서 하나이므로, 두 플랫폼의 테스트가 같은 바이트의 서버에 연결한다.
+  - 프로그램: `scripts/container.sh`가 container 프로그램의 명령을 가진다. 프로그램은 플랫폼만으로 정한다. Darwin은 Apple `container`, Linux는 `docker`다. 어떤 변수도 프로그램을 고르지 않는다. PATH에 없는 프로그램은 모든 동사를 즉시 실패시키고, 프로그램의 이름과 설치 방법을 적는다. 동사는 `program`, `pull`, `present`, `run`, `delete`, `inspect`다.
+  - 이미지: `make persist-images`가 두 이미지를 pull하며, 이미지를 내려받는 target은 이것뿐이다. 설치되지 않은 이미지로 시작한 실행은 container를 시작하기 전에 실패하고 `make persist-images`를 적는다.
+  - 실행: `make persist-servers TARGETS="..."`는 `scripts/persist-servers.mts run -- make ci-targets`를 실행한다. script는 두 서버를 각각의 container에서 attach 상태로 시작한다. container 이름은 실행의 process id와 무작위 4바이트를 가진 `fsm-persist-<pid>-<random>-postgres`와 `fsm-persist-<pid>-<random>-mysql`이므로, 한 머신의 두 실행이 container를 공유하지 않는다. 포트는 게시하지 않는다.
+  - 준비: script는 각 container의 출력을 줄 단위로 읽고, 이미지가 초기화를 끝낸 뒤 서버가 연결을 받는다고 적는 줄에서 다음으로 넘어간다. `PostgreSQL init process complete` 다음의 `database system is ready to accept connections`, 그리고 `MySQL init process done` 다음의 `port: 3306`이 있는 `ready for connections`다. 각 쌍의 첫 줄이 필요한 이유는 이미지가 초기화를 위해 임시 서버를 띄우고 그 서버도 둘째 줄을 적기 때문이다. sleep도 polling도 시간 제한도 없다. 준비 줄 전에 멈춘 container는 출력의 마지막 줄들과 함께 target을 실패시킨다.
+  - 주소: script는 프로그램의 `inspect`가 출력하는 JSON에서 각 container의 주소를 읽는다. docker는 `NetworkSettings.Networks.<network>.IPAddress`, Apple `container`는 prefix 길이를 뺀 `status.networks[].ipv4Address`다. DSN은 그 주소와 container 안 서버의 포트를 적는다.
+  - account는 이미지가 container의 환경에서 만드는 것이다. PostgreSQL은 `POSTGRES_USER=fsm`, `POSTGRES_PASSWORD=fsm`, `POSTGRES_DB=fsm_test`이므로 `fsm`은 `createEmptyDatabase`가 만드는 database의 owner가 되는 superuser다. MySQL은 `MYSQL_ROOT_PASSWORD=root`, `MYSQL_USER=fsm`, `MYSQL_PASSWORD=fsm`, `MYSQL_DATABASE=fsm_test`이고, account `root`와 `fsm`은 모든 host에서 연결한다.
+  - 끝: script는 아래 네 변수와 함께 명령을 실행하고, SIGINT와 SIGTERM을 명령에 전달하고, 명령이 끝나거나 실패할 때와 실행이 두 signal 중 하나를 받을 때 두 container를 제거한다. 서버를 시작하는 중에 받은 signal에도 제거한다. 종료 상태는 명령의 종료 상태이고, 두 signal에는 130과 143이다.
+  - `make check`와 `make ci-suite`는 `make persist-servers`를 통해 target을 실행한다. 테스트는 `tests/container`(`make container-test`)와 `tests/persist-servers`(`make persist-servers-test`)다. 각 테스트는 자신이 쓴 `uname`, `docker`, `container` 대역 프로그램으로 script를 실행하므로 container runtime이 필요 없다.
+```text
+FSM_TEST_PG_DSN=postgres://fsm:fsm@<address of the PostgreSQL container>:5432/fsm_test?sslmode=disable
+FSM_TEST_PG_ADMIN_DSN=postgres://fsm:fsm@<address of the PostgreSQL container>:5432/fsm_test?sslmode=disable
+FSM_TEST_MYSQL_DSN=mysql://fsm:fsm@<address of the MySQL container>:3306/fsm_test
+FSM_TEST_MYSQL_ADMIN_DSN=mysql://root:root@<address of the MySQL container>:3306/mysql
 ```
 - npm의 동시성과 persist 테스트(`make npm-persist-test`, `-postgres`, `-mysql`)는 같은 변수를 읽는다. 그 결정은 C-4에 적었다.
 
@@ -370,15 +356,15 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 ### C-10. CI와 Pages(S-21)
 - `.github/workflows/ci.yml`은 main의 모든 push와 수동 실행(workflow_dispatch)에서 돈다. job `check`는 모든 workflow의 모든 job과 같이 ubuntu-26.04-arm에서 실행되며(S-472. orm의 PHP client는 SQLite 3.46을 요구하는데 ubuntu-24.04의 PHP는 시스템 SQLite 3.45.1에 연결되어 CI run 38120456615에서 php persist case가 `CAPABILITY_UNSUPPORTED`로 실패했다. ubuntu-26.04는 SQLite 3.46.1에 연결한다) `make install`을 실행하고, 그다음 `make ci-targets`로 CHECK_TARGETS의 검사를 실행한다. 검사 전에 `make gui-browser-libraries`를 실행하며, 이 target은 `packages/gui`의 `playwright install-deps chromium`을 sudo로 실행한다(`gui-browser-test`가 구동하는 Chromium의 시스템 라이브러리다. 브라우저 자체는 검사가 `gui-browsers`로 설치한다).
   pipeline의 job도 같은 runner에서 돈다. config/ci.json도 그 runner ubuntu-26.04-arm을 선언하며, 이 image는 PHP에 시스템 SQLite 3.46.1을 연결한다. orm이 PHP job에 선언한 것과 같다 (orm docs/plans/execution/checklist.ko.md, G5.8; S-391).
-- workflow의 규칙(S-472): `ci.yml`, `ci-pipeline.yml`, `release.yml`, `pages.yml`의 모든 job은 ubuntu-26.04-arm에서 실행한다. 모든 action은 local action이거나, 릴리스를 적은 주석과 함께 전체 commit으로 고정한다. 어떤 job도 `timeout-minutes`를 두지 않는다. workflow와 bootstrap action의 모든 `run` step은 `Makefile`의 make target 하나다. Makefile의 설정이 CI의 모든 명령에 적용되어야 하기 때문이다. shell 명령을 실행하던 step은 그 target을 실행한다. `make bootstrap`(`devEngines`의 npm으로 lock의 package를 설치한다), `make gui-browser-libraries`, `make release-zip`, `make release-checkout`, 그리고 환경의 TAG를 읽는 `make release-undraft`다. step의 명령은 인자 안에 expression을 두지 않는다. expression이 주는 값, 곧 pipeline의 plan이 주는 도구와 target, matrix의 runtime은 그 step만의 환경 변수(`TOOLS`, `TARGETS`, `RUNTIME`)이고, make가 그것을 같은 이름의 변수로 읽는다. runtime job은 runner를 직접 적고 plan에서 읽지 않는다. 첫 검사 step 뒤의 검사 step은 `if: ${{ !cancelled() }}`로 실행한다. `ci.yml`의 마지막 job은 `ci-passed`다. 이 job은 다른 모든 job 뒤에, 실패한 job 뒤에도 실행하고, 각 job을 needs에 두고, needs의 JSON인 RESULTS와 함께 `make ci-passed FAIL_SKIPPED=1`을 실행하므로, 다른 모든 job이 성공했을 때만 통과한다. pipeline의 job `required`는 같은 target으로 `shared`와 `runtime`을 판정한다. `tests/workflows/rules.test.mts`가 뒤 step의 조건을 뺀 이 규칙들을 검사하고, `make workflows-test`가 그것을 실행한다. 한 부분이 열려 있다. job `check`의 `services` 블록(S-472-1)이다.
-- job은 PostgreSQL 17과 MySQL 8.4를 서비스로 띄우고 `FSM_TEST_*` 변수 네 개를 설정한다. 서비스와 env는 C-6의 yaml 블록을 그대로 옮긴 것이다. `make workflows-test`가 job에 그 블록이 있는지 확인하므로 계획과 워크플로가 어긋나지 않는다.
+- workflow의 규칙(S-472): `ci.yml`, `ci-pipeline.yml`, `release.yml`, `pages.yml`의 모든 job은 ubuntu-26.04-arm에서 실행한다. 모든 action은 local action이거나, 릴리스를 적은 주석과 함께 전체 commit으로 고정한다. 어떤 job도 `timeout-minutes`를 두지 않는다. workflow와 bootstrap action의 모든 `run` step은 `Makefile`의 make target 하나다. Makefile의 설정이 CI의 모든 명령에 적용되어야 하기 때문이다. shell 명령을 실행하던 step은 그 target을 실행한다. `make bootstrap`(`devEngines`의 npm으로 lock의 package를 설치한다), `make gui-browser-libraries`, `make release-zip`, `make release-checkout`, 그리고 환경의 TAG를 읽는 `make release-undraft`다. step의 명령은 인자 안에 expression을 두지 않는다. expression이 주는 값, 곧 pipeline의 plan이 주는 도구와 target, matrix의 runtime은 그 step만의 환경 변수(`TOOLS`, `TARGETS`, `RUNTIME`)이고, make가 그것을 같은 이름의 변수로 읽는다. runtime job은 runner를 직접 적고 plan에서 읽지 않는다. 첫 검사 step 뒤의 검사 step은 `if: ${{ !cancelled() }}`로 실행한다. `ci.yml`의 마지막 job은 `ci-passed`다. 이 job은 다른 모든 job 뒤에, 실패한 job 뒤에도 실행하고, 각 job을 needs에 두고, needs의 JSON인 RESULTS와 함께 `make ci-passed FAIL_SKIPPED=1`을 실행하므로, 다른 모든 job이 성공했을 때만 통과한다. pipeline의 job `required`는 같은 target으로 `shared`와 `runtime`을 판정한다. `tests/workflows/rules.test.mts`가 뒤 step의 조건을 뺀 이 규칙들을 검사하고, `make workflows-test`가 그것을 실행한다. 어떤 job에도 `services` 블록이 없다(S-472-1).
+- job `check`에는 `services` 블록이 없고 `FSM_TEST_*` 변수도 설정하지 않는다(S-472-1). step `make persist-images`가 `config/containers.json`이 고정한 이미지를 pull하고, suite step은 make target 하나인 `make persist-servers TARGETS="..."`다. 이 target이 PostgreSQL 17과 MySQL 8.4를 container로 시작하고, `FSM_TEST_*` 변수 네 개를 target들에 전달하고, container를 제거한다(C-6). `make workflows-test`는 `services` 블록을 실패로 보고하고 두 step을 요구한다.
 - 버전은 그것을 선언하는 파일에서 온다. Node.js는 `.node-version`(setup-node), Go는 `packages/go/go.mod`(setup-go, 모듈 캐시 없음), PHP는 `config/toolchain.json`의 `php`(setup-php, 확장 `pdo_pgsql`과 `pdo_mysql`: php-ext 빌드와 영속화 테스트가 쓴다), Rust는 `rust-toolchain.toml`(channel, minimal 프로필, kit의 `lint-rust`가 실행하는 clippy component를 적으며, 인자 없는 `rustup toolchain install`이 설치한다(S-44). `RUSTUP_AUTO_INSTALL`은 `0`이다).
 - uv는 `config/toolchain.json`에 선언한다(`uv`: 정확한 release와 platform별 archive의 sha256, S-44-2). `make install`이 install-tools로 `var/tools`에 설치하며, 워크플로는 uv를 따로 설치하지 않는다. uv는 `config/toolchain.json`의 pythonBuild interpreter를 설치하고 python 패키지를 풀고 설치한다. `make workflows-test`는 그 선언을 요구하고 워크플로의 uv 설치를 거부한다.
 - 모든 action은 전체 commit으로 고정하고 버전 주석(`# vX`, 태그에 `v`가 없으면 태그 이름)을 붙인다. commit은 템플릿 저장소가 같은 버전에 대해 검증한 것이다.
-- job은 `var/full-run.json`과 `.results/`를 `!cancelled()` 조건으로 artifact에 올린다. 실패한 실행도 기록을 남긴다.
+- target을 실행하는 job은 각자 보고서를 올린다. job `check`는 `make ci-targets`의 보고서(각 target의 상태, 시간, 로그)인 `var/report/ci-targets/`를 `!cancelled()` 조건으로 artifact `fsm-report-check`에 올린다. 실패한 실행도 기록을 남기며, pipeline의 job `shared`와 `runtime`도 같은 방식이다. `make workflows-test`가 이 step을 요구한다.
 - `.github/workflows/pages.yml`은 main의 모든 push와 수동 실행에서 돈다. `VITEPRESS_BASE=/fsm/`(사이트의 base이며 `docs/.vitepress/config.mts`가 읽는다)로 `make docs-build`를 실행하고, `docs/.vitepress/dist`를 upload-pages-artifact로 올린 뒤 deploy-pages로 배포한다. 사이트는 https://polyspec.github.io/fsm/ 에 게시된다.
 - 두 워크플로는 최상위에 `permissions: contents: read`를 두고, concurrency 그룹은 실행을 취소하지 않는다. 새 push가 이전 실행을 취소하지 않는다.
-- 테스트는 `tests/workflows/`(`make workflows-test`)이다. 워크플로를 텍스트로 읽고 네트워크가 필요 없다. 모든 pin, check job의 두 make 호출, 서비스와 env, 버전, artifact, 사이트의 base와 배포를 확인한다.
+- 테스트는 `tests/workflows/`(`make workflows-test`)이다. 워크플로를 텍스트로 읽고 네트워크가 필요 없다. 모든 pin, check job의 make 호출, `services` 블록이 없음, 이미지 step과 서버 step, 버전, 보고서 artifact, 사이트의 base와 배포를 확인한다.
 
 ## D. 체크리스트와 owner 검사
 
@@ -415,7 +401,9 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
   - kit의 `layout-check`, kit의 `parity-declarations-check`와 `parity-check`
   - `compiler-test`, `db-test`, `gui-test`
   - `python-tools-test` (`tests/python-tools`: checkout의 Python. S-41: `var/tools/bin/python3`은 `install-tools`가 만들고, 인터프리터를 uv로 설치하는 recipe가 없으며, `install-python` 타깃이 없고, `config/toolchain.json`이 `pythonBuild`를 선언한다. 복사한 Makefile에서 `make -n`으로 실행하며 네트워크를 쓰지 않는다)
-  - `workflows-test`(`tests/workflows`: CI와 Pages 워크플로의 pin, 버전, 서비스, C-10, S-21)
+  - `workflows-test`(`tests/workflows`: CI와 Pages 워크플로의 pin, 버전, 규칙, C-10, S-21)
+  - `container-test`(`tests/container`: 두 플랫폼에서 `scripts/container.sh`의 명령)와 `persist-servers-test`(`tests/persist-servers`: `scripts/persist-servers.mts`의 시작, 준비 줄, DSN, 이른 종료, 제거), C-6, S-472-1
+  - `persist-images`와 `persist-servers`(PostgreSQL과 MySQL target의 이미지와 서버, C-6, S-472-1)
   - `test-<kind>`, `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
 - `check` = `node $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)`
   - `CHECK_TARGETS` = `kit-check owner-validate docs-check commits-check hooks-check toolchain-check dependency-policy-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql python-lock-check workflows-test parity-declarations-check parity-check`
