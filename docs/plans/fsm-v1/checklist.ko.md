@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: 9ba71c19ab8957d4f6567549ec425326ca34b325e2c7ada3918e377a0c902be7 -->
+<!-- source-sha256: 100547e6cf5c8b7988d81669484ea2fa12c81acd73f4826b79da10ce855dec43 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -126,3 +126,4 @@
 | S-455 | `fsm-js-test`가 `fsm-db-gen`과 db 설치를 선행 조건으로 이름한다: 그 case는 `packages/db/tests/dialect.mjs`를 import하고, 그 파일은 `fsm-db-gen`이 쓰는 model을 import하므로, model이 없는 checkout에서는 시험이 하나도 돌지 않았다 (HR-85) | `Makefile` | `make test-js` | [o] |
 | S-456 | 계획 f6 단계 3-2: package compiler, db, go, js, php, php-ext, python, rust가 `legacy/packages/`로 옮겨 가고(FP-6), 그 대상은 Go `-timeout=0`을 지킨 `legacy-<task>-<runtime>`이며(ST-38), 릴리스에서 빠지고, 모든 시험이 새 경로에서 돌고, runtime 시험은 앞 commit의 시험 수로 돈다. GUI는 단계 9a까지 `packages/gui/src/forms.mjs:10`, `packages/gui/src/handlers.mjs:11-12`, `packages/gui/src/store.mjs:9-10,41-42`, `packages/gui/tests/edit-support.mjs:9-11,17`, `packages/gui/tests/handlers.test.mjs:8`, `packages/gui/tests/mermaid-parse.test.mjs:22`에서 legacy를 읽고, `make test-php-binding`은 `legacy/packages/php-ext`의 PHPUnit에서 돈다. F5S-4의 검사가 아직 없으므로 이 행이 그 목록이다 | `Makefile`, `legacy/packages/**`, `packages/gui/**`, `config/*`, `tests/**`, `scripts/*` | `make packages-test compiler-test db-test gui-test` | [o] |
 | S-457 | 계획 f6 단계 3a: 루트 Cargo workspace와 그 lock, 코어 crate `packages/rust`의 manifest, class `machine`의 계약과 그 case(`docs/spec/fsm.md`, B-7), 추적하는 binding scaffold, 코어에서 도는 `make test-rust`, 바인딩 crate를 뺀 `make lint-rust`. polyspec-binding-core의 고정을 f63a655에서 옮기는 binding commit을 기다린다(CK-20) | `Cargo.toml`, `Cargo.lock`, `packages/rust/Cargo.toml`, `packages/rust/interface.json`, `contracts/cases.json`, `packages/{ts,python,php-ext,go}/**`, `Makefile` | `make bindings-check BINDING=<cli of binding>` | [~] |
+| S-458 | 계획 f6 단계 4: `packages/rust`의 코어 `Machine`과 `Step`(`docs/spec/fsm.md`, B-7): 정의 읽기, code, key, from_code, is_final, events_from, target, apply와 `binding_core::Kinds`를 구현한 `Error` enum | `packages/rust/src/**` | `make test-rust` | [o] |
