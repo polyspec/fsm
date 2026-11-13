@@ -3,7 +3,8 @@
 // FSM_INTERFACE the path of packages/rust/interface.json; make test-node and make test-wasm set them. A group is named
 // <unit>.<member> (binding G-5): a static member is called on the class with the case keys of its parameters, and a method on the
 // instance that the factory machine.parse gives from the case keys definition and reserved. A record result is compared by the
-// fields that the contract names.
+// fields that the contract names. An error of a kind whose row of errors.kinds names a class is an instance of that error unit,
+// and any other error an instance of the class of its category (binding E-2).
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -28,12 +29,15 @@ function plain(units, type, value, name) {
 
 const fromBinding = (value, field) => value[camel(field.name)];
 const fromCase = (value, field) => value[field.name.join('_')];
+/** The kind of a variant of errors.kinds, such as unknown_code of polyspec_fsm::Error::UnknownCode. */
+const kindOf = (variant) => variant.split('::').at(-1).replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase();
 
 /** Registers one test for each group of the cases, calling the members of the package namespace `fsm`. */
 export function runCases(fsm) {
   const contract = JSON.parse(readFileSync(process.env.FSM_INTERFACE, 'utf8'));
   const cases = JSON.parse(readFileSync(process.env.FSM_CASES, 'utf8'));
   const units = new Map(contract.units.map((unit) => [unit.id, unit]));
+  const classOfKind = new Map(contract.errors.kinds.filter((row) => row.class !== undefined).map((row) => [kindOf(row.variant), units.get(row.class)]));
   assert.ok(contract.cases.length > 0, 'the contract names its case groups');
   for (const entry of contract.cases) {
     const [unitId] = entry.member.split('.');
@@ -52,9 +56,13 @@ export function runCases(fsm) {
           return owner[camel(factory.name)](...argumentsOf(factory))[camel(member.name)](...argumentsOf(member));
         };
         if (kase.raises !== undefined) {
-          const category = kase.raises.category[0].toUpperCase() + kase.raises.category.slice(1);
+          const categoryClass = fsm[`Fsm${kase.raises.category[0].toUpperCase()}${kase.raises.category.slice(1)}Error`];
+          const errorUnit = classOfKind.get(kase.raises.kind);
+          const expected = errorUnit === undefined ? categoryClass : fsm[pascal(errorUnit.name)];
+          assert.equal(typeof expected, 'function', `the package exports the error class of ${kase.id}`);
           assert.throws(call, (error) =>
-            error.constructor === fsm[`Fsm${category}Error`] &&
+            error.constructor === expected &&
+            error instanceof categoryClass &&
             error.kind === kase.raises.kind &&
             error.status === kase.raises.status &&
             (kase.raises.message === null || error.message === kase.raises.message), kase.id);
