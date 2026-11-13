@@ -1,8 +1,9 @@
 # Continuous integration (docs/plans/fsm-v1/plan.md, C-10 and Verification; docs/plans/fsm-v1/checklist.md, S-21). The job kit calls the pipeline ci-pipeline.yml of fsm (K910), and the job check runs
 # `make install` and then `make ci-suite`, the targets of make check that the job kit does not run (S-474). The
 # job holds no block services: `make persist-images` pulls the images of PostgreSQL and MySQL that config/containers.json pins
-# by their digests, and `make persist-servers` starts both servers in docker containers of the run, passes their DSNs to the
-# targets and removes the containers (plan C-6, S-472-1). The job uploads the report of its targets. The last job ci-passed
+# by their digests, and `make persist-servers` starts both servers through bay as a Compose project of the run, passes their
+# DSNs to the targets and removes the project (plan C-6, S-472-1, S-475). No step installs bay, so the suite step fails on the
+# runner until S-475-5. The job uploads the report of its targets. The last job ci-passed
 # passes only when every other job succeeded (S-472); every job runs on ubuntu-26.04-arm, and each run step is one make target
 # (make workflows-test).
 # The versions come from the files that declare them: PHP from config/toolchain.json, Rust from rust-toolchain.toml, and

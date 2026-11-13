@@ -836,12 +836,15 @@ fsm-install: install-kit $(PACKAGE_DEPS)
 
 # persist-images pulls the images of the PostgreSQL and MySQL servers of the tests, which config/containers.json pins by their
 # digests, into the images of the container program of the platform, Apple container on Darwin and docker on Linux
-# (scripts/container.mts). It is the only target that downloads them. persist-servers runs TARGETS through make ci-targets with
-# both servers, each in a container of the run, and with the four FSM_TEST_* variables of those servers in the environment of
-# the targets; scripts/persist-servers.mts waits for the ready line of each server and removes the containers when the targets
-# end or fail and on SIGINT and SIGTERM (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1).
+# (scripts/container.mts), because bay has no command that pulls an image and starts nothing (S-475-2). It is the only target
+# that downloads them. persist-servers runs TARGETS through make ci-targets with both servers and with the four FSM_TEST_*
+# variables of those servers in the environment of the targets: scripts/persist-servers.mts writes the Compose project of the
+# run into a temporary directory of its own, starts it with bay up, whose return is the ready event, reads the address of
+# each server from the JSON of bay, and runs bay down and removes the directory when the targets end or fail and after SIGINT
+# and SIGTERM (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1, S-475). It needs bay and the container
+# program on PATH; no target installs bay (S-475-4).
 # PERSIST_MAKE names the make of the run for the recipe of persist-servers: make runs a recipe line that holds its variable
-# MAKE also in a dry run, which would start the containers, and it only prints a line that names that make through another
+# MAKE also in a dry run, which would start the servers, and it only prints a line that names that make through another
 # variable.
 .PHONY: persist-images persist-servers container-test persist-servers-test
 PERSIST_MAKE = $(MAKE)
@@ -872,20 +875,22 @@ package-names-test:
 	$(RUN_TESTS) node --results .results/package-names-test.json --inputs legacy/packages/js/package.json --inputs legacy/packages/python/pyproject.toml --inputs legacy/packages/rust/Cargo.toml --inputs tests/package-names -- --test-concurrency=1 $(or $(TESTS),tests/package-names/package-names.test.mts)
 
 # workflows-test runs the tests of the CI and Pages workflows (.github/workflows): every action is pinned to a verified commit,
-# the check job runs make install and its suite through make persist-servers, which starts the servers of plan C-6, holds no
+# the check job runs make install and its suite through make persist-servers, which starts the servers of plan C-6 through bay, holds no
 # block services and uploads its report, and each version comes from the file that declares it (docs/plans/fsm-v1/plan.md, C-10; docs/plans/fsm-v1/checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
 	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs config/owner-checks.json --inputs config/release.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs legacy/packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs .github/actions --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts tests/workflows/rules.test.mts
 
-# container-test runs the tests of scripts/container.mts (tests/container): the command of each verb on the container program
-# of each platform, Apple container on Darwin and docker on Linux, against stand-ins of the programs that the test writes, so
-# it needs no container runtime (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1).
+# container-test runs the tests of scripts/container.mts (tests/container): the command of each verb of an image on the
+# container program of each platform, Apple container on Darwin and docker on Linux, against stand-ins of the programs that
+# the test writes, so it needs no container runtime (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1,
+# S-475).
 container-test:
 	$(RUN_TESTS) node --results .results/container-test.json --inputs scripts/container.mts --inputs tests/container --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/container
 
-# persist-servers-test runs the tests of scripts/persist-servers.mts (tests/persist-servers): the start of both servers, the
-# ready line of each, the DSNs of the command, a container that stops first, the signals and the removal, against stand-ins of
-# the programs that the test writes, so it needs no container runtime (docs/plans/fsm-v1/plan.md, C-6; S-472-1).
+# persist-servers-test runs the tests of scripts/persist-servers.mts (tests/persist-servers): the Compose project of a run, bay
+# up and bay down, the addresses that bay reports in the DSNs of the command, a failed start, the signals and the removal,
+# against stand-ins of bay and of the container programs that the test writes, so it needs neither bay nor a container runtime
+# (docs/plans/fsm-v1/plan.md, C-6; S-472-1, S-475).
 persist-servers-test:
 	$(RUN_TESTS) node --results .results/persist-servers-test.json --inputs scripts/persist-servers.mts --inputs scripts/container.mts --inputs config/containers.json --inputs tests/persist-servers --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/persist-servers
 
