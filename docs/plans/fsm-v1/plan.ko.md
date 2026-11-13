@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 5c89b709388b0787d737d5cb85566779b170bf41cf08e53d29ee00df6eb32b1e -->
+<!-- source-sha256: 0c8d7d72153b4ad5adea90b2d256e40999c5d540faf21e02ff16f8009e2d896b -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -273,16 +273,16 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
   - 이미지: `make persist-images`가 플랫폼의 container 프로그램으로 두 이미지를 pull하며, 이미지를 내려받는 target은 이것뿐이다. 실행은 Compose 파일을 쓰기 전에 각 이미지가 설치되어 있는지를 그 프로그램에 묻는다. 설치되지 않은 이미지는 서버를 시작하기 전에 실행을 실패시키고 `make persist-images`를 적는다.
   - project: `make persist-servers TARGETS="..."`는 `scripts/persist-servers.mts run -- make ci-targets`를 실행한다. 실행은 시스템의 임시 디렉터리에 자기 디렉터리 `fsm-persist-<pid>-<random>`을 만든다. 이름은 실행의 process id와 무작위 4바이트를 가진다. 실행은 그 안에 파일 하나, `compose.yaml`을 쓴다. 파일의 key `name`은 그 디렉터리의 이름이다. bay는 project의 이름을 그 key에서, key가 없는 파일은 그 디렉터리에서 얻고, 이름을 적는 option이 없다(S-475-1). bay는 각 container를 `<project>-<service>`로 이름 짓는다. 그래서 한 머신의 두 실행이 project도 container도 공유하지 않는다. service는 `postgres`와 `mysql`이다. 각 service는 pin의 `image`를 digest로, account의 `environment`를, 서버의 포트 `5432`와 `3306`을 `expose`로 가진다. 파일에는 `ports`도 bay의 domain도 volume도 경로도 없다. host의 포트를 게시하지 않고, checkout의 어떤 것도 mount하지 않는다. 이 파일은 추적하지 않는다. 실행이 pin에서 파일을 쓰므로 pin의 자리는 하나다.
   - 준비: 실행은 그 디렉터리에서 `bay up`을 시작한다. bay는 각 service가 자기 포트에서 연결을 받은 뒤에 종료 코드 0으로 `up`에서 반환하고, 그 반환이 준비 이벤트다. script는 서버의 줄을 읽지 않고, 자기 sleep도 polling도 시간 제한도 갖지 않는다. script는 `bay up`이 출력하는 각 줄을 `persist-servers: bay up: <line>`으로 보여 준다. 다른 코드로 끝난 `bay up`은 실행을 실패시킨다. script는 `bay logs -n 40 <service>`가 출력하는 각 service의 마지막 40줄을 `persist-servers: <service>: <line>`으로 보여 주고 project를 제거한다. 아직 실행으로 검증하지 않은 것(S-475): 포트가 연결을 받는 서버가 query에도 답한다는 것. script는 이를 위한 대기를 더하지 않는다.
-  - 주소: DSN은 `<project>-<service>.container.test`와 container 안 서버의 포트를 적는다. 이 이름은 bay가 domain이 없는 service를 host와 다른 service에 제공하는 이름이다. `bay check`가 보고하는 bay의 머신 설정이 host에서 그 이름을 해석한다. `bay up`에는 기계가 읽는 출력이 없으므로 script는 그 규칙으로 이름을 만든다(S-475-3).
+  - 주소: DSN은 bay가 보고하는 각 service의 주소와 container 안 서버의 포트를 적는다. script는 `bay up` 뒤에 실행의 디렉터리에서 `bay status --json`을 실행하고, 배열 `groups`에서 `name`이 project인 group을, 그 배열 `services`에서 `name`이 `postgres`나 `mysql`인 service를 읽는다. 그 service의 field `address`가 bay가 domain이 없는 service를 host와 다른 service에 제공하는 이름이다. script는 그런 이름을 스스로 만들지 않고, 어떤 추적 파일도 그 형식을 갖지 않는다. 형식은 bay의 것이고 bay의 릴리스에 따라 바뀌기 때문이다. JSON에 없는 project나 service, 그리고 빈 주소는 실행을 실패시키고, 그때 실행은 project를 제거한다. `bay check`가 보고하는 bay의 머신 설정이 host에서 그 이름을 해석한다. `bay up`에 JSON 출력이 생기면 script는 거기에서 주소를 읽는다(S-475-3).
   - account는 이미지가 container의 환경에서 만드는 것이다. PostgreSQL은 `POSTGRES_USER=fsm`, `POSTGRES_PASSWORD=fsm`, `POSTGRES_DB=fsm_test`이므로 `fsm`은 `createEmptyDatabase`가 만드는 database의 owner가 되는 superuser다. MySQL은 `MYSQL_ROOT_PASSWORD=root`, `MYSQL_USER=fsm`, `MYSQL_PASSWORD=fsm`, `MYSQL_DATABASE=fsm_test`이고, account `root`와 `fsm`은 모든 host에서 연결한다.
   - 끝: script는 아래 네 변수와 함께 명령을 실행하고, SIGINT와 SIGTERM을 명령에 전달하고, 명령이 끝나거나 실패할 때, `bay up`이 실패할 때, 실행이 두 signal 중 하나를 받을 때 실행의 디렉터리에서 `bay down`을 실행한다. `bay up`과 `bay down`은 자기 process group에서 실행되므로 터미널의 signal은 실행에만 도달한다. 서버를 시작하는 중에 받은 signal은 `bay up`이 끝난 뒤 명령 없이 실행을 끝낸다. `bay down` 뒤에 실행은 자기 디렉터리를 지운다. 종료 코드는 명령의 종료 코드이고, 두 signal에는 130과 143, 실행 자체의 실패에는 1이다. 실패한 `bay down`은 실행을 실패시키고, 그때 실행은 디렉터리를 남기고 project와 함께 그 경로를 적는다. 아직 실행 중일 수 있는 container를 제거하는 것이 그 디렉터리에서 실행하는 `bay down`이기 때문이다.
   - `make check`와 `make ci-suite`는 `make persist-servers`를 통해 target을 실행한다. 테스트는 `tests/container`(`make container-test`)와 `tests/persist-servers`(`make persist-servers-test`)다. 각 테스트는 자신이 쓴 `uname`, `bay`, `docker`, `container` 대역 프로그램으로 script를 실행하므로 bay도 container runtime도 필요 없다.
   - job `check`의 runner에는 bay가 없고, 어떤 step도 bay를 설치하지 않는다. `ubuntu-26.04-arm`에서 suite step은 S-475-5까지 bay를 적은 줄로 실패한다.
 ```text
-FSM_TEST_PG_DSN=postgres://fsm:fsm@<project>-postgres.container.test:5432/fsm_test?sslmode=disable
-FSM_TEST_PG_ADMIN_DSN=postgres://fsm:fsm@<project>-postgres.container.test:5432/fsm_test?sslmode=disable
-FSM_TEST_MYSQL_DSN=mysql://fsm:fsm@<project>-mysql.container.test:3306/fsm_test
-FSM_TEST_MYSQL_ADMIN_DSN=mysql://root:root@<project>-mysql.container.test:3306/mysql
+FSM_TEST_PG_DSN=postgres://fsm:fsm@<address of the service postgres>:5432/fsm_test?sslmode=disable
+FSM_TEST_PG_ADMIN_DSN=postgres://fsm:fsm@<address of the service postgres>:5432/fsm_test?sslmode=disable
+FSM_TEST_MYSQL_DSN=mysql://fsm:fsm@<address of the service mysql>:3306/fsm_test
+FSM_TEST_MYSQL_ADMIN_DSN=mysql://root:root@<address of the service mysql>:3306/mysql
 ```
 - npm의 동시성과 persist 테스트(`make npm-persist-test`, `-postgres`, `-mysql`)는 같은 변수를 읽는다. 그 결정은 C-4에 적었다.
 
