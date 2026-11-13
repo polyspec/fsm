@@ -245,13 +245,21 @@ suppression-check:
 lint-ts: deps-node fsm-js-gen
 	$(NODE) $(KIT)/lint-ts.$(KIT_EXT)
 
+# lint-php runs PHPStan on the tracked PHP files of each Composer project with the autoloader of that project, and the tests of
+# legacy/packages/php name the classes that fsm-php-gen writes. So it takes the setup of the php runtime of config/ci.json
+# first, as lint-ts does: the install of legacy/packages/php and of the PHP binding packages/php-ext, and the generated files
+# (S-476). Its prerequisites are named below the files of the dependencies (Package dependencies).
 lint-php:
 	$(NODE) $(KIT)/lint-php.$(KIT_EXT) --memory-limit=-1
 
 lint-python:
 	$(NODE) $(KIT)/lint-python.$(KIT_EXT)
 
-lint-go:
+# lint-go lints every Go module of the checkout, a go.mod: legacy/packages/go, whose examples read the model that fsm-go-gen
+# writes, and the binding module packages/go, whose Go files other than its conformance test are the files that bindings-go
+# writes and Git ignores. A lint of a module without its generated files has no Go file to read, so lint-go generates both
+# first, as the setup of the go runtime of config/ci.json does (S-477).
+lint-go: fsm-go-gen bindings-go
 	$(NODE) $(KIT)/lint-go.$(KIT_EXT)
 
 # lint-rust lints the Rust workspaces of the checkout: the root workspace without the binding crates, which lint-bindings lints
@@ -319,10 +327,12 @@ legacy-test-php-ext: legacy-build-php-ext
 # ---- Bindings: generated from packages/rust/interface.json by binding (plan f6, step 3a; S-454) --------------------------------
 # The contract packages/rust/interface.json binds the public members of the crate packages/rust for the five targets php, python,
 # node, go and wasm, and contracts/cases.json holds its cases, taken from contracts/conformance/vectors.json. binding is not yet a
-# package that package-lock.json pins, and fsm pins none of the tools that only the bindings use: until both are pinned, BINDING
-# names the cli (packages/ts/src/cli.ts) of a binding checkout, WASM_BINDGEN the wasm-bindgen CLI of the release of
-# packages/ts/wasm/Cargo.toml, MATURIN the maturin and TSC the TypeScript compiler of that checkout, and each target that needs one
-# refuses to run without it. bindings writes the generated folders of packages/{ts,ts/wasm,python,php-ext,go/internal/ffi} and the
+# package that package-lock.json pins: BINDING is scripts/binding.mts, which runs the generator of the commit of
+# polyspec-binding-core that the root Cargo.lock pins, the one that make binding-install installs into var/binding (S-477), and a
+# BINDING of the command line names the cli (packages/ts/src/cli.ts) of a binding checkout in its place. fsm pins none of the
+# other tools that only the bindings use: until they are pinned, WASM_BINDGEN names the wasm-bindgen CLI of the release of
+# packages/ts/wasm/Cargo.toml, MATURIN the maturin and TSC the TypeScript compiler of a binding checkout, and each target that
+# needs one refuses to run without it. bindings writes the generated folders of packages/{ts,ts/wasm,python,php-ext,go/internal/ffi} and the
 # Go files zz_generated_*.go of packages/go, which Git ignores; bindings-check runs the contract check, which also compares the
 # tracked binding packages with what binding scaffold writes (binding L-2, CK-19) and the commit of polyspec-binding-core in the
 # root Cargo.lock with the commit of the cli (CK-20).
@@ -331,7 +341,8 @@ legacy-test-php-ext: legacy-build-php-ext
 BINDING_TARGETS := php python node wasm go
 .PHONY: $(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-node-conformance test-wasm test-wasm-conformance \
 	test-python-binding test-python-conformance test-php-binding test-php-conformance test-go-binding test-go-conformance
-BINDING ?=
+BINDING_SCRIPT := scripts/binding.mts
+BINDING ?= $(BINDING_SCRIPT)
 WASM_BINDGEN ?=
 MATURIN ?=
 TSC ?=
@@ -350,11 +361,9 @@ CDYLIB := $(if $(filter Darwin,$(shell uname -s)),dylib,so)
 # yet fails with its name and the targets that build on another target still run.
 bindings: $(foreach target,$(BINDING_TARGETS),bindings-$(target))
 $(foreach target,$(BINDING_TARGETS),bindings-$(target)):
-	@$(call require_tool,BINDING,the cli packages/ts/src/cli.ts of a binding checkout)
 	$(NODE) $(BINDING) generate --root $(CURDIR) --target $(@:bindings-%=%)
 
 bindings-check:
-	@$(call require_tool,BINDING,the cli packages/ts/src/cli.ts of a binding checkout)
 	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json
 
 # The lint of the binding crates with their test features, after make bindings writes their generated folders; lint-rust lints
@@ -604,13 +613,14 @@ PYTHON_DEP := legacy/packages/python/.venv/.installed
 PYTHON_LOCK := legacy/packages/python/pylock.toml
 GO_DEP := var/deps/go
 RUST_DEP := var/deps/rust
+BINDING_DEP := var/deps/binding
 DB_DEP := $(call npm_stamp,legacy/packages/db)
 GUI_DEP := $(call npm_stamp,packages/gui)
 DOCS_DEP := $(call npm_stamp,docs)
 # The npm projects install first: the PHP and Python installs run install-link, which needs every linked project installed.
 # Each npm install links its own project right after npm ci (PROJECT, S-366-1), so an npm ci of a changed lock leaves no copy
 # in place of a link of .links (P30).
-PACKAGE_DEPS := $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(BINDING_PHP_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP)
+PACKAGE_DEPS := $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(BINDING_PHP_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP) $(BINDING_DEP)
 
 $(NPM_DEP): legacy/packages/js/package-lock.json
 	mkdir -p $(dir $@)
@@ -657,6 +667,24 @@ $(RUST_DEP): legacy/packages/rust/Cargo.lock
 	mkdir -p $(dir $@)
 	$(ONLINE) $(MAKE) fsm-rust-install
 	touch $@
+
+# The generator of the bindings at the commit of polyspec-binding-core that the root Cargo.lock pins (scripts/binding.mts, S-477):
+# cargo fetches the crates of the lock with the checkout of that commit, and the npm of var/tools installs the packages that the
+# lock of the generator pins. It needs the cargo of rust-toolchain.toml, which make install-tools TOOLS=rust installs. Only the
+# BINDING of the repository needs the install: a cli that the command line names is installed already.
+.PHONY: binding-install
+binding-install:
+	$(NODE) $(BINDING_SCRIPT) install $(NPM)
+
+$(BINDING_DEP): Cargo.lock
+	mkdir -p $(dir $@)
+	$(ONLINE) $(MAKE) binding-install
+	touch $@
+
+$(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings-check: $(if $(filter $(BINDING_SCRIPT),$(BINDING)),$(BINDING_DEP))
+
+# The lints that read installed and generated files install and generate them first (S-476, S-477).
+lint-php: $(PHP_DEP) $(BINDING_PHP_DEP) fsm-php-gen
 
 $(DB_DEP): legacy/packages/db/package-lock.json
 	mkdir -p $(dir $@)

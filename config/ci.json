@@ -5,8 +5,8 @@
   "setup": {
     "shared": [],
     "runtimes": {
-      "go": ["deps-go", "fsm-go-gen", "legacy-build-go"],
-      "php": ["fsm-php-install", "fsm-php-gen"],
+      "go": ["deps-go", "fsm-go-gen", "legacy-build-go", "binding-install", "bindings-go"],
+      "php": ["fsm-php-install", "binding-php-install", "fsm-php-gen"],
       "php-ext": ["fsm-php-ext-install", "fsm-php-ext-gen"],
       "python": ["fsm-python-install"],
       "rust": ["deps-rust", "fsm-rust-gen"],
@@ -14,6 +14,7 @@
     }
   },
   "tools": {
-    "shared": ["php", "composer", "uv"]
+    "shared": ["php", "composer", "uv"],
+    "go": ["rust"]
   }
 }

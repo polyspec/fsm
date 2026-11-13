@@ -38,6 +38,10 @@
       "kind": "policy",
       "reason": "fails a build of the documentation site that prints an error, a rule of this repository (checklist S-473): VitePress prints the error of a page that fails to render and ends with status 0, and has no option that fails it"
     },
+    "scripts/binding.mts": {
+      "kind": "policy",
+      "reason": "installs and runs the generator of the bindings at the commit of polyspec-binding-core that the root Cargo.lock pins, a rule of this repository (AGENTS.md, Rules; checklist S-477): binding is in no package registry yet, so no package manager installs its command-line tool at the commit of a Cargo lock"
+    },
     "scripts/check-commit-names.mts": {
       "kind": "policy",
       "reason": "fails a tracked document that names a Git commit, a rule of this repository (AGENTS.md, Rules): a release and a lock pin the name of a commit"

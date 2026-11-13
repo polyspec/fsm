@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: b1103fe13658d5a6cdb274074344f7412519f89dbd63a6d3987194af111f8a43 -->
+<!-- source-sha256: fad6454e8bd9c182d3058053fad5f3f743b0eba19913a3bbf1e8b2476fe0ed83 -->
 # 개발
 
 [English](AGENTS.md)
@@ -57,8 +57,13 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   적고, 그 case는 `contracts/cases.json`이다: `contracts/conformance/vectors.json`의 입력과 기대값이다. 계약이 지어낸 case는 fsm에
   있는 동작을 시험하지 않기 때문이다. 그리고 코어에만 있는 kind의 case다(`docs/spec/fsm.md`, B-7). 바인딩 package와 그것을 담는
   루트 Cargo workspace는 계획 f6 단계 3a부터 추적하며, `make bindings-check`가 binding scaffold가 쓰는 것과 비교한다.
-  Enforced by: none, binding은 아직 lock이 고정하는 package가 아니므로 어떤 CI job도 `make bindings-check`를 돌릴 수 없다. 이
-  대상은 BINDING에 binding checkout의 cli를 받아야 한다.
+  Enforced by: none, 어떤 CI job도 `make bindings-check`를 실행하지 않는다.
+- Own: 바인딩의 생성기는 루트 `Cargo.lock`이 고정한 `polyspec-binding-core`의 commit에 있는 binding이다. 그래서 생성기와 crate는
+  한 버전이다. binding은 아직 lock이 고정하는 package가 아니다. `make binding-install`이 Cargo가 그 commit으로 만든 checkout에서
+  `var/binding`에 설치하고(`scripts/binding.mts`), 생성하는 target이 그것을 실행한다. 명령줄의 `BINDING`은 그 자리에 binding
+  checkout의 cli를 적는다. 바인딩의 생성 파일을 읽는 target은 먼저 그것을 생성한다. 어떤 checkout도 그 파일을 추적하지 않고
+  CI job은 그 파일 없이 시작하기 때문이다.
+  Enforced by: `make make-install-test`, Go module의 lint 앞에 설치와 생성이 있을 것을 요구한다.
 
 ## 생성 파일
 

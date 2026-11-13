@@ -65,8 +65,13 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   `contracts/conformance/vectors.json`, because a case that the contract invents tests no behavior that fsm has, and the cases of
   the kinds that only the core has (`docs/spec/fsm.md`, B-7). The binding packages and the root Cargo workspace that holds them
   are tracked since plan f6 step 3a, and `make bindings-check` compares them with what binding scaffold writes.
-  Enforced by: none, binding is not yet a package that a lock pins, so no CI job can run `make bindings-check`, which needs
-  BINDING set to the cli of a binding checkout.
+  Enforced by: none, no CI job runs `make bindings-check`.
+- Own: The generator of the bindings is binding at the commit of `polyspec-binding-core` that the root `Cargo.lock` pins, so the
+  generator and the crate are one version. binding is not yet a package that a lock pins: `make binding-install` installs it
+  into `var/binding` from the checkout that Cargo made of that commit (`scripts/binding.mts`), and the targets that generate run
+  it; a `BINDING` of the command line names the cli of a binding checkout in its place. A target that reads generated files of a
+  binding generates them first, because no checkout tracks them and a CI job starts without them.
+  Enforced by: `make make-install-test`, which requires the install and the generation before the lint of the Go modules.
 
 ## Generated files
 

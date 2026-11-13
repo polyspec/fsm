@@ -74,12 +74,14 @@ const TARGETS = [
   { target: 'legacy-test-rust', line: /--results \.results\/rust\.json/, needs: ['rust'] },
   { target: 'db-test', line: /db-test\.json/, needs: ['db'] },
   { target: 'gui-test', line: /gui-test\.json/, needs: ['gui', 'db'] },
-  { target: 'docs-build', line: /vitepress\.js build/, needs: ['docs'] },
+  // The recipe of docs-build runs the build through scripts/docs-build.mts, which fails a build that prints an error (S-473).
+  { target: 'docs-build', line: /scripts\/docs-build\.mts docs$/, needs: ['docs'] },
   { target: 'docs-build-test', line: /docs-build-test\.json/, needs: ['docs'] },
   // The lints that read installed and generated files (S-476, S-477): PHPStan reads the autoloader of each Composer project, and
-  // golangci-lint reads the Go files of each module, those that binding generates among them.
+  // golangci-lint reads the Go files of each module. The generator of the Go binding, which lint-go installs after the files of
+  // legacy/packages/go are generated, has its own test below.
   { target: 'lint-php', line: /lint-php\.m[jt]s/, needs: ['php', 'binding-php'] },
-  { target: 'lint-go', line: /lint-go\.m[jt]s/, needs: ['go', 'binding'] },
+  { target: 'lint-go', line: /lint-go\.m[jt]s/, needs: ['go'] },
 ];
 
 // The kind whose generated files each target of TARGETS reads: no checkout tracks them, so the target generates them first

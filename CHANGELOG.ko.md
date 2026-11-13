@@ -1,11 +1,15 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e94f5b8bf927e446e3807bce6792e7a39ff9020bd59f15073ed1670028157cc4 -->
+<!-- source-sha256: 4ff1f6e0922b1e587a1678181e9727887bc80a2648e1287894cf3dd5c065f4e2 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- CI pipeline의 runtime php job은 `lint-php`가 읽는 것을 설치한다(S-476). 이전에는 새 checkout에서 `config/ci.json`의 runtime php setup 뒤에 `make kit-gates-runtime-php`가 `[lint-php] packages/php-ext/vendor/autoload.php is missing`으로 실패했다. PHPStan은 추적하는 PHP 파일이 있는 Composer project마다 그 autoloader로 실행되는데, setup은 `legacy/packages/php`만 설치했고 `lint-php`에는 prerequisite가 없었다. 이제 setup은 `binding-php-install`을 적고, `lint-php`는 `legacy/packages/php`와 `packages/php-ext`의 설치와 `fsm-php-gen`을 prerequisite로 적는다. 새 checkout에서 setup과 `kit-gates-runtime-php`의 `make ci-targets`가 통과한다.
+- CI pipeline의 runtime go job은 `lint-go`가 읽는 Go 바인딩을 생성한다(S-477). 이전에는 새 checkout에서 `make kit-gates-runtime-go`가 바인딩 module `packages/go`에서 `no go files to analyze`로 실패했다. 이 module의 Go 파일은 `tests/conformance_test.go`를 빼면 생성물이고 추적하지 않는데, setup은 `legacy/packages/go`의 파일만 생성했고, `make bindings-go`는 `BINDING`에 binding checkout의 cli를 받아야 했으며 어떤 job에도 그것이 없다. 이제 `scripts/binding.mts`가 루트 `Cargo.lock`에 있는 `polyspec-binding-core`의 commit으로 Cargo가 만든 checkout에서 binding을 `var/binding/<commit>`에 설치하고(`make binding-install`, `Cargo.lock` 기준, `make install`의 일부) 실행하며, 이것이 `BINDING`의 기본값이다. `lint-go`는 `fsm-go-gen`과 `bindings-go`를 prerequisite로 적는다. runtime go의 setup은 `binding-install`과 `bindings-go`를 적고, `config/ci.json`의 `tools.go`는 Rust toolchain을 적는다. 그 cargo가 checkout을 찾는다. `make binding-test`는 4개 통과, `make make-install-test`는 18개 통과이며, 변경 전에는 6개가 실패했다. 생성 파일이 있으면 `make lint-go`의 step `golangci-lint legacy/packages/go`, `deadcode legacy/packages/go`, `golangci-lint packages/go`가 통과한다. 두 step은 아직 실패하며 행 S-477-1이 그것을 가진다. `golangci-lint packages/go (tag polyspec_codec_test)`와 `deadcode packages/go`가 `undefined: binding.IntIn`으로 끝난다. `packages/go/tests/conformance_test.go`가 binding GN-13g의 함수를 호출하는데, `Cargo.lock`에 있는 commit의 binding은 그것을 생성하지 않기 때문이다(S-467).
+- `tests/make-install`의 `make docs-build` 시험은 그 target이 가진 recipe를 읽는다(S-478). 이전에는 `vitepress.js build` 줄을 찾았는데, recipe는 S-473부터 `scripts/docs-build.mts docs`를 실행하므로 `make make-install-test`의 시험 세 개가 `docs-build does not run its recipe`로 실패했다. 시험은 그 script의 줄을 적는다.
 
 - 코어의 manifest가 license를 적는다(`license = "MIT"`, 이 저장소의 npm 패키지가 적는 license와 같다). 바인딩 패키지는 코어의 license를 가지며, binding의 계약 검사는 license가 없는 코어를 거부한다(CK-71).
 
