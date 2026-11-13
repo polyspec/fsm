@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 22d0bcc31c93b8239a3a4d69f8ca102e0277d3c7f3778df0ddaf0720624e97a4 -->
+<!-- source-sha256: 63f7aa9fc6ee9b9459f2c20c5845f83b0cefe31c1c107bc0c21ef24977a330e5 -->
 # 개발
 
 [English](AGENTS.md)
@@ -49,7 +49,8 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   언어 package를 `legacy/`로 옮긴 뒤에만 추적한다. binding scaffold가 `packages/php-ext`, `packages/python`, `packages/go`의
   manifest와 `packages/php-ext/src` 폴더를 쓰는데, 이것들은 그 package의 것이기 때문이다. 그때까지 `make bindings-check`가 없거나
   다른 바인딩 파일을 하나씩 이름한다.
-  Enforced by: `make bindings-check`, BINDING에 binding checkout의 cli를 준다.
+  Enforced by: none, binding은 아직 lock이 고정하는 package가 아니므로 어떤 CI job도 `make bindings-check`를 돌릴 수 없다. 이
+  대상은 BINDING에 binding checkout의 cli를 받아야 한다.
 
 ## 생성 파일
 

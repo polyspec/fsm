@@ -55,7 +55,8 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   packages to `legacy/`, because binding scaffold writes the manifests of `packages/php-ext`, `packages/python` and `packages/go`
   and the folder `packages/php-ext/src`, which those packages own; until then `make bindings-check` names each binding file that
   is missing or differs.
-  Enforced by: `make bindings-check`, with BINDING set to the cli of a binding checkout.
+  Enforced by: none, binding is not yet a package that a lock pins, so no CI job can run `make bindings-check`, which needs
+  BINDING set to the cli of a binding checkout.
 
 ## Generated files
 
