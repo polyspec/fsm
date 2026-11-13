@@ -81,13 +81,10 @@ const COMPOSE = `services:
       trust: false
 `;
 
-// The release of bay that config/toolchain.json pins, and its address.
-const PINNED = /"bay": \{\s*"version": "(\d+\.\d+\.\d+)"/.exec(readFileSync(path.join(ROOT, 'config/toolchain.json'), 'utf8'))?.[1] ?? '';
-const RELEASE = `https://github.com/polyspec/bay/releases/tag/v${PINNED}`;
-
-// The lines that the stand-in bay prints: the plain form of its version, the progress of up before the servers are healthy
-// and after, the line of a failing up, and the line of an exec.
-const VERSION = `bay v${PINNED} (0123456789ab) go1.27.2 test/arm64 schema 1`;
+// The lines that the stand-in bay prints: the JSON of its version, a release that no file of the repository names, with the
+// schema of the contract that the files of a run read, the progress of up before the servers are healthy and after, the
+// line of a failing up, and the line of an exec.
+const VERSION = '{"version":"v7.8.9-build","schemaVersion":1}';
 const STARTING = 'starting 3 services';
 const HEALTHY = 'all services are healthy';
 const STOPPED = 'bay: the service mysql stopped before it was healthy';
@@ -111,7 +108,7 @@ interface Stand {
   downFails?: boolean;
   /** The JSON of bay plan holds no service. */
   unlisted?: boolean;
-  /** bay is another release than the pinned one. */
+  /** The contract of bay is another schema than the one that the files of a run read. */
   other?: boolean;
   /** The words of the variable BAY, which start bay; the variable is not set when it is undefined. */
   started?: string;
@@ -128,8 +125,6 @@ interface Stage {
   calls: () => string[][];
   /** The commands that sudo received. */
   sudo: () => string[][];
-  /** Sets the flag `name` of the stand-ins after they were written. */
-  flag: (name: string) => void;
   /** The commands that git received. */
   git: () => string[][];
   /** The Compose file that bay up was started with, or undefined when it did not run. */
@@ -188,9 +183,7 @@ done
 [ "$1" = version ] || [ -e "$f/compose.yaml" ] || exit 9
 case "$1" in
 version)
-	release=${PINNED}
-	if [ -e "$d/other" ]; then release=9.9.9; fi
-	if [ "\${2:-}" = --json ]; then echo "{\"version\":\"v$release\",\"schemaVersion\":1}"; else echo "bay v$release (0123456789ab) go1.27.2 test/arm64 schema 1"; fi
+	if [ -e "$d/other" ]; then echo '{"version":"v7.8.9-build","schemaVersion":2}'; else echo '${VERSION}'; fi
 	;;
 plan)
 	if [ -e "$d/unlisted" ]; then printf '{"schemaVersion":1,"project":"%s","services":[]}\\n' "$p"; exit 0; fi
@@ -237,7 +230,6 @@ esac
     env: stand.started === undefined ? { PATH } : { PATH, BAY: stand.started },
     calls: () => lines('calls'),
     sudo: () => lines('sudo-calls'),
-    flag: name => { writeFileSync(path.join(directory, name), ''); },
     git: () => lines('git-calls'),
     composed: () => (existsSync(path.join(directory, 'composed')) ? readFileSync(path.join(directory, 'composed'), 'utf8') : undefined),
     left: () => (existsSync(runs) ? readdirSync(runs) : []),
@@ -308,7 +300,7 @@ function executed(project: Named): string[] {
 
 // The commands of bay of the writing before its plan, and of run.sh before its first step: each reads the version of bay.
 const WRITTEN = ['bay', 'version', '--json'];
-const VERSIONED = ['bay', 'version'];
+const VERSIONED = ['bay', 'version', '--json'];
 
 /** The commands of bay of a run to the step `last`: the version and the plan of the writing, then the steps of run.sh. */
 function steps(project: Named, last: 'images' | 'up' | 'exec'): string[][] {
@@ -329,6 +321,7 @@ test('the run writes its directory, starts the project with bay up, runs the com
   assert.deepEqual(staged.git(), [['git', 'symbolic-ref', '--short', 'HEAD'], ['git', 'bundle', 'create', path.join(project[2], 'tree.bundle'), 'main']]);
   assert.deepEqual(staged.left(), [], 'the run left its directory');
   // The record of a run names the bay that made its result, and holds what bay and the command printed.
+  assert.ok(ended.stderr.startsWith(`persist-servers: bay version: ${VERSION}\n`), ended.stderr);
   assert.ok(ended.stdout.startsWith(`${VERSION}\n`), ended.stdout);
   assert.match(ended.stdout, new RegExp(`^${RUNNING}$`, 'm'));
   assert.match(ended.stderr, new RegExp(`^${HEALTHY}$`, 'm'));
@@ -462,35 +455,20 @@ test('a service that the JSON of bay plan does not hold fails the writing, and n
   const ended = await script(staged, RUN);
   assert.deepEqual([ended.code, ended.signal], [1, null], ended.stderr);
   const project = named(staged);
-  assert.ok(ended.stderr.startsWith(`persist-servers: bay plan --json names no host and port of the service postgres:\n{"schemaVersion":1,"project":"${project[4]}","services":[]}\n`), ended.stderr);
+  assert.ok(ended.stderr.includes(`\npersist-servers: bay plan --json names no host and port of the service postgres:\n{"schemaVersion":1,"project":"${project[4]}","services":[]}\n`), ended.stderr);
   assert.deepEqual(staged.calls(), [WRITTEN, [...project, 'plan', '--json']]);
   assert.deepEqual(staged.left(), []);
 });
 
-test('a bay of another release than the pinned one fails the writing before anything is made, with the address of the pinned release', async t => {
+// The files of a run are written for one schema of the contract of bay; the release of bay is not compared.
+test('a bay whose contract is another schema fails the writing before anything is made', async t => {
   const staged = stage(t, { other: true });
   const ended = await script(staged, RUN);
   assert.deepEqual([ended.code, ended.signal], [1, null], ended.stderr);
-  assert.equal(ended.stderr, `scripts/bay.mts: bay is v9.9.9, and config/toolchain.json pins v${PINNED}: install the release ${RELEASE}\n`);
+  assert.equal(ended.stderr, 'persist-servers: bay version: {"version":"v7.8.9-build","schemaVersion":2}\nscripts/bay.mts: the contract of bay is the schema 2, and the scripts of this repository read the schema 1\n');
   assert.deepEqual(staged.calls(), [WRITTEN]);
   assert.deepEqual(staged.git(), []);
   assert.deepEqual(staged.left(), []);
-});
-
-// A directory may run on another machine than the one that wrote it, so run.sh compares the version of its bay itself.
-test('run.sh fails before a server starts when its bay is another release than the pinned one', t => {
-  const staged = stage(t);
-  const written = spawnSync(process.execPath, [staged.script, 'write', '--', ...COMMAND], { encoding: 'utf8', env: staged.env });
-  assert.equal(written.status, 0, written.stderr);
-  const project = named(staged);
-  staged.flag('other');
-  for (const args of [[], ['pull']]) {
-    const ran = spawnSync('/bin/sh', [path.join(project[2], 'run.sh'), ...args], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
-    assert.equal(ran.status, 1, ran.stderr);
-    assert.equal(ran.stderr, `persist-servers: bay is not the pinned release v${PINNED}: bay v9.9.9 (0123456789ab) go1.27.2 test/arm64 schema 1: install the release ${RELEASE}\n`);
-    assert.deepEqual(staged.calls().at(-1), VERSIONED);
-  }
-  assert.equal(staged.calls().length, 4);
 });
 
 // The one who starts a run on a machine says how bay is started there: every command of bay runs through the words of BAY.
@@ -508,7 +486,7 @@ test('a bay that PATH does not hold fails every verb at once, with its name and 
     const staged = stage(t, { bay: false });
     const ended = await script(staged, args);
     assert.deepEqual([ended.code, ended.signal], [1, null], ended.stderr);
-    assert.equal(ended.stderr, `scripts/bay.mts: bay is not found on PATH: install the release ${RELEASE} and apply its machine setup with bay install\n`);
+    assert.equal(ended.stderr, 'scripts/bay.mts: bay is not found on PATH: install bay and apply its machine setup with bay install\n');
     assert.deepEqual(staged.left(), []);
   }
 });
