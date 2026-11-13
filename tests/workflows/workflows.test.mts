@@ -142,7 +142,9 @@ test('the node, go, php and rust versions come from the files that declare them'
   assert.doesNotMatch(CHECK_JOB, /rustup/, 'the check job installs a Rust toolchain of its own');
   assert.ok(stepsOf(CHECK_JOB).some(entry => /\n\s+run: make install$/m.test(entry)), 'the check job runs no make install');
   assert.match(read('rust-toolchain.toml'), /^profile = "minimal"$/m);
-  assert.match(read('rust-toolchain.toml'), /^components = \["clippy"\]$/m, 'rust-toolchain.toml names clippy, which kit\'s lint-rust runs');
+  // clippy is the lint that kit's lint-rust runs; llvm-tools holds llvm-strip, llvm-size and llvm-nm, which the release of the Go
+  // module reads from the toolchain of the checkout (S-470-1).
+  assert.match(read('rust-toolchain.toml'), /^components = \["clippy", "llvm-tools"\]$/m, 'rust-toolchain.toml does not name clippy and llvm-tools');
 });
 
 // .php-version declares the PHP of the checkout for setup-php: the release workflow of kit sets up PHP only when the file
