@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 7a1cfccc4c2b5fc3b366f3ae6ad489bcb72290e37416015885dac44cf1d86e9d -->
+<!-- source-sha256: 68db881e7211ee866f55e1a812a80fe44cfabd793b61251de571d6cceffa89b7 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-462와 S-463이 끝났다: commit된 tree 6f852f4와 binding a03ba03에서 `make test-php-conformance`가 생성 시험 557개와 vector 279개 중 279개를, `make test-python-conformance`가 생성 시험 555개와 vector 279개 중 279개를 통과했다.
 - Cargo.lock이 polyspec-binding-core를 binding a03ba03에 고정하고, 추적하는 binding 소스 다섯 개(`packages/{php-ext,python,ts,ts/wasm,go/internal/ffi}/src/lib.rs`)는 binding a03ba03이 scaffold하는 것이다. crate 속성 `allow`마다 규칙을 reason으로, 설명을 주석으로 둔다. `binding check`는 아무것도 보고하지 않는다(CK-19, CK-20).
 - Go conformance 시험은 `contracts` 폴더를 `FSM_CONTRACTS`에서만 읽었다. 그래서 binding의 end-to-end 검사가 commit된 tree의 사본에서 그 변수 없이 돌리는 `packages/go`의 `go test ./...`가 "FSM_CONTRACTS names the folder contracts; make test-go-conformance sets it"로 실패했다. 이제 시험은 Python 시험처럼 package 폴더에서 가장 가까운, `contracts/conformance/vectors.json`을 가진 부모 폴더를 쓰고, `make test-go-conformance`는 그 변수를 두지 않는다. Red: 변수 없는 레시피가 그 메시지로 실패했다. Green: binding 46f61fb로 vector 259개가 통과하고, `input_type`이 있는 `from_code` vector 20개는 S-467이 적은 대로 이름으로 실패한다(S-468).
 - Go conformance runner(S-467)가 `input_type`이 있는 `from_code` vector 20개를 `FromCode`의 타입 확인으로 대신하지 않는다. 그 확인은 코어의 거부를 실행하지 않았다: 각 vector는 이름으로 실패하고, binding GN-13이 어떤 target에서 언어 꼴이 없는 입력에 주는 test feature `case-test` 진입점을 기다린다.
