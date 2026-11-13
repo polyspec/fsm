@@ -8,7 +8,7 @@ three stores. It records the tree, the steps and the outcome of each store.
 
 ## Tree and environment
 
-- Tree: commit `bc9f1b1672af370d901b4479bacf64d480833b72` of `main` (the GUI code of S-22-1, S-22-2, S-22-3, S-33 and S-38).
+- Tree: `main` (the GUI code of S-22-1, S-22-2, S-22-3, S-33 and S-38).
 - Commands: `fsm-gen`, `fsm-db` and `fsm-gui` installed from the checkout with `npm install -g --prefix <tmp> --offline`
   (S-18-1), the assets built with `make gui-build`.
 - Browser: the Chromium of the pinned Playwright 1.64.0 (`make gui-browsers`), headless, 1200 × 900; Mermaid 12.1.0.

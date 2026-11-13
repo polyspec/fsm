@@ -48,6 +48,10 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
 - Own: Every README pair (root, compiler, db, GUI, language packages) has its required sections and a Korean twin with the same
   headings (`scripts/check-readmes.mts`).
   Enforced by: `make readme-check`
+- Own: No tracked file names a Git commit, of this repository or of another. A release and a lock pin the name of a commit, and a name
+  written in a document is a wrong value once the history changes; a record states the fact instead: the input, the behavior, the
+  expected behavior and the count of the tests.
+  Enforced by: `make commit-names-check`, which reads the tracked Markdown files; a commit named in another tracked file is found by review.
 - Own: The hand-written packages and the fsm-gen output (`compiler`, `db`, `go`, `js`, `php`, `php-ext`, `python`, `rust`) are
   under `legacy/packages/` until plan V-6 (5) removes them, so that the generated bindings take `packages/` (plan f6, FP-6, step
   3-2). Their targets are `legacy-<task>-<runtime>`, grouped by `legacy-<task>`, and `build` and `test` take `legacy-build` and

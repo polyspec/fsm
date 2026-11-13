@@ -1,5 +1,5 @@
 <!-- doc-id: verification-gui -->
-<!-- source-sha256: 894d511913634a678de7e8d1cf235aa5c063e723126c86edd24517dd0d423cb0 -->
+<!-- source-sha256: 54aacb832d6fd682c4b17e9a60eba913f7e5eac482aca5387c7554740a4f52ec -->
 # GUI 수동 확인
 
 [English](gui.md)
@@ -9,7 +9,7 @@ store별 결과를 기록한다.
 
 ## 트리와 환경
 
-- 트리: `main`의 commit `bc9f1b1672af370d901b4479bacf64d480833b72`(S-22-1, S-22-2, S-22-3, S-33, S-38의 GUI 코드).
+- 트리: `main`(S-22-1, S-22-2, S-22-3, S-33, S-38의 GUI 코드).
 - 명령: checkout에서 `npm install -g --prefix <tmp> --offline`으로 설치한 `fsm-gen`, `fsm-db`, `fsm-gui`(S-18-1), asset은
   `make gui-build`로 빌드.
 - Browser: 고정한 Playwright 1.64.0의 Chromium(`make gui-browsers`), headless, 1200 × 900. Mermaid 12.1.0.

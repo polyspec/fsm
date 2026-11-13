@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: e3b289488a8149b9e0529169a83d76c342106dabcdabfaf9d048f70143d27d45 -->
+<!-- source-sha256: b1103fe13658d5a6cdb274074344f7412519f89dbd63a6d3987194af111f8a43 -->
 # 개발
 
 [English](AGENTS.md)
@@ -43,6 +43,9 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   Enforced by: `make name-check`
 - Own: 모든 README 쌍(root, compiler, db, GUI, 언어 패키지)에는 필수 절과 같은 제목을 가진 한국어 짝이 있다(`scripts/check-readmes.mts`).
   Enforced by: `make readme-check`
+- Own: 추적되는 파일은 이 저장소나 다른 저장소의 Git commit을 적지 않는다. commit 이름은 release와 lock이 고정하며, 문서에 적힌 이름은 기록이 바뀌면
+  틀린 값이 된다. 기록은 그 대신 사실을 적는다: 입력, 동작, 기대 동작, 시험 수.
+  Enforced by: `make commit-names-check`, 추적되는 Markdown 파일을 읽는다. 다른 추적 파일에 적힌 commit은 review로 찾는다.
 - Own: 손으로 쓴 package와 fsm-gen 출력(`compiler`, `db`, `go`, `js`, `php`, `php-ext`, `python`, `rust`)은 계획 V-6 (5)가
   지울 때까지 `legacy/packages/` 아래에 있다. 생성 바인딩이 `packages/`를 차지하기 때문이다(계획 f6, FP-6, 단계 3-2). 그
   대상은 `legacy-<task>-<runtime>`이고 `legacy-<task>`로 묶으며, `build`와 `test`는 `legacy-build`와 `legacy-test`를 선행 조건으로
