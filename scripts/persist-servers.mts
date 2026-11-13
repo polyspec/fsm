@@ -23,6 +23,7 @@
 // project and no container. It holds:
 //
 //   compose.yaml   the services postgres and mysql, and in the runner form the service runner; no service publishes a port
+//   compose.install.yaml   the runner form: the service runner alone, with which the run installs before the servers start
 //   run.sh         the steps of the run
 //   report.txt     written by run.sh: the time of each step and the highest memory use of each service
 //   runner.sh      the runner form: the steps that run inside runner, the installation order of the repository, then the
@@ -177,14 +178,15 @@ function quoted(text: string): string {
 
 /**
  * The Compose file of a run: a service for each server, with the image of its pin, the port of its server in `expose`, the
- * environment of its accounts and its healthcheck, and with `runner` the service runner. Each text is written as a JSON
+ * environment of its accounts and its healthcheck, when `servers`, and with `runner` the service runner. The runner is the
+ * same text with and without the servers, so bay keeps its container when the servers are added to its project. Each text is written as a JSON
  * string, which YAML reads as the same string. The file names no project and no host port. The one mount, of the runner, is
  * the directory of the run itself, read-only, by the one relative path that a run writes: with it the directory works
  * wherever it lies.
  */
-function composeFile(runner: boolean): string {
+function composeFile(servers: boolean, runner: boolean): string {
   const lines = ['services:'];
-  for (const kind of KINDS) {
+  for (const kind of servers ? KINDS : []) {
     const server = SERVERS[kind];
     lines.push(`  ${kind}:`, `    image: ${JSON.stringify(image(kind))}`, ...memoryLimit(kind), `    expose: [${JSON.stringify(String(server.port))}]`, '    environment:');
     for (const [name, value] of Object.entries(server.environment)) lines.push(`      ${name}: ${JSON.stringify(value)}`);
@@ -196,47 +198,62 @@ function composeFile(runner: boolean): string {
 }
 
 /**
- * runner.sh, which runs inside runner with the command of the run as its arguments: the installation order of the
- * repository on the image of the pin, and then the command, in the clone of the bundle of `branch`. A step that fails ends
- * the file with its exit code.
+ * runner.sh, which runs inside runner in two parts: the installation order of the repository on the image of the pin, with
+ * the clone of the bundle of `branch`, and the command of the run in that clone. A step that fails ends the file with its
+ * exit code.
  */
 function runnerFile(branch: string): string {
   const node = nodeVersion();
   return `${[
     '#!/bin/sh',
-    '# Runs in the service runner of a run of scripts/persist-servers.mts, with the command of the run as its arguments',
-    '# (docs/plans/fsm-v1/plan.md, C-6). It installs what the targets of the repository need on the image of the runner,',
-    '# clones the bundle of the branch into the container and runs the command there. The container is new in each run, so',
-    '# each run installs again (S-475-8). Nothing is written into the directory of the run, which is mounted read-only.',
+    '# Runs in the service runner of a run of scripts/persist-servers.mts (docs/plans/fsm-v1/plan.md, C-6):',
+    '#',
+    '#   sh runner.sh install               installs what the targets of the repository need and clones the bundle',
+    '#   sh runner.sh run <command> ...     runs the command in that clone',
+    '#',
+    '# The two parts are two commands of bay exec in one container: the servers of the run start between them, so the',
+    '# installation and the servers do not hold their memory at once. The container is new in each run, so each run',
+    '# installs again (S-475-8). Nothing is written into the directory of the run, which is mounted read-only.',
     'set -eu',
     'export DEBIAN_FRONTEND=noninteractive',
     'work=/persist-work',
-    'mkdir -p "$work/tmp"',
     'export TMPDIR="$work/tmp" CARGO_HOME="$work/cargo" RUSTUP_HOME="$work/rustup"',
-    "echo 'persist-runner: the system packages' >&2",
-    'apt-get update -q',
-    `apt-get install -y -q ${packages().join(' ')}`,
-    '# make bootstrap starts the npm of the machine, so Node.js at the version of mise.toml comes before it.',
-    'case "$(uname -m)" in',
-    'aarch64 | arm64) arch=arm64 ;;',
-    'x86_64 | amd64) arch=x64 ;;',
-    '*) echo "persist-runner: no archive of Node.js is named for $(uname -m)" >&2; exit 1 ;;',
-    'esac',
-    `echo 'persist-runner: Node.js ${node}' >&2`,
-    `curl -fsSL "https://nodejs.org/dist/v${node}/node-v${node}-linux-$arch.tar.xz" | tar -xJ -C /usr/local --strip-components=1`,
-    '# make install installs the toolchain of rust-toolchain.toml with rustup, which no package of the image provides.',
-    "echo 'persist-runner: rustup' >&2",
-    'curl -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain none --profile minimal',
     'PATH="$CARGO_HOME/bin:$PATH"',
     'export PATH',
-    `echo 'persist-runner: the tree of the branch ${branch}' >&2`,
-    `git clone -q -b ${branch} ${MOUNT}/tree.bundle "$work/tree"`,
-    'cd "$work/tree"',
-    "echo 'persist-runner: make bootstrap and make install' >&2",
-    'make bootstrap',
-    'make install',
-    "echo 'persist-runner: the command' >&2",
-    'exec "$@"',
+    'case "$1" in',
+    'install)',
+    '\tmkdir -p "$work/tmp"',
+    "\techo 'persist-runner: the system packages' >&2",
+    '\tapt-get update -q',
+    `\tapt-get install -y -q ${packages().join(' ')}`,
+    '\t# make bootstrap starts the npm of the machine, so Node.js at the version of mise.toml comes before it.',
+    '\tcase "$(uname -m)" in',
+    '\taarch64 | arm64) arch=arm64 ;;',
+    '\tx86_64 | amd64) arch=x64 ;;',
+    '\t*) echo "persist-runner: no archive of Node.js is named for $(uname -m)" >&2; exit 1 ;;',
+    '\tesac',
+    `\techo 'persist-runner: Node.js ${node}' >&2`,
+    `\tcurl -fsSL "https://nodejs.org/dist/v${node}/node-v${node}-linux-$arch.tar.xz" | tar -xJ -C /usr/local --strip-components=1`,
+    '\t# make install installs the toolchain of rust-toolchain.toml with rustup, which no package of the image provides.',
+    "\techo 'persist-runner: rustup' >&2",
+    '\tcurl -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain none --profile minimal',
+    `\techo 'persist-runner: the tree of the branch ${branch}' >&2`,
+    `\tgit clone -q -b ${branch} ${MOUNT}/tree.bundle "$work/tree"`,
+    '\tcd "$work/tree"',
+    "\techo 'persist-runner: make bootstrap and make install' >&2",
+    '\tmake bootstrap',
+    '\tmake install',
+    '\t;;',
+    'run)',
+    '\tshift',
+    '\tcd "$work/tree"',
+    '\texec "$@"',
+    '\t;;',
+    '*)',
+    "\techo 'usage: sh runner.sh install | run <command> ...' >&2",
+    '\texit 2',
+    '\t;;',
+    'esac',
   ].join('\n')}\n`;
 }
 
@@ -247,11 +264,28 @@ function runnerFile(branch: string): string {
  * environment. A step runs as a job that the file waits for, so a signal reaches the trap at once, which ends the step.
  */
 function runFile(name: string, variables: Record<string, string>, command: readonly string[], runner: boolean): string {
-  const exec = ['exec', ...Object.entries(variables).flatMap(([key, value]) => ['-e', quoted(`${key}=${value}`)]), 'runner', 'sh', `${MOUNT}/runner.sh`, ...command.map(quoted)];
+  const exec = ['exec', ...Object.entries(variables).flatMap(([key, value]) => ['-e', quoted(`${key}=${value}`)]), 'runner', 'sh', `${MOUNT}/runner.sh`, 'run', ...command.map(quoted)];
   // The command of the host form: the variables are assignments before the words of the command, which sh puts into the
   // environment of that process alone.
   const hosted = ["mark 'command start'", `${[...Object.entries(variables).map(([key, value]) => `${key}=${quoted(value)}`), ...command.map(quoted)].join(' ')} &`, 'child=$!', 'wait "$child"', 'code=$?', 'child=', 'mark "command exit $code"', 'exit'];
-  const commanded = runner ? [`step command -f "$directory" -p "$project" ${exec.join(' ')}`, 'code=$?', 'exit'] : ['# The command of the run, a process of this host.', ...hosted];
+  const commanded = runner ? [`step command -f "$compose" -p "$project" ${exec.join(' ')}`, 'code=$?', 'exit'] : ['# The command of the run, a process of this host.', ...hosted];
+  // The first phase of the runner form: the runner alone starts and installs before the servers start, so the installation
+  // and the servers do not hold their memory at once. The memory of the runner is read here, because this value is what a
+  // limit of the runner must hold.
+  const installing = runner ? [
+    '# The runner alone, and the installation in it.',
+    'step runner-up -f "$directory/compose.install.yaml" -p "$project" up -no-pull || {',
+    '\techo "persist-servers: bay up failed for the runner of the project $project" >&2',
+    '\texit',
+    '}',
+    `step install -f "$directory/compose.install.yaml" -p "$project" exec runner sh ${MOUNT}/runner.sh install || {`,
+    '\techo "persist-servers: the installation in the runner of the project $project failed" >&2',
+    '\texit',
+    '}',
+    'peak=$($bay -f "$directory/compose.install.yaml" -p "$project" exec runner cat /sys/fs/cgroup/memory.peak 2>/dev/null) || peak=\'not read\'',
+    'mark "memory.peak runner $peak after install"',
+    '# The servers are added to the project; bay keeps the container of the runner, whose declaration did not change.',
+  ] : [];
   // The services of the project, whose memory the report holds.
   const services = runner ? [...KINDS, 'runner'] : KINDS;
   return `${[
@@ -272,6 +306,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     'esac',
     'cd "$directory" || exit 1',
     'directory=$PWD',
+    'compose=$directory/compose.yaml',
     `project=${quoted(name)}`,
     '# The words that start bay on this machine: those of the variable BAY, which the one who starts the run sets.',
     'bay=${BAY:-bay}',
@@ -313,17 +348,17 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\t\t# The highest memory use of each service, which the cgroup of its container holds, before the project is removed. A',
     '\t\t# service whose file cannot be read does not fail the run.',
     `\t\tfor service in ${services.join(' ')}; do`,
-    '\t\t\tpeak=$($bay -f "$directory" -p "$project" exec "$service" cat /sys/fs/cgroup/memory.peak 2>/dev/null) || peak=\'not read\'',
+    '\t\t\tpeak=$($bay -f "$compose" -p "$project" exec "$service" cat /sys/fs/cgroup/memory.peak 2>/dev/null) || peak=\'not read\'',
     '\t\t\tmark "memory.peak $service $peak"',
     '\t\tdone',
     "\t\tmark 'down start'",
-    '\t\tif $bay -f "$directory" -p "$project" down; then',
+    '\t\tif $bay -f "$compose" -p "$project" down; then',
     "\t\t\tmark 'down exit 0'",
     '\t\t\techo "persist-servers: removed the project $project" >&2',
     '\t\telse',
     '\t\t\tmark "down exit $?"',
     `\t\t\t: > "$directory/${DOWN_FAILED}"`,
-    '\t\t\techo "persist-servers: bay down failed; the containers of the project $project may still run: run bay -f $directory -p $project down" >&2',
+    '\t\t\techo "persist-servers: bay down failed; the containers of the project $project may still run: run bay -f $compose -p $project down" >&2',
     '\t\t\t[ "$code" -ne 0 ] || code=1',
     '\t\tfi',
     '\tfi',
@@ -338,7 +373,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     'run) ;;',
     'pull)',
     '\tstep version version --json || exit',
-    '\tstep pull -f "$directory" -p "$project" pull',
+    '\tstep pull -f "$compose" -p "$project" pull',
     '\tcode=$?',
     '\texit',
     '\t;;',
@@ -352,13 +387,14 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '# machine is used as it is.',
     'step version version --json || exit',
     '# bay images fetches nothing and fails when the store lacks an image.',
-    'step images -f "$directory" -p "$project" images || {',
+    'step images -f "$compose" -p "$project" images || {',
     '\techo "persist-servers: an image of the project $project is not installed: run make persist-images, or sh $directory/run.sh pull" >&2',
     '\texit',
     '}',
-    '# bay up returns after each server is healthy; it pulls nothing and changes no machine setup.',
     'started=1',
-    'step up -f "$directory" -p "$project" up -no-pull || {',
+    ...installing,
+    '# bay up returns after each server is healthy; it pulls nothing and changes no machine setup.',
+    'step up -f "$compose" -p "$project" up -no-pull || {',
     '\techo "persist-servers: bay up failed before the servers of the project $project were healthy" >&2',
     '\texit',
     '}',
@@ -396,7 +432,7 @@ function addresses(text: string): Record<Kind, string> {
  */
 function write(command: readonly string[], runner: boolean): string {
   // The files are built first, so a pin that is wrong fails before anything is made.
-  const composed = composeFile(runner);
+  const composed = composeFile(true, runner);
   if (runner) {
     packages();
     nodeVersion();
@@ -413,11 +449,13 @@ function write(command: readonly string[], runner: boolean): string {
   const directory = path.join(RUNS, name);
   mkdirSync(directory, { recursive: true });
   try {
-    writeFileSync(path.join(directory, 'compose.yaml'), composed);
-    const hosts = addresses(bayOutput(['-f', directory, '-p', name, 'plan', '--json']));
+    const compose = path.join(directory, 'compose.yaml');
+    writeFileSync(compose, composed);
+    const hosts = addresses(bayOutput(['-f', compose, '-p', name, 'plan', '--json']));
     const variables: Record<string, string> = {};
     for (const kind of KINDS) Object.assign(variables, SERVERS[kind].variables(hosts[kind]));
     if (runner) {
+      writeFileSync(path.join(directory, 'compose.install.yaml'), composeFile(false, true));
       output('git', ['bundle', 'create', path.join(directory, 'tree.bundle'), branch]);
       writeFileSync(path.join(directory, 'runner.sh'), runnerFile(branch));
     }

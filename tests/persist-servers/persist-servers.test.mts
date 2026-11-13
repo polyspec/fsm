@@ -197,7 +197,8 @@ esac
   // As bay does, plan prints the name, the host and the port of each service as JSON, images ends with 1 when the store
   // lacks an image, and up refuses a healthcheck whose count of retries is outside 1..100. The host and the port of a
   // service are values that no rule builds from the project and the service, so a DSN holds them only when the script
-  // read them. exec runs nothing: the command of a run would run in a container.
+  // read them. exec runs nothing: the installation and the command of a run would run in a container; the exit code and
+  // the pipe of an exec are those of the command, and the installation passes.
   if (stand.bay !== false) {
     write('bay', `${record('bay', 'calls')}f=
 p=
@@ -233,6 +234,7 @@ up)
 	cp "$c" "$d/composed"
 	cp "$c" "$d/composed-$(basename "$c")"
 	awk '/^  [a-z]+:$/ { service = substr($1, 1, length($1) - 1) } /^      retries: / { if ($2 < 1 || $2 > 100) { print "bay: compose.yaml: service " service ": healthcheck retries must be 1..100"; refused = 1 } } END { exit refused }' "$c" >&2 || exit 1
+	if [ -z "$servers" ]; then echo 'started the runner' >&2; exit 0; fi
 	echo '${STARTING}' >&2
 	if [ -n "$servers" ] && [ -p "$d/up-waits" ]; then read -r _ < "$d/up-waits"; fi
 	if [ -n "$servers" ] && [ -e "$d/upFails" ]; then echo '${STOPPED}' >&2; exit 1; fi
@@ -246,6 +248,7 @@ exec)
 		echo 4096
 		exit 0
 	fi
+	if [ "$4" = install ]; then echo 'installed'; exit 0; fi
 	echo '${RUNNING}'
 	if [ -p "$d/exec-waits" ]; then read -r _ < "$d/exec-waits"; fi
 	exit "$(cat "$d/exec-code")"
