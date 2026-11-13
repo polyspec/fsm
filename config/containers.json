@@ -1,5 +1,5 @@
 {
-  "comment": "The images of the PostgreSQL and MySQL servers of the tests, which scripts/persist-servers.mts writes into the Compose file of a run, the project that bay starts on the container program of the platform (docs/plans/fsm-v1/plan.md, C-6; S-472-1, S-475). Each image is pinned by the digest of its index, which names one image for every platform; version names the release that the digest holds. make persist-images pulls them with bay pull. A new release replaces the version and the digest of its entry together.",
+  "comment": "The images of the run of the PostgreSQL and MySQL servers of the tests, which scripts/persist-servers.mts writes into the Compose file of a run, the project that bay starts (docs/plans/fsm-v1/plan.md, C-6; S-472-1, S-475, S-475-7). Each image is pinned by the digest of its index, which names one image for every platform; version names the release that the digest holds. make persist-images pulls them with bay pull. A new release replaces the version and the digest of its entry together.",
   "images": {
     "postgres": {
       "version": "17.11",
@@ -12,6 +12,32 @@
       "reference": "docker.io/library/mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
       "reason": "a tag such as mysql:8.4 names another image after each release of the image, so the result of a run would depend on the day of its pull; the digest names the same bytes on Darwin and on Linux, the release of the MySQL server of orm's tests",
       "removal": "when no test of fsm runs on a MySQL server, the entry leaves with the targets of the MySQL dialect"
+    },
+    "runner": {
+      "version": "trixie-20261104",
+      "reference": "docker.io/library/debian@sha256:9c6e381421d0f48d1b8133e573f33c185ee16cbf505eda9c4a8a4791b25ea8a6",
+      "reason": "the service runner of a run executes the targets in a container, so that the machine of a run needs sh and bay alone; a tag such as debian:trixie names another image after each release of the image, and the digest names the same bytes on every machine. Debian trixie holds PHP 8.4 and Composer as packages",
+      "removal": "when an image of the toolchains replaces it (S-475-8), or when no target of fsm runs on a server of a container",
+      "packages": [
+        "git",
+        "make",
+        "gcc",
+        "g++",
+        "curl",
+        "ca-certificates",
+        "xz-utils",
+        "pkg-config",
+        "libssl-dev",
+        "openssl",
+        "unzip",
+        "php8.4-cli",
+        "php8.4-xml",
+        "php8.4-mbstring",
+        "php8.4-curl",
+        "php8.4-zip",
+        "composer"
+      ],
+      "packagesReason": "what make bootstrap, make install and the database targets of the suite start beside the tools that mise installs: git for the clone of the bundle, make, a C toolchain and OpenSSL for the builds of the packages, curl, xz and unzip for the downloads of the installation, and PHP 8.4 with Composer, which the checkout does not install"
     }
   }
 }
