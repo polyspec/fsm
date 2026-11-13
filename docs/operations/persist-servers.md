@@ -37,7 +37,8 @@ make persist-servers TARGETS="db-test-postgres db-test-mysql"
 4. It makes the directory `fsm-persist-<pid>-<random>` in the temporary directory of the system and writes `compose.yaml`
    into it. The project has the name of the directory and the services `postgres` and `mysql`. The file publishes no port
    of the host and mounts nothing. Each service declares a `healthcheck` that asks its server over TCP in the container,
-   `pg_isready` and `mysqladmin ping --protocol=tcp`, each second and at most 300 times.
+   `pg_isready` and `mysqladmin ping --protocol=tcp`, each 3 seconds and at most 100 times, the largest count that bay
+   accepts.
 5. It runs `bay up` in that directory and shows each line as `persist-servers: bay up: <line>`. bay checks the declared
    health and returns after each service is healthy; the run waits for that return alone, with no sleep, no polling and no
    time limit of its own.
@@ -46,6 +47,9 @@ make persist-servers TARGETS="db-test-postgres db-test-mysql"
 7. It runs the targets with `FSM_TEST_PG_DSN`, `FSM_TEST_PG_ADMIN_DSN`, `FSM_TEST_MYSQL_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN`.
 8. It runs `bay down` in the directory, removes the directory and shows `persist-servers: removed the project <project>`.
    It does so when the targets end or fail, when `bay up` fails or an address is missing, and after SIGINT and SIGTERM.
+9. After a failed `bay up` or `bay down` it reads `bay status --json` to learn whether the project exists. bay registers a
+   project when it accepts its Compose file; without a group of the project in the JSON nothing of the run exists, so the
+   run removes its directory, and after such a `bay up` it runs no `bay down`.
 
 The exit code of the run is that of the targets, 130 after SIGINT, 143 after SIGTERM and 1 for a failure of the run itself.
 
@@ -56,13 +60,15 @@ The exit code of the run is that of the targets, 130 after SIGINT, 143 after SIG
 | `persist-servers: bay is not found on PATH` | PATH holds no bay | Install bay and run `bay install` |
 | `persist-servers: bay check ended with <code>` | A part of the machine setup of bay is missing; the lines above name it | Run `bay install` |
 | `persist-servers: the image <reference> of <kind> is not installed` | The image is not in the container program | Run `make persist-images` |
-| `persist-servers: bay up ended with <code>` | A service did not start or did not get healthy within its 300 asks; the lines `persist-servers: <service>: <line>` above are the last 40 lines of each service | Read those lines; the run already removed the project |
+| `persist-servers: bay up ended with <code>` | A service did not start or did not get healthy within its 100 asks; the lines `persist-servers: <service>: <line>` above are the last 40 lines of each service | Read those lines; the run already removed the project |
+| `persist-servers: bay lists no project <project>: bay up made nothing` | bay refused the Compose file of the run; the lines `persist-servers: bay up: <line>` above say why | Correct what the lines name in `scripts/persist-servers.mts`; the run already removed its directory |
 | `persist-servers: bay status --json names no address of the service <service>` | The JSON of bay holds no address of a service of the project; the JSON follows the line | Compare the JSON with the fields that step 6 reads |
-| `persist-servers: bay down ended with <code>` | bay did not remove the project; its containers may still run | Run `bay down` in the directory that the line names, then remove that directory |
+| `persist-servers: bay down ended with <code>; the containers of the project <project> may still run` | bay did not remove the project, which it still lists | Run `bay down` in the directory that the line names, then remove that directory |
+| `persist-servers: bay down ended with <code>; bay lists no project <project>` | `bay down` failed and bay lists the project no more, so no container of the run exists | Nothing: the run already removed its directory |
 
 ## What is not verified and what waits
 
-- No run with real servers has shown yet that bay counts the asks during the initialization of an image against the 300,
+- No run with real servers has shown yet that bay counts the asks during the initialization of an image against the 100,
   and that both servers answer the first query after `bay up` returns (S-475).
 - `bay check` also reports the agent skill and the MCP registration of bay, which no server needs; whether a machine
   without them fails the check is not verified (S-475-6).

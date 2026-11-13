@@ -1,5 +1,5 @@
 <!-- doc-id: operations-persist-servers -->
-<!-- source-sha256: 41ca68e15247c04202efbbbd122f5d92638070509090d60dd3528c0d73b51ac5 -->
+<!-- source-sha256: 587bc42912da767e0f8e3415e88fe1d5550caf1c376d2c9e32e2a881879d614c -->
 # 영속성 테스트의 서버
 
 [English](persist-servers.md)
@@ -38,7 +38,7 @@ make persist-servers TARGETS="db-test-postgres db-test-mysql"
 4. 시스템의 임시 디렉터리에 디렉터리 `fsm-persist-<pid>-<random>`을 만들고 그 안에 `compose.yaml`을 쓴다. project의 이름은
    디렉터리의 이름이고, service는 `postgres`와 `mysql`이다. 파일은 host의 포트를 게시하지 않고 아무것도 mount하지 않는다.
    각 service는 container 안에서 자기 서버에 TCP로 묻는 `healthcheck`를 선언한다. `pg_isready`와
-   `mysqladmin ping --protocol=tcp`이고, 1초마다, 많아야 300번 묻는다.
+   `mysqladmin ping --protocol=tcp`이고, 3초마다, 많아야 bay가 받는 가장 큰 수인 100번 묻는다.
 5. 그 디렉터리에서 `bay up`을 실행하고 각 줄을 `persist-servers: bay up: <line>`으로 보여 준다. bay는 선언된 health를
    검사하고 각 service가 healthy가 된 뒤에 반환한다. 실행은 그 반환만 기다리며, 자기 sleep도 polling도 시간 제한도 없다.
 6. `bay status --json`을 실행하고 자기 project의 각 service의 field `address`를 읽는다. DSN은 그 주소와 서버의 포트 `5432`,
@@ -46,6 +46,9 @@ make persist-servers TARGETS="db-test-postgres db-test-mysql"
 7. `FSM_TEST_PG_DSN`, `FSM_TEST_PG_ADMIN_DSN`, `FSM_TEST_MYSQL_DSN`, `FSM_TEST_MYSQL_ADMIN_DSN`과 함께 target을 실행한다.
 8. 그 디렉터리에서 `bay down`을 실행하고, 디렉터리를 지우고, `persist-servers: removed the project <project>`를 보여 준다.
    target이 끝나거나 실패할 때, `bay up`이 실패하거나 주소가 없을 때, SIGINT와 SIGTERM 뒤에 그렇게 한다.
+9. `bay up`이나 `bay down`이 실패한 뒤에는 `bay status --json`을 읽어 project가 있는지 안다. bay는 Compose 파일을 받아들일 때
+   project를 등록한다. JSON에 project의 group이 없으면 실행의 것은 아무것도 없으므로 실행은 디렉터리를 지우고, 그런
+   `bay up` 뒤에는 `bay down`을 실행하지 않는다.
 
 실행의 종료 코드는 target의 종료 코드이고, SIGINT 뒤에는 130, SIGTERM 뒤에는 143, 실행 자체의 실패에는 1이다.
 
@@ -56,13 +59,15 @@ make persist-servers TARGETS="db-test-postgres db-test-mysql"
 | `persist-servers: bay is not found on PATH` | PATH에 bay가 없다 | bay를 설치하고 `bay install`을 실행한다 |
 | `persist-servers: bay check ended with <code>` | bay의 머신 설정 중 빠진 부분이 있다. 위의 줄이 그 부분을 적는다 | `bay install`을 실행한다 |
 | `persist-servers: the image <reference> of <kind> is not installed` | 이미지가 container 프로그램에 없다 | `make persist-images`를 실행한다 |
-| `persist-servers: bay up ended with <code>` | service가 시작하지 못했거나 300번의 질의 안에 healthy가 되지 않았다. 위의 `persist-servers: <service>: <line>` 줄이 각 service의 마지막 40줄이다 | 그 줄을 읽는다. 실행은 이미 project를 제거했다 |
+| `persist-servers: bay up ended with <code>` | service가 시작하지 못했거나 100번의 질의 안에 healthy가 되지 않았다. 위의 `persist-servers: <service>: <line>` 줄이 각 service의 마지막 40줄이다 | 그 줄을 읽는다. 실행은 이미 project를 제거했다 |
+| `persist-servers: bay lists no project <project>: bay up made nothing` | bay가 실행의 Compose 파일을 거부했다. 위의 `persist-servers: bay up: <line>` 줄이 이유를 적는다 | 그 줄이 적은 것을 `scripts/persist-servers.mts`에서 고친다. 실행은 이미 디렉터리를 지웠다 |
 | `persist-servers: bay status --json names no address of the service <service>` | bay의 JSON에 project의 service 주소가 없다. JSON이 그 줄 뒤에 온다 | JSON을 6단계가 읽는 field와 비교한다 |
-| `persist-servers: bay down ended with <code>` | bay가 project를 제거하지 못했다. container가 아직 실행 중일 수 있다 | 그 줄이 적은 디렉터리에서 `bay down`을 실행하고, 그 디렉터리를 지운다 |
+| `persist-servers: bay down ended with <code>; the containers of the project <project> may still run` | bay가 project를 제거하지 못했고 아직 그 project를 나열한다 | 그 줄이 적은 디렉터리에서 `bay down`을 실행하고, 그 디렉터리를 지운다 |
+| `persist-servers: bay down ended with <code>; bay lists no project <project>` | `bay down`이 실패했고 bay가 더는 그 project를 나열하지 않으므로 실행의 container는 없다 | 할 일 없음. 실행은 이미 디렉터리를 지웠다 |
 
 ## 검증되지 않은 것과 기다리는 것
 
-- bay가 이미지의 초기화 중에 한 질의를 300번에 세는지, 그리고 `bay up`이 반환한 뒤 첫 query에 두 서버가 답하는지를 실제
+- bay가 이미지의 초기화 중에 한 질의를 100번에 세는지, 그리고 `bay up`이 반환한 뒤 첫 query에 두 서버가 답하는지를 실제
   서버로 실행해 확인한 적이 아직 없다(S-475).
 - `bay check`는 어떤 서버에도 필요 없는 bay의 agent skill과 MCP 등록도 보고한다. 그것이 없는 머신에서 검사가 실패하는지는
   검증하지 않았다(S-475-6).
