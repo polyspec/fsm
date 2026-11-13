@@ -167,15 +167,48 @@ test('every action of the workflows is one of the verified pins, and the pages j
   assert.match(PAGES, /uses: actions\/deploy-pages@/);
 });
 
+/** The targets that `make <goal>` gives to make ci-targets, read from its dry run: the suite of make check or of make ci-suite. */
+function suiteOf(goal: string): string[] {
+  const dry = make(['-n', goal]);
+  assert.equal(dry.code, 0, dry.output);
+  const targets = /^\S+\/node scripts\/persist-servers\.mts run -- \S*make ci-targets TARGETS="([^"]*)"$/m.exec(dry.output)?.[1];
+  assert.ok(targets !== undefined, `make ${goal} does not run its targets through make persist-servers:\n${dry.output}`);
+  return targets.split(' ').filter(Boolean);
+}
+
+// The workflow holds no list of targets of its own (S-474): its suite step runs make ci-suite, the suite of make check without
+// the targets that the jobs of the pipeline run, so a target that an item adds to CHECK_TARGETS runs in CI and in make check.
+test('the suite of the check job is make ci-suite: the targets of make check that no job of the pipeline runs', () => {
+  const suite = step(stepsOf(CHECK_JOB), 'Run the suite targets through make ci-targets');
+  assert.match(suite, /\n {8}run: make ci-suite$/m, `the suite step is not make ci-suite:\n${suite}`);
+  assert.doesNotMatch(CHECK_JOB, /TARGETS=/, 'the check job names targets of its own');
+  const check = suiteOf('check');
+  const own = suiteOf('ci-suite');
+  assert.deepEqual(own.filter(target => !check.includes(target)), [], 'make ci-suite runs a target that make check does not run');
+  assert.ok(check.includes('package-names-test'), 'make check does not run package-names-test');
+  // A target of make check that the suite of the job leaves out is a target of a job of the pipeline: a static gate, or a
+  // prerequisite of the gates of a runtime, by its own name or by a name whose one prerequisite it is.
+  const makefile = read('Makefile');
+  const gates = new Set(/^KIT_STATIC_GATES := (.*)$/m.exec(makefile)?.[1]?.split(' ') ?? []);
+  for (const [, prerequisites = ''] of makefile.matchAll(/^kit-gates-runtime-[a-z-]+: (.*)$/gm)) {
+    for (const name of prerequisites.split(' ')) {
+      gates.add(name);
+      const alias = new RegExp(`^${name}: ([a-z][a-z0-9-]*)$`, 'm').exec(makefile)?.[1];
+      if (alias !== undefined) gates.add(alias);
+    }
+  }
+  assert.ok(gates.size >= 9, `the Makefile names ${String(gates.size)} targets of the jobs of the pipeline`);
+  assert.deepEqual(check.filter(target => !own.includes(target) && !gates.has(target)), [], 'a target of make check runs in no job of CI');
+  assert.deepEqual(own.filter(target => gates.has(target)), [], 'make ci-suite runs a target that a job of the pipeline runs');
+});
+
 // The core crate packages/rust holds every rule of fsm (plan f6, step 3a), so its tests are a target of the suite of the CI job
 // and of make check, and the owner check of its paths (S-457-1).
 test('the suite of the CI job, make check and the owners of the core crate run its tests', () => {
-  const suite = /TARGETS="([^"]*)"/.exec(step(stepsOf(CHECK_JOB), 'Run the suite targets through make ci-targets'))?.[1];
-  assert.ok(suite !== undefined, 'the step of the suite targets names no TARGETS');
-  assert.ok(suite.split(' ').includes('test-rust'), `the suite of the CI job does not run test-rust: ${suite}`);
-  const check = /^CHECK_TARGETS := (.*)$/m.exec(read('Makefile'))?.[1];
-  assert.ok(check !== undefined, 'the Makefile sets no CHECK_TARGETS');
-  assert.ok(check.split(' ').includes('test-rust'), `make check does not run test-rust: ${check}`);
+  const suite = suiteOf('ci-suite');
+  assert.ok(suite.includes('test-rust'), `the suite of the CI job does not run test-rust: ${suite.join(' ')}`);
+  const check = suiteOf('check');
+  assert.ok(check.includes('test-rust'), `make check does not run test-rust: ${check.join(' ')}`);
   const owners: unknown = field(JSON.parse(read('config/owner-checks.json')), 'owners', 'config/owner-checks.json');
   if (!Array.isArray(owners)) throw new Error('owners of config/owner-checks.json must be an array');
   const rules: unknown[] = owners;
@@ -200,15 +233,15 @@ test('the check job holds no services and no DSN: it pulls the images and runs i
   assert.ok(images >= 0, 'no step of the check job runs make persist-images');
   assert.ok(steps.findIndex(entry => /\n {8}run: make install$/m.test(entry)) < images && images < suite, 'make persist-images does not run after make install and before the suite');
   const step = text(steps[suite], 'the step of the suite targets');
-  assert.match(step, /\n {8}if: \$\{\{ !cancelled\(\) \}\}\n/, 'the suite step does not run after a failed check of the hooks');
-  const targets = /\n {8}run: make persist-servers TARGETS="([^"]*)"$/m.exec(step)?.[1];
-  assert.ok(targets !== undefined, `the suite step is not make persist-servers TARGETS="...":\n${step}`);
+  assert.match(step, /\n {8}if: \$\{\{ !cancelled\(\) \}\}\n/, 'the suite step does not run after a failed step');
+  assert.match(step, /\n {8}run: make ci-suite$/m, `the suite step is not make ci-suite:\n${step}`);
+  const targets = suiteOf('ci-suite');
   // Every target that reads a DSN, and the tests of the two scripts of the servers, run in that step.
   const makefile = read('Makefile');
   const reading = [...makefile.matchAll(/^([a-z][a-z0-9-]*):.*\n\t@\$\(call require_dsn,/gm)].map(match => text(match[1], 'a target that requires a DSN'));
   assert.ok(reading.length >= 14, `the Makefile holds ${String(reading.length)} targets that require a DSN`);
-  for (const target of [...reading, 'container-test', 'persist-servers-test']) assert.ok(targets.split(' ').includes(target), `the suite step does not run ${target}`);
-  const check = /^CHECK_TARGETS := (.*)$/m.exec(makefile)?.[1]?.split(' ') ?? [];
+  for (const target of [...reading, 'container-test', 'persist-servers-test']) assert.ok(targets.includes(target), `the suite step does not run ${target}`);
+  const check = suiteOf('check');
   for (const target of [...reading, 'container-test', 'persist-servers-test']) assert.ok(check.includes(target), `make check does not run ${target}`);
 });
 
