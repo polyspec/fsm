@@ -320,7 +320,7 @@ legacy-test-php-ext: legacy-build-php-ext
 # hand-written packages that held the same folders to legacy/packages.
 BINDING_TARGETS := php python node wasm go
 .PHONY: $(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-node-conformance test-wasm \
-	test-python-binding test-php-binding test-go-binding
+	test-python-binding test-python-conformance test-php-binding test-php-conformance test-go-binding
 BINDING ?=
 WASM_BINDGEN ?=
 MATURIN ?=
@@ -352,7 +352,8 @@ bindings-check:
 lint-bindings: bindings
 	cargo clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets --features $(BINDING_FEATURES) -- -D warnings
 
-test-bindings: lint-bindings check-declarations test-python-binding test-node test-node-conformance test-wasm test-php-binding test-go-binding
+test-bindings: lint-bindings check-declarations test-python-binding test-python-conformance test-node test-node-conformance test-wasm test-php-binding \
+	test-php-conformance test-go-binding
 
 # The TypeScript compiler checks the generated declarations of the Node and WASM bindings in strict mode.
 check-declarations: bindings-node bindings-wasm
@@ -369,6 +370,11 @@ test-python-binding: bindings-python
 	cd packages/python && $(MATURIN) build --locked --interpreter $(BINDING_VAR)/venv/bin/python --features panic-test --out $(BINDING_VAR)/wheels
 	$(BINDING_VAR)/venv/bin/pip install -q --no-index --force-reinstall $(BINDING_VAR)/wheels/*.whl
 	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv $(BINDING_VAR)/venv --results .results/test-python-binding.json --inputs packages/python/generated -- discover -s packages/python/generated/tests -t packages/python/generated/tests
+
+# The common suite of the legacy tests, contracts/conformance/vectors.json, with its expectations on the Python binding that
+# test-python-binding installs into var/bindings/venv (plan f6, step 7a-1; S-463).
+test-python-conformance: test-python-binding
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv $(BINDING_VAR)/venv --results .results/test-python-conformance.json --inputs packages/python/tests --inputs contracts -- discover -s packages/python/tests -t packages/python/tests
 
 # The npm package and the platform package of the addon, packed and installed into var/bindings/node (binding T-2): the addon is
 # the npm package of this machine's platform, which the package names in optionalDependencies, and the package also holds the WASM
@@ -416,6 +422,11 @@ test-php-binding: bindings-php legacy/packages/php-ext/vendor/composer/installed
 	cargo build --locked -p polyspec-fsm-php-ext --features panic-test
 	$(KIT_TOOLS)/bin/php -l packages/php-ext/generated/polyspec_fsm.stub.php
 	$(RUN_TESTS) phpunit --cwd legacy/packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-binding.json --inputs packages/php-ext/generated -- $(CURDIR)/packages/php-ext/generated/tests
+
+# The common suite of the legacy tests, contracts/conformance/vectors.json, with its expectations on the PHP binding that
+# test-php-binding builds (plan f6, step 7a-1; S-462).
+test-php-conformance: test-php-binding
+	$(RUN_TESTS) phpunit --cwd legacy/packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-conformance.json --inputs packages/php-ext/tests --inputs contracts -- $(CURDIR)/packages/php-ext/tests
 
 # The static library with the test features (binding GN-13b), which Go links through CGO_LDFLAGS; gofmt and go vet of the Go
 # packages of the binding, then their generated tests on go test, with the Go of mise.toml and GOTOOLCHAIN=local; the recipes name
@@ -545,6 +556,7 @@ npm_stamp = var/deps/npm/$(subst /,-,$(1))-$(shell shasum -a 256 $(1)/package-lo
 NPM_DEP := $(call npm_stamp,legacy/packages/js)
 PHP_DEP := legacy/packages/php/vendor/composer/installed.json
 PHP_EXT_DEP := legacy/packages/php-ext/vendor/composer/installed.json
+BINDING_PHP_DEP := packages/php-ext/vendor/composer/installed.json
 PYTHON_BIN := $(KIT_TOOLS)/mise/shims/python3
 PYTHON_DEP := legacy/packages/python/.venv/.installed
 PYTHON_LOCK := legacy/packages/python/pylock.toml
@@ -556,7 +568,7 @@ DOCS_DEP := $(call npm_stamp,docs)
 # The npm projects install first: the PHP and Python installs run install-link, which needs every linked project installed.
 # Each npm install links its own project right after npm ci (PROJECT, S-366-1), so an npm ci of a changed lock leaves no copy
 # in place of a link of .links (P30).
-PACKAGE_DEPS := $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP)
+PACKAGE_DEPS := $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(BINDING_PHP_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP)
 
 $(NPM_DEP): legacy/packages/js/package-lock.json
 	mkdir -p $(dir $@)
@@ -569,6 +581,12 @@ $(PHP_DEP): legacy/packages/php/composer.lock legacy/packages/php/composer.json
 
 $(PHP_EXT_DEP): legacy/packages/php-ext/composer.lock legacy/packages/php-ext/composer.json
 	$(ONLINE) $(MAKE) fsm-php-ext-install
+	touch $@
+
+# The Composer project of the PHP binding, packages/php-ext: it requires no package, and its install gives the autoloader with which
+# make lint-php runs PHPStan on its tests (kit lint-php).
+$(BINDING_PHP_DEP): packages/php-ext/composer.lock packages/php-ext/composer.json
+	$(ONLINE) $(MAKE) binding-php-install
 	touch $@
 
 # The polyspec packages of Composer (orm and ordered-json) come from the packages.json of each release, a flat
@@ -684,7 +702,10 @@ fsm-php-test: $(PHP_DEP) fsm-php-gen
 	$(RUN_TESTS) phpunit --cwd legacy/packages/php --results .results/php.json --inputs legacy/packages/php --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests
 
 # fsm-php-ext-install is the install of the extension: the same Composer packages as legacy/packages/php (composer.lock).
-.PHONY: fsm-php-ext-install fsm-php-ext-gen
+.PHONY: fsm-php-ext-install fsm-php-ext-gen binding-php-install
+binding-php-install:
+	cd packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
+
 fsm-php-ext-install:
 	cd legacy/packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
 	$(MAKE) --no-print-directory install-tools TOOLS=uv
