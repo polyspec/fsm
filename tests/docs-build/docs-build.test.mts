@@ -38,6 +38,14 @@ export function warningLines(output: string): string[] {
   return stripVTControlCharacters(output).split('\n').filter(line => WARNING.test(line.trim()));
 }
 
+// An error line is a line of the build output (ANSI colour codes removed) that starts with the name of an error (`TypeError:`,
+// `Error:`) or with `error`. VitePress prints the error of a page that fails to render and builds the other pages, so a build
+// with such a line has a page without its content (S-473).
+const ERROR = /^(?:[A-Za-z]*Error\b|error\b)/;
+export function errorLines(output: string): string[] {
+  return stripVTControlCharacters(output).split('\n').filter(line => ERROR.test(line.trim()));
+}
+
 /** Runs the VitePress build of the site whose docs directory is `docs`, without VITEPRESS_BASE. */
 function build(docs: string) {
   const env = { ...process.env };
@@ -81,10 +89,33 @@ test('a link to a document that does not exist fails the build', { timeout: TIME
   assert.match(`${result.stdout}${result.stderr}`, /broken-link/);
 });
 
+// VitePress compiles a page as a Vue template, so a mustache outside a code is an interpolation; one that names nothing of the
+// page fails the render of that page. The build fails then, and its output names the error (S-473).
+test('a page that fails to render fails the build', { timeout: TIMEOUT_MS }, (t) => {
+  const root = mirror(t);
+  writeFileSync(path.join(root, 'docs/spec/render-error.md'), '# Render error\n\nThe value is {{ noSuchFunction() }}.\n');
+  const result = build(path.join(root, 'docs'));
+  assert.notEqual(result.status, 0, `the build succeeded with a page that failed to render\n${result.stdout}${result.stderr}`);
+  assert.match(`${result.stdout}${result.stderr}`, /noSuchFunction is not a function/);
+});
+
+// An inline code is the text of the document: a mustache in it is no interpolation, and the page shows it as written (S-473).
+test('an inline code with a mustache renders as its text', { timeout: TIMEOUT_MS }, (t) => {
+  const root = mirror(t);
+  writeFileSync(path.join(root, 'docs/spec/inline-code.md'), '# Inline code\n\nThe step has `if: ${{ !cancelled() }}` and `{{ a < b && c }}`.\n');
+  const result = build(path.join(root, 'docs'));
+  assert.equal(result.status, 0, `the build failed\n${result.stdout}${result.stderr}`);
+  assert.deepEqual(errorLines(result.stdout + result.stderr), [], 'the build prints an error');
+  const page = readFileSync(path.join(root, 'docs/.vitepress/dist/docs/spec/inline-code.html'), 'utf8');
+  assert.ok(page.includes('<code>if: ${{ !cancelled() }}</code>'), 'the page does not hold the text of the first inline code');
+  assert.ok(page.includes('<code>{{ a &lt; b &amp;&amp; c }}</code>'), 'the page does not hold the text of the second inline code');
+});
+
 test('the site builds from the repository documents, with the English and Korean roots and a package page', { timeout: TIMEOUT_MS }, () => {
   const result = build(path.join(REPO, 'docs'));
   assert.equal(result.status, 0, `the build failed\n${result.stdout}${result.stderr}`);
   assert.deepEqual(warningLines(result.stdout + result.stderr), [], 'the build prints a warning');
+  assert.deepEqual(errorLines(result.stdout + result.stderr), [], 'the build prints an error');
   const out = path.join(REPO, 'docs/.vitepress/dist');
   for (const page of ['index.html', 'README.ko.html', 'legacy/packages/go/index.html', 'docs/spec/fsm.html', 'docs/plans/fsm-v1/plan.html']) {
     assert.ok(existsSync(path.join(out, page)), `the build produced no ${page}`);
