@@ -44,7 +44,17 @@ RUN_TESTS = node $(KIT)/run-tests.$(KIT_EXT)
 # package-lock.json with that npm, @polyspec/kit included (install-packages), every other tool of mise.toml (install-tools), and
 # the declared symbol extractors of config/toolchain.json (kit-install-declared). install-kit runs them in that order; make
 # install adds the package dependencies of fsm and then the links. Each of them downloads, so it runs ONLINE.
-.PHONY: install-kit install-tools install-packages install-link kit-install-declared kit-install-symbols toolchain-lock
+.PHONY: bootstrap install-kit install-tools install-packages install-link kit-install-declared kit-install-symbols toolchain-lock
+# bootstrap installs the lock of the root, @polyspec/kit included, before the tools of the checkout exist, since install-tools
+# TOOLS=npm runs the bootstrap of the installed kit: the first step of a CI job after its checkout
+# (.github/actions/kit-bootstrap). It runs the npm that devEngines of package.json names on the node of the machine, outside the
+# checkout with --prefix, since an npm of another release refuses a folder whose devEngines names another npm (EBADDEVENGINES,
+# kit K938-1). The folder outside is RUNNER_TEMP in a CI job and else TMPDIR. npm reads allow-remote=root of .npmrc.
+BOOTSTRAP_NPM := $(abspath $(shell command -v npm))
+bootstrap:
+	root="$$PWD"; version="$$(node -p 'require("./package.json").devEngines.packageManager.version')"; \
+	cd "$${RUNNER_TEMP:-$${TMPDIR:-/tmp}}" && npm_config_cache="$$root/var/bootstrap/npm-cache" $(ONLINE) "$(BOOTSTRAP_NPM)" exec --yes --package="npm@$$version" -- npm --prefix "$$root" ci --ignore-scripts
+
 install-kit:
 	$(MAKE) --no-print-directory install-tools TOOLS=npm
 	$(MAKE) --no-print-directory install-packages
@@ -488,6 +498,13 @@ kit-ci-context-prepare:
 kit-ci-context-cleanup:
 	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-cleanup $(GROUP) $(RUNTIME)
 
+# ci-passed is the last job of .github/workflows/ci.yml and of the pipeline: it fails unless every job of RESULTS, the JSON of
+# toJSON(needs), has the result success; with FAIL_SKIPPED=1 a skipped job fails it too. RESULTS that is not set or names no job
+# fails it with status 2.
+.PHONY: ci-passed
+ci-passed:
+	$(NODE) $(KIT)/ci-passed.$(KIT_EXT)
+
 # ci-targets runs TARGETS past failures and writes the report CI_REPORT (logs, record.json, summary.md).
 CI_REPORT ?= var/report/ci-targets
 ci-targets:
@@ -502,9 +519,18 @@ ci-summary:
 # GITHUB_ENV; the later steps read TAG. release-prepare installs the PHP of var/tools (install-tools TOOLS=php), whose phpize and
 # gen_stub.php fsm-php-ext-gen runs for the arginfo header of the generated extension that the php-ext archive carries (S-370);
 # release-tools installs no tool for a make entry (kit K930).
-.PHONY: release-candidate release-prepare release-tools release-tools-path release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage
+.PHONY: release-candidate release-zip release-checkout release-prepare release-tools release-tools-path release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage
 release-candidate:
 	RELEASE_ASSETS=var/release/assets $(NODE) $(KIT)/release-run.$(KIT_EXT) prepare "$(VERSION)"
+
+# release-zip fails unless zip, which Composer needs for the release archives, is on PATH.
+release-zip:
+	@command -v zip >/dev/null || { echo 'release-zip: Info-ZIP is required for Composer release archives; install the zip package on the Ubuntu runner'; exit 1; }
+
+# release-checkout checks out the tag TAG of the environment, so that the release builds the tagged commit with its own kit.
+release-checkout:
+	@test -n "$$TAG" || { echo "release-checkout: TAG is required, for example make release-checkout TAG=v0.0.1"; exit 1; }
+	git checkout --quiet "$$TAG"
 
 release-prepare:
 	$(MAKE) --no-print-directory install-tools TOOLS=php
@@ -941,6 +967,13 @@ $(GUI_BROWSERS): | $(GUI_DEP)
 
 # gui-browsers is the name of the stamp for people who type it; the stamp is the target that the browser test needs.
 gui-browsers: $(GUI_BROWSERS)
+
+# gui-browser-libraries installs the system libraries of that Chromium into the machine with the package manager of the system,
+# as root (sudo): a step of the CI job check, whose runner does not hold them. The Playwright of GUI_DEP names the libraries of
+# its Chromium; sudo keeps the PATH of the recipe, which holds the node of var/tools. It downloads, so it is ONLINE.
+.PHONY: gui-browser-libraries
+gui-browser-libraries: | $(GUI_DEP)
+	cd packages/gui && sudo env PATH="$$PATH" $(ONLINE) node_modules/.bin/playwright install-deps chromium
 
 # gui-browser-test runs the tests of tests/browser (browser.test.mjs, diagram.test.mjs; S-38 adds the drawn diagram) of packages/gui: the GUI forms in a headless Chromium on a temporary project
 # (docs/plans/fsm-v1/checklist.md, S-22-1 and S-22-2). It needs the browser of gui-browsers and the built assets of gui-build.

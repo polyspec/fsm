@@ -1,6 +1,7 @@
 # Continuous integration (docs/plans/fsm-v1/plan.md, C-10 and Verification; docs/plans/fsm-v1/checklist.md, S-21). The job kit calls the pipeline ci-pipeline.yml of fsm (K910), and the job check runs
 # `make install` and then its suite targets through `make ci-targets` (the shared and runtime targets run in the job kit), with the
-# PostgreSQL and MySQL services of plan C-6.
+# PostgreSQL and MySQL services of plan C-6. The last job ci-passed passes only when every other job succeeded (S-472); every
+# job runs on ubuntu-26.04-arm, and each run step is one make target (make workflows-test).
 # The versions come from the files that declare them: PHP from config/toolchain.json, Rust from rust-toolchain.toml, and
 # Node.js, Go, Python and uv from mise.toml, which mise installs at the digests of mise.lock: Node.js with make install-tools
 # TOOLS=npm, which the node of setup-node only starts (kit K171), and the others with make install (install-tools, S-44-6). The workflow runs on every push to main and on a manual run (workflow_dispatch). A newer push does
@@ -28,7 +29,7 @@ jobs:
     uses: ./.github/workflows/ci-pipeline.yml
   check:
     needs: kit
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-26.04-arm
     services:
       postgres:
         image: postgres:17
@@ -68,11 +69,28 @@ jobs:
       - name: Install the toolchains and the package dependencies
         run: make install
       - name: Install the system libraries of Chromium
-        run: sudo env PATH="$PATH" npx playwright install-deps chromium
-        working-directory: packages/gui
+        run: make gui-browser-libraries
       - name: Install the git hooks of fsm
         run: make hooks
       - name: Check the git hooks
         run: make ci-targets TARGETS="hooks-check"
+      # The suite runs after a failed check of the hooks too, so one run names every failed target.
       - name: Run the suite targets through make ci-targets
+        if: ${{ !cancelled() }}
         run: make ci-targets TARGETS="compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test test-rust commit-names-test commit-names-check"
+
+  # The result of the run: the job runs after every other job, also after a failed or cancelled one, and make ci-passed
+  # passes only when each job of needs has the result success; a skipped job fails it (FAIL_SKIPPED=1). make
+  # workflows-test fails this workflow when ci-passed is not its last job or when needs leaves a job out.
+  ci-passed:
+    if: ${{ always() }}
+    needs: [kit, check]
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Bootstrap kit, npm and the packages of package-lock.json (K992)
+        uses: ./.github/actions/kit-bootstrap
+      - name: Every job passed
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: make ci-passed FAIL_SKIPPED=1

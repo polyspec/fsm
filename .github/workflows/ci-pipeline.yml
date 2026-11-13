@@ -4,6 +4,10 @@
 # parallel, then required. Each job installs only its own locked prerequisites, declared in config/ci.json or selected from the
 # repository's deps-<runtime> targets (K859), and runs the gate of its group with the targets that config/ci.json declares for
 # that group (targets.shared, targets.runtimes.<runtime>) through make ci-targets, inside its context window.
+# Each run step is one make target (S-472). A value that an expression gives, the tools and the targets of the plan and the
+# runtime of the matrix, reaches the target as a variable of the environment of its step alone (TOOLS, TARGETS, RUNTIME), which
+# make reads as the variable of that name; the command of the step holds no expression. Every job names the runner
+# ubuntu-26.04-arm, which runner of config/ci.json names too (make workflows-test compares them).
 name: ci-pipeline
 
 on:
@@ -13,14 +17,14 @@ permissions:
   contents: read
 
 jobs:
-  # The shared job writes the plan that names the runner of the other jobs (config/ci.json runner), so it runs on the default runner.
+  # The shared job writes the plan of the runtime jobs.
   shared:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04-arm
     outputs:
       runtimes: ${{ steps.plan.outputs.runtimes }}
-      runner: ${{ steps.plan.outputs.runner }}
       has_runtimes: ${{ steps.plan.outputs.has_runtimes }}
     steps:
+      # actions/checkout v7.0.1: with the whole history, which the checks of the documents and the owners read.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
@@ -28,6 +32,7 @@ jobs:
       - uses: ./.github/actions/kit-bootstrap
       - id: plan
         run: make kit-ci-plan
+      # shivammathur/setup-php 2.40.0: the PHP of .php-version, when a common gate tool of the plan needs it.
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         if: ${{ contains(steps.plan.outputs.common_tools, 'php') }}
         with:
@@ -36,14 +41,18 @@ jobs:
           coverage: none
       - name: install common gate tools
         if: ${{ steps.plan.outputs.common_tools != '[]' }}
-        run: make install-tools TOOLS="${{ join(fromJSON(steps.plan.outputs.common_tools), ' ') }}"
+        env:
+          TOOLS: ${{ join(fromJSON(steps.plan.outputs.common_tools), ' ') }}
+        run: make install-tools
       - name: install shared prerequisites
         run: make kit-ci-setup GROUP=shared
       - id: context_prepare
         name: prepare shared CI context
         run: make kit-ci-context-prepare GROUP=shared
       - name: shared gates
-        run: make ci-targets TARGETS="kit-gates-static ${{ join(fromJSON(steps.plan.outputs.shared_targets), ' ') }}"
+        env:
+          TARGETS: kit-gates-static ${{ join(fromJSON(steps.plan.outputs.shared_targets), ' ') }}
+        run: make ci-targets
       - name: cleanup shared CI context
         if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
         run: make kit-ci-context-cleanup GROUP=shared
@@ -63,8 +72,9 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.shared.outputs.runtimes) }}
-    runs-on: ${{ needs.shared.outputs.runner }}
+    runs-on: ubuntu-26.04-arm
     steps:
+      # actions/checkout v7.0.1 and shivammathur/setup-php 2.40.0, the PHP of .php-version for the PHP runtimes.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         if: ${{ matrix.runtime == 'php' || matrix.runtime == 'php-ext' }}
@@ -76,20 +86,30 @@ jobs:
       - uses: ./.github/actions/kit-bootstrap
       - name: install runtime tools
         if: ${{ join(matrix.installTools, ' ') != '' }}
-        run: make install-tools TOOLS="${{ join(matrix.installTools, ' ') }}"
+        env:
+          TOOLS: ${{ join(matrix.installTools, ' ') }}
+        run: make install-tools
       - name: install runtime prerequisites
-        run: make kit-ci-setup GROUP=runtime RUNTIME=${{ matrix.runtime }}
+        env:
+          RUNTIME: ${{ matrix.runtime }}
+        run: make kit-ci-setup GROUP=runtime
       - name: install PHP symbol extractor
         if: ${{ matrix.runtime == 'php' }}
         run: make kit-install-symbols EXTRACTORS=php
       - id: context_prepare
         name: prepare runtime CI context
-        run: make kit-ci-context-prepare GROUP=runtime RUNTIME=${{ matrix.runtime }}
+        env:
+          RUNTIME: ${{ matrix.runtime }}
+        run: make kit-ci-context-prepare GROUP=runtime
       - name: runtime gate
-        run: make ci-targets TARGETS="kit-gates-runtime-${{ matrix.runtime }} ${{ join(matrix.targets, ' ') }}"
+        env:
+          TARGETS: kit-gates-runtime-${{ matrix.runtime }} ${{ join(matrix.targets, ' ') }}
+        run: make ci-targets
       - name: cleanup runtime CI context
         if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
-        run: make kit-ci-context-cleanup GROUP=runtime RUNTIME=${{ matrix.runtime }}
+        env:
+          RUNTIME: ${{ matrix.runtime }}
+        run: make kit-ci-context-cleanup GROUP=runtime
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
       - name: report
         if: ${{ !cancelled() }}
@@ -99,34 +119,18 @@ jobs:
           path: var/report/ci-targets/
           if-no-files-found: ignore
 
-  # The closing common part: it fails when a job that the plan selected does not succeed. The plan selects shared, and runtime
-  # when the repository has one (K950). A job
-  # the plan did not select is skipped and is not a result; a selected job that is skipped fails the pipeline. It runs on the
-  # default runner, since the runner output of shared is empty when shared fails before the plan.
+  # The closing part: it runs after shared and runtime, also after a failed or cancelled one, and make ci-passed passes only
+  # when each of them has the result success. config/ci.json declares runtimes, so the plan selects the job runtime in every
+  # run, and a skipped job fails the pipeline (FAIL_SKIPPED=1): runtime is skipped only when shared wrote no plan.
   required:
     if: ${{ always() }}
     needs: [shared, runtime]
-    runs-on: ubuntu-24.04
-    env:
-      SHARED_RESULT: ${{ needs.shared.result }}
-      RUNTIME_RESULT: ${{ needs.runtime.result }}
-      SHARED_SELECTED: 'true'
-      RUNTIME_SELECTED: ${{ needs.shared.outputs.has_runtimes == 'true' }}
+    runs-on: ubuntu-26.04-arm
     steps:
-      - name: require every job that the plan selected
-        run: |
-          failed=0
-          judge() {
-            if [ "$3" != true ]; then
-              echo "$1: not selected by the plan, not judged"
-              return 0
-            fi
-            echo "$1: $2"
-            if [ "$2" != success ]; then
-              echo "$1 ended with $2, and the plan selected it; expected success" >&2
-              failed=1
-            fi
-          }
-          judge shared "$SHARED_RESULT" "$SHARED_SELECTED"
-          judge runtime "$RUNTIME_RESULT" "$RUNTIME_SELECTED"
-          exit "$failed"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      # The bootstrap of kit (K992), whose utility ci-passed the target runs.
+      - uses: ./.github/actions/kit-bootstrap
+      - name: require shared and runtime
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: make ci-passed FAIL_SKIPPED=1

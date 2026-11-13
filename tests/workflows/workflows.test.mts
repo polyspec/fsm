@@ -9,6 +9,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'smol-toml';
+import { cleanEnv } from '../support/make-sandbox.mts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (file: string): string => readFileSync(path.join(ROOT, file), 'utf8');
@@ -183,5 +184,79 @@ test('the suite of the CI job, make check and the owners of the core crate run i
       return Array.isArray(paths) && paths.includes(owned) && Array.isArray(targets) && targets.includes('test-rust');
     });
     assert.ok(rule !== undefined, `no owner of ${owned} runs test-rust`);
+  }
+});
+
+/** The result of `make <goals>` in the repository with the variables `env` added and no inherited make flags; `-n` in `goals` prints the recipe and runs nothing. */
+function make(goals: string[], env: Record<string, string> = {}): { status: number | null; output: string } {
+  const clean = cleanEnv();
+  // The variables that the recipes below read are those of the case alone.
+  for (const name of ['RESULTS', 'FAIL_SKIPPED', 'TAG', 'RUNNER_TEMP', 'TARGETS', 'TOOLS', 'RUNTIME', 'GROUP']) Reflect.deleteProperty(clean, name);
+  const result = spawnSync('make', ['--no-print-directory', ...goals], { cwd: ROOT, encoding: 'utf8', env: { ...clean, ...env } });
+  return { status: result.status, output: `${result.stdout}${result.stderr}` };
+}
+
+// The targets that the steps of the workflows run in place of a shell command (S-472): the last job of ci and of the pipeline,
+// the checkout of the release tag, the bootstrap of the action and the system libraries of Chromium.
+test('make ci-passed passes only when every job of RESULTS succeeded', () => {
+  const results = (shared: string, runtime: string): Record<string, string> => ({ RESULTS: JSON.stringify({ shared: { result: shared, outputs: {} }, runtime: { result: runtime, outputs: {} } }) });
+  const good = make(['ci-passed', 'FAIL_SKIPPED=1'], results('success', 'success'));
+  assert.equal(good.status, 0, good.output);
+  for (const [shared, runtime] of [['success', 'failure'], ['cancelled', 'success'], ['failure', 'skipped'], ['success', 'skipped']] as const) {
+    const bad = make(['ci-passed', 'FAIL_SKIPPED=1'], results(shared, runtime));
+    assert.notEqual(bad.status, 0, `ci-passed passed with shared ${shared} and runtime ${runtime}:\n${bad.output}`);
+  }
+  const unset = make(['ci-passed', 'FAIL_SKIPPED=1']);
+  assert.notEqual(unset.status, 0, `ci-passed passed with no RESULTS:\n${unset.output}`);
+  assert.match(unset.output, /RESULTS is not set/);
+});
+
+test('make release-checkout and make release-undraft read TAG from the environment and fail without it', () => {
+  for (const target of ['release-checkout', 'release-undraft']) {
+    const missing = make([target]);
+    assert.notEqual(missing.status, 0, `${target} passed with no TAG`);
+    assert.match(missing.output, new RegExp(`${target}: TAG is required`));
+  }
+  const checkout = make(['-n', 'release-checkout'], { TAG: 'v0.0.1' });
+  assert.equal(checkout.status, 0, checkout.output);
+  assert.match(checkout.output, /^git checkout --quiet "\$TAG"$/m);
+});
+
+test('make bootstrap installs the lock with the npm of devEngines outside the checkout, and gui-browser-libraries runs the Playwright of packages/gui', () => {
+  const bootstrap = make(['-n', 'bootstrap']);
+  assert.equal(bootstrap.status, 0, bootstrap.output);
+  assert.match(bootstrap.output, /devEngines\.packageManager\.version/);
+  assert.match(bootstrap.output, /cd "\$\{RUNNER_TEMP:-\$\{TMPDIR:-\/tmp\}\}" && .* exec --yes --package="npm@\$version" -- npm --prefix "\$root" ci --ignore-scripts$/m);
+  const libraries = make(['-n', 'gui-browser-libraries']);
+  assert.equal(libraries.status, 0, libraries.output);
+  assert.match(libraries.output, /^cd packages\/gui && sudo env PATH="\$PATH" +node_modules\/\.bin\/playwright install-deps chromium$/m);
+  assert.match(step(stepsOf(CHECK_JOB), 'Install the system libraries of Chromium'), /\n {8}run: make gui-browser-libraries$/m);
+});
+
+// The steps of the pipeline hold no expression in their command (S-472): the value of an expression is a variable of the
+// environment of the step, which make reads as the variable of that name, so the recipe receives what the command line gave it.
+test('a make variable of the environment of a step reaches the recipe, and the runner of config/ci.json is the runner of the jobs', () => {
+  const targets = make(['-n', 'ci-targets'], { TARGETS: 'kit-gates-runtime-php docs-check' });
+  assert.equal(targets.status, 0, targets.output);
+  assert.match(targets.output, /ci-targets\.m[jt]s -k \S+ kit-gates-runtime-php docs-check$/m);
+  const tools = make(['-n', 'install-tools'], { TOOLS: 'php composer' });
+  assert.equal(tools.status, 0, tools.output);
+  assert.match(tools.output, /install-tools\.m[jt]s --no-self-update php composer$/m);
+  for (const verb of ['setup', 'context-prepare', 'context-cleanup']) {
+    const setup = make(['-n', `kit-ci-${verb}`, 'GROUP=runtime'], { RUNTIME: 'php-ext' });
+    assert.equal(setup.status, 0, setup.output);
+    assert.match(setup.output, new RegExp(`ci-setup\\.m[jt]s --${verb} runtime php-ext$`, 'm'));
+  }
+  const pipeline = read('.github/workflows/ci-pipeline.yml');
+  const steps = [...jobsOf(pipeline).values()].flatMap(stepsOf);
+  // Each variable is set on its step alone: kit-ci-setup GROUP=shared refuses a RUNTIME, and a link takes RUNTIME as its selector.
+  for (const [name, run] of [['TOOLS', 'make install-tools'], ['TARGETS', 'make ci-targets'], ['RUNTIME', 'make kit-ci-']] as const) {
+    const setting = steps.filter(entry => new RegExp(`\\n {10}${name}: `).test(entry));
+    assert.ok(setting.length > 0, `no step of the pipeline sets ${name}`);
+    for (const entry of setting) assert.ok(entry.includes(`run: ${run}`), `a step that sets ${name} does not run ${run}:\n${entry}`);
+    assert.doesNotMatch(pipeline, new RegExp(`\\n {0,6}${name}: `), `${name} is set above a step`);
+  }
+  for (const file of ['.github/workflows/ci.yml', '.github/workflows/ci-pipeline.yml', '.github/workflows/release.yml', '.github/workflows/pages.yml']) {
+    for (const runner of read(file).matchAll(/^ +runs-on: (.*)$/gm)) assert.equal(runner[1], field(JSON.parse(read('config/ci.json')), 'runner', 'config/ci.json'), `${file} names another runner than config/ci.json`);
   }
 });
