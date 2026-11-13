@@ -52,11 +52,27 @@ In the runner form the targets run on the committed tree of the branch of the ch
 
 `var/persist-servers/fsm-persist-<pid>-<random>` holds `compose.yaml` and `run.sh`, and in the runner form `runner.sh` and
 `tree.bundle`, the Git bundle of the branch. The runner mounts this directory read-only and nothing of the checkout.
+`run.sh` writes `report.txt` into it.
+
+## The report and the memory of a run
+
+`report.txt` holds one line for each event, the time in UTC and the event: `<step> start` and `<step> exit <code>` for the
+steps `version`, `images`, `up`, `command` and `down`, `memory.peak <service> <bytes>` for each service, and
+`run exit <code>`. The run shows each line as `persist-servers: <line>`; the targets that remove the directory leave these
+lines alone. The memory of a service is the highest use that the cgroup of its container recorded, read with
+`bay exec <service> cat /sys/fs/cgroup/memory.peak` before the project is removed; `not read` stands for a container that
+has no such file.
+
+A machine may hold less memory than the services of a run take together: on a Linux machine of 3.7 GB the containers of bay
+slow down at 2.6 GB together and their processes are ended at 3.0 GB. To limit a service, add `"memory": "<size>"`, such as
+`"768m"`, to the pin of its image in `config/containers.json`; the Compose file of a run then holds it as `mem_limit` of
+that service. No pin holds a value yet. Choose one from the peak of a report, above it: a limit below what a service needs
+ends its processes.
 
 ## What `run.sh` does
 
 Each step but the command of the host form is one command of `bay -f <directory> -p <project>`; in the runner form
-`run.sh` starts no other program.
+`run.sh` starts no other program but `date`, for the time of its report.
 
 1. `bay version --json`: the first line of the record names the bay that ran.
 2. `bay images`: an image that the store lacks fails the run and names `make persist-images`.

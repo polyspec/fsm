@@ -1,5 +1,5 @@
 <!-- doc-id: operations-persist-servers -->
-<!-- source-sha256: 75ff0fe0e4f7e131fa330618c55c9698b2851a1e515925e1de81ede0b11a77c1 -->
+<!-- source-sha256: 7e6fd06f2b3721f5359a9f811b25dc4c56203e031cbe9b7a1acf37ec62f510fe -->
 # 영속성 테스트의 서버
 
 [English](persist-servers.md)
@@ -50,11 +50,26 @@ runner 형태에서 target은 checkout의 branch의 commit된 tree에서 돈다.
 
 `var/persist-servers/fsm-persist-<pid>-<random>`에는 `compose.yaml`과 `run.sh`가 있고, runner 형태에는 `runner.sh`와
 branch의 Git bundle인 `tree.bundle`도 있다. runner는 이 디렉터리를 읽기 전용으로 mount하고 checkout의 어떤 것도 mount하지 않는다.
+`run.sh`는 그 안에 `report.txt`를 쓴다.
+
+## 실행의 report와 메모리
+
+`report.txt`는 사건마다 한 줄을 가지며, 한 줄은 UTC 시각과 사건이다. 단계 `version`, `images`, `up`, `command`, `down`의
+`<step> start`와 `<step> exit <code>`, 각 service의 `memory.peak <service> <bytes>`, 그리고 `run exit <code>`다. 실행은 각
+줄을 `persist-servers: <line>`으로 보여 준다. 디렉터리를 지우는 target에서는 이 줄만 남는다. service의 메모리는 그
+container의 cgroup이 기록한 최고 사용량이고, project를 제거하기 전에 `bay exec <service> cat /sys/fs/cgroup/memory.peak`로
+읽는다. 그 파일이 없는 container에는 `not read`가 적힌다.
+
+머신은 실행의 service들이 함께 쓰는 것보다 적은 메모리를 가질 수 있다. 3.7 GB의 Linux 머신에서 bay의 container들은 합계
+2.6 GB에서 느려지고 3.0 GB에서 그 process가 종료된다. service를 제한하려면 `config/containers.json`에서 그 이미지의 pin에
+`"768m"` 같은 `"memory": "<size>"`를 더한다. 그러면 실행의 Compose 파일이 그 service의 `mem_limit`으로 그것을 가진다. 아직
+어떤 pin도 값을 갖지 않는다. report의 최고치를 보고 그보다 높게 고른다. service에 필요한 것보다 낮은 한도는 그 process를
+끝낸다.
 
 ## `run.sh`가 하는 일
 
-host 형태의 명령을 뺀 각 단계는 `bay -f <directory> -p <project>`의 명령 하나다. runner 형태에서 `run.sh`는 다른
-프로그램을 시작하지 않는다.
+host 형태의 명령을 뺀 각 단계는 `bay -f <directory> -p <project>`의 명령 하나다. runner 형태에서 `run.sh`는 report의
+시각을 위한 `date` 외에 다른 프로그램을 시작하지 않는다.
 
 1. `bay version --json`: 기록의 첫 줄이 실행한 bay를 적는다.
 2. `bay images`: store에 없는 이미지는 실행을 실패시키고 `make persist-images`를 적는다.

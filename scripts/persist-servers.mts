@@ -15,8 +15,8 @@
 //                                the DSNs in its environment: for a machine of development and for CI, whose host holds
 //                                the tools of the repository
 //   the runner form, --runner    the command runs in the service runner of the project with bay exec, and run.sh starts
-//                                no program but bay: for a machine whose host holds sh and bay alone; the directory alone
-//                                is moved there
+//                                no program but bay and date: for a machine whose host holds sh and bay alone; the
+//                                directory alone is moved there
 //
 // The directory is var/persist-servers/<project> of the checkout, which Git ignores; the project is
 // fsm-persist-<pid>-<random>, with the process id of this process and 4 random bytes, so two runs share no directory, no
@@ -24,6 +24,7 @@
 //
 //   compose.yaml   the services postgres and mysql, and in the runner form the service runner; no service publishes a port
 //   run.sh         the steps of the run
+//   report.txt     written by run.sh: the time of each step and the highest memory use of each service
 //   runner.sh      the runner form: the steps that run inside runner, the installation order of the repository, then the
 //                  command
 //   tree.bundle    the runner form: the Git bundle of the branch of the checkout, the committed tree of the command
@@ -144,6 +145,14 @@ function image(name: Kind | 'runner'): string {
   return reference;
 }
 
+/** The lines of the Compose file for the memory limit of the image `name`: its pin may hold `memory`, a size that bay passes to the container engine as mem_limit. */
+function memoryLimit(name: Kind | 'runner'): string[] {
+  const memory = field(pinned(name), 'memory');
+  if (memory === undefined) return [];
+  if (typeof memory !== 'string' || !/^[1-9][0-9]*[kmg]?$/.test(memory)) throw new Failure(`persist-servers: ${PINS} names the memory ${JSON.stringify(memory)} of ${name}, which is no size such as 768m`);
+  return [`    mem_limit: ${JSON.stringify(memory)}`];
+}
+
 /** The system packages that the runner installs, which the pin of its image names. */
 function packages(): string[] {
   const names = field(pinned('runner'), 'packages');
@@ -177,12 +186,12 @@ function composeFile(runner: boolean): string {
   const lines = ['services:'];
   for (const kind of KINDS) {
     const server = SERVERS[kind];
-    lines.push(`  ${kind}:`, `    image: ${JSON.stringify(image(kind))}`, `    expose: [${JSON.stringify(String(server.port))}]`, '    environment:');
+    lines.push(`  ${kind}:`, `    image: ${JSON.stringify(image(kind))}`, ...memoryLimit(kind), `    expose: [${JSON.stringify(String(server.port))}]`, '    environment:');
     for (const [name, value] of Object.entries(server.environment)) lines.push(`      ${name}: ${JSON.stringify(value)}`);
     lines.push('    healthcheck:', `      test: [${['CMD', ...server.health].map(word => JSON.stringify(word)).join(', ')}]`, ...HEALTH.map(declared => `      ${declared}`));
   }
   // The command of runner does not end, so the container stays for the commands of bay exec.
-  if (runner) lines.push('  runner:', `    image: ${JSON.stringify(image('runner'))}`, '    command: ["sleep", "infinity"]', `    volumes: ["./:${MOUNT}:ro"]`);
+  if (runner) lines.push('  runner:', `    image: ${JSON.stringify(image('runner'))}`, ...memoryLimit('runner'), '    command: ["sleep", "infinity"]', `    volumes: ["./:${MOUNT}:ro"]`);
   return `${lines.join('\n')}\n`;
 }
 
@@ -233,16 +242,18 @@ function runnerFile(branch: string): string {
 
 /**
  * run.sh of the project `name`: the steps of a run, whose exit codes decide it. The command of the run, `command`, gets
- * `variables`. With `runner` it runs in the service runner, as a command of bay, and the file starts no program but bay:
- * what else it does is of sh itself. Without it the command is a process that the file starts, with the variables in its
+ * `variables`. With `runner` it runs in the service runner, as a command of bay, and the file starts no program but bay
+ * and date, which gives the time of its report: what else it does is of sh itself. Without it the command is a process that the file starts, with the variables in its
  * environment. A step runs as a job that the file waits for, so a signal reaches the trap at once, which ends the step.
  */
 function runFile(name: string, variables: Record<string, string>, command: readonly string[], runner: boolean): string {
   const exec = ['exec', ...Object.entries(variables).flatMap(([key, value]) => ['-e', quoted(`${key}=${value}`)]), 'runner', 'sh', `${MOUNT}/runner.sh`, ...command.map(quoted)];
   // The command of the host form: the variables are assignments before the words of the command, which sh puts into the
   // environment of that process alone.
-  const hosted = [`${[...Object.entries(variables).map(([key, value]) => `${key}=${quoted(value)}`), ...command.map(quoted)].join(' ')} &`, 'child=$!', 'wait "$child"', 'code=$?', 'child=', 'exit'];
-  const commanded = runner ? [`step -f "$directory" -p "$project" ${exec.join(' ')}`, 'code=$?', 'exit'] : ['# The command of the run, a process of this host.', ...hosted];
+  const hosted = ["mark 'command start'", `${[...Object.entries(variables).map(([key, value]) => `${key}=${quoted(value)}`), ...command.map(quoted)].join(' ')} &`, 'child=$!', 'wait "$child"', 'code=$?', 'child=', 'mark "command exit $code"', 'exit'];
+  const commanded = runner ? [`step command -f "$directory" -p "$project" ${exec.join(' ')}`, 'code=$?', 'exit'] : ['# The command of the run, a process of this host.', ...hosted];
+  // The services of the project, whose memory the report holds.
+  const services = runner ? [...KINDS, 'runner'] : KINDS;
   return `${[
     '#!/bin/sh',
     '# Executes a run that scripts/persist-servers.mts wrote into this directory, with sh and bay alone',
@@ -252,7 +263,8 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '#   sh run.sh pull   pulls the images of the project, the only step that downloads an image',
     '#',
     '# The exit code of each step decides the run. The exit code is that of the command, 1 for a step that failed before',
-    '# it, and 130, 143 and 129 after SIGINT, SIGTERM and SIGHUP.',
+    '# it, and 130, 143 and 129 after SIGINT, SIGTERM and SIGHUP. The file report.txt of this directory gets the time of',
+    '# each step and the highest memory use of each service, and each of its lines is shown.',
     'set -u',
     'case "$0" in',
     '*/*) directory=${0%/*} ;;',
@@ -267,12 +279,24 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     'child=',
     'started=',
     'code=1',
+    '# mark writes a line of the report, the time in UTC and an event, and shows it. date is the one program beside bay',
+    '# that this file starts for its own steps.',
+    'mark() {',
+    '\tline="$(date -u +%Y-%m-%dT%H:%M:%SZ) $*"',
+    '\techo "persist-servers: $line" >&2',
+    '\techo "$line" >> "$directory/report.txt"',
+    '}',
+    '# step runs the command of bay of its words after the first, which names the step in the report.',
     'step() {',
+    '\tname=$1',
+    '\tshift',
+    '\tmark "$name start"',
     '\t$bay "$@" &',
     '\tchild=$!',
     '\twait "$child"',
     '\tended=$?',
     '\tchild=',
+    '\tmark "$name exit $ended"',
     '\treturn "$ended"',
     '}',
     '# finish ends the step that runs and removes the project that bay up may have started. bay down ends with 0',
@@ -286,14 +310,24 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\t\twait "$child"',
     '\tfi',
     '\tif [ -n "$started" ]; then',
+    '\t\t# The highest memory use of each service, which the cgroup of its container holds, before the project is removed. A',
+    '\t\t# service whose file cannot be read does not fail the run.',
+    `\t\tfor service in ${services.join(' ')}; do`,
+    '\t\t\tpeak=$($bay -f "$directory" -p "$project" exec "$service" cat /sys/fs/cgroup/memory.peak 2>/dev/null) || peak=\'not read\'',
+    '\t\t\tmark "memory.peak $service $peak"',
+    '\t\tdone',
+    "\t\tmark 'down start'",
     '\t\tif $bay -f "$directory" -p "$project" down; then',
+    "\t\t\tmark 'down exit 0'",
     '\t\t\techo "persist-servers: removed the project $project" >&2',
     '\t\telse',
+    '\t\t\tmark "down exit $?"',
     `\t\t\t: > "$directory/${DOWN_FAILED}"`,
     '\t\t\techo "persist-servers: bay down failed; the containers of the project $project may still run: run bay -f $directory -p $project down" >&2',
     '\t\t\t[ "$code" -ne 0 ] || code=1',
     '\t\tfi',
     '\tfi',
+    '\tmark "run exit $code"',
     '\texit "$code"',
     '}',
     'trap finish EXIT',
@@ -303,8 +337,8 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     'case "${1:-run}" in',
     'run) ;;',
     'pull)',
-    '\tstep version --json || exit',
-    '\tstep -f "$directory" -p "$project" pull',
+    '\tstep version version --json || exit',
+    '\tstep pull -f "$directory" -p "$project" pull',
     '\tcode=$?',
     '\texit',
     '\t;;',
@@ -316,15 +350,15 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     'esac',
     '# The release and the contract of the bay that runs, for the record of the run. Nothing is compared: the bay of the',
     '# machine is used as it is.',
-    'step version --json || exit',
+    'step version version --json || exit',
     '# bay images fetches nothing and fails when the store lacks an image.',
-    'step -f "$directory" -p "$project" images || {',
+    'step images -f "$directory" -p "$project" images || {',
     '\techo "persist-servers: an image of the project $project is not installed: run make persist-images, or sh $directory/run.sh pull" >&2',
     '\texit',
     '}',
     '# bay up returns after each server is healthy; it pulls nothing and changes no machine setup.',
     'started=1',
-    'step -f "$directory" -p "$project" up -no-pull || {',
+    'step up -f "$directory" -p "$project" up -no-pull || {',
     '\techo "persist-servers: bay up failed before the servers of the project $project were healthy" >&2',
     '\texit',
     '}',
