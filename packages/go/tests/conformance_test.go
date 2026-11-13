@@ -1,6 +1,7 @@
 // Package tests runs the common suite of the legacy tests, contracts/conformance/vectors.json, with its expectations on the Go
 // binding of fsm (plan f6, step 7b; docs/plans/fsm-v1/checklist.md, S-467), as conformance.mjs does on the Node binding (S-461).
-// FSM_CONTRACTS is the path of the folder contracts; make test-go-conformance sets it. Each machine is MachineParse of its file
+// The folder contracts is that of the repository, the nearest parent folder of the test that holds
+// contracts/conformance/vectors.json, as test_conformance.py finds it; go test runs a test in its package folder. Each machine is MachineParse of its file
 // and the reserved codes of its lock entry. A state and an event are their keys; a raw code of a vector (value, expected_value,
 // actual_value) goes through Key first, as the legacy tests send it through fromCode. An error is compared by its kind and by
 // the properties Expected, Actual and Event of MachineError (nil where the field does not apply, FSM-B7-5); the kind is the one
@@ -291,12 +292,30 @@ func fromCode(t *testing.T, rows []row, machine *fsm.Machine, v vector, fails fa
 	})
 }
 
+// contractsDir is the folder contracts of the repository: the nearest parent folder of the working directory, the package
+// folder of the test, that holds contracts/conformance/vectors.json.
+func contractsDir(t *testing.T) string {
+	t.Helper()
+	directory, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("the working directory of the test: %v", err)
+	}
+	for {
+		candidate := filepath.Join(directory, "contracts")
+		if _, err := os.Stat(filepath.Join(candidate, "conformance", "vectors.json")); err == nil {
+			return candidate
+		}
+		parent := filepath.Dir(directory)
+		if parent == directory {
+			t.Fatal("no parent folder of the test holds contracts/conformance/vectors.json")
+		}
+		directory = parent
+	}
+}
+
 // TestConformance runs every vector but the persist vectors as the subtest of its name, on the machine of its file.
 func TestConformance(t *testing.T) {
-	contracts := os.Getenv("FSM_CONTRACTS")
-	if contracts == "" {
-		t.Fatal("FSM_CONTRACTS names the folder contracts; make test-go-conformance sets it")
-	}
+	contracts := contractsDir(t)
 	var vectors struct {
 		Machines []struct {
 			Machine string   `json:"machine"`
