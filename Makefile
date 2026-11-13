@@ -320,7 +320,7 @@ legacy-test-php-ext: legacy-build-php-ext
 # hand-written packages that held the same folders to legacy/packages.
 BINDING_TARGETS := php python node wasm go
 .PHONY: $(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-node-conformance test-wasm test-wasm-conformance \
-	test-python-binding test-python-conformance test-php-binding test-php-conformance test-go-binding
+	test-python-binding test-python-conformance test-php-binding test-php-conformance test-go-binding test-go-conformance
 BINDING ?=
 WASM_BINDGEN ?=
 MATURIN ?=
@@ -353,7 +353,7 @@ lint-bindings: bindings
 	cargo clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets --features $(BINDING_FEATURES) -- -D warnings
 
 test-bindings: lint-bindings check-declarations test-python-binding test-python-conformance test-node test-node-conformance test-wasm test-php-binding \
-	test-php-conformance test-wasm-conformance test-go-binding
+	test-php-conformance test-wasm-conformance test-go-binding test-go-conformance
 
 # The TypeScript compiler checks the generated declarations of the Node and WASM bindings in strict mode.
 check-declarations: bindings-node bindings-wasm
@@ -436,14 +436,22 @@ test-php-conformance: test-php-binding
 # The static library with the test features (binding GN-13b), which Go links through CGO_LDFLAGS; gofmt and go vet of the Go
 # packages of the binding, then their generated tests on go test, with the Go of mise.toml and GOTOOLCHAIN=local; the recipes name
 # the packages of the binding.
-GO_BINDING_DIRS := errors internal in_review limits order standby ticket
-GO_BINDING_PACKAGES := $(foreach dir,$(GO_BINDING_DIRS),./$(dir)/...)
+# The packages of the generated Go binding: the root package of the module, its errors and its internal packages.
+GO_BINDING_DIRS := . errors internal
+GO_BINDING_PACKAGES := . ./errors/... ./internal/...
 GO_BINDING_ENV := GOTOOLCHAIN=local GOPROXY=off CGO_LDFLAGS=-L$(BINDING_TARGET)/debug GOFLAGS=-tags=polyspec_panic_test,polyspec_codec_test
 test-go-binding: bindings-go
 	cargo build --locked -p polyspec-fsm-go --features panic-test,codec-test
 	cd packages/go && test -z "$$($(KIT_TOOLS)/mise/shims/gofmt -l $(GO_BINDING_DIRS))"
 	cd packages/go && $(GO_BINDING_ENV) $(GO) vet $(GO_BINDING_PACKAGES)
 	$(GO_BINDING_ENV) $(RUN_TESTS) go --cwd packages/go --results .results/test-go-binding.json --inputs packages/go -- -count=1 -timeout=0 $(GO_BINDING_PACKAGES)
+
+# The common suite of the legacy tests (S-467) on the Go binding, run by go test in packages/go/tests after test-go-binding
+# builds the static library.
+test-go-conformance: test-go-binding
+	cd packages/go && test -z "$$($(KIT_TOOLS)/mise/shims/gofmt -l tests)"
+	cd packages/go && $(GO_BINDING_ENV) $(GO) vet ./tests/...
+	FSM_CONTRACTS=$(CURDIR)/contracts $(GO_BINDING_ENV) $(RUN_TESTS) go --cwd packages/go --results .results/test-go-conformance.json --inputs packages/go --inputs contracts -- -count=1 -timeout=0 ./tests/...
 
 # ---- CI --------------------------------------------------------------------------------------------------------------
 # kit-gates is every gate of fsm, and land runs those of them that the changed paths of a branch select. The CI pipeline

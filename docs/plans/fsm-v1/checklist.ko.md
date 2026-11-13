@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: 103cc5e095838bc7f3b6df5efb1bde94e8affb0e21f963402ccc9aa1a12ec12e -->
+<!-- source-sha256: d9e5b4fefed8351cda79c43a79257c449307728ccd883b547e7724c9b655ddf0 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -135,3 +135,4 @@
 | S-464 | 계획 f6 단계 7b, WASM의 host: S-461의 suite를 WASM 바인딩, 곧 package의 subpath `./wasm`에서 돌린다. Red 먼저 | `packages/ts/tests/conformance.wasm.test.mjs`, `Makefile` | `make test-wasm-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [o] |
 | S-465 | kind `conflict`, `invalid_transition`, `unknown_code`, `reserved_code`는 계약의 error unit `machine_error`의 instance이고, 그 읽기 전용 property `expected`, `actual`, `event`는 코어 오류에서 B-4와 B-6의 code를 주며, field가 해당하지 않으면 없음이다(`docs/spec/fsm.md`, FSM-B7-5). 그래서 바인딩 오류가 legacy `fsm.Error`의 field를 갖는다. Red: S-461에서 field가 없는 vector 69개 | `packages/rust/interface.json`, `packages/rust/src/error.rs`, `docs/spec/fsm.md` | `make test-rust`, `make test-node-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [o] |
 | S-466 | 계획 f6 단계 2, 대응표: `contracts/conformance/changes.json`이 legacy vector의 각 오류를 바인딩의 kind로 대응시킨다(FSM-B7-6). 계획 f2 FP-7의 짝, 곧 계약 `int`의 값이 아닌 `from_code` 입력의 `E_UNKNOWN_CODE` ↔ 바인딩 경계의 `invalid_number`를 포함한다. S-461~S-464의 runner는 vector의 기대 kind를 이 표에서 읽고, 어느 행도 대응시키지 않는 오류의 vector는 실패한다. Red: S-461에서 `invalid_number`를 내는 vector 25개 | `contracts/conformance/changes.json`, `packages/ts/tests/conformance.mjs`, `packages/php-ext/tests/ConformanceTest.php`, `packages/python/tests/test_conformance.py` | `make test-node-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [o] |
+| S-467 | 계획 f6 단계 7b, Go의 host: S-461의 suite를 `legacy/packages/go/tests/conformance_test.go`의 기대값으로 Go 바인딩에서 돌린다. `input_type`(string, bool, float)이 있는 `from_code` 입력은 `FromCode`가 받는 `int64`의 값이 아니어서 Go 타입이 호출 전에 거부하며(binding GN-16), 시험은 그 타입과 대응표의 kind `invalid_number`를 확인한다. `test-go-binding`은 S-454의 machine별 package가 아니라 생성된 꼴의 package, 곧 root package, `errors`, `internal`을 이름 붙인다. Go로 class `machine`을 생성하는 binding(GN-15a)과 그 핀이 필요하다. Red 먼저 | `packages/go/tests/**`, `Makefile` | `make test-go-conformance BINDING=<cli of binding>` | [ ] |

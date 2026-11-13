@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 30baad984aa2bc812c37ef0d61b7119f9f8fbe78b8889019c933e2a3c1a92e04 -->
+<!-- source-sha256: a63a096fcfdf9fa052d356ac49e6838001685f57dbd8a1dabbc0a62125605a53 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- legacy 시험의 공통 suite에 Go 바인딩 runner가 생겼다: `packages/go/tests/conformance_test.go`가 `conformance.mjs`처럼 vector 279개를 돌리고, `make test-go-conformance`가 `make test-go-binding` 뒤에 그것을 돌린다. `input_type`이 있는 `from_code` 입력은 `FromCode`가 받는 `int64`의 값이 아니므로, 시험은 그 타입과 대응표의 kind `invalid_number`를 확인한다. `test-go-binding`은 생성기가 더는 쓰지 않는 S-454의 machine별 package(`in_review`, `limits`, ...)를 이름 붙였는데, 이제 root package, `errors`, `internal`을 이름 붙인다. Red: fsm이 고정한 binding ae511fd는 Go target을 거부한다(`machine: a class unit is not generated for Go yet`). binding 88fcaa3으로는 생성 시험 552개와 vector 279개가 통과한다 (S-467).
 - S-464가 끝났다: commit된 tree  binding ae511fd로 `make test-wasm-conformance`가 vector 279개 중 279개를 통과했다.
 - legacy 시험의 공통 suite가 package의 subpath `./wasm`인 WASM 바인딩에서 돈다: `make test-wasm-conformance`는 Node 바인딩의 runner로 `packages/ts/tests/conformance.wasm.test.mjs`를 돌리며, binding ae511fd로 vector 279개 중 279개를 통과한다. 첫 실행에서 통과했으므로 실패하는 Red는 없다: WASM 바인딩은 Node 바인딩과 같은 kind와 field를 준다 (S-464).
 - 바인딩 runner들에서 mapping table의 predicate `input_not_int`가 `from_code` 입력이 없는 vector에도 적용됐다: Python runner는 46개 vector에서 `KeyError: 'input'`을 냈고, PHP runner는 없는 key를 읽었으며, Node runner는 `Number(undefined)`가 NaN이라서만 false였다. 이제 `contracts/conformance/changes.json`의 정의대로 `input`이 있는 vector에만 적용된다. `make test-node-conformance`는 279개 중 279개, `make test-php-conformance`와 `make test-python-conformance`는 각각 279개 중 274개를 통과한다; 각 5개 실패는 `from_code` vector `*_from_code_int64_max`로, PHP·Python 바인딩이 입력 9223372036854775807을 `int`로 받아 core에 넘기고, core가 table이 기대하는 `invalid_number` 대신 `unknown_code`를 낸다 (S-462, S-463).
