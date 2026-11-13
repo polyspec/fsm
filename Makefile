@@ -834,17 +834,20 @@ install: fsm-install
 	$(MAKE) --no-print-directory install-link
 fsm-install: install-kit $(PACKAGE_DEPS)
 
-# persist-servers runs TARGETS through make ci-targets with the PostgreSQL and MySQL servers of the tests, in the service runner
-# of a Compose project that bay runs: scripts/persist-servers.mts writes the directory of the run, var/persist-servers/<project>,
-# with the Compose file of the images that config/containers.json pins by their digests, run.sh, runner.sh and the bundle of
-# the branch, and runs sh run.sh, which starts no program but bay. run.sh starts the project with bay up -no-pull, whose return
-# is the ready event, runs the command in runner with the four FSM_TEST_* variables, and removes the project with bay down,
-# also after a failure and a signal (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1, S-475, S-475-7).
-# The targets run on the committed tree of the branch, in the runner, where make is the make of that container: the recipe
-# names it by the word make, never by the make of this run.
-# persist-images pulls the images with bay pull; it is the only target that downloads them. persist-servers-write writes the
-# directory of a run and prints its path, for a machine that holds sh and bay alone: the directory is moved there and
-# sh <directory>/run.sh runs it. The three targets need bay and git on PATH.
+# persist-servers runs TARGETS through make ci-targets with the PostgreSQL and MySQL servers of the tests, which bay runs as a
+# Compose project: scripts/persist-servers.mts writes the directory of the run, var/persist-servers/<project>, with the
+# Compose file of the images that config/containers.json pins by their digests and run.sh, and runs sh run.sh. run.sh starts
+# the project with bay up -no-pull, whose return is the ready event, runs the command with the four FSM_TEST_* variables, and
+# removes the project with bay down, also after a failure and a signal (docs/plans/fsm-v1/plan.md, C-6;
+# docs/plans/fsm-v1/checklist.md, S-472-1, S-475, S-475-7). A run has two forms. persist-servers has the host form: the
+# targets are processes of this machine, started by the make of this run. PERSIST_MAKE names that make for the recipe: make
+# runs a recipe line that holds its variable MAKE also in a dry run, which would start the servers, and it only prints a
+# line that names that make through another variable.
+# persist-servers-runner and persist-servers-write have the runner form: the targets run in the service runner of the
+# project, on the committed tree of the branch, where make is the make of that container, so the recipes name it by the word
+# make. persist-servers-write writes the directory and prints its path, for a machine that holds sh and bay alone: the
+# directory is moved there and sh <directory>/run.sh runs it. persist-images pulls the images with bay pull; it is the only
+# target that downloads them. The targets need bay on PATH, and those of the runner form git.
 # BAY holds the words that start bay, which the scripts and run.sh read from the environment: the one who starts a run on a
 # machine sets it, because it states a fact of that machine. It is bay unless it is set; the job check of CI sets it to
 # sudo -n bay, because on its runner the state of bay belongs to root (S-475-5). A run uses the bay of its machine as it is
@@ -855,7 +858,8 @@ fsm-install: install-kit $(PACKAGE_DEPS)
 # (tests/bay) against stand-ins of curl, tar, sudo and bay, so it downloads and installs nothing.
 BAY ?= bay
 export BAY
-.PHONY: persist-images persist-servers persist-servers-write persist-servers-test bay-install bay-test
+.PHONY: persist-images persist-servers persist-servers-runner persist-servers-write persist-servers-test bay-install bay-test
+PERSIST_MAKE = $(MAKE)
 bay-install:
 	$(ONLINE) $(NODE) scripts/bay.mts install
 
@@ -866,10 +870,13 @@ persist-images:
 	$(NODE) scripts/persist-servers.mts pull
 
 persist-servers:
-	$(NODE) scripts/persist-servers.mts run -- make ci-targets TARGETS="$(TARGETS)"
+	$(NODE) scripts/persist-servers.mts run -- $(PERSIST_MAKE) ci-targets TARGETS="$(TARGETS)"
+
+persist-servers-runner:
+	$(NODE) scripts/persist-servers.mts run --runner -- make ci-targets TARGETS="$(TARGETS)"
 
 persist-servers-write:
-	$(NODE) scripts/persist-servers.mts write -- make ci-targets TARGETS="$(TARGETS)"
+	$(NODE) scripts/persist-servers.mts write --runner -- make ci-targets TARGETS="$(TARGETS)"
 
 # check runs the full suite once per committed tree, after the last item is committed; ci-targets runs the targets to their end.
 # ci-suite runs the suite of ci.yml. Both run their targets with the servers of persist-servers, so the PostgreSQL and MySQL

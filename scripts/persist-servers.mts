@@ -1,39 +1,46 @@
 #!/usr/bin/env node
-// persist-servers writes the directory of a run of the PostgreSQL and the MySQL server of the tests, which sh and bay
-// execute alone, from the images that config/containers.json pins by their digests (docs/plans/fsm-v1/plan.md, C-6;
+// persist-servers writes the directory of a run of the PostgreSQL and the MySQL server of the tests, which its run.sh
+// executes, from the images that config/containers.json pins by their digests (docs/plans/fsm-v1/plan.md, C-6;
 // docs/plans/fsm-v1/checklist.md, S-472-1, S-475, S-475-7).
 //
-//   node scripts/persist-servers.mts write -- <command> [argument...]   writes the directory and prints its path
-//   node scripts/persist-servers.mts run -- <command> [argument...]     writes it, runs sh run.sh and removes it
-//   node scripts/persist-servers.mts pull                               writes it, runs sh run.sh pull and removes it
+//   node scripts/persist-servers.mts write [--runner] -- <command> [argument...]   writes the directory, prints its path
+//   node scripts/persist-servers.mts run [--runner] -- <command> [argument...]     writes it, runs sh run.sh, removes it
+//   node scripts/persist-servers.mts pull                                          writes it, runs sh run.sh pull, removes it
 //
 // bay pulls, starts and removes the servers: it runs a Compose project on Apple container on Darwin and on Docker on Linux,
-// and no file of a run calls a container program itself. The machine that runs the servers and the command needs sh, bay
-// and the container engine of bay, and nothing of its host beside them: this file only writes, and the run.sh that it
-// writes, a POSIX file that starts no program but bay, executes. For another machine the directory alone is moved there.
+// and no file of a run calls a container program itself. A run has two forms, which share their steps: the version of bay,
+// the images, bay up, the command, bay down. The form is chosen when the directory is written.
+//
+//   the host form, the default   the servers alone are the project, and the command is a process of the host, which gets
+//                                the DSNs in its environment: for a machine of development and for CI, whose host holds
+//                                the tools of the repository
+//   the runner form, --runner    the command runs in the service runner of the project with bay exec, and run.sh starts
+//                                no program but bay: for a machine whose host holds sh and bay alone; the directory alone
+//                                is moved there
 //
 // The directory is var/persist-servers/<project> of the checkout, which Git ignores; the project is
 // fsm-persist-<pid>-<random>, with the process id of this process and 4 random bytes, so two runs share no directory, no
 // project and no container. It holds:
 //
-//   compose.yaml   the services postgres, mysql and runner; no service publishes a port
-//   run.sh         the steps of the run, each a command of bay -f <directory> -p <project>
-//   runner.sh      the steps that run inside runner: the installation order of the repository, then the command
-//   tree.bundle    the Git bundle of the branch of the checkout, the committed tree that the command runs on
+//   compose.yaml   the services postgres and mysql, and in the runner form the service runner; no service publishes a port
+//   run.sh         the steps of the run
+//   runner.sh      the runner form: the steps that run inside runner, the installation order of the repository, then the
+//                  command
+//   tree.bundle    the runner form: the Git bundle of the branch of the checkout, the committed tree of the command
 //
-// The command runs in the service runner, a Debian image with a command that does not end, which mounts the directory of
-// the run read-only and nothing of the checkout: runner.sh clones the bundle into the container, so the tools and the
-// build outputs of the runner never meet those of the host. The command gets the four variables of the servers,
-// FSM_TEST_PG_DSN, FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and FSM_TEST_MYSQL_ADMIN_DSN, with the host and the port of
-// each server as bay plan --json gives them when the directory is written. This file builds no name of a service itself,
-// because the form of the name belongs to bay.
+// The runner is a Debian image with a command that does not end, which mounts the directory of the run read-only and
+// nothing of the checkout: runner.sh clones the bundle into the container, so the tools and the build outputs of the
+// runner never meet those of the host. The command gets the four variables of the servers, FSM_TEST_PG_DSN,
+// FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and FSM_TEST_MYSQL_ADMIN_DSN, with the host and the port of each server as bay
+// plan --json gives them when the directory is written. This file builds no name of a service itself, because the form of
+// the name belongs to bay.
 //
 // No file of a run has a sleep, a polling or a time limit of its own: each server declares a healthcheck, the program of
 // the server over TCP in its container, bay runs it and returns from up after each server is healthy, and that return is
 // the ready event. The values of a healthcheck are declarations that bay evaluates (plan C-6 states the reason of each).
 //
 // run.sh removes the project with bay down once bay up was started, by a trap also after a failed step and on SIGINT,
-// SIGTERM and SIGHUP, which first end the command of bay that runs. A bay down that fails fails the run and writes the file
+// SIGTERM and SIGHUP, which first end the step that runs. A bay down that fails fails the run and writes the file
 // down-failed into the directory; run then keeps the directory. The exit code of run is that of run.sh: that of the
 // command, 1 for a step that failed before it, and 130 or 143 for the two signals.
 import { spawn, spawnSync } from 'node:child_process';
@@ -46,7 +53,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const PINS = path.join(ROOT, 'config/containers.json');
 const TOOLS = path.join(ROOT, 'mise.toml');
 const RUNS = path.join(ROOT, 'var/persist-servers');
-const USAGE = 'usage: scripts/persist-servers.mts run -- <command> [argument...] | write -- <command> [argument...] | pull';
+const USAGE = 'usage: scripts/persist-servers.mts run [--runner] -- <command> [argument...] | write [--runner] -- <command> [argument...] | pull';
 // The path in runner of the directory of the run, and the file that run.sh writes into the directory after a failed bay down.
 const MOUNT = '/persist-run';
 const DOWN_FAILED = 'down-failed';
@@ -161,11 +168,12 @@ function quoted(text: string): string {
 
 /**
  * The Compose file of a run: a service for each server, with the image of its pin, the port of its server in `expose`, the
- * environment of its accounts and its healthcheck, and the service runner. Each text is written as a JSON string, which
- * YAML reads as the same string. The file names no project and no host port. Its one mount is the directory of the run
- * itself, read-only, by the one relative path that a run writes: with it the directory works wherever it lies.
+ * environment of its accounts and its healthcheck, and with `runner` the service runner. Each text is written as a JSON
+ * string, which YAML reads as the same string. The file names no project and no host port. The one mount, of the runner, is
+ * the directory of the run itself, read-only, by the one relative path that a run writes: with it the directory works
+ * wherever it lies.
  */
-function composeFile(): string {
+function composeFile(runner: boolean): string {
   const lines = ['services:'];
   for (const kind of KINDS) {
     const server = SERVERS[kind];
@@ -173,9 +181,8 @@ function composeFile(): string {
     for (const [name, value] of Object.entries(server.environment)) lines.push(`      ${name}: ${JSON.stringify(value)}`);
     lines.push('    healthcheck:', `      test: [${['CMD', ...server.health].map(word => JSON.stringify(word)).join(', ')}]`, ...HEALTH.map(declared => `      ${declared}`));
   }
-  // The command of runner does not end, so the container stays for the commands of bay exec. Its targets verify no
-  // certificate, so it runs without the trust of bay.
-  lines.push('  runner:', `    image: ${JSON.stringify(image('runner'))}`, '    command: ["sleep", "infinity"]', `    volumes: ["./:${MOUNT}:ro"]`, '    x-bay:', '      trust: false');
+  // The command of runner does not end, so the container stays for the commands of bay exec.
+  if (runner) lines.push('  runner:', `    image: ${JSON.stringify(image('runner'))}`, '    command: ["sleep", "infinity"]', `    volumes: ["./:${MOUNT}:ro"]`);
   return `${lines.join('\n')}\n`;
 }
 
@@ -225,22 +232,27 @@ function runnerFile(branch: string): string {
 }
 
 /**
- * run.sh of the project `name`: the steps of a run, each a command of bay, whose exit code decides the run. The command of
- * the run, `command`, runs in runner with `variables`. The file starts no program but bay: what else it does is of sh
- * itself. A step runs as a job that the file waits for, so a signal reaches the trap at once, which ends the step.
+ * run.sh of the project `name`: the steps of a run, whose exit codes decide it. The command of the run, `command`, gets
+ * `variables`. With `runner` it runs in the service runner, as a command of bay, and the file starts no program but bay:
+ * what else it does is of sh itself. Without it the command is a process that the file starts, with the variables in its
+ * environment. A step runs as a job that the file waits for, so a signal reaches the trap at once, which ends the step.
  */
-function runFile(name: string, variables: Record<string, string>, command: readonly string[]): string {
+function runFile(name: string, variables: Record<string, string>, command: readonly string[], runner: boolean): string {
   const exec = ['exec', ...Object.entries(variables).flatMap(([key, value]) => ['-e', quoted(`${key}=${value}`)]), 'runner', 'sh', `${MOUNT}/runner.sh`, ...command.map(quoted)];
+  // The command of the host form: the variables are assignments before the words of the command, which sh puts into the
+  // environment of that process alone.
+  const hosted = [`${[...Object.entries(variables).map(([key, value]) => `${key}=${quoted(value)}`), ...command.map(quoted)].join(' ')} &`, 'child=$!', 'wait "$child"', 'code=$?', 'child=', 'exit'];
+  const commanded = runner ? [`step -f "$directory" -p "$project" ${exec.join(' ')}`, 'code=$?', 'exit'] : ['# The command of the run, a process of this host.', ...hosted];
   return `${[
     '#!/bin/sh',
     '# Executes a run that scripts/persist-servers.mts wrote into this directory, with sh and bay alone',
     '# (docs/plans/fsm-v1/plan.md, C-6):',
     '#',
-    '#   sh run.sh        starts the servers and the runner, runs the command in the runner and removes the project',
+    `#   sh run.sh        starts the servers${runner ? ' and the runner' : ''}, runs the command ${runner ? 'in the runner' : 'on this host'} and removes the project`,
     '#   sh run.sh pull   pulls the images of the project, the only step that downloads an image',
     '#',
-    '# Each step is one command of bay, and its exit code decides the run. The exit code is that of the command, 1 for a',
-    '# step that failed before it, and 130, 143 and 129 after SIGINT, SIGTERM and SIGHUP.',
+    '# The exit code of each step decides the run. The exit code is that of the command, 1 for a step that failed before',
+    '# it, and 130, 143 and 129 after SIGINT, SIGTERM and SIGHUP.',
     'set -u',
     'case "$0" in',
     '*/*) directory=${0%/*} ;;',
@@ -251,7 +263,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     `project=${quoted(name)}`,
     '# The words that start bay on this machine: those of the variable BAY, which the one who starts the run sets.',
     'bay=${BAY:-bay}',
-    '# child is the command of bay that runs, started is set once bay up was started, and code is the exit code of the run.',
+    '# child is the step that runs, started is set once bay up was started, and code is the exit code of the run.',
     'child=',
     'started=',
     'code=1',
@@ -263,7 +275,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\tchild=',
     '\treturn "$ended"',
     '}',
-    '# finish ends the command of bay that runs and removes the project that bay up may have started. bay down ends with 0',
+    '# finish ends the step that runs and removes the project that bay up may have started. bay down ends with 0',
     '# also for a project that holds no container. After a failed bay down the directory is marked, because bay down needs',
     '# its Compose file.',
     'finish() {',
@@ -316,9 +328,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\techo "persist-servers: bay up failed before the servers of the project $project were healthy" >&2',
     '\texit',
     '}',
-    `step -f "$directory" -p "$project" ${exec.join(' ')}`,
-    'code=$?',
-    'exit',
+    ...commanded,
   ].join('\n')}\n`;
 }
 
@@ -346,19 +356,25 @@ function addresses(text: string): Record<Kind, string> {
   return { postgres: address('postgres'), mysql: address('mysql') };
 }
 
-/** Writes the directory of a run of `command` and returns its path. Fails at once unless PATH holds bay; a failure after the directory was made removes it. */
-function write(command: readonly string[]): string {
+/**
+ * Writes the directory of a run of `command`, of the runner form with `runner` and of the host form without it, and returns
+ * its path. Fails at once unless PATH holds bay; a failure after the directory was made removes it.
+ */
+function write(command: readonly string[], runner: boolean): string {
   // The files are built first, so a pin that is wrong fails before anything is made.
-  const composed = composeFile();
-  packages();
-  nodeVersion();
+  const composed = composeFile(runner);
+  if (runner) {
+    packages();
+    nodeVersion();
+  }
   // The bay of the machine is used as it is: its version is shown for the record of the run, and only the schema of its
   // contract is required.
   const version = bayVersion();
   process.stderr.write(`persist-servers: bay version: ${version.text}\n`);
   requireContract(version);
-  const branch = output('git', ['symbolic-ref', '--short', 'HEAD']).trim();
-  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(branch)) throw new Failure(`persist-servers: the checkout is on no branch that a line of sh can name: ${JSON.stringify(branch)}`);
+  // The runner runs the committed tree of the branch of the checkout.
+  const branch = runner ? output('git', ['symbolic-ref', '--short', 'HEAD']).trim() : '';
+  if (runner && !/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(branch)) throw new Failure(`persist-servers: the checkout is on no branch that a line of sh can name: ${JSON.stringify(branch)}`);
   const name = `fsm-persist-${String(process.pid)}-${randomBytes(4).toString('hex')}`;
   const directory = path.join(RUNS, name);
   mkdirSync(directory, { recursive: true });
@@ -367,9 +383,11 @@ function write(command: readonly string[]): string {
     const hosts = addresses(bayOutput(['-f', directory, '-p', name, 'plan', '--json']));
     const variables: Record<string, string> = {};
     for (const kind of KINDS) Object.assign(variables, SERVERS[kind].variables(hosts[kind]));
-    output('git', ['bundle', 'create', path.join(directory, 'tree.bundle'), branch]);
-    writeFileSync(path.join(directory, 'runner.sh'), runnerFile(branch));
-    writeFileSync(path.join(directory, 'run.sh'), runFile(name, variables, command));
+    if (runner) {
+      output('git', ['bundle', 'create', path.join(directory, 'tree.bundle'), branch]);
+      writeFileSync(path.join(directory, 'runner.sh'), runnerFile(branch));
+    }
+    writeFileSync(path.join(directory, 'run.sh'), runFile(name, variables, command, runner));
   } catch (error) {
     rmSync(directory, { recursive: true, force: true });
     throw error;
@@ -380,12 +398,12 @@ function write(command: readonly string[]): string {
 const SIGNALS = { SIGINT: 130, SIGTERM: 143 } as const;
 
 /**
- * Writes the directory of a run of `command`, runs its run.sh with `args` and returns its exit code. SIGINT and SIGTERM
+ * Writes the directory of a run of `command`, in the form that `runner` names, runs its run.sh with `args` and returns its exit code. SIGINT and SIGTERM
  * are forwarded to run.sh, whose trap removes the project. The directory is removed unless run.sh marked it after a failed
  * bay down.
  */
-async function execute(command: readonly string[], args: readonly string[]): Promise<number> {
-  const directory = write(command);
+async function execute(command: readonly string[], runner: boolean, args: readonly string[]): Promise<number> {
+  const directory = write(command, runner);
   try {
     return await new Promise<number>((resolve, reject) => {
       // sh is started by its path, the one that POSIX names, so the run needs no PATH for it.
@@ -412,12 +430,15 @@ async function execute(command: readonly string[], args: readonly string[]): Pro
 }
 
 if (import.meta.main) {
-  const [verb, separator, ...command] = process.argv.slice(2);
+  const [verb, ...rest] = process.argv.slice(2);
+  // The option --runner, before the separator, names the runner form.
+  const runner = rest[0] === '--runner';
+  const [separator, ...command] = runner ? rest.slice(1) : rest;
   try {
-    if (verb === 'run' && separator === '--' && command.length > 0) process.exitCode = await execute(command, []);
-    else if (verb === 'write' && separator === '--' && command.length > 0) process.stdout.write(`${write(command)}\n`);
-    // The step pull runs no command in the runner, so the directory of a pull is written with a command that does nothing.
-    else if (verb === 'pull' && separator === undefined) process.exitCode = await execute(['true'], ['pull']);
+    if (verb === 'run' && separator === '--' && command.length > 0) process.exitCode = await execute(command, runner, []);
+    else if (verb === 'write' && separator === '--' && command.length > 0) process.stdout.write(`${write(command, runner)}\n`);
+    // The step pull runs no command. Its directory is of the runner form, whose Compose file holds every image of a run.
+    else if (verb === 'pull' && rest.length === 0) process.exitCode = await execute(['true'], true, ['pull']);
     else throw new Failure(USAGE, 2);
   } catch (error) {
     if (!(error instanceof Failure) && !(error instanceof BayError)) throw error;

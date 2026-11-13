@@ -3,21 +3,24 @@
 
 [한국어](persist-servers.ko.md)
 
-The persistence tests of PostgreSQL and MySQL run in a Compose project that `bay` runs: the two servers and a service
-`runner`, in which the targets run. This document is the procedure; the decision and its reasons are in
+The persistence tests of PostgreSQL and MySQL run on servers of a Compose project that `bay` runs. A run has two forms
+with the same steps. In the host form, the default, the targets are processes of the machine that starts them. In the
+runner form they run in a service `runner` of the project, for a machine whose host holds `sh` and `bay` alone. This
+document is the procedure; the decision and its reasons are in
 [the plan](../plans/fsm-v1/plan.md), C-6, and the open work is in [the checklist](../plans/fsm-v1/checklist.md), S-475 and
 its sub-items.
 
 ## What a machine needs
 
-- The machine that writes a run: the checkout with its tools, `git`, and `bay` on PATH. It is a machine of development or a
-  runner of CI.
-- The machine that executes a run: `sh`, `bay` with its machine setup applied, and the container engine of bay. Nothing else
-  of its host is used. It may be the same machine or another one.
-- The three images that `config/containers.json` pins by their digests, in the store of bay: PostgreSQL 17.11, MySQL 8.4.11
-  and Debian `trixie-20261104`, the image of the runner.
-- The network, in each run: the runner installs its system packages, Node.js, rustup and the packages of the locks again,
-  because its container is new (S-475-8).
+- The machine that writes a run: the checkout with its tools and `bay` on PATH, and `git` for the runner form. It is a
+  machine of development or a runner of CI.
+- The machine that executes a run of the host form: the same machine, with the machine setup of bay applied.
+- The machine that executes a run of the runner form: `sh`, `bay` with its machine setup applied, and the container engine
+  of bay. Nothing else of its host is used. It may be the same machine or another one.
+- The images that `config/containers.json` pins by their digests, in the store of bay: PostgreSQL 17.11 and MySQL 8.4.11,
+  and for the runner form Debian `trixie-20261104`, the image of the runner.
+- For the runner form the network, in each run: the runner installs its system packages, Node.js, rustup and the packages of
+  the locks again, because its container is new, and the first three have no pinned digest (S-475-8).
 
 bay is a tool of the machine, as make is. A run uses the `bay` of PATH as it is and compares no release; it requires the
 schema 1 of the contract of `bay version --json`. A person installs bay on a machine of development, because its setup,
@@ -31,26 +34,29 @@ on a machine where the state of bay belongs to root and the user has `sudo` with
 ```sh
 make persist-images
 make persist-servers TARGETS="db-test-postgres db-test-mysql"
+make persist-servers-runner TARGETS="db-test-postgres db-test-mysql"
 make persist-servers-write TARGETS="db-test-postgres db-test-mysql"
 ```
 
 - `make persist-images` pulls the three images with `bay pull`. It is the only target that downloads an image.
-- `make persist-servers TARGETS="..."` writes the directory of a run, executes it and removes it. `make check` and
-  `make ci-suite` run their targets through it, so those targets run in the runner, on Linux.
-- `make persist-servers-write TARGETS="..."` writes the directory and prints its path, for a run on another machine: move
-  the directory there, run `sh <directory>/run.sh`, and remove the directory afterwards. `sh <directory>/run.sh pull` pulls
-  the images there.
+- `make persist-servers TARGETS="..."` writes the directory of a run of the host form, executes it and removes it: the
+  targets are processes of this machine. `make check` and `make ci-suite` run their targets through it.
+- `make persist-servers-runner TARGETS="..."` does the same in the runner form, on the machine that wrote the directory.
+- `make persist-servers-write TARGETS="..."` writes a directory of the runner form and prints its path, for a run on another
+  machine: move the directory there, run `sh <directory>/run.sh`, and remove the directory afterwards.
+  `sh <directory>/run.sh pull` pulls the images there.
 
-The targets run on the committed tree of the branch of the checkout: commit before a run.
+In the runner form the targets run on the committed tree of the branch of the checkout: commit before such a run.
 
 ## The directory of a run
 
-`var/persist-servers/fsm-persist-<pid>-<random>` holds `compose.yaml`, `run.sh`, `runner.sh` and `tree.bundle`, the Git
-bundle of the branch. The runner mounts this directory read-only and nothing of the checkout.
+`var/persist-servers/fsm-persist-<pid>-<random>` holds `compose.yaml` and `run.sh`, and in the runner form `runner.sh` and
+`tree.bundle`, the Git bundle of the branch. The runner mounts this directory read-only and nothing of the checkout.
 
 ## What `run.sh` does
 
-Each step is one command of `bay -f <directory> -p <project>`, and `run.sh` starts no other program.
+Each step but the command of the host form is one command of `bay -f <directory> -p <project>`; in the runner form
+`run.sh` starts no other program.
 
 1. `bay version --json`: the first line of the record names the bay that ran.
 2. `bay images`: an image that the store lacks fails the run and names `make persist-images`.
@@ -58,12 +64,12 @@ Each step is one command of `bay -f <directory> -p <project>`, and `run.sh` star
    in its container, `pg_isready` and `mysqladmin ping --protocol=tcp`. The run waits for that return alone. The bound is in
    the Compose file: a start period of 300 s for the initialization of an image, then 3 failures, one ask each second.
    Measured on a Linux arm64 machine: MySQL healthy after 70 s, PostgreSQL after 11 s.
-4. `bay exec runner sh /persist-run/runner.sh make ci-targets TARGETS="..."`, with the four `FSM_TEST_*` DSNs, which name
-   the host and the port of each server as `bay plan --json` gave them when the directory was written. `runner.sh` installs
-   the system packages, Node.js and rustup, clones `tree.bundle`, runs `make bootstrap` and `make install` and then the
-   targets.
-5. `bay down`, by a trap: also when a step failed and after SIGINT, SIGTERM and SIGHUP, which first end the command of bay
-   that runs.
+4. The command, `make ci-targets TARGETS="..."`, with the four `FSM_TEST_*` DSNs, which name the host and the port of each
+   server as `bay plan --json` gave them when the directory was written. In the host form it is a process of the host with
+   the DSNs in its environment. In the runner form it is `bay exec runner sh /persist-run/runner.sh <command>`: `runner.sh`
+   installs the system packages, Node.js and rustup, clones `tree.bundle`, runs `make bootstrap` and `make install` and then
+   the targets.
+5. `bay down`, by a trap: also when a step failed and after SIGINT, SIGTERM and SIGHUP, which first end the step that runs.
 
 The exit code is that of the targets, 1 for a step that failed before them, and 130, 143 and 129 after the three signals.
 
@@ -91,7 +97,6 @@ names changes the files of a run and the stand-in `bay` of the tests in the same
 
 ## What is not verified
 
-- A run of the files that the script writes, with a real bay (S-475-7). Measured with files of the same form written by
-  hand: `db-test-postgres` and `db-test-mysql` pass in a runner on a Linux arm64 machine.
-- The other targets of `make check` in the runner: the system packages of the pin may not hold what they need.
+- A run of the files that the script writes, with a real bay, in either form (S-475-7). Measured with files of the runner
+  form written by hand: `db-test-postgres` and `db-test-mysql` pass in a runner on a Linux arm64 machine.
 - The steps of the job `check` on `ubuntu-26.04-arm` (S-475-5).

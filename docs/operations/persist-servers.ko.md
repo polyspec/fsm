@@ -1,22 +1,24 @@
 <!-- doc-id: operations-persist-servers -->
-<!-- source-sha256: 073802436c4352f02c86f6732ef6253e99e596680f2664d102a072a49cbed9ad -->
+<!-- source-sha256: 75ff0fe0e4f7e131fa330618c55c9698b2851a1e515925e1de81ede0b11a77c1 -->
 # 영속성 테스트의 서버
 
 [English](persist-servers.md)
 
-PostgreSQL과 MySQL의 영속성 테스트는 `bay`가 실행하는 Compose project 안에서 돈다. project는 두 서버와, target이 도는
-service `runner`를 가진다. 이 문서는 절차다. 결정과 그 이유는 [계획](../plans/fsm-v1/plan.ko.md)의 C-6에, 열린 작업은
+PostgreSQL과 MySQL의 영속성 테스트는 `bay`가 실행하는 Compose project의 서버에서 돈다. 실행에는 같은 단계를 가진 두
+형태가 있다. 기본값인 host 형태에서는 target이 그것을 시작한 머신의 process다. runner 형태에서는 target이 project의
+service `runner` 안에서 돌며, host에 `sh`와 `bay`만 있는 머신을 위한 것이다. 이 문서는 절차다. 결정과 그 이유는 [계획](../plans/fsm-v1/plan.ko.md)의 C-6에, 열린 작업은
 [체크리스트](../plans/fsm-v1/checklist.ko.md)의 S-475와 그 하위 항목에 있다.
 
 ## 머신에 필요한 것
 
-- 실행을 쓰는 머신: 도구가 설치된 checkout, `git`, PATH의 `bay`. 개발 머신이거나 CI의 runner다.
-- 실행을 실행하는 머신: `sh`, 머신 설정이 적용된 `bay`, bay의 container engine. 그 host의 다른 것은 쓰지 않는다. 같은
-  머신일 수도 다른 머신일 수도 있다.
-- `config/containers.json`이 digest로 고정한 세 이미지가 bay의 store에 있어야 한다. PostgreSQL 17.11, MySQL 8.4.11, 그리고
-  runner의 이미지인 Debian `trixie-20261104`다.
-- 실행마다 network: runner의 container는 새것이므로 runner는 system package, Node.js, rustup, lock의 package를 다시
-  설치한다(S-475-8).
+- 실행을 쓰는 머신: 도구가 설치된 checkout과 PATH의 `bay`, 그리고 runner 형태에는 `git`. 개발 머신이거나 CI의 runner다.
+- host 형태의 실행을 실행하는 머신: 같은 머신이고, bay의 머신 설정이 적용되어 있어야 한다.
+- runner 형태의 실행을 실행하는 머신: `sh`, 머신 설정이 적용된 `bay`, bay의 container engine. 그 host의 다른 것은 쓰지
+  않는다. 같은 머신일 수도 다른 머신일 수도 있다.
+- `config/containers.json`이 digest로 고정한 이미지가 bay의 store에 있어야 한다. PostgreSQL 17.11과 MySQL 8.4.11, 그리고
+  runner 형태에는 runner의 이미지인 Debian `trixie-20261104`다.
+- runner 형태에는 실행마다 network: runner의 container는 새것이므로 runner는 system package, Node.js, rustup, lock의
+  package를 다시 설치하고, 앞의 셋에는 고정된 digest가 없다(S-475-8).
 
 bay는 make처럼 머신의 도구다. 실행은 PATH의 `bay`를 그대로 쓰고 릴리스를 비교하지 않는다. `bay version --json`의 계약이
 schema 1일 것만 요구한다. 개발 머신에서는 사람이 bay를 설치한다. 그 설정 `bay install`이 관리자 암호를 묻기 때문이며,
@@ -30,26 +32,29 @@ bay의 상태가 root의 것이고 사용자가 암호 없는 `sudo`를 가진 �
 ```sh
 make persist-images
 make persist-servers TARGETS="db-test-postgres db-test-mysql"
+make persist-servers-runner TARGETS="db-test-postgres db-test-mysql"
 make persist-servers-write TARGETS="db-test-postgres db-test-mysql"
 ```
 
 - `make persist-images`는 `bay pull`로 세 이미지를 pull한다. 이미지를 내려받는 target은 이것뿐이다.
-- `make persist-servers TARGETS="..."`는 실행의 디렉터리를 쓰고, 실행하고, 지운다. `make check`와 `make ci-suite`는 이
-  target을 통해 자기 target을 실행하므로, 그 target은 runner 안, 곧 Linux에서 돈다.
-- `make persist-servers-write TARGETS="..."`는 디렉터리를 쓰고 그 경로를 출력한다. 다른 머신에서 실행할 때 쓴다.
-  디렉터리를 그곳으로 옮기고, `sh <directory>/run.sh`를 실행하고, 끝나면 디렉터리를 지운다. 그 머신에서 이미지는
+- `make persist-servers TARGETS="..."`는 host 형태의 실행의 디렉터리를 쓰고, 실행하고, 지운다. target은 이 머신의
+  process다. `make check`와 `make ci-suite`는 이 target을 통해 자기 target을 실행한다.
+- `make persist-servers-runner TARGETS="..."`는 디렉터리를 쓴 머신에서 runner 형태로 같은 일을 한다.
+- `make persist-servers-write TARGETS="..."`는 runner 형태의 디렉터리를 쓰고 그 경로를 출력한다. 다른 머신에서 실행할 때
+  쓴다. 디렉터리를 그곳으로 옮기고, `sh <directory>/run.sh`를 실행하고, 끝나면 디렉터리를 지운다. 그 머신에서 이미지는
   `sh <directory>/run.sh pull`로 pull한다.
 
-target은 checkout의 branch의 commit된 tree에서 돈다. 실행 전에 commit한다.
+runner 형태에서 target은 checkout의 branch의 commit된 tree에서 돈다. 그런 실행 전에 commit한다.
 
 ## 실행의 디렉터리
 
-`var/persist-servers/fsm-persist-<pid>-<random>`에는 `compose.yaml`, `run.sh`, `runner.sh`, 그리고 branch의 Git bundle인
-`tree.bundle`이 있다. runner는 이 디렉터리를 읽기 전용으로 mount하고 checkout의 어떤 것도 mount하지 않는다.
+`var/persist-servers/fsm-persist-<pid>-<random>`에는 `compose.yaml`과 `run.sh`가 있고, runner 형태에는 `runner.sh`와
+branch의 Git bundle인 `tree.bundle`도 있다. runner는 이 디렉터리를 읽기 전용으로 mount하고 checkout의 어떤 것도 mount하지 않는다.
 
 ## `run.sh`가 하는 일
 
-각 단계는 `bay -f <directory> -p <project>`의 명령 하나이고, `run.sh`는 다른 프로그램을 시작하지 않는다.
+host 형태의 명령을 뺀 각 단계는 `bay -f <directory> -p <project>`의 명령 하나다. runner 형태에서 `run.sh`는 다른
+프로그램을 시작하지 않는다.
 
 1. `bay version --json`: 기록의 첫 줄이 실행한 bay를 적는다.
 2. `bay images`: store에 없는 이미지는 실행을 실패시키고 `make persist-images`를 적는다.
@@ -57,11 +62,12 @@ target은 checkout의 branch의 commit된 tree에서 돈다. 실행 전에 commi
    선언한다. `pg_isready`와 `mysqladmin ping --protocol=tcp`다. 실행은 그 반환만 기다린다. 한도는 Compose 파일에 있다.
    이미지의 초기화를 위한 start period 300초, 그 뒤 실패 3번, 1초마다 질의 한 번이다. Linux arm64 머신에서 잰 값:
    MySQL은 70초, PostgreSQL은 11초 뒤에 healthy가 되었다.
-4. `bay exec runner sh /persist-run/runner.sh make ci-targets TARGETS="..."`: `FSM_TEST_*` DSN 네 개와 함께 실행한다.
-   DSN은 디렉터리를 쓸 때 `bay plan --json`이 준 각 서버의 host와 port를 적는다. `runner.sh`는 system package, Node.js,
-   rustup을 설치하고, `tree.bundle`을 clone하고, `make bootstrap`과 `make install`을 실행한 뒤 target을 실행한다.
+4. 명령 `make ci-targets TARGETS="..."`: `FSM_TEST_*` DSN 네 개와 함께 실행한다. DSN은 디렉터리를 쓸 때
+   `bay plan --json`이 준 각 서버의 host와 port를 적는다. host 형태에서는 DSN을 환경에 받은 host의 process다. runner
+   형태에서는 `bay exec runner sh /persist-run/runner.sh <command>`이고, `runner.sh`는 system package, Node.js, rustup을
+   설치하고, `tree.bundle`을 clone하고, `make bootstrap`과 `make install`을 실행한 뒤 target을 실행한다.
 5. `bay down`: trap이 실행한다. 단계가 실패했을 때, 그리고 SIGINT, SIGTERM, SIGHUP 뒤에도 실행하며, signal은 먼저 실행
-   중인 bay의 명령을 끝낸다.
+   중인 단계를 끝낸다.
 
 종료 코드는 target의 종료 코드이고, 그 전에 실패한 단계에는 1, 세 signal 뒤에는 130, 143, 129다.
 
@@ -89,7 +95,6 @@ target은 checkout의 branch의 commit된 tree에서 돈다. 실행 전에 commi
 
 ## 검증되지 않은 것
 
-- script가 쓰는 파일로 하는 실제 bay의 실행(S-475-7). 손으로 쓴 같은 형식의 파일로 잰 것: Linux arm64 머신의 runner에서
-  `db-test-postgres`와 `db-test-mysql`이 통과한다.
-- runner 안에서 `make check`의 다른 target: pin의 system package에 그 target이 필요한 것이 없을 수 있다.
+- script가 쓰는 파일로 하는 실제 bay의 실행, 두 형태 모두(S-475-7). 손으로 쓴 runner 형태의 파일로 잰 것: Linux arm64
+  머신의 runner에서 `db-test-postgres`와 `db-test-mysql`이 통과한다.
 - `ubuntu-26.04-arm`에서 job `check`의 step들(S-475-5).
