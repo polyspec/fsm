@@ -1,6 +1,7 @@
 // The run of scripts/persist-servers.mts (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1, S-475): it
 // writes the Compose project of the PostgreSQL and the MySQL server into a temporary directory of its own, starts it with bay
-// up, whose return is the ready event, runs its command with the four FSM_TEST_* variables, and runs bay down and removes the
+// up, whose return is the ready event, reads the address of each service from the JSON of `bay status --json`, runs its
+// command with the four FSM_TEST_* variables of those addresses, and runs bay down and removes the
 // directory when the command ends, fails or the run gets SIGINT or SIGTERM. The test runs the script with stand-ins that it
 // writes into a directory of its own, the only programs of PATH: a uname that names the platform, a bay that records its
 // commands and the Compose file that it was started with, and the container program of the platform, which records its
@@ -80,6 +81,8 @@ interface Stand {
   gated?: boolean;
   /** bay down fails. */
   downFails?: boolean;
+  /** The JSON of bay holds no group of the project of the run. */
+  unlisted?: boolean;
 }
 
 /** The directory of the stand-ins of one run and what the test reads from it. */
@@ -101,7 +104,7 @@ interface Stage {
 /** Writes the stand-ins of the platform `system`: uname, bay and the container program, as `stand` says. */
 function stage(t: TestContext, system: string, stand: Stand = {}): Stage {
   const { directory, path: PATH, program: write } = standIns(t, system);
-  for (const flag of ['absent', 'unset', 'upFails', 'downFails'] as const) {
+  for (const flag of ['absent', 'unset', 'upFails', 'downFails', 'unlisted'] as const) {
     if (stand[flag] === true) writeFileSync(path.join(directory, flag), '');
   }
   if (stand.gated === true) execFileSync('mkfifo', [path.join(directory, 'gate')]);
@@ -114,7 +117,9 @@ printf '%s\\n' "$line" >> "$d/calls"
 `;
   if (stand.engine !== undefined) write(stand.engine, `${record}case "$1" in image) [ ! -e "$d/absent" ] ;; esac\n`);
   // bay records the name of the directory of each command: up and down read the Compose file of that directory, and fail
-  // with the code 9 without it. up copies the file, so the test reads what the project was started with.
+  // with the code 9 without it. up copies the file, so the test reads what the project was started with. The JSON of its
+  // projects holds the group of another project first, and the address of a service is a name that no rule builds from the
+  // project and the service, so a DSN holds it only when the run read it.
   if (stand.bay !== false) {
     write('bay', `${record}printf '%s\\t%s\\n' "$1" "$(basename "$(pwd)")" >> "$d/where"
 case "$1" in
@@ -131,6 +136,11 @@ up)
 	;;
 logs)
 	cat "$d/logs-$4"
+	;;
+status)
+	project=$(basename "$(pwd)")
+	if [ -e "$d/unlisted" ]; then project=another; fi
+	printf '{"groups":[{"name":"other","services":[{"name":"postgres","address":"other.example"}]},{"name":"%s","services":[{"name":"mysql","address":"m.%s.example"},{"name":"postgres","address":"p.%s.example"}]}]}\\n' "$project" "$project" "$project"
 	;;
 down)
 	[ -e compose.yaml ] || exit 9
@@ -187,13 +197,13 @@ function writes(file: string, code = 0): string[] {
   return ['run', '--', '/bin/sh', '-c', `printf '%s\\n' "$FSM_TEST_PG_DSN" "$FSM_TEST_PG_ADMIN_DSN" "$FSM_TEST_MYSQL_DSN" "$FSM_TEST_MYSQL_ADMIN_DSN" > '${file}'; exit ${String(code)}`];
 }
 
-/** The four variables of the servers of `project`, one a line. */
+/** The four variables of the servers of `project`, one a line, with the addresses that the stand-in bay reports. */
 function dsns(project: string): string {
   return [
-    `postgres://fsm:fsm@${project}-postgres.container.test:5432/fsm_test?sslmode=disable`,
-    `postgres://fsm:fsm@${project}-postgres.container.test:5432/fsm_test?sslmode=disable`,
-    `mysql://fsm:fsm@${project}-mysql.container.test:3306/fsm_test`,
-    `mysql://root:root@${project}-mysql.container.test:3306/mysql`,
+    `postgres://fsm:fsm@p.${project}.example:5432/fsm_test?sslmode=disable`,
+    `postgres://fsm:fsm@p.${project}.example:5432/fsm_test?sslmode=disable`,
+    `mysql://fsm:fsm@m.${project}.example:3306/fsm_test`,
+    `mysql://root:root@m.${project}.example:3306/mysql`,
     '',
   ].join('\n');
 }
@@ -204,6 +214,9 @@ function projectOf(staged: Stage): string {
   assert.ok(project !== undefined && more.length === 0, `bay up did not run once: ${JSON.stringify(staged.calls())}`);
   return project;
 }
+
+// The command that reads the projects of bay and their services as JSON.
+const LISTING = ['bay', 'status', '--json'];
 
 /** The commands that ask the container program `engine` whether each image is installed. */
 function installed(engine: string): string[][] {
@@ -221,7 +234,7 @@ test('on Linux the run starts the Compose project of both servers with bay up, p
   assert.equal(readFileSync(file, 'utf8'), dsns(project));
   // bay check and the images come before the start, and bay starts and removes the servers: the container program gets no
   // other command.
-  assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('docker'), ['bay', 'up'], ['bay', 'down']]);
+  assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('docker'), ['bay', 'up'], LISTING, ['bay', 'down']]);
   assert.deepEqual(staged.where('down'), [project]);
   assert.deepEqual(staged.left(), [], 'the run left its directory');
   // The lines of bay are shown, so the log of a run holds what bay did.
@@ -242,7 +255,7 @@ test('on Darwin the run asks Apple container for the images and starts the same 
   const project = projectOf(staged);
   assert.equal(staged.composed(), compose(project));
   assert.equal(readFileSync(file, 'utf8'), dsns(project));
-  assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('container'), ['bay', 'up'], ['bay', 'down']]);
+  assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('container'), ['bay', 'up'], LISTING, ['bay', 'down']]);
   assert.deepEqual(staged.left(), []);
 });
 
@@ -273,6 +286,18 @@ test('a bay up that fails fails the run with the last lines of each service, wit
   assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('docker'), ['bay', 'up'], ['bay', 'logs', '-n', '40', 'postgres'], ['bay', 'logs', '-n', '40', 'mysql'], ['bay', 'down']]);
   assert.deepEqual(staged.where('logs'), [project, project]);
   assert.deepEqual(staged.where('down'), [project]);
+  assert.deepEqual(staged.left(), []);
+});
+
+test('a project that the JSON of bay does not hold fails the run without the command, and the project is removed', async t => {
+  const staged = stage(t, 'Linux', { engine: 'docker', unlisted: true });
+  const file = path.join(staged.directory, 'variables');
+  const ended = await script(staged, writes(file));
+  assert.deepEqual([ended.code, ended.signal], [1, null], ended.stderr);
+  const project = projectOf(staged);
+  assert.match(ended.stderr, new RegExp(`^persist-servers: bay status --json names no address of the service postgres of the project ${project}:$`, 'm'));
+  assert.equal(existsSync(file), false, 'the command ran without the address of a server');
+  assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('docker'), ['bay', 'up'], LISTING, ['bay', 'down']]);
   assert.deepEqual(staged.left(), []);
 });
 
