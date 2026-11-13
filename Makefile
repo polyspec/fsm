@@ -636,8 +636,9 @@ fsm-js-gen:
 	$(FSM_GEN) gen --project contracts --kind npm --out packages/js/src
 	packages/js/node_modules/.bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/js/examples/model
 
-# fsm-js-test runs the conformance cases of the npm package; the kit reporter names every file from the checkout root.
-fsm-js-test: $(NPM_DEP) fsm-js-gen
+# fsm-js-test runs the conformance cases of the npm package; the kit reporter names every file from the checkout root. The cases
+# import the dialect helper of packages/db/tests, which imports the models that fsm-db-gen writes, so it names that target (HR-85).
+fsm-js-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --test-concurrency=1 packages/js/tests/conformance.test.mjs
 
 # fsm-php-install installs the Composer dependencies of packages/php from the release packages.json of composer.json (K865,
