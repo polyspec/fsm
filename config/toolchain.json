@@ -15,14 +15,14 @@
     }
   },
   "bay": {
-    "version": "0.0.1",
+    "version": "0.0.2",
     "sha256": {
-      "darwin-arm64": "ab9c9950e788e411a96b1ae33efa8cb79c113c0915d52bcbb57030da922ca4e0",
-      "darwin-x64": "98b88b2fe13e15ca0e7d6e84f5d35e2872e24111b53a58b74f5edc9c4548c109",
-      "linux-x64": "9a3095ca64d4c221caa54395827a3faba9f497aae989dfc1c115e77608c3eda1",
-      "linux-arm64": "d3374ace08da81dd01d634349224467b14c58d9ca1539d78488978be1d890984"
+      "darwin-arm64": "49a2577ceba7c090db8f23cb0d8c338c1b4d10fc39be51e0631221e49a6d4741",
+      "darwin-x64": "e0c1d853f2c4ba55301a3b709a8f99d490dc82b38c5819032ed3717f488b331d",
+      "linux-x64": "2d160b3677ad5c0e067d6e4790eea8e3a6256577de86d2e1a2e5797e56d5fddf",
+      "linux-arm64": "f1f6affdc191908bf3727fb4d3c0b0c1eaad66f21b89590ffeaa119338c45907"
     },
-    "reason": "bay pulls, starts and removes the servers of the persistence tests and runs their targets (docs/plans/fsm-v1/plan.md, C-6); its commands, its Compose keys and its JSON change with its release, so a run fails with another release than this one, and make bay-install installs the archive of this release by its digest on a runner of CI",
+    "reason": "bay pulls, starts and removes the servers of the persistence tests and runs their targets (docs/plans/fsm-v1/plan.md, C-6); its commands, its Compose keys and its JSON change with its release, so a run fails with another release than this one, and make bay-install installs the archive of this release by its digest on a runner of CI. 0.0.2 is the first release in which several bay up and bay down at once keep the registrations of their projects",
     "removal": "when no target of fsm runs on a server of a container; the pin is raised, not removed, when a release of bay holds a correction that a run needs"
   },
   "symbolExtractors": [
