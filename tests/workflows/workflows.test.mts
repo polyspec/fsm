@@ -163,3 +163,24 @@ test('every action of the workflows is one of the verified pins, and the pages j
   assert.match(PAGES, /uses: actions\/upload-pages-artifact@/);
   assert.match(PAGES, /uses: actions\/deploy-pages@/);
 });
+
+// The core crate packages/rust holds every rule of fsm (plan f6, step 3a), so its tests are a target of the suite of the CI job
+// and of make check, and the owner check of its paths (S-457-1).
+test('the suite of the CI job, make check and the owners of the core crate run its tests', () => {
+  const suite = /TARGETS="([^"]*)"/.exec(step(stepsOf(CHECK_JOB), 'Run the suite targets through make ci-targets'))?.[1];
+  assert.ok(suite !== undefined, 'the step of the suite targets names no TARGETS');
+  assert.ok(suite.split(' ').includes('test-rust'), `the suite of the CI job does not run test-rust: ${suite}`);
+  const check = /^CHECK_TARGETS := (.*)$/m.exec(read('Makefile'))?.[1];
+  assert.ok(check !== undefined, 'the Makefile sets no CHECK_TARGETS');
+  assert.ok(check.split(' ').includes('test-rust'), `make check does not run test-rust: ${check}`);
+  const owners: unknown = field(JSON.parse(read('config/owner-checks.json')), 'owners', 'config/owner-checks.json');
+  if (!Array.isArray(owners)) throw new Error('owners of config/owner-checks.json must be an array');
+  for (const owned of ['packages/rust/**', 'contracts/cases.json', 'Cargo.toml', 'Cargo.lock']) {
+    const rule = owners.find(owner => {
+      const paths: unknown = field(owner, 'paths', 'an owner');
+      const targets: unknown = field(owner, 'targets', 'an owner');
+      return Array.isArray(paths) && paths.includes(owned) && Array.isArray(targets) && targets.includes('test-rust');
+    });
+    assert.ok(rule !== undefined, `no owner of ${owned} runs test-rust`);
+  }
+});
