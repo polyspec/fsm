@@ -436,6 +436,18 @@
       "targets": [
         "lint-rust"
       ]
+    },
+    {
+      "paths": [
+        "packages/rust/**",
+        "contracts/cases.json",
+        "Cargo.toml",
+        "Cargo.lock"
+      ],
+      "targets": [
+        "test-rust",
+        "lint-rust"
+      ]
     }
   ]
 }

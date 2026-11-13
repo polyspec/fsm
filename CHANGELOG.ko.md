@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: bc22cdf392277a6b316dcdc92ba3888f6e64b6e501969d6df925f070b582983e -->
+<!-- source-sha256: 787b9831f3c6d7cadfad2bd35870ca7ad33e53b30d0d9e76f64d9392ced51437 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 코어 crate `packages/rust`의 시험인 `make test-rust`가 CI job의 suite(`.github/workflows/ci.yml`), `make check`(`CHECK_TARGETS`), 그리고 `packages/rust/**`, `contracts/cases.json`, `Cargo.toml`, `Cargo.lock`의 owner check에서 돈다(S-457-1). 이전에는 CI의 어느 job도, 어느 owner도 이 시험을 돌리지 않아서 코어를 깨뜨린 push가 CI를 통과했다. `make workflows-test`가 이 세 자리를 요구한다. `make workflows-test`(5개 통과, 0개 실패), `make owner-validate`, `make test-rust`(533개 통과, 0개 실패)로 확인했다.
 - `make make-install-test`가 다시 통과한다(S-462-1). 시험의 sandbox가 PHP 바인딩의 Composer project `packages/php-ext`를 그 lock, manifest, stamp `packages/php-ext/vendor/composer/installed.json`, 설치 줄 `binding-php-install`과 함께 갖는다. 그래서 시험은 `make install`이 이 project를 설치하고, stamp가 lock보다 새로우면 다시 설치하지 않을 것을 요구한다. 이전에는 `make install`이 S-462부터 이 project를 설치했지만 sandbox에 그 파일이 없어서 `make -n install`이 "No rule to make target `packages/php-ext/composer.lock'"으로 멈추었고 시험 16개 중 2개가 실패했다. `make make-install-test`로 확인했다(16개 통과, 0개 실패).
 - Go conformance runner(S-467)는 `input_type`이 있는 `from_code` 입력 20개를 그 Go 값, 곧 `string`, `bool`, `float64`로 binding GN-13g가 build tag `polyspec_codec_test` 아래 생성하는 `binding.IntIn(value, "code")`에 넘기고 mapping table의 kind `invalid_number`를 기대한다. `int64`를 넘는 정수는 `uint64`로 넘긴다. 시험 파일은 `//go:build polyspec_codec_test`를 갖고, `make test-go-conformance`의 `GOFLAGS`가 그 tag를 준다. Red: binding a03ba03에서는 빌드가 `undefined: binding.IntIn`으로 실패한다. Green: binding f8a2c3c(lane/go, GN-13g)의 생성기로, binding_core는 고정된 a03ba03의 것과 같고, 생성 시험 554개와 vector 279개가 통과하며 그 가운데 `input_type` vector 20개가 있다. binding 핀이 GN-13g를 담을 때까지 행은 열려 있다.
 - S-462와 S-463이 끝났다: commit된 tree 6f852f4와 binding a03ba03에서 `make test-php-conformance`가 생성 시험 557개와 vector 279개 중 279개를, `make test-python-conformance`가 생성 시험 555개와 vector 279개 중 279개를 통과했다.
