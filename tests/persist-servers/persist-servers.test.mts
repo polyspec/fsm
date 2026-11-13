@@ -45,9 +45,9 @@ services:
       POSTGRES_DB: "fsm_test"
     healthcheck:
       test: ["CMD", "pg_isready", "--host=127.0.0.1", "--port=5432", "--username=fsm", "--dbname=fsm_test"]
-      interval: "1s"
+      interval: "3s"
       timeout: "5s"
-      retries: 300
+      retries: 100
   mysql:
     image: "${reference('mysql')}"
     expose: ["3306"]
@@ -58,18 +58,21 @@ services:
       MYSQL_DATABASE: "fsm_test"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "--protocol=tcp", "--host=127.0.0.1", "--port=3306"]
-      interval: "1s"
+      interval: "3s"
       timeout: "5s"
-      retries: 300
+      retries: 100
 `;
 }
 
 // The lines that the stand-in bay prints: of up before the services accept connections and after, of a failing up, of a
-// failing check, and of the logs of each service.
+// failing check, of an up that refuses the Compose file, of a command for a project that is not registered, and of the logs
+// of each service.
 const STARTING = 'starting 2 services';
 const ACCEPTING = 'all services accept connections';
 const STOPPED = 'bay: the service mysql stopped before it accepted connections';
 const MISSING = 'missing  the resolver of the domain test';
+const REFUSED = 'bay: compose.yaml: service postgres: the image is no reference';
+const UNREGISTERED = 'bay: no project is registered for this directory';
 const LOGS: Record<Kind, string[]> = {
   postgres: ['LOG:  starting PostgreSQL 17.11', 'LOG:  database system is ready to accept connections'],
   mysql: ['[ERROR] [MY-010119] [Server] Aborting', '[System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete'],
@@ -93,6 +96,10 @@ interface Stand {
   downFails?: boolean;
   /** The JSON of bay holds no group of the project of the run. */
   unlisted?: boolean;
+  /** bay up refuses the Compose file before it registers the project. */
+  refuses?: boolean;
+  /** bay down fails after it removed the project, so bay lists it no more. */
+  downForgets?: boolean;
 }
 
 /** The directory of the stand-ins of one run and what the test reads from it. */
@@ -114,7 +121,7 @@ interface Stage {
 /** Writes the stand-ins of the platform `system`: uname, bay and the container program, as `stand` says. */
 function stage(t: TestContext, system: string, stand: Stand = {}): Stage {
   const { directory, path: PATH, program: write } = standIns(t, system);
-  for (const flag of ['absent', 'unset', 'upFails', 'downFails', 'unlisted'] as const) {
+  for (const flag of ['absent', 'unset', 'upFails', 'downFails', 'unlisted', 'refuses', 'downForgets'] as const) {
     if (stand[flag] === true) writeFileSync(path.join(directory, flag), '');
   }
   if (stand.gated === true) execFileSync('mkfifo', [path.join(directory, 'gate')]);
@@ -129,7 +136,9 @@ printf '%s\\n' "$line" >> "$d/calls"
   // bay records the name of the directory of each command: up and down read the Compose file of that directory, and fail
   // with the code 9 without it. up copies the file, so the test reads what the project was started with. The JSON of its
   // projects holds the group of another project first, and the address of a service is a name that no rule builds from the
-  // project and the service, so a DSN holds it only when the run read it.
+  // project and the service, so a DSN holds it only when the run read it. As bay does, up refuses a file whose healthcheck
+  // declares a count of retries outside 1..100, and registers the project only when it accepted the file: the JSON holds the
+  // group of a registered project alone, and logs and down fail for a project that is not registered.
   if (stand.bay !== false) {
     write('bay', `${record}printf '%s\\t%s\\n' "$1" "$(basename "$(pwd)")" >> "$d/where"
 case "$1" in
@@ -139,22 +148,29 @@ check)
 	;;
 up)
 	cp compose.yaml "$d/composed" || exit 9
+	awk '/^  [a-z]+:$/ { service = substr($1, 1, length($1) - 1) } /^      retries: / { if ($2 < 1 || $2 > 100) { print "bay: compose.yaml: service " service ": healthcheck retries must be 1..100"; refused = 1 } } END { exit refused }' compose.yaml >&2 || exit 1
+	if [ -e "$d/refuses" ]; then echo '${REFUSED}' >&2; exit 1; fi
+	: > "$d/registered"
 	echo '${STARTING}'
 	if [ -p "$d/gate" ]; then read -r _ < "$d/gate"; fi
 	if [ -e "$d/upFails" ]; then echo '${STOPPED}' >&2; exit 1; fi
 	echo '${ACCEPTING}'
 	;;
 logs)
+	[ -e "$d/registered" ] || { echo '${UNREGISTERED}' >&2; exit 1; }
 	cat "$d/logs-$4"
 	;;
 status)
 	project=$(basename "$(pwd)")
-	if [ -e "$d/unlisted" ]; then project=another; fi
+	if [ -e "$d/unlisted" ] || [ ! -e "$d/registered" ]; then project=another; fi
 	printf '{"groups":[{"name":"other","services":[{"name":"postgres","address":"other.example"}]},{"name":"%s","services":[{"name":"mysql","address":"m.%s.example"},{"name":"postgres","address":"p.%s.example"}]}]}\\n' "$project" "$project" "$project"
 	;;
 down)
 	[ -e compose.yaml ] || exit 9
+	[ -e "$d/registered" ] || { echo '${UNREGISTERED}' >&2; exit 1; }
 	if [ -e "$d/downFails" ]; then echo 'bay: the runtime did not answer' >&2; exit 1; fi
+	rm "$d/registered"
+	if [ -e "$d/downForgets" ]; then echo 'bay: the proxy did not answer' >&2; exit 1; fi
 	echo 'removed 2 services'
 	;;
 esac
@@ -294,7 +310,7 @@ test('each service declares a health check that asks its server over TCP in the 
     '      test: ["CMD", "mysqladmin", "ping", "--protocol=tcp", "--host=127.0.0.1", "--port=3306"]',
   ]);
   assert.equal(composed.match(/^ {4}healthcheck:$/gm)?.length, 2);
-  for (const declared of ['      interval: "1s"', '      timeout: "5s"', '      retries: 300']) {
+  for (const declared of ['      interval: "3s"', '      timeout: "5s"', '      retries: 100']) {
     assert.equal(composed.split('\n').filter(line => line === declared).length, 2, `each service does not declare ${declared.trim()}`);
   }
   assert.doesNotMatch(composed, /--socket|--protocol=socket|start_period|disable/);
@@ -312,9 +328,48 @@ test('a bay up that fails fails the run with the last lines of each service, wit
   }
   assert.match(ended.stderr, new RegExp(`^persist-servers: bay up ended with 1 before the servers of the project ${project} accepted connections$`, 'm'));
   assert.equal(existsSync(file), false, 'the command ran with servers that were not ready');
-  assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('docker'), ['bay', 'up'], ['bay', 'logs', '-n', '40', 'postgres'], ['bay', 'logs', '-n', '40', 'mysql'], ['bay', 'down']]);
+  // The JSON of bay holds the project, so bay up made it: its services are shown and it is removed.
+  assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('docker'), ['bay', 'up'], LISTING, ['bay', 'logs', '-n', '40', 'postgres'], ['bay', 'logs', '-n', '40', 'mysql'], ['bay', 'down']]);
   assert.deepEqual(staged.where('logs'), [project, project]);
   assert.deepEqual(staged.where('down'), [project]);
+  assert.deepEqual(staged.left(), []);
+});
+
+// What bay up made is read from the JSON of bay, never from a line that it printed: bay registers a project when it accepts
+// its Compose file. bay logs and bay down fail for a project that is not registered, so the run runs neither.
+test('a bay up that refuses the Compose file made nothing: the run fails, runs no bay logs and no bay down, and removes its directory', async t => {
+  const staged = stage(t, 'Linux', { engine: 'docker', refuses: true });
+  const file = path.join(staged.directory, 'variables');
+  const ended = await script(staged, writes(file));
+  assert.deepEqual([ended.code, ended.signal], [1, null], ended.stderr);
+  const project = projectOf(staged);
+  assert.match(ended.stderr, new RegExp(`^persist-servers: bay up: ${REFUSED}$`, 'm'));
+  assert.match(ended.stderr, new RegExp(`^persist-servers: bay lists no project ${project}: bay up made nothing$`, 'm'));
+  assert.match(ended.stderr, new RegExp(`^persist-servers: bay up ended with 1 before the servers of the project ${project} accepted connections$`, 'm'));
+  assert.equal(existsSync(file), false);
+  assert.deepEqual(staged.calls(), [['bay', 'check'], ...installed('docker'), ['bay', 'up'], LISTING]);
+  assert.deepEqual(staged.left(), [], 'the run kept the directory of a project that bay never made');
+});
+
+// bay accepts 1 to 100 retries of a healthcheck. The stand-in refuses another count as bay does, so a file that bay would
+// refuse fails every case that starts the servers.
+test('the count of retries of each healthcheck is one that bay accepts', async t => {
+  const staged = stage(t, 'Linux', { engine: 'docker' });
+  const ended = await script(staged, writes(path.join(staged.directory, 'variables')));
+  assert.doesNotMatch(ended.stderr, /healthcheck retries must be 1\.\.100/);
+  assert.deepEqual([ended.code, ended.signal], [0, null], ended.stderr);
+  const counts = [...(staged.composed() ?? '').matchAll(/^ {6}retries: (\d+)$/gm)].map(match => Number(match[1]));
+  assert.equal(counts.length, 2);
+  for (const count of counts) assert.ok(count >= 1 && count <= 100, `bay refuses ${String(count)} retries`);
+});
+
+test('a bay down that fails after bay removed the project fails the run, which removes its directory', async t => {
+  const staged = stage(t, 'Linux', { engine: 'docker', downForgets: true });
+  const ended = await script(staged, writes(path.join(staged.directory, 'variables')));
+  assert.deepEqual([ended.code, ended.signal], [1, null], ended.stderr);
+  const project = projectOf(staged);
+  assert.match(ended.stderr, new RegExp(`^persist-servers: bay down ended with 1; bay lists no project ${project}, so no container of the run exists: removed the directory of the run$`, 'm'));
+  assert.deepEqual(staged.calls().slice(-2), [['bay', 'down'], LISTING]);
   assert.deepEqual(staged.left(), []);
 });
 
