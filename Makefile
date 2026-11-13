@@ -469,7 +469,9 @@ test-go-conformance: test-go-binding
 # past failures, so one run names every static gate that fails.
 .PHONY: kit-gates kit-gates-static kit-gates-runtime-ts kit-gates-runtime-php kit-gates-runtime-python kit-gates-runtime-go kit-gates-runtime-rust kit-gates-runtime-php-ext
 KIT_STATIC_GATES := layout-check docs-check rules-check owner-validate rebuild-check language-check duplication-check suppression-check
-KIT_GATE_TARGETS := $(KIT_STATIC_GATES) lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext
+# The gates of the runtime php-ext are named by the targets that hold their recipes: lint-php-ext and test-php-ext only depend
+# on them, and CHECK_TARGETS names the targets with the recipes, which CI_SUITE_TARGETS filters out by these names (S-474).
+KIT_GATE_TARGETS := $(KIT_STATIC_GATES) lint-ts lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext
 kit-gates: $(KIT_GATE_TARGETS)
 
 ifneq ($(filter kit-gates-static,$(MAKECMDGOALS)),)
@@ -575,10 +577,11 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 
 # The targets of the full suite that make check runs, past failures. Each checklist item appends the targets that it defines
 # (docs/plans/fsm-v1/plan.md, Verification). The gates of KIT_GATE_TARGETS run in the jobs of the CI pipeline, and CI links
-# nothing: the own suite of ci.yml is CHECK_TARGETS without them.
+# nothing: the own suite of ci.yml is CHECK_TARGETS without them. The job check of ci.yml runs make ci-suite and names no target
+# itself, so the workflow and make check cannot differ (S-474; make workflows-test).
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test container-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test container-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
