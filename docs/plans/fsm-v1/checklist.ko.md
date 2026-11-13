@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: 31c223f96888009980866a592934b641b49cdc9d716a0cf4b667241074cca711 -->
+<!-- source-sha256: 8c018007084a6875989a91e827a797489f1886ad7a09c6af800e05dc040fe0ab -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -129,7 +129,7 @@
 | S-458 | 계획 f6 단계 4: `packages/rust`의 코어 `Machine`과 `Step`(`docs/spec/fsm.md`, B-7): 정의 읽기, code, key, from_code, is_final, events_from, target, apply와 `binding_core::Kinds`를 구현한 `Error` enum | `packages/rust/src/**` | `make test-rust` | [o] |
 | S-459 | 계획 f6 단계 4: 코어의 `validate(definitions)`가 `legacy/packages/compiler/src/core/validate.mjs`처럼 B-5의 finding(`{code, machine, path, message}`, 문서 순서와 입력 순서)을 주고, 그 case는 `legacy/packages/compiler/tests/validate-{structure,graph,names}.test.mjs`의 시험 65개에서 온다 | `packages/rust/src/**`, `packages/rust/interface.json`, `contracts/cases.json` | `make test-rust` | [o] |
 | S-460 | Node와 WASM 바인딩의 case runner(`packages/ts/tests/cases.mjs`)가 S-457과 S-459의 계약을 따른다: class `machine`의 group `machine.<member>`, case key `definition`과 `reserved`로 `Machine.parse`가 준 instance의 method, 자기 key를 갖는 static `parse`와 `validate`. 지금은 S-454의 기계별 module을 읽는다 | `packages/ts/tests/cases.mjs` | `make test-node test-wasm BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen> TSC=<tsc>` | [ ] |
-| S-461 | 계획 f6 단계 7a-1, Node의 host: legacy 시험의 공통 suite `contracts/conformance/vectors.json`이 그 기대값으로 Node 바인딩에서 돈다: 기계는 그 파일과 lock의 예약 code로 `Machine.parse`한 것이고, 상태는 key다(vector의 raw code는 legacy 시험이 `fromCode`를 거치듯 먼저 `key`를 거친다). 오류는 vector가 이름하는 B-6 code를 코어의 kind로 대응시켜, 그리고 `expected`, `actual`, `event`로 비교한다. `persist` vector는 단계 7p를 기다린다. Red 먼저: host가 있기 전의 실행 | `packages/ts/tests/conformance.mjs`, `packages/ts/tests/conformance.test.mjs`, `Makefile` | `make test-node-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [ ] |
+| S-461 | 계획 f6 단계 7a-1, Node의 host: legacy 시험의 공통 suite `contracts/conformance/vectors.json`이 그 기대값으로 Node 바인딩에서 돈다: 기계는 그 파일과 lock의 예약 code로 `Machine.parse`한 것이고, 상태는 key다(vector의 raw code는 legacy 시험이 `fromCode`를 거치듯 먼저 `key`를 거친다). 오류는 vector가 이름하는 B-6 code를 코어의 kind로 대응시켜, 그리고 `expected`, `actual`, `event`로 비교한다. `persist` vector는 단계 7p를 기다린다. Red 먼저: host가 있기 전의 실행 | `packages/ts/tests/conformance.mjs`, `packages/ts/tests/conformance.test.mjs`, `Makefile` | `make test-node-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [~] |
 | S-462 | 계획 f6 단계 7a-1, PHP의 host: S-461의 suite를 `legacy/packages/php/tests/ConformanceTest.php`의 기대값으로 PHP 바인딩에서 돌린다. Red 먼저 | `packages/php-ext/tests/**`, `Makefile` | `make test-php-conformance BINDING=<cli of binding>` | [ ] |
 | S-463 | 계획 f6 단계 7a-1, Python의 host: S-461의 suite를 `legacy/packages/python/tests/test_conformance.py`의 기대값으로 Python 바인딩에서 돌린다. Red 먼저 | `packages/python/tests/**`, `Makefile` | `make test-python-conformance BINDING=<cli of binding> MATURIN=<maturin>` | [ ] |
 | S-464 | 계획 f6 단계 7b, WASM의 host: S-461의 suite를 WASM 바인딩, 곧 package의 subpath `./wasm`에서 돌린다. Red 먼저 | `packages/ts/tests/conformance.wasm.test.mjs`, `Makefile` | `make test-wasm-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [ ] |
