@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: dde784be099fca54ebafba462020b1c85976ed930d86866f6b2ccf97452af3a6 -->
+<!-- source-sha256: aca7fd9ee8ec29d8aefc7e622825ff29fa203e2f5fbd3842a318d01407089d33 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,7 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
-- 인터페이스 계약 `packages/rust/interface.json`이 crate packages/rust의 공개 member를 다섯 target php, python, node, go, wasm으로 묶는다: 다섯 기계마다 state와 event enum, step record, 함수 initial, code, key, from_code, is_final, events_from, target, apply. 그 case 212개는 `contracts/cases.json`에 있고 `contracts/conformance/vectors.json`에서 옮겼다. Makefile에 대상 bindings, bindings-check, lint-bindings, test-bindings, check-declarations, node-package, test-node, test-wasm, test-python-binding, test-php-binding, test-go-binding이 있고, packages/ts/tests에 Node와 WASM의 case runner가 있다. 바인딩 package와 루트 Cargo workspace는 계획 f6 단계 3-2까지 추적하지 않는다 (S-454).
+- 인터페이스 계약 `packages/rust/interface.json`이 crate packages/rust의 공개 member를 다섯 target php, python, node, go, wasm으로 묶는다: 다섯 기계마다 state와 event enum, step record, 함수 initial, code, key, from_code, is_final, events_from, target, apply. 그 case 212개는 `contracts/cases.json`에 있고 `contracts/conformance/vectors.json`에서 옮겼다. Makefile에 대상 bindings, bindings-check, lint-bindings, test-bindings, check-declarations, node-package, test-node, test-wasm, test-python-binding, test-php-binding, test-go-binding이 있고, packages/ts/tests에 Node와 WASM의 case runner가 있다. 바인딩 package와 루트 Cargo workspace는 계획 f6 단계 3-2까지 추적하지 않는다. 커밋된 tree에 대한 binding 8faad21의 end-to-end 검사는 모든 target을 GN-4(루트 Cargo.toml 없음)에서 실패한다. 루트 workspace와 scaffold된 package를 더한 사본에서는 다섯 target이 모두 생성되고, 모든 binding crate가 컴파일에 실패한다: 코어 오류는 `binding_core::Kinds`를 구현한 enum이 아니라 struct `fsm::Error`이고, 코어는 계약 타입이 `i64`와 list를 주는 자리에서 `serde_json::Value`, `i32`, `&[Event]`를 받으며, 생성된 PHP, Python, Node, WASM crate는 다섯 module의 member를 두 번 정의한다. (S-454).
 
 ## 0.0.13
 
