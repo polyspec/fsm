@@ -204,6 +204,15 @@ test('the suite of the check job is make ci-suite: the targets of make check tha
   assert.deepEqual(own.filter(target => gates.has(target)), [], 'make ci-suite runs a target that a job of the pipeline runs');
 });
 
+// A consumer takes the core crate from the tag of the repository (S-470-2): config/release.json classifies its manifest as
+// git-tag, so the release requires its version, and no archive carries it.
+test('the release holds the core crate by its tag', () => {
+  const release: unknown = JSON.parse(read('config/release.json'));
+  assert.equal(field(field(release, 'manifests', 'config/release.json'), 'packages/rust/Cargo.toml', 'manifests of config/release.json'), 'git-tag');
+  const notReleased: unknown = field(release, 'notReleased', 'config/release.json');
+  assert.ok(isRecord(notReleased) && !('packages/rust/Cargo.toml' in notReleased), 'packages/rust/Cargo.toml is in notReleased');
+});
+
 // The core crate packages/rust holds every rule of fsm (plan f6, step 3a), so its tests are a target of the suite of the CI job
 // and of make check, and the owner check of its paths (S-457-1).
 test('the suite of the CI job, make check and the owners of the core crate run its tests', () => {
