@@ -30,8 +30,10 @@
 // its project. The run builds no name of a service itself, because the form of the name belongs to bay; when bay up has a
 // JSON output, the run reads that instead (S-475-3). The run runs bay down and removes its directory when the command ends or fails and
 // when bay up fails. SIGINT and SIGTERM are forwarded to the command; a signal that comes while the servers start ends the
-// run once bay up has ended, without the command. A bay down that fails fails the run, which keeps its directory and names
-// it: bay down in that directory removes the containers that may still run. The exit code is that of the command, 130 or
+// run once bay up has ended, without the command. After a failed bay up or bay down the JSON of bay tells whether the project
+// exists: without a group of the project bay made nothing, or removed it, and the run removes its directory; a bay up that
+// made nothing is followed by no bay down. With the group, a failed bay down fails the run, which keeps its directory and
+// names it: bay down in that directory removes the containers that may still run. The exit code is that of the command, 130 or
 // 143 for the two signals, and 1 for a failure of the run itself.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -46,10 +48,10 @@ const PINS = path.join(ROOT, 'config/containers.json');
 const USAGE = 'usage: scripts/persist-servers.mts run -- <command> [argument...] | pull';
 // TAIL is the count of the last lines of a service that a failed start shows.
 const TAIL = 40;
-// The declarations of a healthcheck, which bay evaluates: it asks each second, where the default of Compose is 30 s; one ask
-// of a server in the same container may take 5 s; and 300 asks give the initialization of an image five minutes, where the
-// default of 3 would report a server that still initializes.
-const HEALTH = ['interval: "1s"', 'timeout: "5s"', 'retries: 300'];
+// The declarations of a healthcheck, which bay evaluates: 100 asks, the largest count that bay accepts, where the default of
+// 3 would report a server that still initializes; an ask each 3 s, which gives the initialization of an image five minutes,
+// where the default of Compose is 30 s; and one ask of a server in the same container may take 5 s.
+const HEALTH = ['interval: "3s"', 'timeout: "5s"', 'retries: 100'];
 
 /** A failure of the run that ends it with `code` and the message on standard error. */
 class Failure extends Error {
@@ -176,22 +178,51 @@ function check(): void {
   throw new Failure(`persist-servers: bay check ended with ${String(ran.status ?? ran.signal)}: a part of the machine setup of bay is missing: run bay install`);
 }
 
+// The command of LISTING as a failure names it.
+const LISTING_COMMAND = `bay ${LISTING.join(' ')}`;
+
+/** What bay lists of the project `project`: the text of its JSON and the group of that name in it, undefined when it holds none. */
+interface Listed {
+  text: string;
+  group: unknown;
+}
+
+/** Runs the command of LISTING in `directory` and returns what its JSON holds of `project`; fails when bay fails or prints no JSON. */
+function listed(directory: string, project: string): Listed {
+  const ran = spawnSync('bay', LISTING, { cwd: directory, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  if (ran.error) throw new Failure(`persist-servers: bay: ${ran.error.message}`);
+  if (ran.status !== 0) throw new Failure(`persist-servers: ${LISTING_COMMAND} ended with ${String(ran.status ?? ran.signal)}:\n${ran.stderr}${ran.stdout}`.trimEnd());
+  const groups = field(parse(ran.stdout, `the output of ${LISTING_COMMAND}`), 'groups');
+  const group: unknown = Array.isArray(groups) ? groups.find(each => field(each, 'name') === project) : undefined;
+  return { text: ran.stdout, group };
+}
+
+/**
+ * Whether the project `project` may exist: bay registers a project when it accepts its Compose file, so a JSON without a
+ * group of that name tells that bay made nothing of it, or removed it. A JSON that cannot be read tells nothing, and the
+ * project then counts as one that may exist; the failure of the reading is shown.
+ */
+function registered(directory: string, project: string): boolean {
+  try {
+    return listed(directory, project).group !== undefined;
+  } catch (error) {
+    if (!(error instanceof Failure)) throw error;
+    show(error.message);
+    return true;
+  }
+}
+
 /**
  * The address of the service of each kind of the project `project`, which runs in `directory`, as bay reports it: the field
  * address of the service of that name in the group of that name, in the JSON of `bay status --json`. A project or a service
  * that the JSON does not hold, and an address that is no text or is empty, fail the run.
  */
 function addresses(directory: string, project: string): Record<Kind, string> {
-  const ran = spawnSync('bay', LISTING, { cwd: directory, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-  if (ran.error) throw new Failure(`persist-servers: bay: ${ran.error.message}`);
-  const command = `bay ${LISTING.join(' ')}`;
-  if (ran.status !== 0) throw new Failure(`persist-servers: ${command} ended with ${String(ran.status ?? ran.signal)}:\n${ran.stderr}${ran.stdout}`.trimEnd());
-  const groups = field(parse(ran.stdout, `the output of ${command}`), 'groups');
-  const group: unknown = Array.isArray(groups) ? groups.find(each => field(each, 'name') === project) : undefined;
+  const { text, group } = listed(directory, project);
   const services = field(group, 'services');
   const address = (kind: Kind): string => {
     const found = field(Array.isArray(services) ? services.find(each => field(each, 'name') === kind) : undefined, 'address');
-    if (typeof found !== 'string' || found === '') throw new Failure(`persist-servers: ${command} names no address of the service ${kind} of the project ${project}:\n${ran.stdout}`.trimEnd());
+    if (typeof found !== 'string' || found === '') throw new Failure(`persist-servers: ${LISTING_COMMAND} names no address of the service ${kind} of the project ${project}:\n${text}`.trimEnd());
     return found;
   };
   return { postgres: address('postgres'), mysql: address('mysql') };
@@ -231,12 +262,18 @@ async function run(command: readonly string[]): Promise<number> {
   process.on('SIGINT', listeners.SIGINT);
   process.on('SIGTERM', listeners.SIGTERM);
   let code = 1;
+  // made tells whether bay may hold the project: it does from the start of bay up, until the JSON of bay tells otherwise.
+  let made = true;
   mkdirSync(directory, { mode: 0o700 });
   try {
     writeFileSync(path.join(directory, 'compose.yaml'), composed);
     const up = await bay(directory, ['up'], 'bay up');
     if (up !== 0) {
-      for (const kind of KINDS) await bay(directory, ['logs', '-n', String(TAIL), kind], kind);
+      // What bay up made is read from the JSON of bay, never from a line that it printed. bay logs and bay down fail for a
+      // project that is not registered, so neither runs for one.
+      made = registered(directory, project);
+      if (made) for (const kind of KINDS) await bay(directory, ['logs', '-n', String(TAIL), kind], kind);
+      else show(`persist-servers: bay lists no project ${project}: bay up made nothing`);
       throw new Failure(`persist-servers: bay up ended with ${String(up)} before the servers of the project ${project} accepted connections`);
     }
     if (state.received !== undefined) code = SIGNALS[state.received];
@@ -252,16 +289,18 @@ async function run(command: readonly string[]): Promise<number> {
       });
     }
   } finally {
-    // The project is removed also after a failed bay up, which may have started a service. A bay that did not start is a
-    // failed removal too.
-    const down = await bay(directory, ['down'], 'bay down').catch((error: unknown) => (error instanceof Error ? error.message : String(error)));
+    // The project is removed also after a failed bay up that made it, which may have started a service. A bay that did not
+    // start is a failed removal too. After a failed removal the JSON of bay tells whether the project still exists: the
+    // directory stays only while it may, because bay down in it is what removes the containers.
+    const down = made ? await bay(directory, ['down'], 'bay down').catch((error: unknown) => (error instanceof Error ? error.message : String(error))) : undefined;
+    const kept = down !== undefined && down !== 0 && registered(directory, project);
     process.off('SIGINT', listeners.SIGINT);
     process.off('SIGTERM', listeners.SIGTERM);
-    if (down === 0) {
-      rmSync(directory, { recursive: true, force: true });
-      show(`persist-servers: removed the project ${project}`);
-    } else {
-      show(`persist-servers: bay down ended with ${String(down)}; the containers of the project ${project} may still run: run bay down in ${directory}`);
+    if (!kept) rmSync(directory, { recursive: true, force: true });
+    if (down === 0) show(`persist-servers: removed the project ${project}`);
+    else if (down !== undefined) {
+      if (kept) show(`persist-servers: bay down ended with ${String(down)}; the containers of the project ${project} may still run: run bay down in ${directory}`);
+      else show(`persist-servers: bay down ended with ${String(down)}; bay lists no project ${project}, so no container of the run exists: removed the directory of the run`);
       if (code === 0) code = 1;
     }
   }
