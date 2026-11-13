@@ -465,17 +465,7 @@
     },
     {
       "paths": [
-        "scripts/container.mts",
-        "tests/container/**"
-      ],
-      "targets": [
-        "container-test"
-      ]
-    },
-    {
-      "paths": [
         "scripts/persist-servers.mts",
-        "scripts/container.mts",
         "config/containers.json",
         "tests/persist-servers/**"
       ],
@@ -490,7 +480,6 @@
       ],
       "targets": [
         "workflows-test",
-        "container-test",
         "persist-servers-test"
       ]
     }

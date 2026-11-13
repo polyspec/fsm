@@ -17,9 +17,9 @@
     ]
   },
   "ignoreBinaries": [
-    // scripts/persist-servers.mts starts and removes the servers of the tests with bay, a program of the machine that no
+    // scripts/persist-servers.mts pulls, starts and removes the servers of the tests with bay, a program of the machine that no
     // package of a lock provides; the run fails at once when PATH does not hold it (S-475), and no tracked file pins its
-    // release yet (S-475-4). The container program of the platform has no entry, because the script names it by a variable.
+    // release yet (S-475-4).
     "bay",
     // legacy/packages/compiler/tests/go-backend.test.mjs (make compiler-test) runs go vet on the generated Go package, and
     // tests/workflows/workflows.test.mts reads the go directive of each go.mod with go mod edit -json.

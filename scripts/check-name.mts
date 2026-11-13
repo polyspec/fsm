@@ -88,11 +88,6 @@ export const ALLOWED: readonly Allowed[] = Object.freeze([
     reason: 'the key status of the JSON that the inspect of Apple container prints, which holds the networks of a container: the program fixes the name, and the row S-472-1 records that scripts/persist-servers.mts read the address of a container from it until S-475',
   },
   {
-    files: ['scripts/persist-servers.mts', 'tests/persist-servers/**', 'docs/operations/persist-servers.md', 'docs/operations/persist-servers.ko.md', 'docs/plans/fsm-v1/plan.md', 'docs/plans/fsm-v1/plan.ko.md', 'docs/plans/fsm-v1/checklist.md', 'docs/plans/fsm-v1/checklist.ko.md', 'CHANGELOG.md', 'CHANGELOG.ko.md'],
-    match: /\bbay status --json|'status', '--json'|^status\)$/,
-    reason: 'the command status of bay, which prints its projects and their services as JSON: bay fixes the name, and scripts/persist-servers.mts reads the address of each server from that output (S-475)',
-  },
-  {
     files: ['contracts/cases.json'],
     match: /"status": (?:null|\d+)(?=,)/,
     reason: 'the status field of a raised error in the binding cases (binding G-5): the HTTP status of the error kind, which fsm leaves null',

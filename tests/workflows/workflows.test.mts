@@ -247,24 +247,24 @@ test('the check job holds no services and no DSN: it pulls the images and runs i
   assert.match(step, /\n {8}if: \$\{\{ !cancelled\(\) \}\}\n/, 'the suite step does not run after a failed step');
   assert.match(step, /\n {8}run: make ci-suite$/m, `the suite step is not make ci-suite:\n${step}`);
   const targets = suiteOf('ci-suite');
-  // Every target that reads a DSN, and the tests of the two scripts of the servers, run in that step.
+  // Every target that reads a DSN, and the test of the script of the servers, run in that step.
   const makefile = read('Makefile');
   const reading = [...makefile.matchAll(/^([a-z][a-z0-9-]*):.*\n\t@\$\(call require_dsn,/gm)].map(match => text(match[1], 'a target that requires a DSN'));
   assert.ok(reading.length >= 14, `the Makefile holds ${String(reading.length)} targets that require a DSN`);
-  for (const target of [...reading, 'container-test', 'persist-servers-test']) assert.ok(targets.includes(target), `the suite step does not run ${target}`);
+  for (const target of [...reading, 'persist-servers-test']) assert.ok(targets.includes(target), `the suite step does not run ${target}`);
   const check = suiteOf('check');
-  for (const target of [...reading, 'container-test', 'persist-servers-test']) assert.ok(check.includes(target), `make check does not run ${target}`);
+  for (const target of [...reading, 'persist-servers-test']) assert.ok(check.includes(target), `make check does not run ${target}`);
 });
 
-// A dry run prints the recipe of the servers and starts nothing: the stand-in uname of the case names a platform without a
-// container program, so a recipe that ran would fail.
+// A dry run prints the recipe of the servers and starts nothing: a recipe that ran would write a line that starts with
+// persist-servers:, the version of bay or the failure of a PATH without bay.
 test('make persist-servers runs TARGETS through make ci-targets under scripts/persist-servers.mts, and make check and make ci-suite run through it', t => {
   const { directory } = standIns(t, 'DryRun');
   const dry = (goal: string, env: Record<string, string> = {}) => make(['-n', goal], { PATH: `${directory}:${process.env.PATH ?? ''}`, ...env });
   const servers = dry('persist-servers', { TARGETS: 'db-test-postgres db-test-mysql' });
   assert.equal(servers.code, 0, servers.output);
   assert.match(servers.output, /^\S+\/node scripts\/persist-servers\.mts run -- \S*make ci-targets TARGETS="db-test-postgres db-test-mysql"$/m);
-  assert.doesNotMatch(servers.output, /persist-servers:|container\.mts:/, 'the dry run ran the recipe of the servers');
+  assert.doesNotMatch(servers.output, /persist-servers:/, 'the dry run ran the recipe of the servers');
   const images = dry('persist-images');
   assert.equal(images.code, 0, images.output);
   assert.match(images.output, /^\S+\/node scripts\/persist-servers\.mts pull$/m);
@@ -272,7 +272,7 @@ test('make persist-servers runs TARGETS through make ci-targets under scripts/pe
     const suite = dry(goal);
     assert.equal(suite.code, 0, suite.output);
     assert.match(suite.output, /^\S+\/node scripts\/persist-servers\.mts run -- \S*make ci-targets TARGETS="[^"]*\bdb-test-postgres\b[^"]*"$/m, `${goal} does not run its targets with the servers`);
-    assert.doesNotMatch(suite.output, /persist-servers:|container\.mts:/, `the dry run of ${goal} ran the recipe of the servers`);
+    assert.doesNotMatch(suite.output, /persist-servers:/, `the dry run of ${goal} ran the recipe of the servers`);
   }
 });
 

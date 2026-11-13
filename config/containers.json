@@ -1,5 +1,5 @@
 {
-  "comment": "The images of the PostgreSQL and MySQL servers of the tests, which scripts/persist-servers.mts writes into the Compose file of a run, the project that bay starts on the container program of the platform (docs/plans/fsm-v1/plan.md, C-6; S-472-1, S-475). Each image is pinned by the digest of its index, which names one image for every platform; version names the release that the digest holds. make persist-images pulls them with that container program. A new release replaces the version and the digest of its entry together.",
+  "comment": "The images of the PostgreSQL and MySQL servers of the tests, which scripts/persist-servers.mts writes into the Compose file of a run, the project that bay starts on the container program of the platform (docs/plans/fsm-v1/plan.md, C-6; S-472-1, S-475). Each image is pinned by the digest of its index, which names one image for every platform; version names the release that the digest holds. make persist-images pulls them with bay pull. A new release replaces the version and the digest of its entry together.",
   "images": {
     "postgres": {
       "version": "17.11",

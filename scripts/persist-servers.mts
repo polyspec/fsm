@@ -6,52 +6,52 @@
 //   node scripts/persist-servers.mts run -- <command> [argument...]
 //   node scripts/persist-servers.mts pull
 //
-// bay starts and removes the servers: it runs a Compose project on Apple container on Darwin and on Docker on Linux. A run
-// makes a directory of its own in the temporary directory of the system, fsm-persist-<pid>-<random>, whose name holds the
-// process id of the run and 4 random bytes, and writes its compose.yaml into it. The key name of the file is the name of
-// the directory, because bay has no option that names a project (S-475-1), and bay names each container
-// <project>-<service>, so two runs share no project and no container. The file publishes no port and mounts nothing.
+// bay pulls, starts and removes the servers: it runs a Compose project on Apple container on Darwin and on Docker on Linux,
+// and this file calls no container program itself. A run makes a directory of its own in the temporary directory of the
+// system, fsm-persist-<pid>-<random>, whose name holds the process id of the run and 4 random bytes, and writes its
+// compose.yaml into it. Each command of bay names that file and the project, the name of the directory, by the options -f
+// and -p before the command; bay names each container <project>-<service> and keeps two names apart, so two runs share no
+// project and no container. The file publishes no port and mounts nothing.
 //
-// A run needs bay and the container program of the platform on PATH, and fails at once without one, with its name and what
-// installs it. bay check, which changes nothing, must pass before a server starts, so that bay up asks no person for a
-// password in the middle of a run. The container program, whose commands scripts/container.mts holds, tells whether an
-// image is installed and pulls it, because bay has no command for either (S-475-2): an image that is not installed fails
-// the run before a server starts and names make persist-images, the target of pull. run downloads nothing.
+// A run needs bay on PATH and fails at once without it, with its name and what installs it. It first shows what bay version
+// --json prints, so the record of a run names the bay that made its result (S-475-4). It checks no machine setup: bay up
+// changes none, and with a part missing it fails and names the part and bay install.
+//
+// run downloads nothing: bay images --json, which fetches nothing, tells whether each image is installed, and an image that
+// is not fails the run before a server starts and names make persist-images, the target of pull; bay up -no-pull then fails
+// before it creates anything when the store lacks an image. pull writes the same Compose file into a directory of its own,
+// runs bay pull on it and removes the directory.
 //
 // Waiting for the servers has no sleep, no polling and no time limit in this file: each service declares a healthcheck, the
-// program of its server over TCP in its container, bay checks it at the start and returns from up after each service is
-// healthy, and that return is the ready event. The interval, the timeout and the retries of a healthcheck are declarations
-// that Compose requires and bay evaluates (plan C-6 states the reason of each value). The run shows each line of bay as `persist-servers: bay <verb>: <line>`.
-// A bay up that fails fails the run with the last lines of each service, which bay logs prints.
+// program of its server over TCP in its container, bay runs it at the start and returns from up after each service is
+// healthy, and that return is the ready event. The values of a healthcheck are declarations that bay evaluates (plan C-6
+// states the reason of each value). The run shows each line of the progress of bay as `persist-servers: bay <verb>: <line>`.
 //
 // The command runs with the four variables of the servers, FSM_TEST_PG_DSN, FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and
-// FSM_TEST_MYSQL_ADMIN_DSN, which name the address of each service and the port of its server. The address is the one that
-// bay reports: after bay up the run reads `bay status --json`, and takes the field address of the service in the group of
-// its project. The run builds no name of a service itself, because the form of the name belongs to bay; when bay up has a
-// JSON output, the run reads that instead (S-475-3). The run runs bay down and removes its directory when the command ends or fails and
-// when bay up fails. SIGINT and SIGTERM are forwarded to the command; a signal that comes while the servers start ends the
-// run once bay up has ended, without the command. After a failed bay up or bay down the JSON of bay tells whether the project
-// exists: without a group of the project bay made nothing, or removed it, and the run removes its directory; a bay up that
-// made nothing is followed by no bay down. With the group, a failed bay down fails the run, which keeps its directory and
-// names it: bay down in that directory removes the containers that may still run. The exit code is that of the command, 130 or
-// 143 for the two signals, and 1 for a failure of the run itself.
+// FSM_TEST_MYSQL_ADMIN_DSN, which name the host and the port of each service as the JSON of bay up --json holds them. The
+// run builds no name of a service itself, because the form of the name belongs to bay.
+//
+// Once bay up was started, the run runs bay down and removes its directory when the command ends or fails and when bay up
+// fails; bay down ends with 0 also for a project of which bay made nothing. SIGINT and SIGTERM are forwarded to the command;
+// a signal that comes while the servers start is forwarded to bay up, which removes what it created, and the run then ends
+// without the command. A bay down that fails fails the run, which keeps its directory and shows the command that removes
+// the project, because that command needs the Compose file. The exit code is that of the command, 130 or 143 for the two
+// signals, and 1 for a failure of the run itself.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createInterface } from 'node:readline';
-import { ContainerError, containerCommand, containerProgram, onPath, type Program, type Verb } from './container.mts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const PINS = path.join(ROOT, 'config/containers.json');
 const USAGE = 'usage: scripts/persist-servers.mts run -- <command> [argument...] | pull';
-// TAIL is the count of the last lines of a service that a failed start shows.
-const TAIL = 40;
-// The declarations of a healthcheck, which bay evaluates: 100 asks, the largest count that bay accepts, where the default of
-// 3 would report a server that still initializes; an ask each 3 s, which gives the initialization of an image five minutes,
-// where the default of Compose is 30 s; and one ask of a server in the same container may take 5 s.
-const HEALTH = ['interval: "3s"', 'timeout: "5s"', 'retries: 100'];
+// The declarations of a healthcheck, which bay evaluates: the start period is the time of the initialization of an image,
+// whose failed asks do not count, and the first ask that succeeds ends the wait; a failed ask is followed by the next after
+// 1 s, where the default is 30 s; one ask of a server in the same container may take 5 s; and 3 failures count after the
+// start period, the default of Compose.
+const HEALTH = ['start_period: "300s"', 'interval: "1s"', 'timeout: "5s"', 'retries: 3'];
 
 /** A failure of the run that ends it with `code` and the message on standard error. */
 class Failure extends Error {
@@ -70,13 +70,14 @@ const KINDS: readonly Kind[] = ['postgres', 'mysql'];
 /**
  * A server of the tests. `port` is the port of the server in its container; `environment` creates its accounts and its
  * database when the image initializes it; `health` is the command that ends with 0 when the server answers over TCP, never
- * over the socket, on which the temporary server of the initialization of the image listens too; `variables` are the variables of the tests for the address `host` of the service.
+ * over the socket, on which the temporary server of the initialization of the image listens too; `variables` are the
+ * variables of the tests for the host and the port at which bay serves the service.
  */
 interface Server {
   port: number;
   environment: Record<string, string>;
   health: readonly string[];
-  variables: (host: string) => Record<string, string>;
+  variables: (address: string) => Record<string, string>;
 }
 
 // The accounts are those of the tests (plan C-6): the PostgreSQL user fsm is the superuser of the image, which owns the
@@ -86,8 +87,8 @@ const SERVERS: Record<Kind, Server> = {
     port: 5432,
     environment: { POSTGRES_USER: 'fsm', POSTGRES_PASSWORD: 'fsm', POSTGRES_DB: 'fsm_test' },
     health: ['pg_isready', '--host=127.0.0.1', '--port=5432', '--username=fsm', '--dbname=fsm_test'],
-    variables: host => {
-      const dsn = `postgres://fsm:fsm@${host}:5432/fsm_test?sslmode=disable`;
+    variables: address => {
+      const dsn = `postgres://fsm:fsm@${address}/fsm_test?sslmode=disable`;
       return { FSM_TEST_PG_DSN: dsn, FSM_TEST_PG_ADMIN_DSN: dsn };
     },
   },
@@ -95,9 +96,9 @@ const SERVERS: Record<Kind, Server> = {
     port: 3306,
     environment: { MYSQL_ROOT_PASSWORD: 'root', MYSQL_USER: 'fsm', MYSQL_PASSWORD: 'fsm', MYSQL_DATABASE: 'fsm_test' },
     health: ['mysqladmin', 'ping', '--protocol=tcp', '--host=127.0.0.1', '--port=3306'],
-    variables: host => ({
-      FSM_TEST_MYSQL_DSN: `mysql://fsm:fsm@${host}:3306/fsm_test`,
-      FSM_TEST_MYSQL_ADMIN_DSN: `mysql://root:root@${host}:3306/mysql`,
+    variables: address => ({
+      FSM_TEST_MYSQL_DSN: `mysql://fsm:fsm@${address}/fsm_test`,
+      FSM_TEST_MYSQL_ADMIN_DSN: `mysql://root:root@${address}/mysql`,
     }),
   },
 };
@@ -133,12 +134,12 @@ function show(line: string): void {
 }
 
 /**
- * The Compose file of the project `project`: a service for each server, with the image of its pin, the port of its server
- * in `expose`, the environment of its accounts and its healthcheck. Each scalar is written as a JSON string, which YAML reads as the same
- * string. The file names no host port, no domain, no volume and no path.
+ * The Compose file of a run: a service for each server, with the image of its pin, the port of its server in `expose`, the
+ * environment of its accounts and its healthcheck. Each text is written as a JSON string, which YAML reads as the same
+ * string. The file names no project, no host port, no domain, no volume and no path.
  */
-function composeFile(project: string): string {
-  const lines = [`name: ${JSON.stringify(project)}`, 'services:'];
+function composeFile(): string {
+  const lines = ['services:'];
   for (const kind of KINDS) {
     const server = SERVERS[kind];
     lines.push(`  ${kind}:`, `    image: ${JSON.stringify(image(kind))}`, `    expose: [${JSON.stringify(String(server.port))}]`, '    environment:');
@@ -148,91 +149,96 @@ function composeFile(project: string): string {
   return `${lines.join('\n')}\n`;
 }
 
-// The words of the command of bay that prints its projects and their services as JSON.
-const LISTING = ['status', '--json'];
-
-/** How a command of bay ended: its exit code, or the signal that ended it. */
-type End = number | NodeJS.Signals | null;
-
-/**
- * Runs bay with `args` in the directory `directory` of a project and resolves with how it ended. Each line that bay prints
- * is shown as `persist-servers: <label>: <line>`. bay runs in a process group of its own, so a signal of the terminal
- * reaches the run alone, which removes the project itself.
- */
-function bay(directory: string, args: readonly string[], label: string): Promise<End> {
-  return new Promise((resolve, reject) => {
-    const child = spawn('bay', args, { cwd: directory, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
-    for (const stream of [child.stdout, child.stderr]) createInterface({ input: stream }).on('line', line => { show(`persist-servers: ${label}: ${line}`); });
-    child.on('error', error => { reject(new Failure(`persist-servers: bay: ${error.message}`)); });
-    // close comes after the end of both streams, so every line of bay was shown.
-    child.on('close', (code, signal) => { resolve(code ?? signal); });
+/** Whether a directory of PATH holds the executable file `name`. */
+function onPath(name: string): boolean {
+  return (process.env.PATH ?? '').split(path.delimiter).filter(directory => directory !== '').some(directory => {
+    try {
+      accessSync(path.join(directory, name), constants.X_OK);
+      return true;
+    } catch {
+      return false;
+    }
   });
 }
 
-/** Fails unless bay check passes: it changes nothing and fails when a part of the machine setup of bay is missing. */
-function check(): void {
-  const ran = spawnSync('bay', ['check'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-  if (ran.error) throw new Failure(`persist-servers: bay: ${ran.error.message}`);
-  if (ran.status === 0) return;
-  for (const line of `${ran.stdout}${ran.stderr}`.split('\n').filter(each => each !== '')) show(`persist-servers: bay check: ${line}`);
-  throw new Failure(`persist-servers: bay check ended with ${String(ran.status ?? ran.signal)}: a part of the machine setup of bay is missing: run bay install`);
-}
-
-// The command of LISTING as a failure names it.
-const LISTING_COMMAND = `bay ${LISTING.join(' ')}`;
-
-/** What bay lists of the project `project`: the text of its JSON and the group of that name in it, undefined when it holds none. */
-interface Listed {
-  text: string;
-  group: unknown;
-}
-
-/** Runs the command of LISTING in `directory` and returns what its JSON holds of `project`; fails when bay fails or prints no JSON. */
-function listed(directory: string, project: string): Listed {
-  const ran = spawnSync('bay', LISTING, { cwd: directory, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-  if (ran.error) throw new Failure(`persist-servers: bay: ${ran.error.message}`);
-  if (ran.status !== 0) throw new Failure(`persist-servers: ${LISTING_COMMAND} ended with ${String(ran.status ?? ran.signal)}:\n${ran.stderr}${ran.stdout}`.trimEnd());
-  const groups = field(parse(ran.stdout, `the output of ${LISTING_COMMAND}`), 'groups');
-  const group: unknown = Array.isArray(groups) ? groups.find(each => field(each, 'name') === project) : undefined;
-  return { text: ran.stdout, group };
+/** The Compose project of one run or one pull: its name and its directory, which holds its compose.yaml. */
+interface Project {
+  name: string;
+  directory: string;
 }
 
 /**
- * Whether the project `project` may exist: bay registers a project when it accepts its Compose file, so a JSON without a
- * group of that name tells that bay made nothing of it, or removed it. A JSON that cannot be read tells nothing, and the
- * project then counts as one that may exist; the failure of the reading is shown.
+ * Fails unless PATH holds bay, shows the version of that bay, and makes the project of this process: a directory of its own
+ * in the temporary directory of the system with the Compose file of a run.
  */
-function registered(directory: string, project: string): boolean {
-  try {
-    return listed(directory, project).group !== undefined;
-  } catch (error) {
-    if (!(error instanceof Failure)) throw error;
-    show(error.message);
-    return true;
-  }
+function project(): Project {
+  // The file is built first, so a pin that is wrong fails before anything is made.
+  const composed = composeFile();
+  if (!onPath('bay')) throw new Failure('persist-servers: bay is not found on PATH: install bay and apply its machine setup with bay install');
+  const version = spawnSync('bay', ['version', '--json'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  if (version.error) throw new Failure(`persist-servers: bay: ${version.error.message}`);
+  if (version.status !== 0) throw new Failure(`persist-servers: bay version --json ended with ${String(version.status ?? version.signal)}:\n${version.stderr}${version.stdout}`.trimEnd());
+  show(`persist-servers: bay version: ${version.stdout.trim()}`);
+  const name = `fsm-persist-${String(process.pid)}-${randomBytes(4).toString('hex')}`;
+  const directory = path.join(tmpdir(), name);
+  mkdirSync(directory, { mode: 0o700 });
+  writeFileSync(path.join(directory, 'compose.yaml'), composed);
+  return { name, directory };
+}
+
+/** How a command of bay ended: its exit code, or the signal that ended it, and what it wrote to standard output when that was kept. */
+interface Ran {
+  end: number | NodeJS.Signals | null;
+  stdout: string;
 }
 
 /**
- * The address of the service of each kind of the project `project`, which runs in `directory`, as bay reports it: the field
- * address of the service of that name in the group of that name, in the JSON of `bay status --json`. A project or a service
- * that the JSON does not hold, and an address that is no text or is empty, fail the run.
+ * Runs the command `args` of bay on the project `of` and resolves with how it ended. Each line that bay writes to standard
+ * error is shown as `persist-servers: bay <verb>: <line>`. Its standard output is shown the same way, or kept as the text
+ * of the result when `kept`, for a command that prints JSON. bay runs in a process group of its own, so a signal of the
+ * terminal reaches the run alone; `started` receives the process, so the run can forward a signal to it.
  */
-function addresses(directory: string, project: string): Record<Kind, string> {
-  const { text, group } = listed(directory, project);
-  const services = field(group, 'services');
+function bay(of: Project, args: readonly string[], kept = false, started: (child: ChildProcess) => void = () => undefined): Promise<Ran> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('bay', ['-f', of.directory, '-p', of.name, ...args], { detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    started(child);
+    const label = `persist-servers: bay ${args[0] ?? ''}`;
+    let stdout = '';
+    if (kept) child.stdout.setEncoding('utf8').on('data', (text: string) => { stdout += text; });
+    for (const stream of kept ? [child.stderr] : [child.stdout, child.stderr]) createInterface({ input: stream }).on('line', line => { show(`${label}: ${line}`); });
+    child.on('error', error => { reject(new Failure(`persist-servers: bay: ${error.message}`)); });
+    // close comes after the end of both streams, so every line of bay was shown and all of its output was kept.
+    child.on('close', (code, signal) => { resolve({ end: code ?? signal, stdout }); });
+  });
+}
+
+/**
+ * Fails unless the local store of bay holds the image of each service of `of`: `bay images --json` prints an array with
+ * the service, the image and `present` of each, fetches nothing and ends with 1 when an image is missing.
+ */
+async function installed(of: Project): Promise<void> {
+  const ran = await bay(of, ['images', '--json'], true);
+  const entries: unknown = ran.stdout.trim() === '' ? undefined : parse(ran.stdout, 'the output of bay images --json');
+  if (!Array.isArray(entries)) throw new Failure(`persist-servers: bay images --json ended with ${String(ran.end)} and printed no array:\n${ran.stdout}`.trimEnd());
+  const missing = entries.filter(entry => field(entry, 'present') !== true);
+  if (missing.length > 0) throw new Failure(missing.map(entry => `persist-servers: the image ${String(field(entry, 'image'))} of ${String(field(entry, 'service'))} is not installed: run make persist-images`).join('\n'));
+  if (ran.end !== 0) throw new Failure(`persist-servers: bay images --json ended with ${String(ran.end)}:\n${ran.stdout}`.trimEnd());
+}
+
+/**
+ * The host and the port of the service of each kind, `<host>:<port>`, as the JSON `text` of `bay up --json` holds them: the
+ * fields host and port of the entry of that name in its array services. A service that the JSON does not hold, a host that
+ * is no text or is empty and a port that is no number fail the run.
+ */
+function addresses(text: string): Record<Kind, string> {
+  const services = field(parse(text, 'the output of bay up --json'), 'services');
   const address = (kind: Kind): string => {
-    const found = field(Array.isArray(services) ? services.find(each => field(each, 'name') === kind) : undefined, 'address');
-    if (typeof found !== 'string' || found === '') throw new Failure(`persist-servers: ${LISTING_COMMAND} names no address of the service ${kind} of the project ${project}:\n${text}`.trimEnd());
-    return found;
+    const service: unknown = Array.isArray(services) ? services.find(each => field(each, 'name') === kind) : undefined;
+    const [host, port] = [field(service, 'host'), field(service, 'port')];
+    if (typeof host !== 'string' || host === '' || typeof port !== 'number') throw new Failure(`persist-servers: bay up --json names no host and port of the service ${kind}:\n${text}`.trimEnd());
+    return `${host}:${String(port)}`;
   };
   return { postgres: address('postgres'), mysql: address('mysql') };
-}
-
-/** Runs the command of `verb` for the image of `kind` on the container program `program`, with the output of the program on that of the run when `shown`, and returns its exit code, or the signal that ended it. */
-function engine(program: Program, verb: Verb, kind: Kind, shown: boolean): number | NodeJS.Signals | null {
-  const ran = spawnSync(program, containerCommand(verb, image(kind)), { stdio: shown ? 'inherit' : ['ignore', 'ignore', 'inherit'] });
-  if (ran.error) throw new Failure(`persist-servers: ${program}: ${ran.error.message}`);
-  return ran.status ?? ran.signal;
 }
 
 const SIGNALS = { SIGINT: 130, SIGTERM: 143 } as const;
@@ -242,77 +248,70 @@ type Signal = keyof typeof SIGNALS;
 async function run(command: readonly string[]): Promise<number> {
   const [file, ...args] = command;
   if (file === undefined) throw new Failure(USAGE, 2);
-  if (!onPath('bay')) throw new Failure('persist-servers: bay is not found on PATH: install bay and apply its machine setup with bay install');
-  const program = containerProgram();
-  check();
-  for (const kind of KINDS) {
-    if (engine(program, 'present', kind, false) !== 0) throw new Failure(`persist-servers: the image ${image(kind)} of ${kind} is not installed: run make persist-images`);
-  }
-  const project = `fsm-persist-${String(process.pid)}-${randomBytes(4).toString('hex')}`;
-  const directory = path.join(tmpdir(), project);
-  const composed = composeFile(project);
-  // state is what the listeners of the signals share with the run: the signal that it received and its command.
+  const of = project();
+  // state is what the listeners of the signals share with the run: the signal that it received, and the process that the
+  // signal is forwarded to, bay up while the servers start and then the command.
   const state: { received?: Signal; child?: ChildProcess } = {};
   const receive = (signal: Signal) => (): void => {
     state.received = signal;
-    if (state.child) state.child.kill(signal);
-    else show(`persist-servers: received ${signal}; the run ends when bay up has ended`);
+    state.child?.kill(signal);
   };
   const listeners = { SIGINT: receive('SIGINT'), SIGTERM: receive('SIGTERM') };
   process.on('SIGINT', listeners.SIGINT);
   process.on('SIGTERM', listeners.SIGTERM);
   let code = 1;
-  // made tells whether bay may hold the project: it does from the start of bay up, until the JSON of bay tells otherwise.
-  let made = true;
-  mkdirSync(directory, { mode: 0o700 });
+  // started tells that bay up ran, so bay may hold the project.
+  let started = false;
+  let kept = false;
   try {
-    writeFileSync(path.join(directory, 'compose.yaml'), composed);
-    const up = await bay(directory, ['up'], 'bay up');
-    if (up !== 0) {
-      // What bay up made is read from the JSON of bay, never from a line that it printed. bay logs and bay down fail for a
-      // project that is not registered, so neither runs for one.
-      made = registered(directory, project);
-      if (made) for (const kind of KINDS) await bay(directory, ['logs', '-n', String(TAIL), kind], kind);
-      else show(`persist-servers: bay lists no project ${project}: bay up made nothing`);
-      throw new Failure(`persist-servers: bay up ended with ${String(up)} before the servers of the project ${project} accepted connections`);
+    await installed(of);
+    if (state.received === undefined) {
+      started = true;
+      const up = await bay(of, ['up', '-no-pull', '--json'], true, child => { state.child = child; });
+      delete state.child;
+      if (state.received === undefined) {
+        if (up.end !== 0) throw new Failure(`persist-servers: bay up ended with ${String(up.end)} before the servers of the project ${of.name} were healthy`);
+        const hosts = addresses(up.stdout);
+        const variables: Record<string, string> = {};
+        for (const kind of KINDS) Object.assign(variables, SERVERS[kind].variables(hosts[kind]));
+        code = await new Promise<number>((resolve, reject) => {
+          const spawned = spawn(file, args, { env: { ...process.env, ...variables }, stdio: 'inherit' });
+          state.child = spawned;
+          spawned.on('error', error => { reject(new Failure(`persist-servers: ${file}: ${error.message}`)); });
+          spawned.on('exit', (ended, signal) => { resolve(ended ?? (signal === 'SIGINT' || signal === 'SIGTERM' ? SIGNALS[signal] : 1)); });
+        });
+      }
     }
-    if (state.received !== undefined) code = SIGNALS[state.received];
-    else {
-      const hosts = addresses(directory, project);
-      const variables: Record<string, string> = {};
-      for (const kind of KINDS) Object.assign(variables, SERVERS[kind].variables(hosts[kind]));
-      code = await new Promise<number>((resolve, reject) => {
-        const spawned = spawn(file, args, { env: { ...process.env, ...variables }, stdio: 'inherit' });
-        state.child = spawned;
-        spawned.on('error', error => { reject(new Failure(`persist-servers: ${file}: ${error.message}`)); });
-        spawned.on('exit', (ended, signal) => { resolve(ended ?? (signal === 'SIGINT' || signal === 'SIGTERM' ? SIGNALS[signal] : 1)); });
-      });
-    }
+    // A signal that came before the command ran ends the run with its code.
+    if (state.received !== undefined && state.child === undefined) code = SIGNALS[state.received];
   } finally {
-    // The project is removed also after a failed bay up that made it, which may have started a service. A bay that did not
-    // start is a failed removal too. After a failed removal the JSON of bay tells whether the project still exists: the
-    // directory stays only while it may, because bay down in it is what removes the containers.
-    const down = made ? await bay(directory, ['down'], 'bay down').catch((error: unknown) => (error instanceof Error ? error.message : String(error))) : undefined;
-    const kept = down !== undefined && down !== 0 && registered(directory, project);
+    delete state.child;
+    if (started) {
+      // The project is removed also after a failed bay up: bay down ends with 0 for a project of which bay made nothing. A
+      // bay that did not start is a failed removal too.
+      const down = await bay(of, ['down']).then(ran => ran.end, (error: unknown) => (error instanceof Error ? error.message : String(error)));
+      if (down === 0) show(`persist-servers: removed the project ${of.name}`);
+      else {
+        kept = true;
+        show(`persist-servers: bay down ended with ${String(down)}; the containers of the project ${of.name} may still run: run bay -f ${of.directory} -p ${of.name} down`);
+        if (code === 0) code = 1;
+      }
+    }
     process.off('SIGINT', listeners.SIGINT);
     process.off('SIGTERM', listeners.SIGTERM);
-    if (!kept) rmSync(directory, { recursive: true, force: true });
-    if (down === 0) show(`persist-servers: removed the project ${project}`);
-    else if (down !== undefined) {
-      if (kept) show(`persist-servers: bay down ended with ${String(down)}; the containers of the project ${project} may still run: run bay down in ${directory}`);
-      else show(`persist-servers: bay down ended with ${String(down)}; bay lists no project ${project}, so no container of the run exists: removed the directory of the run`);
-      if (code === 0) code = 1;
-    }
+    if (!kept) rmSync(of.directory, { recursive: true, force: true });
   }
   return code;
 }
 
-/** Pulls each pinned image with the container program of the platform; it is the only command that downloads. */
-function pull(): void {
-  const program = containerProgram();
-  for (const kind of KINDS) {
-    const ended = engine(program, 'pull', kind, true);
-    if (ended !== 0) throw new Failure(`persist-servers: the pull of ${image(kind)} ended with ${String(ended)}`);
+/** Pulls each pinned image with bay pull, on the Compose file of a run in a directory of its own; it is the only command that downloads. */
+async function pull(): Promise<void> {
+  const of = project();
+  try {
+    const ran = await bay(of, ['pull']);
+    if (ran.end !== 0) throw new Failure(`persist-servers: bay pull ended with ${String(ran.end)}`);
+  } finally {
+    rmSync(of.directory, { recursive: true, force: true });
   }
 }
 
@@ -320,10 +319,10 @@ if (import.meta.main) {
   const [verb, separator, ...command] = process.argv.slice(2);
   try {
     if (verb === 'run' && separator === '--' && command.length > 0) process.exitCode = await run(command);
-    else if (verb === 'pull' && separator === undefined) pull();
+    else if (verb === 'pull' && separator === undefined) await pull();
     else throw new Failure(USAGE, 2);
   } catch (error) {
-    if (!(error instanceof Failure) && !(error instanceof ContainerError)) throw error;
+    if (!(error instanceof Failure)) throw error;
     show(error.message);
     process.exitCode = error.code;
   }
