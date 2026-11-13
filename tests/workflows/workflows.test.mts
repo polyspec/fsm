@@ -251,9 +251,27 @@ test('the check job holds no services and no DSN: it pulls the images and runs i
   const makefile = read('Makefile');
   const reading = [...makefile.matchAll(/^([a-z][a-z0-9-]*):.*\n\t@\$\(call require_dsn,/gm)].map(match => text(match[1], 'a target that requires a DSN'));
   assert.ok(reading.length >= 14, `the Makefile holds ${String(reading.length)} targets that require a DSN`);
-  for (const target of [...reading, 'persist-servers-test']) assert.ok(targets.includes(target), `the suite step does not run ${target}`);
+  for (const target of [...reading, 'bay-test', 'persist-servers-test']) assert.ok(targets.includes(target), `the suite step does not run ${target}`);
   const check = suiteOf('check');
-  for (const target of [...reading, 'persist-servers-test']) assert.ok(check.includes(target), `make check does not run ${target}`);
+  for (const target of [...reading, 'bay-test', 'persist-servers-test']) assert.ok(check.includes(target), `make check does not run ${target}`);
+});
+
+// bay (plan C-6, S-475-5): the job installs the pinned release before a step starts bay, and each step that starts bay says
+// how it is started on the runner, where the state of bay belongs to root and the user of the job has sudo without a
+// password.
+test('the check job installs the pinned bay before the images and starts bay through sudo -n in each of its steps of bay', () => {
+  const steps = stepsOf(CHECK_JOB);
+  const at = (run: string): number => steps.findIndex(entry => new RegExp(`\\n {8}run: ${run}$`, 'm').test(entry));
+  const [install, bay, images, suite] = [at('make install'), at('make bay-install'), at('make persist-images'), at('make ci-suite')];
+  assert.ok(bay >= 0, 'no step of the check job runs make bay-install');
+  assert.ok(install < bay && bay < images && images < suite, 'make bay-install does not run after make install and before make persist-images and the suite');
+  for (const index of [bay, images, suite]) {
+    const step = text(steps[index], 'a step of bay');
+    assert.match(step, /\n {8}env:\n(?: {10}.*\n)*? {10}BAY: sudo -n bay$/m, `the step does not set BAY to sudo -n bay:\n${step}`);
+  }
+  const recipe = make(['-n', 'bay-install']);
+  assert.equal(recipe.code, 0, recipe.output);
+  assert.match(recipe.output, /^\S+\/node scripts\/bay\.mts install$/m);
 });
 
 // A dry run prints the recipe of the servers and starts nothing: a recipe that ran would write a line that starts with
