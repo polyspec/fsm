@@ -79,11 +79,15 @@ const SERVERS = `services:
 
 // The Compose file of a run of the runner form: the servers and the service runner, whose one mount is the directory of the
 // run itself, by a path relative to the file. The runner keeps the trust of bay.
-const COMPOSE = `${SERVERS}  runner:
+const RUNNER = `  runner:
     image: "${reference('runner')}"
     command: ["sleep", "infinity"]
     volumes: ["./:/persist-run:ro"]
 `;
+const COMPOSE = `${SERVERS}${RUNNER}`;
+// The Compose file of the first phase of the runner form: the runner alone, the same text as in the file of the second
+// phase, so bay keeps its container when the servers are added.
+const INSTALLING = `services:\n${RUNNER}`;
 
 // The lines that the stand-in bay prints: the JSON of its version, a release that no file of the repository names, with the
 // schema of the contract that the files of a run read, the progress of up before the servers are healthy and after, the
@@ -136,8 +140,10 @@ interface Stage {
   sudo: () => string[][];
   /** The commands that git received. */
   git: () => string[][];
-  /** The Compose file that bay up was started with, or undefined when it did not run. */
+  /** The Compose file that the last bay up was started with, or undefined when it did not run. */
   composed: () => string | undefined;
+  /** The Compose file of the name `name` that bay up was started with, or undefined when no bay up ran with it. */
+  started: (name: string) => string | undefined;
   /** The directories of runs that the root holds. */
   left: () => string[];
 }
@@ -185,8 +191,9 @@ bundle) : > "$3" ;;
 *) exit 2 ;;
 esac
 `);
-  // The options -f and -p come before the command: every command of a project reads the Compose file of the directory
-  // that -f names, and fails with the code 9 without it. up copies the file, so the test reads what bay was started with.
+  // The options -f and -p come before the command: every command of a project reads the Compose file that -f names, or
+  // the compose.yaml of a directory that it names, and fails with the code 9 without it. A flag that fails or holds bay up
+  // applies to the up of a file that holds the servers, so the first phase of the runner form passes. up copies the file, so the test reads what bay was started with.
   // As bay does, plan prints the name, the host and the port of each service as JSON, images ends with 1 when the store
   // lacks an image, and up refuses a healthcheck whose count of retries is outside 1..100. The host and the port of a
   // service are values that no rule builds from the project and the service, so a DSN holds them only when the script
@@ -201,7 +208,12 @@ while [ $# -gt 0 ]; do
 	*) break ;;
 	esac
 done
-[ "$1" = version ] || [ -e "$f/compose.yaml" ] || exit 9
+c=$f
+[ -d "$f" ] && c=$f/compose.yaml
+[ "$1" = version ] || [ -e "$c" ] || exit 9
+# The phase of the servers: the file of the command holds them.
+servers=
+if [ "$1" != version ] && grep -q '^  postgres:$' "$c"; then servers=1; fi
 case "$1" in
 version)
 	if [ -e "$d/other" ]; then echo '{"version":"v7.8.9-build","schemaVersion":2}'; else echo '${VERSION}'; fi
@@ -218,11 +230,12 @@ pull)
 	echo 'pulled 3 images'
 	;;
 up)
-	cp "$f/compose.yaml" "$d/composed"
-	awk '/^  [a-z]+:$/ { service = substr($1, 1, length($1) - 1) } /^      retries: / { if ($2 < 1 || $2 > 100) { print "bay: compose.yaml: service " service ": healthcheck retries must be 1..100"; refused = 1 } } END { exit refused }' "$f/compose.yaml" >&2 || exit 1
+	cp "$c" "$d/composed"
+	cp "$c" "$d/composed-$(basename "$c")"
+	awk '/^  [a-z]+:$/ { service = substr($1, 1, length($1) - 1) } /^      retries: / { if ($2 < 1 || $2 > 100) { print "bay: compose.yaml: service " service ": healthcheck retries must be 1..100"; refused = 1 } } END { exit refused }' "$c" >&2 || exit 1
 	echo '${STARTING}' >&2
-	if [ -p "$d/up-waits" ]; then read -r _ < "$d/up-waits"; fi
-	if [ -e "$d/upFails" ]; then echo '${STOPPED}' >&2; exit 1; fi
+	if [ -n "$servers" ] && [ -p "$d/up-waits" ]; then read -r _ < "$d/up-waits"; fi
+	if [ -n "$servers" ] && [ -e "$d/upFails" ]; then echo '${STOPPED}' >&2; exit 1; fi
 	echo '${HEALTHY}' >&2
 	;;
 exec)
@@ -260,6 +273,7 @@ esac
     sudo: () => lines('sudo-calls'),
     git: () => lines('git-calls'),
     composed: () => (existsSync(path.join(directory, 'composed')) ? readFileSync(path.join(directory, 'composed'), 'utf8') : undefined),
+    started: name => (existsSync(path.join(directory, `composed-${name}`)) ? readFileSync(path.join(directory, `composed-${name}`), 'utf8') : undefined),
     left: () => (existsSync(runs) ? readdirSync(runs) : []),
   };
 }
@@ -312,22 +326,38 @@ function dsns(project: string): string {
   ].join('\n');
 }
 
-/** The words that name the directory and the project of a command of bay: the program and its options -f and -p. */
+/** The words that name the Compose file and the project of a command of bay: the program and its options -f and -p. */
 type Named = [string, string, string, string, string];
 
+/** The directory of the run of `project`, which holds its Compose files. */
+function directoryOf(project: Named): string {
+  return path.dirname(project[2]);
+}
+
+/** The words of `project` with the Compose file of the first phase of the runner form, which holds the runner alone. */
+function installing(project: Named): Named {
+  return [project[0], project[1], path.join(directoryOf(project), 'compose.install.yaml'), project[3], project[4]];
+}
+
 /**
- * The words before the command of the one project that the calls of `staged` name: bay, -f with the directory of the run
- * and -p with the project, the name of that directory. Fails when the calls name no project or more than one.
+ * The words before the command of the one project that the calls of `staged` name: bay, -f with compose.yaml of the
+ * directory of the run and -p with the project, the name of that directory. Fails when the calls name no project or more
+ * than one, and when a command names another file than the two Compose files of a run.
  */
 function named(staged: Stage): Named {
-  const projects = new Set(staged.calls().filter(call => call[1] === '-f').map(call => `${call[2] ?? ''}\t${call[4] ?? ''}`));
+  const calls = staged.calls().filter(call => call[1] === '-f');
+  const projects = new Set(calls.map(call => `${path.dirname(call[2] ?? '')}\t${call[4] ?? ''}`));
   const [only, ...more] = [...projects];
   assert.ok(only !== undefined && more.length === 0, `the commands of bay do not name one project: ${JSON.stringify(staged.calls())}`);
   const [directory = '', project = ''] = only.split('\t');
   assert.equal(directory, path.join(staged.root, 'var/persist-servers', project), 'the directory of the run is not var/persist-servers/<project> of the checkout');
+  for (const call of calls) {
+    assert.ok(['compose.yaml', 'compose.install.yaml'].includes(path.basename(call[2] ?? '')), `a command of bay names the file ${String(call[2])}`);
+    assert.deepEqual([call[0], call[1], call[3], call[4]], ['bay', '-f', '-p', project]);
+  }
   // The version of bay is that of the machine, so its two commands name no project.
-  for (const call of staged.calls()) assert.deepEqual(call[1] === 'version' ? call.slice(0, 1) : call.slice(0, 5), call[1] === 'version' ? ['bay'] : ['bay', '-f', directory, '-p', project]);
-  return ['bay', '-f', directory, '-p', project];
+  for (const call of staged.calls().filter(each => each[1] !== '-f')) assert.deepEqual(call.slice(0, 2), ['bay', 'version']);
+  return ['bay', '-f', path.join(directory, 'compose.yaml'), '-p', project];
 }
 
 /** The command of bay that runs the command of a run in runner, with the DSNs of the hosts and ports that the stand-in bay plans. */
@@ -339,7 +369,7 @@ function executed(project: Named): string[] {
     '-e', `FSM_TEST_PG_ADMIN_DSN=postgres://fsm:fsm@p.${name}.example:15432/fsm_test?sslmode=disable`,
     '-e', `FSM_TEST_MYSQL_DSN=mysql://fsm:fsm@m.${name}.example:13306/fsm_test`,
     '-e', `FSM_TEST_MYSQL_ADMIN_DSN=mysql://root:root@m.${name}.example:13306/mysql`,
-    'runner', 'sh', '/persist-run/runner.sh', ...COMMAND,
+    'runner', 'sh', '/persist-run/runner.sh', 'run', ...COMMAND,
   ];
 }
 
@@ -352,11 +382,14 @@ const VERSIONED = ['bay', 'version', '--json'];
  * reading of the memory of each service. The command of the host form is no command of bay.
  */
 function steps(project: Named, last: 'images' | 'up' | 'exec', form: 'host' | 'runner' = 'runner'): string[][] {
-  const all = [WRITTEN, [...project, 'plan', '--json'], VERSIONED, [...project, 'images'], [...project, 'up', '-no-pull'], ...(form === 'runner' ? [executed(project)] : [])];
+  // The first phase of the runner form: the runner alone starts and installs, and its memory is read, before the servers.
+  const first = installing(project);
+  const phase = form === 'runner' ? [[...first, 'up', '-no-pull'], [...first, 'exec', 'runner', 'sh', '/persist-run/runner.sh', 'install'], [...first, 'exec', 'runner', 'cat', PEAK]] : [];
+  const all = [WRITTEN, [...project, 'plan', '--json'], VERSIONED, [...project, 'images'], ...phase, [...project, 'up', '-no-pull'], ...(form === 'runner' ? [executed(project)] : [])];
   // Once bay up was started, the memory of each service is read before the project is removed.
   const services = form === 'runner' ? ['postgres', 'mysql', 'runner'] : ['postgres', 'mysql'];
   const ending = [...services.map(service => [...project, 'exec', service, 'cat', PEAK]), [...project, 'down']];
-  return [...all.slice(0, { images: 4, up: 5, exec: 6 }[last]), ...(last === 'images' ? [] : ending)];
+  return [...all.slice(0, { images: 4, up: 5 + phase.length, exec: 6 + phase.length }[last]), ...(last === 'images' ? [] : ending)];
 }
 
 // ---- The host form, the default --------------------------------------------------------------------------------------
@@ -400,10 +433,10 @@ test('write of the host form writes the Compose file of the servers and run.sh a
   const written = spawnSync(process.execPath, [staged.script, 'write', '--', ...writes(file)], { encoding: 'utf8', env: staged.env });
   assert.equal(written.status, 0, written.stderr);
   const project = named(staged);
-  assert.equal(written.stdout, `${project[2]}\n`);
-  assert.deepEqual(readdirSync(project[2]).sort(), ['compose.yaml', 'run.sh']);
-  assert.equal(readFileSync(path.join(project[2], 'compose.yaml'), 'utf8'), SERVERS);
-  const ran = spawnSync('/bin/sh', [path.join(project[2], 'run.sh')], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
+  assert.equal(written.stdout, `${directoryOf(project)}\n`);
+  assert.deepEqual(readdirSync(directoryOf(project)).sort(), ['compose.yaml', 'run.sh']);
+  assert.equal(readFileSync(path.join(directoryOf(project), 'compose.yaml'), 'utf8'), SERVERS);
+  const ran = spawnSync('/bin/sh', [path.join(directoryOf(project), 'run.sh')], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
   assert.equal(ran.status, 0, ran.stderr);
   assert.equal(readFileSync(file, 'utf8'), dsns(project[4]));
   assert.deepEqual(staged.calls(), steps(project, 'exec', 'host'));
@@ -444,7 +477,7 @@ test('a run of the runner form writes its directory, starts the project with bay
   // The steps of run.sh in their order, each a command of bay: no check of the machine setup, no log and no other program.
   assert.deepEqual(staged.calls(), steps(project, 'exec'));
   // The bundle is that of the branch of the checkout.
-  assert.deepEqual(staged.git(), [['git', 'symbolic-ref', '--short', 'HEAD'], ['git', 'bundle', 'create', path.join(project[2], 'tree.bundle'), 'main']]);
+  assert.deepEqual(staged.git(), [['git', 'symbolic-ref', '--short', 'HEAD'], ['git', 'bundle', 'create', path.join(directoryOf(project), 'tree.bundle'), 'main']]);
   assert.deepEqual(staged.left(), [], 'the run left its directory');
   // The record of a run names the bay that made its result, and holds what bay and the command printed.
   assert.ok(ended.stderr.startsWith(`persist-servers: bay version: ${VERSION}\n`), ended.stderr);
@@ -472,41 +505,47 @@ test('write of the runner form writes the directory of a run and prints it, and 
   const written = spawnSync(process.execPath, [staged.script, 'write', '--runner', '--', ...COMMAND], { encoding: 'utf8', env: staged.env });
   assert.equal(written.status, 0, written.stderr);
   const project = named(staged);
-  assert.equal(written.stdout, `${project[2]}\n`);
+  assert.equal(written.stdout, `${directoryOf(project)}\n`);
   assert.deepEqual(staged.calls(), [WRITTEN, [...project, 'plan', '--json']]);
-  assert.deepEqual(readdirSync(project[2]).sort(), ['compose.yaml', 'run.sh', 'runner.sh', 'tree.bundle']);
-  assert.equal(readFileSync(path.join(project[2], 'compose.yaml'), 'utf8'), COMPOSE);
+  assert.deepEqual(readdirSync(directoryOf(project)).sort(), ['compose.install.yaml', 'compose.yaml', 'run.sh', 'runner.sh', 'tree.bundle']);
+  assert.equal(readFileSync(path.join(directoryOf(project), 'compose.yaml'), 'utf8'), COMPOSE);
+  assert.equal(readFileSync(path.join(directoryOf(project), 'compose.install.yaml'), 'utf8'), INSTALLING);
   // run.sh runs from another directory, with a PATH that holds the stand-ins alone.
-  const ran = spawnSync('/bin/sh', [path.join(project[2], 'run.sh')], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
+  const ran = spawnSync('/bin/sh', [path.join(directoryOf(project), 'run.sh')], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
   assert.equal(ran.status, 0, ran.stderr);
   assert.deepEqual(staged.calls(), steps(project, 'exec'));
+  // The two phases: the runner alone, then the servers with the same runner.
+  assert.equal(staged.started('compose.install.yaml'), INSTALLING);
+  assert.equal(staged.started('compose.yaml'), COMPOSE);
   // The directory stays: the one who wrote it removes it.
   assert.deepEqual(staged.left(), [project[4]]);
-  assert.equal(existsSync(path.join(project[2], 'down-failed')), false);
-  const pulled = spawnSync('/bin/sh', [path.join(project[2], 'run.sh'), 'pull'], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
+  assert.equal(existsSync(path.join(directoryOf(project), 'down-failed')), false);
+  const pulled = spawnSync('/bin/sh', [path.join(directoryOf(project), 'run.sh'), 'pull'], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
   assert.equal(pulled.status, 0, pulled.stderr);
   assert.deepEqual(staged.calls().slice(-2), [VERSIONED, [...project, 'pull']]);
   // The report of the two runs of the directory: the time of each step, and the memory of each service of the run.
   const event = (text: string): string => `${TIME} ${text}`;
   const stepped = (name: string): string[] => [event(`${name} start`), event(`${name} exit 0`)];
-  assert.deepEqual(readFileSync(path.join(project[2], 'report.txt'), 'utf8').split('\n'), [
-    ...stepped('version'), ...stepped('images'), ...stepped('up'), ...stepped('command'),
+  assert.deepEqual(readFileSync(path.join(directoryOf(project), 'report.txt'), 'utf8').split('\n'), [
+    ...stepped('version'), ...stepped('images'),
+    ...stepped('runner-up'), ...stepped('install'), event('memory.peak runner 4096 after install'),
+    ...stepped('up'), ...stepped('command'),
     event('memory.peak postgres 4096'), event('memory.peak mysql 4096'), event('memory.peak runner 4096'),
     ...stepped('down'), event('run exit 0'),
     ...stepped('version'), ...stepped('pull'), event('run exit 0'),
     '',
   ]);
   for (const line of [event('command exit 0'), event('memory.peak runner 4096'), event('run exit 0')]) assert.ok(ran.stderr.includes(`persist-servers: ${line}\n`), `the run does not show the line ${line} of its report:\n${ran.stderr}`);
-  const unknown = spawnSync('/bin/sh', [path.join(project[2], 'run.sh'), 'start'], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
+  const unknown = spawnSync('/bin/sh', [path.join(directoryOf(project), 'run.sh'), 'start'], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
   assert.equal(unknown.status, 2);
   assert.match(unknown.stderr, /^usage: sh run\.sh \[run\|pull\]$/m);
 });
 
-test('runner.sh installs the tools of the repository, clones the bundle of the branch and runs the command', t => {
+test('runner.sh has a part that installs the tools of the repository and clones the bundle of the branch, and a part that runs the command in that tree', t => {
   const staged = stage(t);
   const written = spawnSync(process.execPath, [staged.script, 'write', '--runner', '--', ...COMMAND], { encoding: 'utf8', env: staged.env });
   assert.equal(written.status, 0, written.stderr);
-  const runner = readFileSync(path.join(named(staged)[2], 'runner.sh'), 'utf8');
+  const runner = readFileSync(path.join(directoryOf(named(staged)), 'runner.sh'), 'utf8');
   const packages = pin('runner', 'packages');
   assert.ok(Array.isArray(packages) && packages.length > 0 && packages.every(each => typeof each === 'string'), 'config/containers.json names no packages of the runner');
   const node = /^node = "(\d+\.\d+\.\d+)"$/m.exec(readFileSync(path.join(ROOT, 'mise.toml'), 'utf8'))?.[1];
@@ -514,12 +553,16 @@ test('runner.sh installs the tools of the repository, clones the bundle of the b
   // The steps in their order: a later step needs what an earlier one installed.
   const order = [
     'set -eu',
+    'case "$1" in',
+    'install)',
     `apt-get install -y -q ${packages.join(' ')}`,
     `https://nodejs.org/dist/v${node}/node-v${node}-linux-$arch.tar.xz`,
     'https://sh.rustup.rs',
     'git clone -q -b main /persist-run/tree.bundle "$work/tree"',
     'make bootstrap',
     'make install',
+    'run)',
+    'cd "$work/tree"',
     'exec "$@"',
   ];
   let from = 0;
@@ -581,7 +624,7 @@ test('an image that the store of bay lacks fails the run before a server starts 
   const ended = await script(staged, RUN);
   assert.deepEqual([ended.code, ended.signal], [1, null], ended.stderr);
   const project = named(staged);
-  assert.ok(ended.stderr.includes(`persist-servers: an image of the project ${project[4]} is not installed: run make persist-images, or sh ${project[2]}/run.sh pull\n`), ended.stderr);
+  assert.ok(ended.stderr.includes(`persist-servers: an image of the project ${project[4]} is not installed: run make persist-images, or sh ${directoryOf(project)}/run.sh pull\n`), ended.stderr);
   // Nothing was started, so no bay down runs; the directory of the run is removed.
   assert.deepEqual(staged.calls(), steps(project, 'images'));
   assert.deepEqual(staged.left(), []);
@@ -635,8 +678,8 @@ test('a bay down that fails fails the run, which keeps its directory, marks it a
   const project = named(staged);
   assert.ok(ended.stderr.includes(`\npersist-servers: bay down failed; the containers of the project ${project[4]} may still run: run bay -f ${project[2]} -p ${project[4]} down\n`), ended.stderr);
   assert.deepEqual(staged.left(), [project[4]]);
-  assert.equal(existsSync(path.join(project[2], 'down-failed')), true);
-  assert.equal(readFileSync(path.join(project[2], 'compose.yaml'), 'utf8'), COMPOSE);
+  assert.equal(existsSync(path.join(directoryOf(project), 'down-failed')), true);
+  assert.equal(readFileSync(path.join(directoryOf(project), 'compose.yaml'), 'utf8'), COMPOSE);
 });
 
 // The stand-in waits on a pipe that nothing writes, so only the signal that run.sh sends to its command of bay ends it.
