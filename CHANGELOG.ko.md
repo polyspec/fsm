@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4782045bddaf8fe464153fe1c6ba45707ed56600ddc217129774f5fea82db61c -->
+<!-- source-sha256: edab74f193e1a4069610a126ac9ef8b0a0c8731ce8760d7ef82eba02ef8e21cc -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,7 +8,7 @@
 ## Unreleased
 
 - `packages/db/src/models`가 없는 checkout에서 `make fsm-js-test`와 `make test-js`가 실패했다: case가 `packages/db/tests/dialect.mjs`를 import하고 그 파일이 그 model을 import하므로, node가 `ERR_MODULE_NOT_FOUND`를 보고하고 시험이 하나도 돌지 않았다. 이제 `fsm-js-test`가 `fsm-db-gen`과 db 설치를 선행 조건으로 이름한다 (HR-85). model을 지운 뒤 `make test-js`가 model을 쓰고 시험 290개와 294개를 통과한다 (S-455).
-- 인터페이스 계약 `packages/rust/interface.json`이 crate packages/rust의 공개 member를 다섯 target php, python, node, go, wasm으로 묶는다: 다섯 기계마다 state와 event enum, step record, 함수 initial, code, key, from_code, is_final, events_from, target, apply. 그 case 212개는 `contracts/cases.json`에 있고 `contracts/conformance/vectors.json`에서 옮겼다. Makefile에 대상 bindings, bindings-check, lint-bindings, test-bindings, check-declarations, node-package, test-node, test-wasm, test-python-binding, test-php-binding, test-go-binding이 있고, packages/ts/tests에 Node와 WASM의 case runner가 있다. 바인딩 package와 루트 Cargo workspace는 계획 f6 단계 3-2까지 추적하지 않는다. 커밋된 tree에 대한 binding 8faad21의 end-to-end 검사는 모든 target을 GN-4(루트 Cargo.toml 없음)에서 실패한다. 루트 workspace와 scaffold된 package를 더한 사본에서는 다섯 target이 모두 생성되고, 모든 binding crate가 컴파일에 실패한다: 코어 오류는 `binding_core::Kinds`를 구현한 enum이 아니라 struct `fsm::Error`이고, 코어는 계약 타입이 `i64`와 list를 주는 자리에서 `serde_json::Value`, `i32`, `&[Event]`를 받으며, 생성된 PHP, Python, Node, WASM crate는 다섯 module의 member를 두 번 정의한다. (S-454).
+- 인터페이스 계약 `packages/rust/interface.json`이 crate packages/rust의 공개 member를 다섯 target php, python, node, go, wasm으로 묶는다: 다섯 기계마다 state와 event enum, step record, 함수 initial, code, key, from_code, is_final, events_from, target, apply. 그 case 212개는 `contracts/cases.json`에 있고 `contracts/conformance/vectors.json`에서 옮겼다. Makefile에 대상 bindings, bindings-check, lint-bindings, test-bindings, check-declarations, node-package, test-node, test-wasm, test-python-binding, test-php-binding, test-go-binding이 있고, packages/ts/tests에 Node와 WASM의 case runner가 있다. 바인딩 package와 루트 Cargo workspace는 계획 f6 단계 3-2까지 추적하지 않는다. 커밋된 tree에 대한 binding 8faad21의 end-to-end 검사는 모든 target을 GN-4(루트 Cargo.toml 없음)에서 실패한다. 루트 workspace와 scaffold된 package를 더한 사본에서는 다섯 target이 모두 생성되고, 모든 binding crate가 컴파일에 실패한다: 코어 오류는 `binding_core::Kinds`를 구현한 enum이 아니라 struct `fsm::Error`이고, 코어는 계약 타입이 `i64`와 list를 주는 자리에서 `serde_json::Value`, `i32`, `&[Event]`를 받으며, 생성된 PHP, Python, Node, WASM crate는 다섯 module의 member를 두 번 정의한다. `make name-check`가 `contracts/cases.json`의 96줄 `"status": null`에서 실패했다. 이 줄은 바인딩 case 꼴에서 raise된 오류의 status field다. `scripts/check-name.mts`가 그 파일의 그 field를 이유와 함께 허용하고, `tests/check-name`의 시험이 그 파일의 다른 status 낱말을 계속 finding으로 둔다 (S-454).
 
 ## 0.0.13
 

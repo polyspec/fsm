@@ -83,6 +83,11 @@ export const ALLOWED: readonly Allowed[] = Object.freeze([
     reason: 'the consumer status column, a state value: its accessors (getStatus, setStatus, orderByStatusAsc), statusOf and status_of, and the column words of the persistence examples and docs',
   },
   {
+    files: ['contracts/cases.json'],
+    match: /"status": (?:null|\d+)(?=,)/,
+    reason: 'the status field of a raised error in the binding cases (binding G-5): the HTTP status of the error kind, which fsm leaves null',
+  },
+  {
     files: ['packages/*/examples/model/**'],
     match: /\b(?:[Aa]dd_?[Cc]olumn|[Rr]emove_?[Cc]olumn|[Kk]ey_?[Nn]ame|[Pp]lus|[Mm]inus|[Ss]um|[Aa]vg|[Gg]roup_?[Bb]y|[Oo]rder_?[Bb]y|[Gg]et|[Ss]et|f)_?[Ss]tatus(?:_?(?:[Aa]sc|[Dd]esc))?\b|(['"])status\1|\bcolumn status:|\b(?:returns|sets) status\.|\bstatus: int\.|\bThe condition of status:|\bfunction status\(|\bdef status\(/,
     reason: 'the model that orm-gen writes from contracts/schema/persist.dbs: its helpers are named after the status column, and its column name and doc comments say so',

@@ -161,3 +161,12 @@ test('a helper comment that names the exit status of a process is allowed', (t) 
   });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
+
+test('the status field of a raised error in contracts/cases.json is allowed, and another status word there is not', (t) => {
+  const raises = '{ "raises": { "kind": "unknown_code", "status": null, "category": "value", "message": null } }\n';
+  const allowed = check(t, { 'contracts/cases.json': raises });
+  assert.equal(allowed.result.status, 0, allowed.result.stdout + allowed.result.stderr);
+  const other = check(t, { 'contracts/cases.json': '{ "id": "status_gen" }\n' });
+  assert.equal(other.result.status, 1, other.result.stdout + other.result.stderr);
+  assert.match(other.result.stderr, /^\[check-name\] contracts\/cases\.json:1: /m);
+});
