@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 192bd0025bb85668c9f4172ede16ee7c220207754badcdc5949d43e821f96cb0 -->
+<!-- source-sha256: 89c95735468724b51fc9d3eda070a6d8da4365d43e63a9e30d29a81c99f81399 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- checklist에 열린 행 S-470이 있다. release가 바인딩 package(PIE 확장 `polyspec/fsm`, wheel `polyspec-fsm`, npm package `@polyspec/fsm`과 그 플랫폼 package, Rust crate의 tag, Go module)를 담으며, kit 0.0.111과 Go module의 tag 형태를 기다린다. `config/release.json`의 `notReleased`에 있는 코어 crate와 바인딩 package의 각 manifest 사유가 그 행과 조건을 적는다. `make release-coverage`와 `make docs-check`로 확인했다.
 - 추적되는 파일은 Git commit을 적지 않는다(S-469). `AGENTS.md`가 규칙과 이유를 적고, `make commit-names-check`(`scripts/check-commit-names.mts`)가 추적되는 Markdown 파일에서 숫자와 글자를 가진 16진수 7~40자리 낱말을 실패시킨다. `make commit-names-test`가 그 검사기를 시험하며, 둘 다 CI suite와 `make check`에서, 그리고 문서의 owner check로 돈다. 이전에는 이 변경 기록, 두 checklist, `docs/spec/fsm.md`, `docs/operations/verification/gui.md`가 fsm, binding, kit, crudui의 commit을 적었다. 각 항목은 commit 이름 없이 사실, 곧 입력과 동작과 시험 수를 남긴다. `make commit-names-test`(3개 통과, 0개 실패)와 `make commit-names-check`로 확인했다.
 - `tests/workflows/workflows.test.mts`에 있는 S-457-1의 시험이 `config/owner-checks.json`의 owner를 `unknown[]`로 type하여 `make lint-ts`가 통과한다. 이전에는 시험이 찾는 rule에 대해 oxlint가 `any` 값의 unsafe assignment를, tsc가 TS7022를 보고했다. `make lint-ts`와 `make workflows-test`(5개 통과, 0개 실패)로 확인했다.
 - 코어 crate `packages/rust`의 시험인 `make test-rust`가 CI job의 suite(`.github/workflows/ci.yml`), `make check`(`CHECK_TARGETS`), 그리고 `packages/rust/**`, `contracts/cases.json`, `Cargo.toml`, `Cargo.lock`의 owner check에서 돈다(S-457-1). 이전에는 CI의 어느 job도, 어느 owner도 이 시험을 돌리지 않아서 코어를 깨뜨린 push가 CI를 통과했다. `make workflows-test`가 이 세 자리를 요구한다. `make workflows-test`(5개 통과, 0개 실패), `make owner-validate`, `make test-rust`(533개 통과, 0개 실패)로 확인했다.
