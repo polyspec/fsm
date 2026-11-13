@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e82c9b4ec7de05e962ff8e0e44d47ed2cdda77a2da9eed909f5ce888b89978e6 -->
+<!-- source-sha256: 0016e65acd488d15391e3506d1535fdfb4dc5f2ef6dc10a8e3e7d31f80a8c89a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 종단 검사에서 생성된 node 시험 5개가 실패했다: `from_code` case `<machine>_from_code_int64_max`가 JavaScript number가 담지 못하는 9223372036854775807을 주므로, node 바인딩이 `unknown_code` 대신 인자 오류로 거부했다. 이 다섯 case는 `contracts/cases.json`에서 빠지고(이제 229개), B-7이 그 이유를 적는다 (S-457).
 - `Machine::parse`가 `reserved`를 `Vec<i64>`로 받았는데 바인딩 crate는 list 매개변수를 참조로 넘긴다. 그래서 종단 검사가 php, python, node, wasm crate를 E0308(`Vec<i64>`를 기대했는데 `&Vec<i64>`)로 컴파일하지 못했다. 이제 `parse`는 `&[i64]`를 받고, `make test-rust`가 case 234개를 통과한다 (S-458).
 - 계획 f6 단계 4: 코어 crate `packages/rust`에 class `Machine`과 record `Step`이 있다(`docs/spec/fsm.md`, B-7). `Machine::parse`는 기계 파일과 그 예약 code를 읽고, 코어가 돌릴 수 없는 것을 `invalid_definition`으로 거부한다(FSM-B7-1). `initial`, `code`, `key`, `from_code`, `is_final`, `events_from`, `target`, `apply`는 상태와 event의 key와 `i64` code 위에서 B-4와 B-6을 따른다. `Error`는 kind마다 variant 하나를 둔 enum이며 `binding_core::Kinds`와 `Display`를 구현한다. `make test-rust`는 코어에 `Machine`이 없어 시험을 빌드하지 못했고, 이제 `contracts/cases.json`의 case 234개를 통과한다 (S-458).
 - `make test-php-binding`이 `legacy/packages/php-ext`로 옮겨 간 PHP extension의 PHPUnit 설치 `packages/php-ext/vendor/composer/installed.json`을 선행 조건으로 이름했고, make가 그 파일을 만들 규칙이 없다며 멈췄다. 이제 이 대상은 `legacy/packages/php-ext`의 설치를 이름하고 생성 시험을 그 PHPUnit에서 돌린다. binding scaffold가 `packages/php-ext`에 쓰는 composer.json은 PHPUnit을 요구하지 않기 때문이다. S-456의 GUI import와 이 설치가 살아 있는 코드의 legacy 읽기다 (S-456).

@@ -479,18 +479,6 @@
       }
     },
     {
-      "id": "in_review_from_code_int64_max",
-      "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"in_review\",\n  \"states\": [\n    {\n      \"key\": \"to_do\",\n      \"code\": 1,\n      \"initial\": true\n    },\n    {\n      \"key\": \"in_progress\",\n      \"code\": 2\n    },\n    {\n      \"key\": \"done_now\",\n      \"code\": 3,\n      \"final\": true\n    }\n  ],\n  \"events\": [\n    {\n      \"key\": \"start_work\",\n      \"edges\": [\n        {\n          \"from\": \"to_do\",\n          \"to\": \"in_progress\"\n        }\n      ]\n    },\n    {\n      \"key\": \"finish_work\",\n      \"edges\": [\n        {\n          \"from\": \"in_progress\",\n          \"to\": \"done_now\"\n        }\n      ]\n    },\n    {\n      \"key\": \"reopen_work\",\n      \"edges\": [\n        {\n          \"from\": \"in_progress\",\n          \"to\": \"to_do\"\n        }\n      ]\n    }\n  ]\n}\n",
-      "reserved": [],
-      "code": 9223372036854775807,
-      "raises": {
-        "kind": "unknown_code",
-        "status": null,
-        "category": "value",
-        "message": null
-      }
-    },
-    {
       "id": "limits_from_code_s0",
       "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"limits\",\n  \"states\": [\n    {\n      \"key\": \"floor\",\n      \"code\": 1,\n      \"initial\": true\n    },\n    {\n      \"key\": \"ceiling\",\n      \"code\": 2147483647,\n      \"final\": true\n    }\n  ],\n  \"events\": [\n    {\n      \"key\": \"rise\",\n      \"edges\": [\n        {\n          \"from\": \"floor\",\n          \"to\": \"ceiling\"\n        }\n      ]\n    }\n  ]\n}\n",
       "reserved": [],
@@ -545,18 +533,6 @@
       "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"limits\",\n  \"states\": [\n    {\n      \"key\": \"floor\",\n      \"code\": 1,\n      \"initial\": true\n    },\n    {\n      \"key\": \"ceiling\",\n      \"code\": 2147483647,\n      \"final\": true\n    }\n  ],\n  \"events\": [\n    {\n      \"key\": \"rise\",\n      \"edges\": [\n        {\n          \"from\": \"floor\",\n          \"to\": \"ceiling\"\n        }\n      ]\n    }\n  ]\n}\n",
       "reserved": [],
       "code": 2147483648,
-      "raises": {
-        "kind": "unknown_code",
-        "status": null,
-        "category": "value",
-        "message": null
-      }
-    },
-    {
-      "id": "limits_from_code_int64_max",
-      "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"limits\",\n  \"states\": [\n    {\n      \"key\": \"floor\",\n      \"code\": 1,\n      \"initial\": true\n    },\n    {\n      \"key\": \"ceiling\",\n      \"code\": 2147483647,\n      \"final\": true\n    }\n  ],\n  \"events\": [\n    {\n      \"key\": \"rise\",\n      \"edges\": [\n        {\n          \"from\": \"floor\",\n          \"to\": \"ceiling\"\n        }\n      ]\n    }\n  ]\n}\n",
-      "reserved": [],
-      "code": 9223372036854775807,
       "raises": {
         "kind": "unknown_code",
         "status": null,
@@ -648,18 +624,6 @@
       }
     },
     {
-      "id": "order_from_code_int64_max",
-      "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"order\",\n  \"states\": [\n    {\n      \"key\": \"draft\",\n      \"code\": 1,\n      \"initial\": true\n    },\n    {\n      \"key\": \"paid\",\n      \"code\": 2\n    },\n    {\n      \"key\": \"shipped\",\n      \"code\": 3\n    },\n    {\n      \"key\": \"done\",\n      \"code\": 4,\n      \"final\": true\n    },\n    {\n      \"key\": \"canceled\",\n      \"code\": 5,\n      \"final\": true\n    }\n  ],\n  \"events\": [\n    {\n      \"key\": \"next\",\n      \"edges\": [\n        {\n          \"from\": \"draft\",\n          \"to\": \"paid\"\n        },\n        {\n          \"from\": \"paid\",\n          \"to\": \"shipped\"\n        },\n        {\n          \"from\": \"shipped\",\n          \"to\": \"done\"\n        }\n      ]\n    },\n    {\n      \"key\": \"prev\",\n      \"edges\": [\n        {\n          \"from\": \"paid\",\n          \"to\": \"draft\"\n        },\n        {\n          \"from\": \"shipped\",\n          \"to\": \"paid\"\n        }\n      ]\n    },\n    {\n      \"key\": \"cancel\",\n      \"edges\": [\n        {\n          \"from\": \"draft\",\n          \"to\": \"canceled\"\n        },\n        {\n          \"from\": \"paid\",\n          \"to\": \"canceled\"\n        }\n      ]\n    }\n  ]\n}\n",
-      "reserved": [],
-      "code": 9223372036854775807,
-      "raises": {
-        "kind": "unknown_code",
-        "status": null,
-        "category": "value",
-        "message": null
-      }
-    },
-    {
       "id": "standby_from_code_s0",
       "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"standby\",\n  \"states\": [\n    {\n      \"key\": \"ready\",\n      \"code\": 1,\n      \"initial\": true,\n      \"final\": true\n    }\n  ],\n  \"events\": []\n}\n",
       "reserved": [],
@@ -707,18 +671,6 @@
       "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"standby\",\n  \"states\": [\n    {\n      \"key\": \"ready\",\n      \"code\": 1,\n      \"initial\": true,\n      \"final\": true\n    }\n  ],\n  \"events\": []\n}\n",
       "reserved": [],
       "code": 2147483648,
-      "raises": {
-        "kind": "unknown_code",
-        "status": null,
-        "category": "value",
-        "message": null
-      }
-    },
-    {
-      "id": "standby_from_code_int64_max",
-      "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"standby\",\n  \"states\": [\n    {\n      \"key\": \"ready\",\n      \"code\": 1,\n      \"initial\": true,\n      \"final\": true\n    }\n  ],\n  \"events\": []\n}\n",
-      "reserved": [],
-      "code": 9223372036854775807,
       "raises": {
         "kind": "unknown_code",
         "status": null,
@@ -839,21 +791,6 @@
         4
       ],
       "code": 2147483648,
-      "raises": {
-        "kind": "unknown_code",
-        "status": null,
-        "category": "value",
-        "message": null
-      }
-    },
-    {
-      "id": "ticket_from_code_int64_max",
-      "definition": "{\n  \"$schema\": \"../schema/fsm.schema.json\",\n  \"machine\": \"ticket\",\n  \"states\": [\n    {\n      \"key\": \"open\",\n      \"code\": 1,\n      \"initial\": true\n    },\n    {\n      \"key\": \"review\",\n      \"code\": 3\n    },\n    {\n      \"key\": \"closed\",\n      \"code\": 5,\n      \"final\": true\n    }\n  ],\n  \"events\": [\n    {\n      \"key\": \"submit\",\n      \"edges\": [\n        {\n          \"from\": \"open\",\n          \"to\": \"review\"\n        }\n      ]\n    },\n    {\n      \"key\": \"approve\",\n      \"edges\": [\n        {\n          \"from\": \"review\",\n          \"to\": \"closed\"\n        }\n      ]\n    },\n    {\n      \"key\": \"reject\",\n      \"edges\": [\n        {\n          \"from\": \"review\",\n          \"to\": \"open\"\n        }\n      ]\n    }\n  ]\n}\n",
-      "reserved": [
-        2,
-        4
-      ],
-      "code": 9223372036854775807,
       "raises": {
         "kind": "unknown_code",
         "status": null,

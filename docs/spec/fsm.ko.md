@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 55e32753d9531162d8869fd646fa18fd169595a5c94d24ee0dac21b97f8a2c55 -->
+<!-- source-sha256: 7cb28d35464474fed09d08d41817b544f07fb4fc8e3be5142ff7b94502cc2ce9 -->
 # fsm 정의
 
 [English](fsm.md)
@@ -275,4 +275,4 @@ stateDiagram-v2
 - **FSM-B7-1** `parse`는 다음을 `invalid_definition`으로 거부한다: JSON이 아닌 텍스트, 빠진 field나 모르는 field, 다른 타입의 값, 반복된 상태나 event key, 반복되거나 예약되었거나 1부터 2147483647 밖인 code, 어떤 상태도 아닌 곳으로 가는 edge, 하나가 아닌 initial 상태 수, 한 상태에서 한 event의 target 두 개. B-5의 나머지 규칙은 컴파일러의 finding이다.
 - **FSM-B7-2** 기계의 상태가 아닌 상태 key는 `unknown_state`이고, 기계의 event가 아닌 event key는 `unknown_event`이다.
 - **FSM-B7-3** `key(code)`는 `from_code`처럼 code의 상태 key를 준다: 예약 code는 `reserved_code`, 상태가 아닌 다른 code는 `unknown_code`다.
-- `from_code`의 인자는 `int`다. 다른 타입의 값(string, bool, float, null)은 B-6의 `E_UNKNOWN_CODE`가 아니라 언어 바인딩의 인자 오류(binding GN-11)이고, 상태 인자는 key이므로 raw code가 거기에 닿지 않는다. 그래서 그런 값이나 상태 자리의 raw code를 주는 B-6의 vector는 코어의 case가 아니다. `persist`의 vector도 아니다. 코어는 store를 갖지 않기 때문이다.
+- `from_code`의 인자는 `int`다. 다른 타입의 값(string, bool, float, null)은 B-6의 `E_UNKNOWN_CODE`가 아니라 언어 바인딩의 인자 오류(binding GN-11)이고, 상태 인자는 key이므로 raw code가 거기에 닿지 않는다. 그래서 그런 값이나 상태 자리의 raw code를 주는 B-6의 vector는 코어의 case가 아니다. `persist`의 vector도 아니다. 코어는 store를 갖지 않기 때문이다. `from_code` vector의 64-bit 최댓값처럼 2^53 − 1보다 큰 code도 case가 아니다. JavaScript number가 그 값을 담지 못하므로 node와 wasm 바인딩이 코어가 읽기 전에 인자 오류로 거부하기 때문이다.
