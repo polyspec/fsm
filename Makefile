@@ -916,14 +916,16 @@ commit-names-check:
 docs-deps: $(DOCS_DEP)
 
 # docs-build builds the documentation site from the repository documents in place, into docs/.vitepress/dist; a dead link fails
-# the build (docs/.vitepress/config.mts, docs/plans/fsm-v1/plan.md, C-8).
+# the build (docs/.vitepress/config.mts, docs/plans/fsm-v1/plan.md, C-8). scripts/docs-build.mts runs the VitePress of
+# docs/node_modules and fails a build that prints an error: VitePress prints the error of a page that fails to render and ends
+# with status 0 (S-473).
 docs-build: $(DOCS_DEP)
-	$(NODE) docs/node_modules/vitepress/bin/vitepress.js build docs
+	$(NODE) scripts/docs-build.mts docs
 
 # docs-build-test runs the tests of the site: a dead link fails the build, and the real build produces its pages and the GitHub
 # rewrite of a link to a repository file (tests/docs-build, docs/plans/fsm-v1/plan.md, C-8). Its record names the inputs it reads.
 docs-build-test: $(DOCS_DEP)
-	$(RUN_TESTS) node --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- --test-concurrency=1 tests/docs-build
+	$(RUN_TESTS) node --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs scripts/docs-build.mts --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- --test-concurrency=1 tests/docs-build
 
 # compiler-test runs the tests of legacy/packages/compiler, the core validation of a definition (docs/plans/fsm-v1/plan.md, C-5)
 # with the editor schema contracts/schema/fsm.schema.json, which the tests check against the core.

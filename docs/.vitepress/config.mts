@@ -99,6 +99,21 @@ function repositoryLinks(md: MarkdownIt): void {
   });
 }
 
+/**
+ * The markdown-it rule: an inline code is the text of the document. VitePress compiles a page as a Vue template, where a
+ * mustache is an interpolation; the attribute `v-pre`, which VitePress documents for a literal mustache and gives to a fenced
+ * code itself, makes Vue leave the element as written, so a document needs no escape of its own (checklist S-473).
+ */
+function literalInlineCode(md: MarkdownIt): void {
+  md.core.ruler.push('fsm-literal-inline-code', (state) => {
+    for (const token of state.tokens) {
+      for (const child of token.children ?? []) {
+        if (child.type === 'code_inline') child.attrSet('v-pre', '');
+      }
+    }
+  });
+}
+
 /** The entries of one language: the overview, the specification, the plan, the packages, the verification and the changelog. */
 function entriesOf(lang: 'en' | 'ko') {
   const suffix = lang === 'ko' ? '.ko' : '';
@@ -179,6 +194,7 @@ export default defineConfig({
   markdown: {
     config(md) {
       md.use(repositoryLinks);
+      md.use(literalInlineCode);
     },
   },
 });

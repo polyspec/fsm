@@ -238,7 +238,8 @@
     {
       "paths": [
         "**/*.md",
-        "docs/.vitepress/**"
+        "docs/.vitepress/**",
+        "scripts/docs-build.mts"
       ],
       "targets": [
         "docs-build"
@@ -274,7 +275,8 @@
     },
     {
       "paths": [
-        "tests/docs-build/**"
+        "tests/docs-build/**",
+        "scripts/docs-build.mts"
       ],
       "targets": [
         "docs-build-test"

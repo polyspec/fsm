@@ -11,8 +11,10 @@ import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 
+import { errorLines } from '../../scripts/docs-build.mts';
+
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const VITEPRESS = path.join(REPO, 'docs/node_modules/vitepress/bin/vitepress.js');
+const DOCS_BUILD = path.join(REPO, 'scripts/docs-build.mts');
 const CONFIG = 'docs/.vitepress/config.mts';
 // A build of the whole site takes tens of seconds; the per-test timeout of kit's run-tests is the limit.
 const TIMEOUT_MS = 300_000;
@@ -38,19 +40,11 @@ export function warningLines(output: string): string[] {
   return stripVTControlCharacters(output).split('\n').filter(line => WARNING.test(line.trim()));
 }
 
-// An error line is a line of the build output (ANSI colour codes removed) that starts with the name of an error (`TypeError:`,
-// `Error:`) or with `error`. VitePress prints the error of a page that fails to render and builds the other pages, so a build
-// with such a line has a page without its content (S-473).
-const ERROR = /^(?:[A-Za-z]*Error\b|error\b)/;
-export function errorLines(output: string): string[] {
-  return stripVTControlCharacters(output).split('\n').filter(line => ERROR.test(line.trim()));
-}
-
-/** Runs the VitePress build of the site whose docs directory is `docs`, without VITEPRESS_BASE. */
+/** Runs the build of `make docs-build` (scripts/docs-build.mts) on the site whose docs directory is `docs`, without VITEPRESS_BASE. */
 function build(docs: string) {
   const env = { ...process.env };
   delete env.VITEPRESS_BASE;
-  return spawnSync(process.execPath, [VITEPRESS, 'build', docs], { cwd: path.dirname(docs), encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 });
+  return spawnSync(process.execPath, [DOCS_BUILD, docs], { cwd: path.dirname(docs), encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 });
 }
 
 // An image of a document (`![alt](relative path)`) is part of the page, so the mirror copies it with the document.

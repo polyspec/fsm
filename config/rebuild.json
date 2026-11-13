@@ -34,6 +34,10 @@
       "kind": "ecosystem",
       "tool": "docker"
     },
+    "scripts/docs-build.mts": {
+      "kind": "policy",
+      "reason": "fails a build of the documentation site that prints an error, a rule of this repository (checklist S-473): VitePress prints the error of a page that fails to render and ends with status 0, and has no option that fails it"
+    },
     "scripts/check-commit-names.mts": {
       "kind": "policy",
       "reason": "fails a tracked document that names a Git commit, a rule of this repository (AGENTS.md, Rules): a release and a lock pin the name of a commit"
