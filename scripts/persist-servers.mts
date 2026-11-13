@@ -18,8 +18,10 @@
 // image is installed and pulls it, because bay has no command for either (S-475-2): an image that is not installed fails
 // the run before a server starts and names make persist-images, the target of pull. run downloads nothing.
 //
-// Waiting for the servers has no sleep, no polling and no time limit: bay up returns after each service accepts connections
-// on its port, and that return is the ready event. The run shows each line of bay as `persist-servers: bay <verb>: <line>`.
+// Waiting for the servers has no sleep, no polling and no time limit in this file: each service declares a healthcheck, the
+// program of its server over TCP in its container, bay checks it at the start and returns from up after each service is
+// healthy, and that return is the ready event. The interval, the timeout and the retries of a healthcheck are declarations
+// that Compose requires and bay evaluates (plan C-6 states the reason of each value). The run shows each line of bay as `persist-servers: bay <verb>: <line>`.
 // A bay up that fails fails the run with the last lines of each service, which bay logs prints.
 //
 // The command runs with the four variables of the servers, FSM_TEST_PG_DSN, FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and
@@ -44,6 +46,10 @@ const PINS = path.join(ROOT, 'config/containers.json');
 const USAGE = 'usage: scripts/persist-servers.mts run -- <command> [argument...] | pull';
 // TAIL is the count of the last lines of a service that a failed start shows.
 const TAIL = 40;
+// The declarations of a healthcheck, which bay evaluates: it asks each second, where the default of Compose is 30 s; one ask
+// of a server in the same container may take 5 s; and 300 asks give the initialization of an image five minutes, where the
+// default of 3 would report a server that still initializes.
+const HEALTH = ['interval: "1s"', 'timeout: "5s"', 'retries: 300'];
 
 /** A failure of the run that ends it with `code` and the message on standard error. */
 class Failure extends Error {
@@ -61,11 +67,13 @@ const KINDS: readonly Kind[] = ['postgres', 'mysql'];
 
 /**
  * A server of the tests. `port` is the port of the server in its container; `environment` creates its accounts and its
- * database when the image initializes it; `variables` are the variables of the tests for the address `host` of the service.
+ * database when the image initializes it; `health` is the command that ends with 0 when the server answers over TCP, never
+ * over the socket, on which the temporary server of the initialization of the image listens too; `variables` are the variables of the tests for the address `host` of the service.
  */
 interface Server {
   port: number;
   environment: Record<string, string>;
+  health: readonly string[];
   variables: (host: string) => Record<string, string>;
 }
 
@@ -75,6 +83,7 @@ const SERVERS: Record<Kind, Server> = {
   postgres: {
     port: 5432,
     environment: { POSTGRES_USER: 'fsm', POSTGRES_PASSWORD: 'fsm', POSTGRES_DB: 'fsm_test' },
+    health: ['pg_isready', '--host=127.0.0.1', '--port=5432', '--username=fsm', '--dbname=fsm_test'],
     variables: host => {
       const dsn = `postgres://fsm:fsm@${host}:5432/fsm_test?sslmode=disable`;
       return { FSM_TEST_PG_DSN: dsn, FSM_TEST_PG_ADMIN_DSN: dsn };
@@ -83,6 +92,7 @@ const SERVERS: Record<Kind, Server> = {
   mysql: {
     port: 3306,
     environment: { MYSQL_ROOT_PASSWORD: 'root', MYSQL_USER: 'fsm', MYSQL_PASSWORD: 'fsm', MYSQL_DATABASE: 'fsm_test' },
+    health: ['mysqladmin', 'ping', '--protocol=tcp', '--host=127.0.0.1', '--port=3306'],
     variables: host => ({
       FSM_TEST_MYSQL_DSN: `mysql://fsm:fsm@${host}:3306/fsm_test`,
       FSM_TEST_MYSQL_ADMIN_DSN: `mysql://root:root@${host}:3306/mysql`,
@@ -122,7 +132,7 @@ function show(line: string): void {
 
 /**
  * The Compose file of the project `project`: a service for each server, with the image of its pin, the port of its server
- * in `expose` and the environment of its accounts. Each scalar is written as a JSON string, which YAML reads as the same
+ * in `expose`, the environment of its accounts and its healthcheck. Each scalar is written as a JSON string, which YAML reads as the same
  * string. The file names no host port, no domain, no volume and no path.
  */
 function composeFile(project: string): string {
@@ -131,6 +141,7 @@ function composeFile(project: string): string {
     const server = SERVERS[kind];
     lines.push(`  ${kind}:`, `    image: ${JSON.stringify(image(kind))}`, `    expose: [${JSON.stringify(String(server.port))}]`, '    environment:');
     for (const [name, value] of Object.entries(server.environment)) lines.push(`      ${name}: ${JSON.stringify(value)}`);
+    lines.push('    healthcheck:', `      test: [${['CMD', ...server.health].map(word => JSON.stringify(word)).join(', ')}]`, ...HEALTH.map(declared => `      ${declared}`));
   }
   return `${lines.join('\n')}\n`;
 }
