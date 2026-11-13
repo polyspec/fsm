@@ -36,9 +36,11 @@ make persist-servers TARGETS="db-test-postgres db-test-mysql"
    `make persist-images`.
 4. It makes the directory `fsm-persist-<pid>-<random>` in the temporary directory of the system and writes `compose.yaml`
    into it. The project has the name of the directory and the services `postgres` and `mysql`. The file publishes no port
-   of the host and mounts nothing.
-5. It runs `bay up` in that directory and shows each line as `persist-servers: bay up: <line>`. bay returns after each
-   service accepts connections; the run waits for that return alone, with no sleep, no polling and no time limit.
+   of the host and mounts nothing. Each service declares a `healthcheck` that asks its server over TCP in the container,
+   `pg_isready` and `mysqladmin ping --protocol=tcp`, each second and at most 300 times.
+5. It runs `bay up` in that directory and shows each line as `persist-servers: bay up: <line>`. bay checks the declared
+   health and returns after each service is healthy; the run waits for that return alone, with no sleep, no polling and no
+   time limit of its own.
 6. It runs `bay status --json` and reads the field `address` of each service of its project. The DSNs name that address and
    the port of the server, `5432` and `3306`.
 7. It runs the targets with `FSM_TEST_PG_DSN`, `FSM_TEST_PG_ADMIN_DSN`, `FSM_TEST_MYSQL_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN`.
@@ -54,14 +56,16 @@ The exit code of the run is that of the targets, 130 after SIGINT, 143 after SIG
 | `persist-servers: bay is not found on PATH` | PATH holds no bay | Install bay and run `bay install` |
 | `persist-servers: bay check ended with <code>` | A part of the machine setup of bay is missing; the lines above name it | Run `bay install` |
 | `persist-servers: the image <reference> of <kind> is not installed` | The image is not in the container program | Run `make persist-images` |
-| `persist-servers: bay up ended with <code>` | A service did not start or accepted no connection; the lines `persist-servers: <service>: <line>` above are the last 40 lines of each service | Read those lines; the run already removed the project |
+| `persist-servers: bay up ended with <code>` | A service did not start or did not get healthy within its 300 asks; the lines `persist-servers: <service>: <line>` above are the last 40 lines of each service | Read those lines; the run already removed the project |
 | `persist-servers: bay status --json names no address of the service <service>` | The JSON of bay holds no address of a service of the project; the JSON follows the line | Compare the JSON with the fields that step 6 reads |
 | `persist-servers: bay down ended with <code>` | bay did not remove the project; its containers may still run | Run `bay down` in the directory that the line names, then remove that directory |
 
 ## What is not verified and what waits
 
-- No run with real servers has shown yet that both servers answer a query at the moment `bay up` returns (S-475). The
-  script adds no wait for it.
+- No run with real servers has shown yet that bay counts the asks during the initialization of an image against the 300,
+  and that both servers answer the first query after `bay up` returns (S-475).
+- `bay check` also reports the agent skill and the MCP registration of bay, which no server needs; whether a machine
+  without them fails the check is not verified (S-475-6).
 - The job `check` of CI installs no bay, so its suite step fails on the runner with the first line of the table (S-475-5).
 - The project name on the command line of bay (S-475-1), a pull through bay (S-475-2), a JSON output of `bay up`
   (S-475-3) and a pinned release of bay (S-475-4) wait for releases of bay.
