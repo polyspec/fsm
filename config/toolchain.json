@@ -14,6 +14,17 @@
       "linux-arm64": "88aea77e41c2a3c45a9cbd64df9516ba887017442846213b3de178acbd3c9a46"
     }
   },
+  "bay": {
+    "version": "0.0.1",
+    "sha256": {
+      "darwin-arm64": "ab9c9950e788e411a96b1ae33efa8cb79c113c0915d52bcbb57030da922ca4e0",
+      "darwin-x64": "98b88b2fe13e15ca0e7d6e84f5d35e2872e24111b53a58b74f5edc9c4548c109",
+      "linux-x64": "9a3095ca64d4c221caa54395827a3faba9f497aae989dfc1c115e77608c3eda1",
+      "linux-arm64": "d3374ace08da81dd01d634349224467b14c58d9ca1539d78488978be1d890984"
+    },
+    "reason": "bay pulls, starts and removes the servers of the persistence tests and runs their targets (docs/plans/fsm-v1/plan.md, C-6); its commands, its Compose keys and its JSON change with its release, so a run fails with another release than this one, and make bay-install installs the archive of this release by its digest on a runner of CI",
+    "removal": "when no target of fsm runs on a server of a container; the pin is raised, not removed, when a release of bay holds a correction that a run needs"
+  },
   "symbolExtractors": [
     "php"
   ]
