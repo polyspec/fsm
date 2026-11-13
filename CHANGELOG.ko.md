@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: a63a096fcfdf9fa052d356ac49e6838001685f57dbd8a1dabbc0a62125605a53 -->
+<!-- source-sha256: 762463596d570e5c3056d40831ba974e3b526f9e81b6fe248c5cccdf1c823fb5 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- Go conformance runner(S-467)가 `input_type`이 있는 `from_code` vector 20개를 `FromCode`의 타입 확인으로 대신하지 않는다. 그 확인은 코어의 거부를 실행하지 않았다: 각 vector는 이름으로 실패하고, binding GN-13이 어떤 target에서 언어 꼴이 없는 입력에 주는 test feature `case-test` 진입점을 기다린다.
 - legacy 시험의 공통 suite에 Go 바인딩 runner가 생겼다: `packages/go/tests/conformance_test.go`가 `conformance.mjs`처럼 vector 279개를 돌리고, `make test-go-conformance`가 `make test-go-binding` 뒤에 그것을 돌린다. `input_type`이 있는 `from_code` 입력은 `FromCode`가 받는 `int64`의 값이 아니므로, 시험은 그 타입과 대응표의 kind `invalid_number`를 확인한다. `test-go-binding`은 생성기가 더는 쓰지 않는 S-454의 machine별 package(`in_review`, `limits`, ...)를 이름 붙였는데, 이제 root package, `errors`, `internal`을 이름 붙인다. Red: fsm이 고정한 binding ae511fd는 Go target을 거부한다(`machine: a class unit is not generated for Go yet`). binding 88fcaa3으로는 생성 시험 552개와 vector 279개가 통과한다 (S-467).
 - S-464가 끝났다: commit된 tree  binding ae511fd로 `make test-wasm-conformance`가 vector 279개 중 279개를 통과했다.
 - legacy 시험의 공통 suite가 package의 subpath `./wasm`인 WASM 바인딩에서 돈다: `make test-wasm-conformance`는 Node 바인딩의 runner로 `packages/ts/tests/conformance.wasm.test.mjs`를 돌리며, binding ae511fd로 vector 279개 중 279개를 통과한다. 첫 실행에서 통과했으므로 실패하는 Red는 없다: WASM 바인딩은 Node 바인딩과 같은 kind와 field를 준다 (S-464).

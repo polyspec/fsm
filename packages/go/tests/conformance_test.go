@@ -5,9 +5,10 @@
 // actual_value) goes through Key first, as the legacy tests send it through fromCode. An error is compared by its kind and by
 // the properties Expected, Actual and Event of MachineError (nil where the field does not apply, FSM-B7-5); the kind is the one
 // that the mapping table contracts/conformance/changes.json gives for the vector (docs/spec/fsm.md, FSM-B7-6). A from_code input
-// of an input_type (a string, a bool or a float) is no value of the Go int64 that FromCode takes, so the Go types refuse it
-// before a call (binding GN-16): the test asserts that type and that the input is no int64. The persist vectors are the cases
-// of step 7p, which binds the store.
+// of an input_type (a string, a bool or a float) has no form in Go, whose FromCode takes an int64; the rule of binding GN-13
+// gives such an input an entry point of the test feature case-test, which passes the host value to the conversion of the core.
+// Until binding generates that entry point for Go, each such vector fails by its name with that reason. The persist vectors are
+// the cases of step 7p, which binds the store.
 package tests
 
 import (
@@ -16,7 +17,6 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"reflect"
 	"slices"
 	"strconv"
 	"testing"
@@ -265,26 +265,17 @@ func check(t *testing.T, rows []row, machine *fsm.Machine, v vector) {
 	}
 }
 
-// fromCode runs a from_code vector. An input of an input_type is no int64, which FromCode takes, so the Go types refuse it
-// before a call (binding GN-16); the vector must then expect a failure, which the mapping table maps to invalid_number.
+// fromCode runs a from_code vector. An input of an input_type has no form in Go (FromCode takes an int64), so the vector waits
+// for the entry point of the test feature case-test that binding GN-13 gives it, and fails by its name until then.
 func fromCode(t *testing.T, rows []row, machine *fsm.Machine, v vector, fails failure, result func(error, func())) {
 	t.Helper()
 	if v.Input == nil {
 		t.Fatalf("the from_code vector %s has no input", v.ID)
 	}
 	if v.InputType != nil {
-		parameter := reflect.TypeOf(machine.FromCode).In(0)
-		if parameter.Kind() != reflect.Int64 {
-			t.Fatalf("FromCode takes %s, not the int64 that refuses the input %s by its type", parameter, *v.Input)
-		}
-		if !slices.Contains([]string{"string", "bool", "float"}, *v.InputType) {
-			t.Fatalf("the input type %s of %s is not known", *v.InputType, v.ID)
-		}
-		if fails.Error == "" {
-			t.Fatalf("the vector %s expects a state for an input that the Go types refuse", v.ID)
-		}
-		equal(t, "the kind of an input that the Go types refuse", kindOf(t, rows, v, fails.Error), "invalid_number")
-		return
+		t.Fatalf("%s: the %s input %s has no form in Go; it waits for the case-test entry point of binding GN-13, which passes the "+
+			"host value to the conversion of the core, whose kind %s the mapping table expects", v.ID, *v.InputType, *v.Input,
+			kindOf(t, rows, v, fails.Error))
 	}
 	code, err := strconv.ParseInt(*v.Input, 10, 64)
 	if err != nil {
