@@ -11,7 +11,7 @@ of `docs/spec/fsm.md`, B-1. The same pages edit the machines: they add, change, 
 they add and delete machines.
 
 The GUI owns no rule. The definitions come from the store that `fsm.config.json` names (json, mermaid or db), and every
-check and every write goes through the core `run` of `packages/compiler`, the same rules that `fsm-gen` and `fsm-db`
+check and every write goes through the core `run` of `legacy/packages/compiler`, the same rules that `fsm-gen` and `fsm-db`
 apply. A save that the core refuses writes nothing, and the page shows the findings.
 
 ## Setup
@@ -25,7 +25,7 @@ npm install -g ./packages/gui   # puts the command fsm-gui on the PATH, linked t
 
 `make gui-build` needs the network once, for the pinned packages (hyper v0.0.17, crudui v0.0.5, the template v0.0.9 and
 mermaid 12.2.0). Node.js 26.12.0 of `mise.toml` runs the server. For a project whose store is the database, the orm
-packages of `packages/db` must be installed too: `make db-deps` (`make gui-build` runs it first).
+packages of `legacy/packages/db` must be installed too: `make db-deps` (`make gui-build` runs it first).
 
 ## Running
 
@@ -55,7 +55,7 @@ The store follows `fsm.config.json`:
 |---|---|
 | `{"store":"json"}` | `machines/*.fsm.json` and `fsm.lock.json` |
 | `{"store":"mermaid"}` | `machines/*.fsm.mmd` and `fsm.lock.json` |
-| `{"store":"db","dsnEnv":"FSM_DSN"}` | the database whose DSN is the value of `FSM_DSN`; the orm packages of `packages/db` must be installed (`make db-deps`) |
+| `{"store":"db","dsnEnv":"FSM_DSN"}` | the database whose DSN is the value of `FSM_DSN`; the orm packages of `legacy/packages/db` must be installed (`make db-deps`) |
 
 A configuration that the GUI cannot use stops the start with exit status 1 and prints the finding. The usage errors (an
 unknown option, a port that is not a number from 0 to 65535) exit with status 2:

@@ -15,7 +15,7 @@ import { jsonStore } from '../src/store-json/store.mjs';
 import { backendTests, orderIrs } from './backend-support.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, '../../..');
+const ROOT = path.resolve(HERE, '../../../..');
 const NAMESPACE = 'Polyspec\\FsmTest';
 const NAMES = ['Order/State.php', 'Order/Event.php', 'Order/Step.php', 'Order/functions.php', 'Fsm/Code.php', 'Fsm/Error.php'];
 

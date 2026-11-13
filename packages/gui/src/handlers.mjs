@@ -8,8 +8,8 @@ import { readFileSync } from 'node:fs';
 import { NotFound, Result } from '@polyspec/hyper-server';
 import { renderList } from '@polyspec/crudui-generator-html';
 import { parse as parseYaml } from 'yaml';
-import { run } from '../../compiler/src/core/run.mjs';
-import { mermaidText } from '../../compiler/src/store-mermaid/write.mjs';
+import { run } from '../../../legacy/packages/compiler/src/core/run.mjs';
+import { mermaidText } from '../../../legacy/packages/compiler/src/store-mermaid/write.mjs';
 import {
   completeData, editData, editState, formErrorsOf, newErrorsOf, nextCodeErrors, nextCodeOf, renameData, renameErrorsOf, renderEdit, renderNew,
   renderRename, suggestCodes,

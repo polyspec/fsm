@@ -14,7 +14,7 @@ import { backendTests, orderIrs } from './backend-support.mjs';
 import { CLI, HERE } from './cli-support.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
-const ROOT = path.resolve(HERE, '../../..');
+const ROOT = path.resolve(HERE, '../../../..');
 const GOLDEN = path.join(HERE, 'golden/go');
 const MODULE = 'github.com/polyspec/fsm/packages/go';
 const NAMES = ['order/order.go', 'fsm/fsm.go'];

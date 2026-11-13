@@ -38,8 +38,8 @@ fsm is not (the verdicts of `docs/spec/fsm.md`, B-0):
 - a sequence syntax: next and previous are ordinary events;
 - a setting for the storage width: codes are always in the 32-bit range.
 
-The language packages of this repository (`packages/go` and the others) are test beds: they hold the generated code and
-check it against the conformance vectors. They are not published libraries. You use fsm by generating its code into your own
+The language packages of this repository (`legacy/packages/go` and the others) are test beds: they hold the generated code and
+check it against the conformance vectors. They are not published libraries, and they are under `legacy/` until the generated bindings of `packages/` take their place. You use fsm by generating its code into your own
 project, as the README of each language explains.
 
 ## The model
@@ -109,7 +109,7 @@ line, the edges by event, the final lines), a code is written in decimal, the la
 refused), and the reader rejects any other line with `E_MERMAID_UNSUPPORTED`, which names
 the line. Composite states, notes, fork and join, choices, styles and comments are not part of the form.
 
-Database (the six tables of `packages/db/schema/fsm.dbs`, after `fsm-db copy --from json` into a new database; the rows of `order`):
+Database (the six tables of `legacy/packages/db/schema/fsm.dbs`, after `fsm-db copy --from json` into a new database; the rows of `order`):
 
 | table | rows of the example |
 |---|---|
@@ -121,7 +121,7 @@ Database (the six tables of `packages/db/schema/fsm.dbs`, after `fsm-db copy --f
 | `lock_reserved` (machine, code) | no rows |
 
 The three stores hold the same definition, and every command gives the same result on each of them. The table layout is in
-[packages/db/README.md](packages/db/README.md).
+[legacy/packages/db/README.md](legacy/packages/db/README.md).
 
 ## Codes and the lock
 
@@ -195,9 +195,9 @@ result is `E_CONFLICT`. De-duplicating requests with an idempotency key is the c
 
 The persistence pattern reads the stored state under a row lock inside one transaction, applies the event to it, and writes
 only when the result is `Changed`. An error of `apply` rolls the transaction back. Each language package quotes its version of
-the pattern from its `examples/` directory: `packages/go/examples/persist.go`, `packages/js/examples/persist.mjs`,
-`packages/php/examples/persist.php` (the same file is in `packages/php-ext/examples/`), `packages/python/examples/persist.py`
-and `packages/rust/examples/persist.rs`.
+the pattern from its `examples/` directory: `legacy/packages/go/examples/persist.go`, `legacy/packages/js/examples/persist.mjs`,
+`legacy/packages/php/examples/persist.php` (the same file is in `legacy/packages/php-ext/examples/`), `legacy/packages/python/examples/persist.py`
+and `legacy/packages/rust/examples/persist.rs`.
 
 ## Validation errors
 
@@ -251,7 +251,7 @@ schema/fsm.schema.json   the JSON schema of a machine file, for editors; each ma
 The project of this repository is `contracts/`: its machines generate the six language packages, and it also holds
 `schema/persist.dbs`, the example tables of the persistence pattern that the examples/ of the language packages use, and
 `conformance/vectors.json`, the expected results of the vector cases that fsm-gen vectors writes. The six database tables of
-the db store (dbspec `fsm`), which fsm-db install installs, are `packages/db/schema/fsm.dbs`.
+the db store (dbspec `fsm`), which fsm-db install installs, are `legacy/packages/db/schema/fsm.dbs`.
 
 `fsm.config.json` names the store, and fsm-gen, fsm-db and fsm-gui all read it. fsm-gen handles the json and mermaid stores; it
 refuses `db` with `E_STORE_NOT_CONFIGURED`, and fsm-db handles only `db`. Changing the store of a project after a migration is
@@ -280,15 +280,15 @@ cd fsm
 make install-tools TOOLS=npm                       # once, online: the npm of packageManager (package.json)
 make install-packages                              # once, online: the root packages, @polyspec/kit among them
 make install                                       # once, online: the toolchains and every package dependency
-npm install -g ./packages/compiler             # fsm-gen: no dependencies
-make db-deps && npm install -g ./packages/db   # fsm-db: needs the orm packages
+npm install -g ./legacy/packages/compiler             # fsm-gen: no dependencies
+make db-deps && npm install -g ./legacy/packages/db   # fsm-db: needs the orm packages
 make gui-build && npm install -g ./packages/gui # fsm-gui: builds the browser assets first
 ```
 
 The first two commands install the shared tools of polyspec, the package `@polyspec/kit`, whose utilities the recipes of the
 Makefile run; before them, only these two targets run. `make install` downloads the toolchains of `var/tools` (the Python 3.14 of `pythonBuild` among them) and every package dependency once; a later run finds them installed and
 downloads nothing. The first `npm install -g` is all that the json and mermaid stores need. `make db-deps` installs the orm
-packages of `packages/db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
+packages of `legacy/packages/db` from their release tarballs, and `make gui-build` installs the GUI and builds its browser assets.
 
 ## The fsm-gen CLI
 
@@ -397,15 +397,15 @@ their READMEs.
 
 ## The tools
 
-- [`fsm-gen`](packages/compiler/README.md): the compiler and its command line. It validates, locks, converts between the
+- [`fsm-gen`](legacy/packages/compiler/README.md): the compiler and its command line. It validates, locks, converts between the
   json and mermaid stores, writes the vectors and generates the six languages.
-- [`fsm-db`](packages/db/README.md): the database store. It installs the six tables, checks and locks a database project,
+- [`fsm-db`](legacy/packages/db/README.md): the database store. It installs the six tables, checks and locks a database project,
   and copies between the database and a file store.
 - [`fsm-gui`](packages/gui/README.md): a browser editor for the machines of a project, with a Mermaid diagram of each
   machine. Every save goes through the same core rules as `fsm-gen`.
-- The language packages, one for each target: [go](packages/go/README.md), [npm](packages/js/README.md),
-  [php](packages/php/README.md), [php-ext](packages/php-ext/README.md), [python](packages/python/README.md) and
-  [rust](packages/rust/README.md). Each shows the generated code in use, its conformance tests and its persistence pattern.
+- The language packages, one for each target: [go](legacy/packages/go/README.md), [npm](legacy/packages/js/README.md),
+  [php](legacy/packages/php/README.md), [php-ext](legacy/packages/php-ext/README.md), [python](legacy/packages/python/README.md) and
+  [rust](legacy/packages/rust/README.md). Each shows the generated code in use, its conformance tests and its persistence pattern.
 
 ## Generated names
 
@@ -447,9 +447,9 @@ checks that the documents depend on can be run one at a time:
 | `make name-check` | no tracked file names the library by its old name |
 | `make gui-test`, `make compiler-test`, `make db-test` | the tests of each tool |
 | `make db-test-postgres`, `make db-test-mysql`, `make npm-persist-test-postgres`, `make npm-persist-test-mysql`, `make <kind>-persist-test-postgres`, `make <kind>-persist-test-mysql` (kind: go, rust, php, php-ext, python) | the DB store, CLI and command tests, the persistence concurrency proof of npm and the persist cases of each kind on PostgreSQL and MySQL; they read `FSM_TEST_PG_DSN` and `FSM_TEST_MYSQL_DSN` (and `FSM_TEST_PG_ADMIN_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN` for the empty databases of the CLI tests), stop with exit 2 without them, and skip no dialect (plan C-6). The tests run on SQLite too (`make db-test`, `make npm-persist-test`, `make test-<kind>`) |
-| `make test-go`, `make fsm-js-test`, `make test-php`, `make test-php-ext`, `make test-python`, `make test-rust` | the tests of each language package |
+| `make legacy-test-go`, `make fsm-js-test`, `make legacy-test-php`, `make legacy-test-php-ext`, `make legacy-test-python`, `make legacy-test-rust` | the tests of each language package |
 
 CI (`.github/workflows/ci.yml`) installs kit (`make install-tools TOOLS=npm`, `make install-packages`) and runs `make install` and then `make check` on every push to main, with PostgreSQL and MySQL services. The documentation site is published to https://polyspec.github.io/fsm/ by `.github/workflows/pages.yml`.
 
 The conformance tests of each language package run the same vector cases, one test per case, named by the case name `<feature>__<id>` (php: the data set `<feature>__<id>` of the one method `testConformance`; python: the method `test_<feature>__<id>`).
-The generated files of the packages are not tracked, except `packages/go/src` and `packages/rust/src`, which the Go module and the Rust crate release as their tagged tree (`make layout-check` fails when they differ from what `make fsm-gen` writes): `make fsm-gen` writes them, and `make compiler-test` compares the output for the order example with the golden files of `packages/compiler/tests/golden`, byte for byte.
+The generated files of the packages are not tracked, except `legacy/packages/go/src` and `legacy/packages/rust/src`, which the Go module and the Rust crate released as their tagged tree before they moved under `legacy/` (`make layout-check` fails when they differ from what `make fsm-gen` writes): `make fsm-gen` writes them, and `make compiler-test` compares the output for the order example with the golden files of `legacy/packages/compiler/tests/golden`, byte for byte.

@@ -20,17 +20,18 @@ const base = process.env.VITEPRESS_BASE ?? '/';
 // Directories that hold no document of the repository; srcExclude names them as well.
 const SKIPPED_DIRECTORIES = new Set(['.git', 'node_modules', 'var', 'vendor', 'target', '.vitepress']);
 
-// The language packages and the other packages, in the order of the sidebar (C-1).
-const PACKAGES: Record<string, { en: string; ko: string }> = {
-  compiler: { en: 'Compiler and CLI', ko: '컴파일러와 CLI' },
-  db: { en: 'DB store', ko: 'DB 저장소' },
-  gui: { en: 'GUI', ko: 'GUI' },
-  go: { en: 'Go', ko: 'Go' },
-  js: { en: 'npm (JavaScript and types)', ko: 'npm (JavaScript와 타입)' },
-  php: { en: 'PHP', ko: 'PHP' },
-  'php-ext': { en: 'PHP extension', ko: 'PHP 확장' },
-  python: { en: 'Python', ko: 'Python' },
-  rust: { en: 'Rust', ko: 'Rust' },
+// The language packages and the other packages, in the order of the sidebar (C-1), each with its folder: the hand-written packages
+// and the generator are under legacy/packages since plan f6, step 3-2.
+const PACKAGES: Record<string, { dir: string; en: string; ko: string }> = {
+  compiler: { dir: 'legacy/packages/compiler', en: 'Compiler and CLI', ko: '컴파일러와 CLI' },
+  db: { dir: 'legacy/packages/db', en: 'DB store', ko: 'DB 저장소' },
+  gui: { dir: 'packages/gui', en: 'GUI', ko: 'GUI' },
+  go: { dir: 'legacy/packages/go', en: 'Go', ko: 'Go' },
+  js: { dir: 'legacy/packages/js', en: 'npm (JavaScript and types)', ko: 'npm (JavaScript와 타입)' },
+  php: { dir: 'legacy/packages/php', en: 'PHP', ko: 'PHP' },
+  'php-ext': { dir: 'legacy/packages/php-ext', en: 'PHP extension', ko: 'PHP 확장' },
+  python: { dir: 'legacy/packages/python', en: 'Python', ko: 'Python' },
+  rust: { dir: 'legacy/packages/rust', en: 'Rust', ko: 'Rust' },
 };
 
 /** The Markdown files below the repository root, as posix paths; the skipped directories are not entered. */
@@ -50,7 +51,7 @@ function markdownFiles(relative = ''): string[] {
 /** The include list of C-8: the root and package READMEs, the spec, the plan, the verification pages and the changelogs. */
 function isSitePage(file: string): boolean {
   return /^(?:README|CHANGELOG)(?:\.ko)?\.md$/.test(file)
-    || /^packages\/[^/]+\/README(?:\.ko)?\.md$/.test(file)
+    || /^(?:legacy\/)?packages\/[^/]+\/README(?:\.ko)?\.md$/.test(file)
     || /^docs\/spec\/.+\.md$/.test(file)
     || /^docs\/plans\/fsm-v1\/plan(?:\.ko)?\.md$/.test(file)
     || /^docs\/operations\/verification\/.+\.md$/.test(file);
@@ -103,8 +104,8 @@ function entriesOf(lang: 'en' | 'ko') {
   const suffix = lang === 'ko' ? '.ko' : '';
   const has = (file: string) => SITE_PAGES.has(file);
   const packages = Object.entries(PACKAGES)
-    .filter(([name]) => has(`packages/${name}/README${suffix}.md`))
-    .map(([name, labels]) => ({ text: `${labels[lang]} (${name})`, link: routeOf(`packages/${name}/README${suffix}.md`) }));
+    .filter(([, { dir }]) => has(`${dir}/README${suffix}.md`))
+    .map(([name, { dir, ...labels }]) => ({ text: `${labels[lang]} (${name})`, link: routeOf(`${dir}/README${suffix}.md`) }));
   const verification = [...SITE_PAGES]
     .filter(file => file.startsWith('docs/operations/verification/') && file.endsWith('.ko.md') === (lang === 'ko'))
     .sort()

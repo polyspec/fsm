@@ -6,15 +6,15 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { MemorySessionStore, Request } from '@polyspec/hyper-server';
-import { dbStore } from '../../db/src/db-store.mjs';
-import { SCHEMA, connect } from '../../db/src/models/models.ts';
-import { jsonStore } from '../../compiler/src/store-json/store.mjs';
+import { dbStore } from '../../../legacy/packages/db/src/db-store.mjs';
+import { SCHEMA, connect } from '../../../legacy/packages/db/src/models/models.ts';
+import { jsonStore } from '../../../legacy/packages/compiler/src/store-json/store.mjs';
 import { openStore } from '../src/store.mjs';
 import { ORDER_JSON_TEXT, ORDER_LOCK_TEXT, ORDER_MERMAID_TEXT } from './canonical.mjs';
 import { GUI } from '../src/application.mjs';
 import { openApp, tempProject } from './helpers.mjs';
 
-const FSM_GEN = path.join(GUI, '..', 'compiler', 'src', 'cli', 'fsm-gen.mjs');
+const FSM_GEN = path.join(GUI, '..', '..', 'legacy', 'packages', 'compiler', 'src', 'cli', 'fsm-gen.mjs');
 
 /** The three stores that the GUI edit screens run on. */
 export const KINDS = ['json', 'mermaid', 'db'];

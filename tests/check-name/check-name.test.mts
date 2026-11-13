@@ -123,16 +123,16 @@ test('the consumer accessors of the status column are allowed only as exact name
 
 test('the model entry allows the generated helper names of the status column, not other words', (t) => {
   const { result } = check(t, {
-    'packages/go/examples/model/item.go': [
+    'legacy/packages/go/examples/model/item.go': [
       'func (x *ItemModel) GetStatus() int32 { return x.fStatus }',
       'func (x *ItemModel) OrderByStatusAsc(fn ...orm.Func) *ItemModel { x.m.OrderBy("status", false, fn); return x }',
       'case "status":',
       '',
     ].join('\n'),
-    'packages/js/examples/model/models.ts': "x.set('status-gen', 1);\n",
+    'legacy/packages/js/examples/model/models.ts': "x.set('status-gen', 1);\n",
   });
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stderr, /^\[check-name\] packages\/js\/examples\/model\/models\.ts:1: /m);
+  assert.match(result.stderr, /^\[check-name\] legacy\/packages\/js\/examples\/model\/models\.ts:1: /m);
   assert.doesNotMatch(result.stderr, /item\.go:/);
 });
 

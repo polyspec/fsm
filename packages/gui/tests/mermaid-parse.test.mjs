@@ -1,6 +1,6 @@
 // The parse test of the pinned Mermaid package (docs/spec/fsm.md, B-1 and B-5; docs/plans/fsm-v1/plan.md, C-7 and S-16). It
 // checks the canonical form against the Mermaid version that the GUI ships, and it decides which words Mermaid cannot carry
-// as state keys, so that the reserved lists of packages/compiler/src/core/reserved.mjs are the measured ones.
+// as state keys, so that the reserved lists of legacy/packages/compiler/src/core/reserved.mjs are the measured ones.
 //
 // A word is unusable as a state key at a position when Mermaid either fails to parse the diagram, or parses it into a model
 // other than the one written (docs/spec/fsm.md, B-5 names the collision with the [*] ids). The second case is needed: with
@@ -19,7 +19,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
-import { MACHINE_LITERALS, MERMAID_STATE_KEYS } from '../../compiler/src/core/reserved.mjs';
+import { MACHINE_LITERALS, MERMAID_STATE_KEYS } from '../../../legacy/packages/compiler/src/core/reserved.mjs';
 import { ORDER_MERMAID_TEXT } from './canonical.mjs';
 
 const mermaid = (await import('mermaid')).default;

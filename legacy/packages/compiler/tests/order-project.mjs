@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 
 /** The directory of the order project: machines/order.fsm.json, fsm.config.json and fsm.lock.json with the order entry only. */
 export const ORDER_PROJECT = mkdtempSync(path.join(tmpdir(), 'fsm-order-project-'));

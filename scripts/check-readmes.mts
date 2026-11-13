@@ -67,14 +67,14 @@ export const README_PAIRS: readonly ReadmePair[] = Object.freeze([
   },
   {
     kind: 'compiler',
-    en: 'packages/compiler/README.md',
-    ko: 'packages/compiler/README.ko.md',
+    en: 'legacy/packages/compiler/README.md',
+    ko: 'legacy/packages/compiler/README.ko.md',
     sections: ['Architecture', 'The store contract', 'Commands', 'Backend options', 'Vectors'],
   },
   {
     kind: 'db',
-    en: 'packages/db/README.md',
-    ko: 'packages/db/README.ko.md',
+    en: 'legacy/packages/db/README.md',
+    ko: 'legacy/packages/db/README.ko.md',
     sections: [
       'What it is',
       'Set up',
@@ -93,8 +93,8 @@ export const README_PAIRS: readonly ReadmePair[] = Object.freeze([
   },
   ...['go', 'js', 'php', 'php-ext', 'python', 'rust'].map(folder => ({
     kind: 'language',
-    en: `packages/${folder}/README.md`,
-    ko: `packages/${folder}/README.ko.md`,
+    en: `legacy/packages/${folder}/README.md`,
+    ko: `legacy/packages/${folder}/README.ko.md`,
     sections: LANGUAGE_SECTIONS,
   })),
 ]);

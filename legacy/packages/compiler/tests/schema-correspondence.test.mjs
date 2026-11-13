@@ -10,7 +10,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { validate } from '../src/core/validate.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SCHEMA = JSON.parse(readFileSync(path.resolve(HERE, '../../../contracts/schema/fsm.schema.json'), 'utf8'));
+const SCHEMA = JSON.parse(readFileSync(path.resolve(HERE, '../../../../contracts/schema/fsm.schema.json'), 'utf8'));
 const FIXTURES = path.join(HERE, 'fixtures');
 const schemaCheck = new Ajv2020({ strict: true, allErrors: true }).compile(SCHEMA);
 

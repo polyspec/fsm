@@ -5,83 +5,23 @@
   "changelogTranslations": [
     "CHANGELOG.ko.md"
   ],
-  "packages": [
-    {
-      "kind": "composer",
-      "directory": "packages/php",
-      "name": "polyspec/fsm",
-      "product": "fsm",
-      "runtime": "php",
-      "generated": [
-        {
-          "kind": "make",
-          "target": "fsm-php-gen",
-          "outputs": [
-            "src",
-            "examples/model"
-          ]
-        }
-      ]
-    },
-    {
-      "kind": "composer",
-      "directory": "packages/php-ext",
-      "name": "polyspec/fsm-php-ext",
-      "product": "fsm",
-      "runtime": "php-ext",
-      "generated": [
-        {
-          "kind": "make",
-          "target": "fsm-php-ext-gen",
-          "outputs": [
-            "src"
-          ]
-        }
-      ]
-    },
-    {
-      "kind": "wheel",
-      "directory": "packages/python",
-      "name": "polyspec-fsm",
-      "product": "fsm",
-      "runtime": "python",
-      "generated": [
-        {
-          "kind": "make",
-          "target": "fsm-python-gen",
-          "outputs": [
-            "src/polyspec_fsm",
-            "examples/model"
-          ]
-        }
-      ]
-    },
-    {
-      "kind": "npm",
-      "directory": "packages/js",
-      "name": "@polyspec/fsm",
-      "product": "fsm",
-      "runtime": "ts"
-    }
-  ],
-  "manifests": {
-    "packages/php/composer.json": "archive",
-    "packages/php-ext/composer.json": "archive",
-    "packages/python/pyproject.toml": "archive",
-    "packages/rust/Cargo.toml": "git-tag",
-    "packages/js/package.json": "archive"
-  },
+  "packages": [],
+  "manifests": {},
   "notReleased": {
     "package.json": "the private root of the checkout (@polyspec/fsm-root): it holds the scripts of the workspace, and no runtime uses it",
     "docs/package.json": "the VitePress site of docs, private: a document of the checkout, which no runtime uses",
-    "packages/db/package.json": "@polyspec/fsm-db, private: the database tool of the generator, a checkout tool that no runtime uses (README.md:284)",
+    "legacy/packages/php/composer.json": "a package of the hand-written implementation under legacy/ (plan f6, FP-6, step 3-2): it leaves the release until the generated binding of packages/ takes its place, and plan V-6 (5) removes it",
+    "legacy/packages/php-ext/composer.json": "a package of the hand-written implementation under legacy/ (plan f6, FP-6, step 3-2): it leaves the release until the generated binding of packages/ takes its place, and plan V-6 (5) removes it",
+    "legacy/packages/python/pyproject.toml": "a package of the hand-written implementation under legacy/ (plan f6, FP-6, step 3-2): it leaves the release until the generated binding of packages/ takes its place, and plan V-6 (5) removes it",
+    "legacy/packages/rust/Cargo.toml": "a package of the hand-written implementation under legacy/ (plan f6, FP-6, step 3-2): it leaves the release until the generated binding of packages/ takes its place, and plan V-6 (5) removes it",
+    "legacy/packages/js/package.json": "a package of the hand-written implementation under legacy/ (plan f6, FP-6, step 3-2): it leaves the release until the generated binding of packages/ takes its place, and plan V-6 (5) removes it",
+    "legacy/packages/go/go.mod": "a package of the hand-written implementation under legacy/ (plan f6, FP-6, step 3-2): it leaves the release until the generated binding of packages/ takes its place, and plan V-6 (5) removes it",
+    "legacy/packages/db/package.json": "@polyspec/fsm-db, private: the database tool of the generator, a checkout tool that no runtime uses (README.md:284); under legacy/ since plan f6, step 3-2",
     "packages/gui/package.json": "@polyspec/fsm-gui, private: the GUI tool of the generator, a checkout tool that no runtime uses (README.md:285)",
-    "packages/compiler/package.json": "@polyspec/fsm-compiler, private: the generator itself, a checkout tool that the runtime does not use at run time (README.md:283)",
+    "legacy/packages/compiler/package.json": "@polyspec/fsm-compiler, private: the generator itself, a checkout tool that the runtime does not use at run time (README.md:283); under legacy/ since plan f6, step 3-2",
     ".mise/locks/pypi-vulture/2.16/pyproject.toml": "a lock of the tool vulture for make, not a package"
   },
-  "goModules": {
-    "packages/go": "github.com/polyspec/fsm/packages/go"
-  },
+  "goModules": {},
   "annotatedTags": true,
   "packageFiles": [
     "package.json",

@@ -2,7 +2,7 @@
 // tsc --noEmit --strict: every name of the notation is used, and every @ts-expect-error line must fail to compile, so a
 // declaration that is too loose makes an unused directive, which tsc reports as an error. The checked values are
 // exports, so the file uses each of them.
-import { order, fsm } from '../../packages/js/src/index.js';
+import { order, fsm } from '../../legacy/packages/js/src/index.js';
 
 // The states and events are typed by their values, and the functions by their signatures.
 const draft: order.State = order.State.Draft;

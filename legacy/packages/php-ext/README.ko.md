@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php-ext -->
-<!-- source-sha256: f5deeaab46ed76e8649d413f9eea2e5962ab16b10957778b633f98bb554867ba -->
+<!-- source-sha256: f8aaac49db0ae0f292426d277d14ac15e0af14fbee2876d29c0a9e6a93acba31 -->
 # polyspec/fsm-php-ext
 
 [English](README.md)
@@ -60,7 +60,7 @@ $step = Order\apply(State::Draft, Event::Next, State::Draft);   // Step with ->t
 ```
 
 순수 호출과 영속화 패턴은 php 패키지의 코드와 같다. test bed에는 자체 test가 없다.
-php 패키지의 PHPUnit 파일(`packages/php/tests`)과 `examples/persist.php`가 extension을 시험하며, `composer.json`의
+php 패키지의 PHPUnit 파일(`legacy/packages/php/tests`)과 `examples/persist.php`가 extension을 시험하며, `composer.json`의
 `autoload-dev`가 그것에 닿는다.
 
 ## 오류
@@ -70,7 +70,7 @@ php 패키지의 PHPUnit 파일(`packages/php/tests`)과 `examples/persist.php`�
 enum `Code`의 값이다. C 쪽은 php 쪽과 같은 class를 던진다(class의 생성자는 `fsm.c`에 등록된다). 그러므로 php 종류용으로 쓴 `catch`는
 그대로 동작한다.
 
-속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며 php 종류와 같다. `packages/php/tests/ConformanceTest.php`의 vector가 빌드된
+속성이 어떤 code에서 설정되는지는 명세 B-6(`docs/spec/fsm.md`)의 규칙이며 php 종류와 같다. `legacy/packages/php/tests/ConformanceTest.php`의 vector가 빌드된
 module에서 이를 단언한다:
 
 | Code | `expected` | `actual` | `event` |
@@ -91,12 +91,12 @@ checkout에서 실행한다:
 
 ```sh
 make fsm-php-ext-install   # composer install: the same packages as the php package (composer.lock)
-make test-php-ext          # kit: builds the extension (phpize, ./configure, make), then PHPUnit of packages/php with --php-extension
-make test-php-ext                      # the same from the root
+make legacy-test-php-ext          # kit: builds the extension (phpize, ./configure, make), then PHPUnit of legacy/packages/php with --php-extension
+make legacy-test-php-ext                      # the same from the root
 make php-ext-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make php-ext-persist-test-mysql   # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
-실행 결과는 89개 case 중 89개 통과다. `packages/php/tests/ConformanceTest.php`는 빌드된 module을 대상으로 PHPUnit test
-`testConformance` 하나를 vector case마다 이름이 `<feature>__<id>`인 data set으로, `packages/php/tests/ConformanceCase.php`의 검사로 실행한다. `make gen`은 `make clean` 없이 빌드 뒤에 실행한다. 생성 파일은
-추적하지 않는다. `make fsm-php-ext-gen`이 생성하며 `make test-php-ext`가 먼저 실행한다. `make parity-php-ext`는 모든 vector case가 한 번씩 실행되어 통과했는지 검사한다.
+실행 결과는 89개 case 중 89개 통과다. `legacy/packages/php/tests/ConformanceTest.php`는 빌드된 module을 대상으로 PHPUnit test
+`testConformance` 하나를 vector case마다 이름이 `<feature>__<id>`인 data set으로, `legacy/packages/php/tests/ConformanceCase.php`의 검사로 실행한다. `make gen`은 `make clean` 없이 빌드 뒤에 실행한다. 생성 파일은
+추적하지 않는다. `make fsm-php-ext-gen`이 생성하며 `make legacy-test-php-ext`가 먼저 실행한다. `make parity-php-ext`는 모든 vector case가 한 번씩 실행되어 통과했는지 검사한다.

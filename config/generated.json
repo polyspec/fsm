@@ -4,17 +4,17 @@
     "var/**",
     ".results/**",
     "docs/.vitepress/cache/**",
-    "packages/db/src/models/**",
-    "packages/go/examples/model/**",
-    "packages/js/src/**",
-    "packages/js/examples/model/**",
-    "packages/php/src/**",
-    "packages/php/examples/model/**",
-    "packages/php-ext/src/**",
-    "packages/php-ext/tests/**",
-    "packages/php-ext/examples/**",
-    "packages/python/src/polyspec_fsm/**",
-    "packages/python/examples/model/**",
+    "legacy/packages/db/src/models/**",
+    "legacy/packages/go/examples/model/**",
+    "legacy/packages/js/src/**",
+    "legacy/packages/js/examples/model/**",
+    "legacy/packages/php/src/**",
+    "legacy/packages/php/examples/model/**",
+    "legacy/packages/php-ext/src/**",
+    "legacy/packages/php-ext/tests/**",
+    "legacy/packages/php-ext/examples/**",
+    "legacy/packages/python/src/polyspec_fsm/**",
+    "legacy/packages/python/examples/model/**",
     "packages/ts/generated/**",
     "packages/ts/wasm/generated/**",
     "packages/python/generated/**",
@@ -49,12 +49,12 @@
   ],
   "tracked": [
     {
-      "path": "packages/go/src/**",
-      "reason": "the packages that make fsm-go-gen writes: a consumer of the Go module github.com/polyspec/fsm/packages/go installs the tagged tree packages/go/vX.Y.Z itself, so its generated sources are in that tree (P34, S-371); make layout-check fails when they differ from make fsm-go-gen"
+      "path": "legacy/packages/go/src/**",
+      "reason": "the packages that make fsm-go-gen writes: a consumer of the Go module github.com/polyspec/fsm/packages/go installed the tagged tree packages/go/vX.Y.Z of a release before plan f6, step 3-2 moved it under legacy/, so its generated sources stay in the tree until plan V-6 (5) removes it (P34, S-371); make layout-check fails when they differ from make fsm-go-gen"
     },
     {
-      "path": "packages/rust/src/**",
-      "reason": "the modules that make fsm-rust-gen writes: a consumer of the crate polyspec-fsm installs the tagged tree vX.Y.Z by its git tag, so its generated sources are in that tree (P34, S-371); make layout-check fails when they differ from make fsm-rust-gen"
+      "path": "legacy/packages/rust/src/**",
+      "reason": "the modules that make fsm-rust-gen writes: a consumer of the crate polyspec-fsm installed the tagged tree vX.Y.Z of a release before plan f6, step 3-2 moved it under legacy/, so its generated sources stay in the tree until plan V-6 (5) removes it (P34, S-371); make layout-check fails when they differ from make fsm-rust-gen"
     }
   ],
   "moduleFiles": [
@@ -63,7 +63,7 @@
   ],
   "exceptions": [
     {
-      "path": "packages/compiler/tests/golden/**",
+      "path": "legacy/packages/compiler/tests/golden/**",
       "reason": "the golden outputs of the compiler that its tests compare with, tracked as test fixtures (S-308)"
     }
   ],

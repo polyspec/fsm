@@ -10,7 +10,7 @@ import { normalize } from '../src/core/normalize.mjs';
 import { vectors } from '../src/core/vectors.mjs';
 import { jsonStore } from '../src/store-json/store.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const FILE = path.join(ROOT, 'contracts/conformance/vectors.json');
 const ID = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
 

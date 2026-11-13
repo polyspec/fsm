@@ -1,5 +1,5 @@
 <!-- doc-id: readme-php -->
-<!-- source-sha256: 235872ac98fe3696c4808cf1006741778747907930af7bf1c3758e863542a258 -->
+<!-- source-sha256: 41d93466fe421027598a4bf174ab56133e8738744282354a5d07e0d1861fdd2a -->
 # polyspec/fsm
 
 [English](README.md)
@@ -21,7 +21,7 @@ fsm-gen gen --project /path/to/order-machines --kind php --php-namespace 'Acme\F
 [fsm-gen] gen: ok
 ```
 
-`packages/php/composer.json`의 `autoload` block은 다음과 같다:
+`legacy/packages/php/composer.json`의 `autoload` block은 다음과 같다:
 
 ```json
 {
@@ -129,7 +129,7 @@ transaction 안에서 실행한다. row를 잠금(`forUpdate()`) 아래 읽고, 
 row를 갱신한다:
 
 ```php
-// packages/php/examples/persist.php, transition
+// legacy/packages/php/examples/persist.php, transition
 function transition(Db $db, string $module, int $id, \UnitEnum $expected, \UnitEnum $event): object
 {
     return $db->transaction(static function () use ($db, $module, $id, $expected, $event): object {
@@ -158,12 +158,12 @@ checkout에서 실행한다:
 ```sh
 make fsm-php-install   # composer install: the pinned orm release and PHPUnit 13.4.2 (composer.lock)
 make fsm-php-test      # PHPUnit through kit's run-tests
-make test-php                      # the same from the root
+make legacy-test-php                      # the same from the root
 make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `contracts/conformance/vectors.json`을 읽는 `tests/ConformanceTest.php`는 PHPUnit test
 `testConformance` 하나를 vector case마다 이름이 `<feature>__<id>`인 data set으로 실행하며, 각 data set은 손으로 쓴 `tests/ConformanceCase.php`의 검사를 실행한다. 영속화 case는 SQLite에서 `examples/persist.php`를 실행하고, `make php-persist-test-postgres`와 `make php-persist-test-mysql`은 PostgreSQL과 MySQL에서 실행한다. 생성 파일은 추적하지 않는다.
-`make fsm-php-gen`이 생성하며 `make test-php`가 먼저 실행한다. checkout의 PHP 릴리스는 8.4(`config/toolchain.json`)이며, `composer.json`의
+`make fsm-php-gen`이 생성하며 `make legacy-test-php`가 먼저 실행한다. checkout의 PHP 릴리스는 8.4(`config/toolchain.json`)이며, `composer.json`의
 `config.platform.php`는 `composerPlatforms`(config/dependency-policy.json)의 정밀도로 쓴 kit의 PHP pin 8.4.0이고, `require.php`는 `>=8.4`다.

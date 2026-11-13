@@ -92,7 +92,7 @@ toolchain-lock:
 # python-venv makes the virtual environment DIR from the python3 of mise.toml with uv venv; a venv of that Python is kept.
 .PHONY: python-venv
 python-venv:
-	@test -n "$(DIR)" || { echo "python-venv: DIR is required, for example make python-venv DIR=packages/python/.venv"; exit 1; }
+	@test -n "$(DIR)" || { echo "python-venv: DIR is required, for example make python-venv DIR=legacy/packages/python/.venv"; exit 1; }
 	$(NODE) $(KIT)/python-venv.$(KIT_EXT) $(DIR)
 
 # ---- Links and worktrees ---------------------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ text-absent:
 # kit, with the map of fsm; then Git must ignore each install folder and track no generated file except the generated sources
 # that config/generated.json tracks, which the Go module and the Rust crate release as their tagged tree (P34), and those must
 # equal what fsm-gen, a prerequisite of layout-check, has just written.
-TRACKED_GENERATED := packages/go/src packages/rust/src
+TRACKED_GENERATED := legacy/packages/go/src legacy/packages/rust/src
 layout-check:
 	@test -x $(ALINT) || { echo "layout-check: $(ALINT) is missing; run make install-tools"; exit 1; }
 	$(ALINT) check --config config/layout.yml --color never --compact .
@@ -227,9 +227,9 @@ suppression-check:
 
 # ---- Lint ------------------------------------------------------------------------------------------------------------
 # Each lint utility runs the tools of var/tools or of the kit package, and each tool reads the configuration of fsm by its own
-# discovery: .oxlintrc.json and knip.jsonc, ruff.toml and [tool.vulture] of packages/python/pyproject.toml, phpcs.xml.dist and
-# phpstan.dist.neon, .golangci.yml, and clippy.toml with the [workspace.lints] of packages/rust/Cargo.toml.
-.PHONY: lint-ts lint-php lint-python lint-go lint-rust lint-php-ext
+# discovery: .oxlintrc.json and knip.jsonc, ruff.toml and [tool.vulture] of legacy/packages/python/pyproject.toml, phpcs.xml.dist and
+# phpstan.dist.neon, .golangci.yml, and clippy.toml with the [workspace.lints] of legacy/packages/rust/Cargo.toml.
+.PHONY: lint-ts lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext legacy-lint-php-ext
 # lint-ts reads the packages of every npm folder, docs/.vitepress/config.mts among them, and the generated TypeScript, so it
 # takes the setup of the ts runtime of config/ci.json first, as CI does (S-439).
 lint-ts: deps-node fsm-js-gen
@@ -247,49 +247,57 @@ lint-go:
 lint-rust:
 	$(NODE) $(KIT)/lint-rust.$(KIT_EXT) --locked
 
-lint-php-ext:
-	$(NODE) $(KIT)/php-extension.$(KIT_EXT) check --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php
+# lint-php-ext and test-php-ext are the gates of the PHP extension that PRINCIPLES.md names (S10). The only extension is the
+# legacy one until plan f6, step 3a points them at the binding package packages/php-ext.
+lint-php-ext: legacy-lint-php-ext
+test-php-ext: legacy-test-php-ext
+legacy-lint-php-ext:
+	$(NODE) $(KIT)/php-extension.$(KIT_EXT) check --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php
 
-# ---- Build and test of the runtimes ----------------------------------------------------------------------------------
-# The tasks of each runtime that packages/ holds: runtime-targets runs the build or the unit tests of each package of the runtime
-# with the tools of its ecosystem; CASES=<pattern> is the name filter of its runner. fsm adds its own steps to a task as
-# prerequisites (test-go: fsm-go-test). The PHP extension builds with phpize into $(PHP_EXT_MODULE).
-.PHONY: build test lint build-go build-js build-php build-python build-rust build-php-ext test-go test-js test-php test-python test-rust test-php-ext
-# build, test and lint run the target of each runtime of packages/ (go, js, php, php-ext, python, rust); the lint of the
-# JavaScript package is lint-ts (kit K1106).
-build:
-	$(MAKE) --no-print-directory build-go build-js build-php build-php-ext build-python build-rust
-test:
-	$(MAKE) --no-print-directory test-go test-js test-php test-php-ext test-python test-rust
+# ---- Build and test of the legacy runtimes ---------------------------------------------------------------------------
+# The hand-written packages and the fsm-gen output are under legacy/packages until plan V-6 (5) removes them (plan f6, step 3-2).
+# Their targets are legacy-<task>-<runtime>, grouped by legacy-<task>, and build and test take legacy-build and legacy-test as
+# prerequisites (structure ST-38): runtime-targets runs the build or the unit tests of each package of the runtime with the tools
+# of its ecosystem; CASES=<pattern> is the name filter of its runner. fsm adds its own steps to a task as prerequisites
+# (legacy-test-go: fsm-go-test). The PHP extension builds with phpize into $(PHP_EXT_MODULE).
+.PHONY: build test lint legacy-build legacy-test legacy-build-go legacy-build-js legacy-build-php legacy-build-python legacy-build-rust legacy-build-php-ext legacy-test-go legacy-test-js legacy-test-php legacy-test-python legacy-test-rust legacy-test-php-ext
+# legacy-build and legacy-test run the target of each legacy runtime (go, js, php, php-ext, python, rust); lint runs the lint of
+# each runtime over the checkout, and the lint of the JavaScript package is lint-ts (kit K1106).
+build: legacy-build
+test: legacy-test
+legacy-build:
+	$(MAKE) --no-print-directory legacy-build-go legacy-build-js legacy-build-php legacy-build-php-ext legacy-build-python legacy-build-rust
+legacy-test:
+	$(MAKE) --no-print-directory legacy-test-go legacy-test-js legacy-test-php legacy-test-php-ext legacy-test-python legacy-test-rust
 lint:
 	$(MAKE) --no-print-directory lint-go lint-php lint-php-ext lint-python lint-rust lint-ts
 
 # The JavaScript and PHP packages have no build step. The runner arguments are those that kit 0.0.98 passed (kit K1094, K1106):
 # go -count=1 -timeout=0, one test at a time in node and cargo, and the 30 s test timeout of node.
-build-go:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/go -- $(GO) build ./...
-build-js build-php:
-build-python:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/python -- $(UV) build
-build-rust:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots packages/rust -- cargo build --locked
+legacy-build-go:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots legacy/packages/go -- $(GO) build ./...
+legacy-build-js legacy-build-php:
+legacy-build-python:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots legacy/packages/python -- $(UV) build
+legacy-build-rust:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) build --roots legacy/packages/rust -- cargo build --locked
 
-test-go:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner go --roots packages/go -- -count=1 -timeout=0
-test-js:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner node --roots packages/js -- --test-timeout=30000 --test-concurrency=1
-test-php:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner php --roots packages/php
-test-python:
-	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner python --roots packages/python --venv .venv
-test-rust:
-	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner cargo --roots packages/rust -- -- --test-threads=1
+legacy-test-go:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner go --roots legacy/packages/go -- -count=1 -timeout=0
+legacy-test-js:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner node --roots legacy/packages/js -- --test-timeout=30000 --test-concurrency=1
+legacy-test-php:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner php --roots legacy/packages/php
+legacy-test-python:
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner python --roots legacy/packages/python --venv .venv
+legacy-test-rust:
+	$(NODE) $(KIT)/runtime-targets.$(KIT_EXT) test --runner cargo --roots legacy/packages/rust -- -- --test-threads=1
 
-build-php-ext:
-	$(ONLINE) $(NODE) $(KIT)/php-extension.$(KIT_EXT) build --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php
+legacy-build-php-ext:
+	$(ONLINE) $(NODE) $(KIT)/php-extension.$(KIT_EXT) build --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php
 
-test-php-ext: build-php-ext
-	$(NODE) $(KIT)/php-extension.$(KIT_EXT) test --extension packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library packages/php -- --roots packages/php
+legacy-test-php-ext: legacy-build-php-ext
+	$(NODE) $(KIT)/php-extension.$(KIT_EXT) test --extension legacy/packages/php-ext --build-dir var/php-ext --skip vendor --skip node_modules --library legacy/packages/php -- --roots legacy/packages/php
 
 # ---- Bindings: generated from packages/rust/interface.json by binding (plan f6, step 3a; S-454) --------------------------------
 # The contract packages/rust/interface.json binds the public members of the crate packages/rust for the five targets php, python,
@@ -301,11 +309,9 @@ test-php-ext: build-php-ext
 # Go files zz_generated_*.go of packages/go, which Git ignores; bindings-check runs the contract check, which also compares the
 # tracked binding packages with what binding scaffold writes (binding L-2, CK-19) and the commit of polyspec-binding-core in the
 # root Cargo.lock with the commit of the cli (CK-20).
-# The binding packages and the root workspace that holds them are not tracked yet, so bindings-check names each of their files and
-# the targets that build a binding crate fail: binding scaffold writes composer.json of packages/php-ext, pyproject.toml of
-# packages/python, go.mod of packages/go and the entry packages/php-ext/src/lib.rs, which are the manifests and the generated
-# source folder of the hand-written packages of the same folders, and kit's lint-cargo-lints (config/layout.kit.yml) refuses the
-# [lints] tables that binding writes into each binding manifest. Plan f6, step 3-2 moves the hand-written packages to legacy/.
+# The binding packages and the root workspace that holds them are not tracked until plan f6, step 3a, so bindings-check names each
+# of their files and the targets that build a binding crate fail. Plan f6, step 3-2 moved the hand-written packages that held the
+# same folders to legacy/packages.
 .PHONY: bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-wasm \
 	test-python-binding test-php-binding test-go-binding
 BINDING ?=
@@ -394,8 +400,8 @@ test-php-binding: bindings packages/php-ext/vendor/composer/installed.json
 	$(RUN_TESTS) phpunit --cwd packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-binding.json --inputs packages/php-ext/generated -- generated/tests
 
 # The static library with the test features (binding GN-13b), which Go links through CGO_LDFLAGS; gofmt and go vet of the Go
-# packages of the binding, then their generated tests on go test, with the Go of mise.toml and GOTOOLCHAIN=local. The Go module
-# packages/go holds the hand-written package too, so the recipes name the packages of the binding.
+# packages of the binding, then their generated tests on go test, with the Go of mise.toml and GOTOOLCHAIN=local; the recipes name
+# the packages of the binding.
 GO_BINDING_DIRS := errors internal in_review limits order standby ticket
 GO_BINDING_PACKAGES := $(foreach dir,$(GO_BINDING_DIRS),./$(dir)/...)
 GO_BINDING_ENV := GOTOOLCHAIN=local GOPROXY=off CGO_LDFLAGS=-L$(BINDING_TARGET)/debug GOFLAGS=-tags=polyspec_panic_test,polyspec_codec_test
@@ -504,7 +510,7 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 # nothing: the own suite of ci.yml is CHECK_TARGETS without them.
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust lint-php-ext test-php-ext suppression-check
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
@@ -513,20 +519,20 @@ CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts comp
 # the stamp of the same lock content, runs nothing and needs no network. The npm stamps are var/deps/npm/<dir>-<sha256 of the lock>,
 # so a changed lock is a new stamp and an mtime cannot hide it (S-358). A target that uses a package names its file as a prerequisite,
 # so make installs what that target needs before the target's recipe and nothing else. go and cargo leave no file of their own:
-# their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the pylock.toml of packages/python and on the
+# their stamps are var/deps/go and var/deps/rust. The python environment is keyed on the pylock.toml of legacy/packages/python and on the
 # Python 3.14 that install-tools installs with mise, whose shim is var/tools/mise/shims/python3 (S-41, S-44-2).
 # install builds every dependency, with the toolchains of install-tools. ONLINE marks each download.
 # npm_stamp is the stamp of the npm install of the directory $(1): the first 16 hex digits of the sha256 of its lock.
 npm_stamp = var/deps/npm/$(subst /,-,$(1))-$(shell shasum -a 256 $(1)/package-lock.json | cut -c1-16)
-NPM_DEP := $(call npm_stamp,packages/js)
-PHP_DEP := packages/php/vendor/composer/installed.json
-PHP_EXT_DEP := packages/php-ext/vendor/composer/installed.json
+NPM_DEP := $(call npm_stamp,legacy/packages/js)
+PHP_DEP := legacy/packages/php/vendor/composer/installed.json
+PHP_EXT_DEP := legacy/packages/php-ext/vendor/composer/installed.json
 PYTHON_BIN := $(KIT_TOOLS)/mise/shims/python3
-PYTHON_DEP := packages/python/.venv/.installed
-PYTHON_LOCK := packages/python/pylock.toml
+PYTHON_DEP := legacy/packages/python/.venv/.installed
+PYTHON_LOCK := legacy/packages/python/pylock.toml
 GO_DEP := var/deps/go
 RUST_DEP := var/deps/rust
-DB_DEP := $(call npm_stamp,packages/db)
+DB_DEP := $(call npm_stamp,legacy/packages/db)
 GUI_DEP := $(call npm_stamp,packages/gui)
 DOCS_DEP := $(call npm_stamp,docs)
 # The npm projects install first: the PHP and Python installs run install-link, which needs every linked project installed.
@@ -534,16 +540,16 @@ DOCS_DEP := $(call npm_stamp,docs)
 # in place of a link of .links (P30).
 PACKAGE_DEPS := $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP) $(PHP_DEP) $(PHP_EXT_DEP) $(PYTHON_DEP) $(GO_DEP) $(RUST_DEP)
 
-$(NPM_DEP): packages/js/package-lock.json
+$(NPM_DEP): legacy/packages/js/package-lock.json
 	mkdir -p $(dir $@)
 	$(ONLINE) $(MAKE) fsm-js-install
 	touch $@
 
-$(PHP_DEP): packages/php/composer.lock packages/php/composer.json
+$(PHP_DEP): legacy/packages/php/composer.lock legacy/packages/php/composer.json
 	$(ONLINE) $(MAKE) fsm-php-install
 	touch $@
 
-$(PHP_EXT_DEP): packages/php-ext/composer.lock packages/php-ext/composer.json
+$(PHP_EXT_DEP): legacy/packages/php-ext/composer.lock legacy/packages/php-ext/composer.json
 	$(ONLINE) $(MAKE) fsm-php-ext-install
 	touch $@
 
@@ -564,20 +570,20 @@ deps-rust: $(RUST_DEP)
 
 deps-node: $(NPM_DEP) $(DB_DEP) $(GUI_DEP) $(DOCS_DEP)
 
-$(GO_DEP): packages/go/go.sum
+$(GO_DEP): legacy/packages/go/go.sum
 	mkdir -p $(dir $@)
 	$(ONLINE) $(MAKE) fsm-go-install
 	touch $@
 
-$(RUST_DEP): packages/rust/Cargo.lock
+$(RUST_DEP): legacy/packages/rust/Cargo.lock
 	mkdir -p $(dir $@)
 	$(ONLINE) $(MAKE) fsm-rust-install
 	touch $@
 
-$(DB_DEP): packages/db/package-lock.json
+$(DB_DEP): legacy/packages/db/package-lock.json
 	mkdir -p $(dir $@)
-	cd packages/db && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
-	$(MAKE) --no-print-directory install-link PROJECT=packages/db
+	cd legacy/packages/db && $(ONLINE) $(NPM) ci --allow-remote=root --no-audit --no-fund
+	$(MAKE) --no-print-directory install-link PROJECT=legacy/packages/db
 	touch $@
 
 # The GUI installs after the db packages, because its tests run the db store (order only: a db install does not reinstall the GUI).
@@ -595,13 +601,13 @@ $(DOCS_DEP): docs/package-lock.json
 
 # ---- Runtime packages (K245, S-44): the install, gen, build, clean and test of each runtime package are targets of this Makefile,
 # named fsm-<package>-<task> with the folder name of the package. gen writes the generated files of the package, which no checkout tracks.
-# The tasks of each runtime above join them by a prerequisite (test-go: fsm-go-test, K246-2).
-FSM_GEN := $(NODE) packages/compiler/src/cli/fsm-gen.mjs
+# The tasks of each runtime above join them by a prerequisite (legacy-test-go: fsm-go-test, K246-2).
+FSM_GEN := $(NODE) legacy/packages/compiler/src/cli/fsm-gen.mjs
 GO_MODULE := github.com/polyspec/fsm/packages/go
 PHP_NAMESPACE := Polyspec\FsmTest
 PHP_EXT_NAME := polyspec_fsm
 PHP_EXT_MODULE := var/php-ext/$(PHP_EXT_NAME).so
-PY_VENV := packages/python/.venv
+PY_VENV := legacy/packages/python/.venv
 # uv is the one of config/toolchain.json that install-tools installs (S-44-2), never a uv of PATH.
 UV := $(KIT_TOOLS)/mise/shims/uv
 # The tools of the packages, by the absolute path of their shims, so a recipe never runs a tool of the machine's PATH.
@@ -611,69 +617,69 @@ COMPOSER := $(KIT_TOOLS)/mise/shims/composer
 # fsm-go-install downloads the modules that go.mod and go.sum name (the orm release and orm-gen); gen and test need them.
 .PHONY: deps-go fsm-go-install fsm-go-gen fsm-go-test
 fsm-go-install:
-	cd packages/go && $(GO) mod download
+	cd legacy/packages/go && $(GO) mod download
 
 fsm-go-gen: $(GO_DEP)
 fsm-go-gen:
-	$(FSM_GEN) gen --project contracts --kind go --go-module $(GO_MODULE) --out packages/go/src
-	# orm-gen runs go in the module of its output directory, so it runs in packages/go.
-	mkdir -p packages/go/examples
-	cd packages/go && $(GO) tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...
+	$(FSM_GEN) gen --project contracts --kind go --go-module $(GO_MODULE) --out legacy/packages/go/src
+	# orm-gen runs go in the module of its output directory, so it runs in legacy/packages/go.
+	mkdir -p legacy/packages/go/examples
+	cd legacy/packages/go && $(GO) tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...
 
 # fsm-go-test runs the conformance cases and the persist example with GOPROXY=off, so that the modules must already be downloaded.
 fsm-go-test: $(GO_DEP) fsm-go-gen
-	GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests
+	GOPROXY=off $(RUN_TESTS) go --cwd legacy/packages/go --results .results/go.json --inputs legacy/packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests
 
 # fsm-js-install installs the dependencies of package-lock.json (the orm release); gen and test need them. It links the project
 # right after npm ci (P30), as the PHP and Python installs do, so the copies of the tracked lock never replace the links (S-366-1).
 .PHONY: fsm-js-install fsm-js-gen fsm-js-test
 fsm-js-install:
-	cd packages/js && $(NPM) ci --allow-remote=root --no-audit --no-fund
-	$(MAKE) --no-print-directory install-link PROJECT=packages/js
+	cd legacy/packages/js && $(NPM) ci --allow-remote=root --no-audit --no-fund
+	$(MAKE) --no-print-directory install-link PROJECT=legacy/packages/js
 
 fsm-js-gen: $(NPM_DEP)
 fsm-js-gen:
-	$(FSM_GEN) gen --project contracts --kind npm --out packages/js/src
-	packages/js/node_modules/.bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/js/examples/model
+	$(FSM_GEN) gen --project contracts --kind npm --out legacy/packages/js/src
+	legacy/packages/js/node_modules/.bin/orm-gen gen --set contracts/schema/dbspec-set.json --out legacy/packages/js/examples/model
 
 # fsm-js-test runs the conformance cases of the npm package; the kit reporter names every file from the checkout root. The cases
-# import the dialect helper of packages/db/tests, which imports the models that fsm-db-gen writes, so it names that target (HR-85).
+# import the dialect helper of legacy/packages/db/tests, which imports the models that fsm-db-gen writes, so it names that target (HR-85).
 fsm-js-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
-	$(RUN_TESTS) node --results .results/npm.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --test-concurrency=1 packages/js/tests/conformance.test.mjs
+	$(RUN_TESTS) node --results .results/npm.json --inputs legacy/packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --test-concurrency=1 legacy/packages/js/tests/conformance.test.mjs
 
-# fsm-php-install installs the Composer dependencies of packages/php from the release packages.json of composer.json (K865,
+# fsm-php-install installs the Composer dependencies of legacy/packages/php from the release packages.json of composer.json (K865,
 # K871), then installs the dependencies of composer.lock, and links right after the install (P30), so the vendor
 # installed from the tracked lock never replaces the links.
 .PHONY: fsm-php-install fsm-php-gen fsm-php-test
 fsm-php-install:
-	cd packages/php && $(COMPOSER) install --no-interaction --no-progress
+	cd legacy/packages/php && $(COMPOSER) install --no-interaction --no-progress
 	$(MAKE) --no-print-directory install-tools TOOLS=uv
 	$(MAKE) --no-print-directory install-link
 
 fsm-php-gen: $(PHP_DEP)
 fsm-php-gen:
-	$(FSM_GEN) gen --project contracts --kind php --php-namespace '$(PHP_NAMESPACE)' --out packages/php/src
-	packages/php/vendor/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/php/examples/model --namespace '$(PHP_NAMESPACE)\Model'
+	$(FSM_GEN) gen --project contracts --kind php --php-namespace '$(PHP_NAMESPACE)' --out legacy/packages/php/src
+	legacy/packages/php/vendor/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out legacy/packages/php/examples/model --namespace '$(PHP_NAMESPACE)\Model'
 
-# fsm-php-test runs phpunit on the tests of packages/php (the conformance cases and the persist example).
+# fsm-php-test runs phpunit on the tests of legacy/packages/php (the conformance cases and the persist example).
 fsm-php-test: $(PHP_DEP) fsm-php-gen
-	$(RUN_TESTS) phpunit --cwd packages/php --results .results/php.json --inputs packages/php --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests
+	$(RUN_TESTS) phpunit --cwd legacy/packages/php --results .results/php.json --inputs legacy/packages/php --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests
 
-# fsm-php-ext-install is the install of the extension: the same Composer packages as packages/php (composer.lock).
+# fsm-php-ext-install is the install of the extension: the same Composer packages as legacy/packages/php (composer.lock).
 .PHONY: fsm-php-ext-install fsm-php-ext-gen
 fsm-php-ext-install:
-	cd packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
+	cd legacy/packages/php-ext && $(COMPOSER) install --no-interaction --no-progress
 	$(MAKE) --no-print-directory install-tools TOOLS=uv
 	$(MAKE) --no-print-directory install-link
 
 # fsm-php-ext-gen writes the generated files of the extension (src/): fsm-gen writes the C files and the stub, and scripts/php-ext-arginfo.mts
-# writes the arginfo header from the stub with the gen_stub.php of the PHP (ONLINE: it downloads its PHP-Parser once; S-379, as orm does). The extension has no test of its own: test-php-ext runs the
-# PHPUnit files of packages/php with the extension that build-php-ext built from src/, so the model of the php package is
+# writes the arginfo header from the stub with the gen_stub.php of the PHP (ONLINE: it downloads its PHP-Parser once; S-379, as orm does). The extension has no test of its own: legacy-test-php-ext runs the
+# PHPUnit files of legacy/packages/php with the extension that legacy-build-php-ext built from src/, so the model of the php package is
 # generated first.
 fsm-php-ext-gen: $(PHP_EXT_DEP) fsm-php-gen
 fsm-php-ext-gen:
-	mkdir -p packages/php-ext/src
-	$(FSM_GEN) gen --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --php-ext-name $(PHP_EXT_NAME) --out packages/php-ext/src
+	mkdir -p legacy/packages/php-ext/src
+	$(FSM_GEN) gen --project contracts --kind php-ext --php-namespace '$(PHP_NAMESPACE)' --php-ext-name $(PHP_EXT_NAME) --out legacy/packages/php-ext/src
 	$(NODE) scripts/php-ext-arginfo.mts
 
 # fsm-python-install makes the venv .venv with the Python of the checkout, var/tools/mise/shims/python3, which install-tools
@@ -688,29 +694,29 @@ fsm-python-install:
 	@$(PYTHON_BIN) -c 'import sys; sys.exit(0 if sys.version_info[:2] == (3, 14) else "PYTHON must be Python 3.14, it is " + sys.version.split()[0])' || { echo "fsm-python-install: run make install-tools at the root first"; exit 1; }
 	rm -rf $(PY_VENV)
 	$(MAKE) python-venv DIR=$(PY_VENV)
-	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy -r packages/python/pylock.toml
+	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy -r legacy/packages/python/pylock.toml
 	$(MAKE) install-link
 	$(MAKE) fsm-python-src
-	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/python/examples/model
-	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps packages/python
-	rm -rf packages/python/build
+	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out legacy/packages/python/examples/model
+	$(UV) pip install --python $(PY_VENV)/bin/python --link-mode copy --no-deps legacy/packages/python
+	rm -rf legacy/packages/python/build
 	$(MAKE) install-link
 
-# fsm-python-src generates the ignored src/polyspec_fsm of packages/python with node alone: the package build of a clean checkout
+# fsm-python-src generates the ignored src/polyspec_fsm of legacy/packages/python with node alone: the package build of a clean checkout
 # (CI, a worktree) needs it before the install, and it needs no venv, so the install does not depend on the venv.
 .PHONY: fsm-python-src
 fsm-python-src:
-	$(FSM_GEN) gen --project contracts --kind python --out packages/python/src/polyspec_fsm
+	$(FSM_GEN) gen --project contracts --kind python --out legacy/packages/python/src/polyspec_fsm
 
-# build-python of a fresh worktree builds packages/python, which needs its generated sources first (S-337).
-build-python: fsm-python-src
+# legacy-build-python of a fresh worktree builds legacy/packages/python, which needs its generated sources first (S-337).
+legacy-build-python: fsm-python-src
 
 # No bytecode: a __pycache__ written into src/ is a file without the generated header, which gen refuses.
 fsm-python-gen: $(PYTHON_DEP)
 fsm-python-gen: export PYTHONDONTWRITEBYTECODE := 1
 fsm-python-gen:
 	$(MAKE) --no-print-directory fsm-python-src
-	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out packages/python/examples/model
+	$(PY_VENV)/bin/orm-gen gen --set contracts/schema/dbspec-set.json --out legacy/packages/python/examples/model
 
 # fsm-python-test runs the tests through the kit runner with --venv, which runs the venv interpreter only when pyvenv.cfg names the
 # install-tools Python; it runs from the checkout root with root-relative paths.
@@ -718,21 +724,21 @@ fsm-python-test: $(PYTHON_DEP) fsm-python-gen
 fsm-python-test: export PYTHONDONTWRITEBYTECODE := 1
 fsm-python-test:
 	@test -x $(PY_VENV)/bin/python || { echo "fsm-python-test: $(PY_VENV) is missing; run make install first"; exit 1; }
-	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv $(CURDIR)/$(PY_VENV) --results .results/python.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests
+	PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv $(CURDIR)/$(PY_VENV) --results .results/python.json --inputs legacy/packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s legacy/packages/python/tests -t legacy/packages/python/tests
 
 # fsm-rust-install fetches the crates of Cargo.lock (the orm release from its git tag); gen and test need them.
 .PHONY: fsm-rust-install fsm-rust-gen fsm-rust-test
 fsm-rust-install:
-	cargo fetch --locked --manifest-path packages/rust/Cargo.toml
+	cargo fetch --locked --manifest-path legacy/packages/rust/Cargo.toml
 
 # The orm models of contracts/schema/persist.dbs are written by build.rs into OUT_DIR, so gen writes no model directory: that is the
 # declared difference of rust.
 fsm-rust-gen:
-	$(FSM_GEN) gen --project contracts --kind rust --out packages/rust/src
+	$(FSM_GEN) gen --project contracts --kind rust --out legacy/packages/rust/src
 
-# fsm-rust-test runs cargo on the conformance test of packages/rust through the kit reporter.
+# fsm-rust-test runs cargo on the conformance test of legacy/packages/rust through the kit reporter.
 fsm-rust-test: $(RUST_DEP) fsm-rust-gen
-	$(RUN_TESTS) cargo --results .results/rust.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance -- --test-threads=1
+	$(RUN_TESTS) cargo --results .results/rust.json --inputs legacy/packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path legacy/packages/rust/Cargo.toml --test conformance -- --test-threads=1
 
 # fsm-gen generates the files of every kind, which no checkout tracks: fsm-gen and orm-gen write them (AGENTS.md, Generated files). The
 # gate that reads them (the layout) and every test of a kind depend on the gen of
@@ -764,13 +770,13 @@ make-install-test:
 # package-names-test runs the tests of the polyspec names of the released runtimes (tests/package-names, S-410): the TS runtime, the Python
 # wheel and the Rust crate name their packages polyspec-fsm, as the other polyspec packages do.
 package-names-test:
-	$(RUN_TESTS) node --results .results/package-names-test.json --inputs packages/js/package.json --inputs packages/python/pyproject.toml --inputs packages/rust/Cargo.toml --inputs tests/package-names -- --test-concurrency=1 $(or $(TESTS),tests/package-names/package-names.test.mts)
+	$(RUN_TESTS) node --results .results/package-names-test.json --inputs legacy/packages/js/package.json --inputs legacy/packages/python/pyproject.toml --inputs legacy/packages/rust/Cargo.toml --inputs tests/package-names -- --test-concurrency=1 $(or $(TESTS),tests/package-names/package-names.test.mts)
 
 # workflows-test runs the tests of the CI and Pages workflows (.github/workflows): every action is pinned to a verified commit,
 # the check job runs make install and make check with the services of plan C-6, and each version comes from the file that
 # declares it (docs/plans/fsm-v1/plan.md, C-10; docs/plans/fsm-v1/checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
-	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts
+	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs legacy/packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts
 
 # name-test runs the tests of scripts/check-name.mts; name-check fails while a tracked file or path names the library by its old
 # outside the allowlist of the checker (docs/plans/fsm-v1/checklist.md, S-18; the library is named fsm).
@@ -802,10 +808,10 @@ docs-build: $(DOCS_DEP)
 docs-build-test: $(DOCS_DEP)
 	$(RUN_TESTS) node --results .results/docs-build-test.json --inputs docs --inputs packages --inputs tests/docs-build --inputs README.md --inputs README.ko.md --inputs AGENTS.md --inputs AGENTS.ko.md --inputs CHANGELOG.md --inputs CHANGELOG.ko.md -- --test-concurrency=1 tests/docs-build
 
-# compiler-test runs the tests of packages/compiler, the core validation of a definition (docs/plans/fsm-v1/plan.md, C-5)
+# compiler-test runs the tests of legacy/packages/compiler, the core validation of a definition (docs/plans/fsm-v1/plan.md, C-5)
 # with the editor schema contracts/schema/fsm.schema.json, which the tests check against the core.
 compiler-test:
-	$(RUN_TESTS) node --results .results/compiler-test.json --inputs packages/compiler --inputs contracts -- --test-concurrency=1 packages/compiler/tests
+	$(RUN_TESTS) node --results .results/compiler-test.json --inputs legacy/packages/compiler --inputs contracts -- --test-concurrency=1 legacy/packages/compiler/tests
 
 # db-test-postgres and db-test-mysql run the DB store tests on the server dialects that the documents name (docs/plans/fsm-v1/plan.md, C-6):
 # db-store.test.mjs and store-contract-all.test.mjs, which open the database of FSM_TEST_PG_DSN or FSM_TEST_MYSQL_DSN through the dialect
@@ -813,36 +819,36 @@ compiler-test:
 # command tests (cli.test.mjs, command.test.mjs) run on the same dialect with an empty database of their own, which the admin DSN
 # (FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_ADMIN_DSN) creates and drops (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md,
 # S-37-2). The files share the server, so they run one after the other.
-DB_DIALECT_TESTS := packages/db/tests/db-store.test.mjs packages/db/tests/store-contract-all.test.mjs packages/db/tests/cli.test.mjs packages/db/tests/command.test.mjs
+DB_DIALECT_TESTS := legacy/packages/db/tests/db-store.test.mjs legacy/packages/db/tests/store-contract-all.test.mjs legacy/packages/db/tests/cli.test.mjs legacy/packages/db/tests/command.test.mjs
 db-test-postgres: $(DB_DEP) fsm-db-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
 	@$(call require_dsn,FSM_TEST_PG_ADMIN_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/db-test-postgres.json --inputs legacy/packages/db/src --inputs legacy/packages/db/tests --inputs legacy/packages/db/package.json --inputs legacy/packages/db/package-lock.json --inputs legacy/packages/db/schema --inputs legacy/packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
 
 db-test-mysql: $(DB_DEP) fsm-db-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
 	@$(call require_dsn,FSM_TEST_MYSQL_ADMIN_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/db-test-mysql.json --inputs legacy/packages/db/src --inputs legacy/packages/db/tests --inputs legacy/packages/db/package.json --inputs legacy/packages/db/package-lock.json --inputs legacy/packages/db/schema --inputs legacy/packages/compiler -- --test-concurrency=1 --test-concurrency=1 $(DB_DIALECT_TESTS)
 
-# fsm-db-gen writes the models of packages/db/src/models with the orm-gen of its package (npm run gen): they are generated output, and
+# fsm-db-gen writes the models of legacy/packages/db/src/models with the orm-gen of its package (npm run gen): they are generated output, and
 # no checkout tracks them (AGENTS.md, Generated files). The db store, its tests, the GUI and the dialect helper of the npm persist
 # tests import them, so every target that runs one of those depends on it.
 .PHONY: fsm-db-gen
 fsm-db-gen: $(DB_DEP)
-	cd packages/db && $(NPM) run gen
+	cd legacy/packages/db && $(NPM) run gen
 
-# db-deps installs the packages of packages/db (orm and ordered-json from their release tarballs, pinned in its
-# package-lock.json). db-test runs the tests of packages/db: the DB store against the store contract, the round trips
-# of json and db, the atomicity of save, the CLI, on the models that fsm-db-gen writes from packages/db/schema/fsm.dbs
+# db-deps installs the packages of legacy/packages/db (orm and ordered-json from their release tarballs, pinned in its
+# package-lock.json). db-test runs the tests of legacy/packages/db: the DB store against the store contract, the round trips
+# of json and db, the atomicity of save, the CLI, on the models that fsm-db-gen writes from legacy/packages/db/schema/fsm.dbs
 # (docs/plans/fsm-v1/plan.md, C-6).
 db-deps: $(DB_DEP)
 
 db-test: $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --results .results/db-test.json --inputs packages/db/src --inputs packages/db/tests --inputs packages/db/package.json --inputs packages/db/package-lock.json --inputs packages/db/schema --inputs packages/compiler -- --test-concurrency=1 packages/db/tests
+	$(RUN_TESTS) node --results .results/db-test.json --inputs legacy/packages/db/src --inputs legacy/packages/db/tests --inputs legacy/packages/db/package.json --inputs legacy/packages/db/package-lock.json --inputs legacy/packages/db/schema --inputs legacy/packages/compiler -- --test-concurrency=1 legacy/packages/db/tests
 
 # gui-deps installs the packages of packages/gui (hyper v0.0.13, crudui v0.0.5, the template v0.0.5, mermaid, htmx and
 # yaml, pinned in its package.json and package-lock.json; docs/plans/fsm-v1/plan.md, C-1). The db store of the GUI is the one of
-# packages/db, whose orm packages db-deps installs first.
+# legacy/packages/db, whose orm packages db-deps installs first.
 gui-deps: $(GUI_DEP)
 
 # gui-build builds the browser assets of the GUI with the hyper v0.0.13 asset build: the templates, the client bundle that holds
@@ -856,7 +862,7 @@ gui-build: $(GUI_DEP)
 # built application, the store selection and the pinned Mermaid parse test. The compiler sources are inputs of the GUI. The
 # browser test is in tests/browser and runs with gui-browser-test, so gui-test takes the test files of tests/ only.
 gui-test: gui-build $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --results .results/gui-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 $(wildcard packages/gui/tests/*.test.mjs)
+	$(RUN_TESTS) node --results .results/gui-test.json --inputs packages/gui --inputs legacy/packages/compiler/src --inputs legacy/packages/db -- --test-concurrency=1 $(wildcard packages/gui/tests/*.test.mjs)
 
 # GUI_BROWSERS is the stamp of the Chromium that the GUI browser test drives, keyed on the Playwright version that
 # packages/gui/package-lock.json pins (devDependency, exact). A new version is a new stamp, so it downloads once; a later run
@@ -878,63 +884,64 @@ gui-browsers: $(GUI_BROWSERS)
 # gui-browser-test runs the tests of tests/browser (browser.test.mjs, diagram.test.mjs; S-38 adds the drawn diagram) of packages/gui: the GUI forms in a headless Chromium on a temporary project
 # (docs/plans/fsm-v1/checklist.md, S-22-1 and S-22-2). It needs the browser of gui-browsers and the built assets of gui-build.
 gui-browser-test: $(GUI_BROWSERS) gui-build $(DB_DEP) fsm-db-gen
-	$(RUN_TESTS) node --results .results/gui-browser-test.json --inputs packages/gui --inputs packages/compiler/src --inputs packages/db -- --test-concurrency=1 packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
+	$(RUN_TESTS) node --results .results/gui-browser-test.json --inputs packages/gui --inputs legacy/packages/compiler/src --inputs legacy/packages/db -- --test-concurrency=1 packages/gui/tests/browser/browser.test.mjs packages/gui/tests/browser/diagram.test.mjs
 
-# packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1/plan.md, Verification).
+# packages-test runs the test of every kind with make -j6 (docs/plans/fsm-v1/plan.md, Verification); the PHP extension runs through
+# test-php-ext, its gate of PRINCIPLES.md (S10), which runs legacy-test-php-ext until plan f6, step 3a.
 packages-test:
-	$(MAKE) -j6 test-go test-js test-php test-php-ext test-python test-rust
+	$(MAKE) -j6 legacy-test-go legacy-test-js legacy-test-php test-php-ext legacy-test-python legacy-test-rust
 
-# test-js is the task of its runtime (Build and test of the runtimes); the tests of packages/js are its prerequisite (K246).
-test-js: fsm-js-test
+# legacy-test-js is the task of its runtime (Build and test of the runtimes); the tests of legacy/packages/js are its prerequisite (K246).
+legacy-test-js: fsm-js-test
 
-# npm-persist-test runs the persist cases of packages/js on a dialect: the persist vector cases of tests/conformance.test.mjs and
+# npm-persist-test runs the persist cases of legacy/packages/js on a dialect: the persist vector cases of tests/conformance.test.mjs and
 # tests/persist.test.mjs, whose two transitions of one row give one Changed and one Unchanged or one E_CONFLICT, and whose
 # deadlock runs the transaction again while another database error does not (docs/spec/fsm.md, B-4; docs/plans/fsm-v1/plan.md, C-4).
 # The three targets run them on each dialect: sqlite (a temporary file), postgres (FSM_TEST_PG_DSN) and mysql (FSM_TEST_MYSQL_DSN).
 # The two files run one after the other: on a server dialect they share the persist table, which each case clears.
-NPM_PERSIST_TESTS := --test-concurrency=1 --test-name-pattern=persist packages/js/tests/conformance.test.mjs packages/js/tests/persist.test.mjs
+NPM_PERSIST_TESTS := --test-concurrency=1 --test-name-pattern=persist legacy/packages/js/tests/conformance.test.mjs legacy/packages/js/tests/persist.test.mjs
 npm-persist-test: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
-	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=sqlite $(RUN_TESTS) node --results .results/npm-persist-test.json --inputs legacy/packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs legacy/packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 npm-persist-test-postgres: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) node --results .results/npm-persist-test-postgres.json --inputs legacy/packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs legacy/packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 npm-persist-test-mysql: $(NPM_DEP) $(DB_DEP) fsm-js-gen fsm-db-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) node --results .results/npm-persist-test-mysql.json --inputs legacy/packages/js --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json --inputs legacy/packages/db/tests/dialect.mjs -- --test-concurrency=1 $(NPM_PERSIST_TESTS)
 
 # npm-types runs tests/npm-types: tsc compiles tests/npm-types/consumer.ts against the generated
 # declarations in strict mode, so a wrong declaration fails (docs/plans/fsm-v1/checklist.md, S-09-2). It is a tool test with
 # its own record, so the conformance test of the npm kind holds only vector cases.
 npm-types: $(NPM_DEP) fsm-js-gen
-	$(RUN_TESTS) node --results .results/npm-types.json --inputs packages/js -- --test-concurrency=1 tests/npm-types
+	$(RUN_TESTS) node --results .results/npm-types.json --inputs legacy/packages/js -- --test-concurrency=1 tests/npm-types
 
 
-# test-go is the task of its runtime (Build and test of the runtimes); the tests of packages/go are its prerequisite (K246-2).
-test-go: fsm-go-test
+# legacy-test-go is the task of its runtime (Build and test of the runtimes); the tests of legacy/packages/go are its prerequisite (K246-2).
+legacy-test-go: fsm-go-test
 
-# test-php is the task of its runtime (Build and test of the runtimes); the tests of packages/php are its prerequisite (K246-2).
-test-php: fsm-php-test
+# legacy-test-php is the task of its runtime (Build and test of the runtimes); the tests of legacy/packages/php are its prerequisite (K246-2).
+legacy-test-php: fsm-php-test
 
-# test-rust is the task of its runtime (Build and test of the runtimes); the tests of packages/rust are its prerequisite (K246-2).
-test-rust: fsm-rust-test
-# rust-persist-test runs tests/persist.rs of packages/rust on sqlite: two transitions of one row at the same time, and a deadlock
+# legacy-test-rust is the task of its runtime (Build and test of the runtimes); the tests of legacy/packages/rust are its prerequisite (K246-2).
+legacy-test-rust: fsm-rust-test
+# rust-persist-test runs tests/persist.rs of legacy/packages/rust on sqlite: two transitions of one row at the same time, and a deadlock
 # runs the persistence transaction again while another database error does not (docs/spec/fsm.md, B-4; S-31, S-44-9).
 rust-persist-test: $(RUST_DEP) fsm-rust-gen
-	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test persist -- --test-threads=1
+	$(RUN_TESTS) cargo --results .results/rust-persist-test.json --inputs legacy/packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path legacy/packages/rust/Cargo.toml --test persist -- --test-threads=1
 # python-tools-test runs the tests of the Python of the checkout (tests/python-tools, S-41): the interpreter var/tools/mise/shims/python3
 # is made by install-tools, no recipe installs an interpreter with uv, there is no install-python target, and config/toolchain.json
 # declares the pythonBuild. It runs make -n on a copy of the Makefile, with no network and nothing installed.
 python-tools-test:
 	$(RUN_TESTS) node --results .results/python-tools-test.json --inputs Makefile --inputs config/toolchain.json --inputs tests/python-tools -- --test-concurrency=1 tests/python-tools
 
-# test-python is the task of its runtime (Build and test of the runtimes); the tests of packages/python are its prerequisite (K246-2).
-test-python: fsm-python-test
+# legacy-test-python is the task of its runtime (Build and test of the runtimes); the tests of legacy/packages/python are its prerequisite (K246-2).
+legacy-test-python: fsm-python-test
 
-# test-php-ext is the task of its runtime (Build and test of the runtimes); the tests of packages/php-ext are its prerequisite (K246-2).
-test-php-ext: fsm-php-ext-gen
-build-php-ext: fsm-php-ext-gen
+# legacy-test-php-ext is the task of its runtime (Build and test of the runtimes); the tests of legacy/packages/php-ext are its prerequisite (K246-2).
+legacy-test-php-ext: fsm-php-ext-gen
+legacy-build-php-ext: fsm-php-ext-gen
 
 # ---- Persist cases on the server dialects (docs/spec/fsm.md, B-4; docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-37-1)
 # Each kind runs its persist cases on PostgreSQL and MySQL with the DSN variables of npm (FSM_TEST_PG_DSN, FSM_TEST_MYSQL_DSN). The
@@ -946,48 +953,48 @@ endef
 
 go-persist-test-postgres: $(GO_DEP) fsm-go-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-postgres.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests -run 'TestConformance/test_persist__|TestPersist'
+	FSM_TEST_DIALECT=postgres GOPROXY=off $(RUN_TESTS) go --cwd legacy/packages/go --results .results/go-persist-test-postgres.json --inputs legacy/packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests -run 'TestConformance/test_persist__|TestPersist'
 
 go-persist-test-mysql: $(GO_DEP) fsm-go-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd packages/go --results .results/go-persist-test-mysql.json --inputs packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests -run 'TestConformance/test_persist__|TestPersist'
+	FSM_TEST_DIALECT=mysql GOPROXY=off $(RUN_TESTS) go --cwd legacy/packages/go --results .results/go-persist-test-mysql.json --inputs legacy/packages/go --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- -count=1 -timeout=0 ./tests -run 'TestConformance/test_persist__|TestPersist'
 
 rust-persist-test-postgres: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist -- --test-threads=1
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) cargo --results .results/rust-persist-test-postgres.json --inputs legacy/packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path legacy/packages/rust/Cargo.toml --test conformance --test persist persist -- --test-threads=1
 
 rust-persist-test-mysql: $(RUST_DEP) fsm-rust-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path packages/rust/Cargo.toml --test conformance --test persist persist -- --test-threads=1
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) cargo --results .results/rust-persist-test-mysql.json --inputs legacy/packages/rust --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- --manifest-path legacy/packages/rust/Cargo.toml --test conformance --test persist persist -- --test-threads=1
 
 php-persist-test-postgres: $(PHP_DEP) fsm-php-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-postgres.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --cwd legacy/packages/php --results .results/php-persist-test-postgres.json --inputs legacy/packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
 php-persist-test-mysql: $(PHP_DEP) fsm-php-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --cwd packages/php --results .results/php-persist-test-mysql.json --inputs packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --cwd legacy/packages/php --results .results/php-persist-test-mysql.json --inputs legacy/packages/php --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
-php-ext-persist-test-postgres: $(PHP_EXT_DEP) fsm-php-gen build-php-ext
+php-ext-persist-test-postgres: $(PHP_EXT_DEP) fsm-php-gen legacy-build-php-ext
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php --results .results/php-ext-persist-test-postgres.json --inputs packages/php --inputs packages/compiler/src --inputs scripts/php-ext-arginfo.mts --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
+	FSM_TEST_DIALECT=postgres $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd legacy/packages/php --results .results/php-ext-persist-test-postgres.json --inputs legacy/packages/php --inputs legacy/packages/compiler/src --inputs scripts/php-ext-arginfo.mts --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
-php-ext-persist-test-mysql: $(PHP_EXT_DEP) fsm-php-gen build-php-ext
+php-ext-persist-test-mysql: $(PHP_EXT_DEP) fsm-php-gen legacy-build-php-ext
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd packages/php --results .results/php-ext-persist-test-mysql.json --inputs packages/php --inputs packages/compiler/src --inputs scripts/php-ext-arginfo.mts --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
+	FSM_TEST_DIALECT=mysql $(RUN_TESTS) phpunit --php-extension $(PHP_EXT_MODULE) --cwd legacy/packages/php --results .results/php-ext-persist-test-mysql.json --inputs legacy/packages/php --inputs legacy/packages/compiler/src --inputs scripts/php-ext-arginfo.mts --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- tests --filter '/persist/i'
 
 python-persist-test-postgres: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_PG_DSN)
-	FSM_TEST_DIALECT=postgres PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-postgres.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
+	FSM_TEST_DIALECT=postgres PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv legacy/packages/python/.venv --results .results/python-persist-test-postgres.json --inputs legacy/packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s legacy/packages/python/tests -t legacy/packages/python/tests -k persist
 
 python-persist-test-mysql: $(PYTHON_DEP) fsm-python-gen
 	@$(call require_dsn,FSM_TEST_MYSQL_DSN)
-	FSM_TEST_DIALECT=mysql PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv packages/python/.venv --results .results/python-persist-test-mysql.json --inputs packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s packages/python/tests -t packages/python/tests -k persist
+	FSM_TEST_DIALECT=mysql PYTHONUNBUFFERED=1 NO_COLOR=1 PYTHON_COLORS=0 $(RUN_TESTS) python --venv legacy/packages/python/.venv --results .results/python-persist-test-mysql.json --inputs legacy/packages/python --inputs contracts/conformance/vectors.json --inputs contracts/schema/persist.dbs --inputs contracts/schema/dbspec-set.json -- discover -s legacy/packages/python/tests -t legacy/packages/python/tests -k persist
 
-# examples-model generates the ignored examples/model of the Go examples before build-go compiles them (S-304): the build does not
-# depend on a leftover of an earlier run. It runs the orm-gen of packages/go with the Go of the checkout's tools, as fsm-go-gen does.
-build-go: examples-model
+# examples-model generates the ignored examples/model of the Go examples before legacy-build-go compiles them (S-304): the build does not
+# depend on a leftover of an earlier run. It runs the orm-gen of legacy/packages/go with the Go of the checkout's tools, as fsm-go-gen does.
+legacy-build-go: examples-model
 .PHONY: examples-model
 examples-model:
-	mkdir -p packages/go/examples
-	cd packages/go && $(KIT_TOOLS)/mise/shims/go tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...
+	mkdir -p legacy/packages/go/examples
+	cd legacy/packages/go && $(KIT_TOOLS)/mise/shims/go tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...

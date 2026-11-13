@@ -22,7 +22,7 @@ fsm-gen gen --project /path/to/order-machines --kind php --php-namespace 'Acme\F
 [fsm-gen] gen: ok
 ```
 
-The `autoload` block of `packages/php/composer.json` is:
+The `autoload` block of `legacy/packages/php/composer.json` is:
 
 ```json
 {
@@ -130,7 +130,7 @@ row. A transition runs in one transaction: the row is read under its lock (`forU
 that the caller observed, and the row is updated only when the step is changed:
 
 ```php
-// packages/php/examples/persist.php, transition
+// legacy/packages/php/examples/persist.php, transition
 function transition(Db $db, string $module, int $id, \UnitEnum $expected, \UnitEnum $event): object
 {
     return $db->transaction(static function () use ($db, $module, $id, $expected, $event): object {
@@ -159,12 +159,12 @@ From the checkout:
 ```sh
 make fsm-php-install   # composer install: the pinned orm release and PHPUnit 13.4.2 (composer.lock)
 make fsm-php-test      # PHPUnit through kit's run-tests
-make test-php                      # the same from the root
+make legacy-test-php                      # the same from the root
 make php-persist-test-postgres    # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make php-persist-test-mysql       # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 The run passes 89 of 89 cases. `tests/ConformanceTest.php`, which reads `contracts/conformance/vectors.json`, runs its one PHPUnit test
 `testConformance` on every vector case, a data set named `<feature>__<id>`, and each runs the check of the hand-written `tests/ConformanceCase.php`; the persist cases run `examples/persist.php` on SQLite, and `make php-persist-test-postgres` and `make php-persist-test-mysql` run them on PostgreSQL and MySQL. The generated files are not tracked:
-`make fsm-php-gen` writes them, and `make test-php` runs it first. The PHP release of the checkout is 8.4 (`config/toolchain.json`);
+`make fsm-php-gen` writes them, and `make legacy-test-php` runs it first. The PHP release of the checkout is 8.4 (`config/toolchain.json`);
 `config.platform.php` in `composer.json` is 8.4.0, the PHP pin of kit at the precision of `composerPlatforms` (config/dependency-policy.json), and `require.php` is `>=8.4`.

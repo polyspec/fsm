@@ -21,7 +21,8 @@ rules:
     id: layout-root-files
     vars: { root_files: "{.npmrc,knip.jsonc}" }
 
-  # The components of fsm beside the runtime ports: the compiler (fsm-gen), the DB store and the GUI (docs/plans/fsm-v1/plan.md, C-5 to C-7).
+  # The component of fsm beside the runtime ports: the GUI (docs/plans/fsm-v1/plan.md, C-7). The compiler (fsm-gen), the DB store
+  # and the hand-written runtime packages are under legacy/packages since plan f6, step 3-2.
   - id: layout-packages
     paths:
       - "packages/*"
@@ -31,9 +32,6 @@ rules:
       - "!packages/python"
       - "!packages/rust"
       - "!packages/ts"
-      - "!packages/js"
-      - "!packages/compiler"
-      - "!packages/db"
       - "!packages/gui"
 
   # The tool tests of the root: the checks of scripts/ (check-name, check-readmes), the documentation site, the
@@ -53,7 +51,7 @@ rules:
       - "!tests/php-ext-persist"
       - "!tests/python-tools"
       - "!tests/workflows"
-      # the type check of the declarations of packages/js (S-09-2, make npm-types): tsc compiles tests/npm-types/consumer.ts in strict mode against packages/js/src/*.d.ts
+      # the type check of the declarations of legacy/packages/js (S-09-2, make npm-types): tsc compiles tests/npm-types/consumer.ts in strict mode against legacy/packages/js/src/*.d.ts
       - "!tests/npm-types"
 
   # ---- The kind packages (docs/plans/fsm-v1/plan.md, C-2; S-44 moved these rules from fsm's own check-layout) ----------------
@@ -63,7 +61,7 @@ rules:
   - id: layout-go-required
     kind: for_each_dir
     level: error
-    select: "packages/go"
+    select: "legacy/packages/go"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -78,7 +76,7 @@ rules:
   - id: layout-go-folders
     kind: for_each_dir
     level: error
-    select: "packages/go"
+    select: "legacy/packages/go"
     require:
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
@@ -88,23 +86,23 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/go/**"
-      - "!packages/go/README.md"
-      - "!packages/go/README.ko.md"
-      - "!packages/go/go.mod"
-      - "!packages/go/go.sum"
-      - "!packages/go/tests/conformance_test.go"
-      - "!packages/go/tests/vectors_test.go"
-      - "!packages/go/tests/persist_test.go"
-      - "!packages/go/examples/persist.go"
+      - "legacy/packages/go/**"
+      - "!legacy/packages/go/README.md"
+      - "!legacy/packages/go/README.ko.md"
+      - "!legacy/packages/go/go.mod"
+      - "!legacy/packages/go/go.sum"
+      - "!legacy/packages/go/tests/conformance_test.go"
+      - "!legacy/packages/go/tests/vectors_test.go"
+      - "!legacy/packages/go/tests/persist_test.go"
+      - "!legacy/packages/go/examples/persist.go"
       # the generated packages, tracked: the Go module is installed as its tagged tree (P34, config/generated.json, S-371)
-      - "!packages/go/src/**"
+      - "!legacy/packages/go/src/**"
     message: "C-2: a file that the go package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-npm-required
     kind: for_each_dir
     level: error
-    select: "packages/js"
+    select: "legacy/packages/js"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -118,7 +116,7 @@ rules:
   - id: layout-npm-folders
     kind: for_each_dir
     level: error
-    select: "packages/js"
+    select: "legacy/packages/js"
     require:
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
@@ -128,20 +126,20 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/js/**"
-      - "!packages/js/README.md"
-      - "!packages/js/README.ko.md"
-      - "!packages/js/package.json"
-      - "!packages/js/package-lock.json"
-      - "!packages/js/tests/conformance.test.mjs"
-      - "!packages/js/tests/persist.test.mjs"
-      - "!packages/js/examples/persist.mjs"
+      - "legacy/packages/js/**"
+      - "!legacy/packages/js/README.md"
+      - "!legacy/packages/js/README.ko.md"
+      - "!legacy/packages/js/package.json"
+      - "!legacy/packages/js/package-lock.json"
+      - "!legacy/packages/js/tests/conformance.test.mjs"
+      - "!legacy/packages/js/tests/persist.test.mjs"
+      - "!legacy/packages/js/examples/persist.mjs"
     message: "C-2: a file that the npm package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-required
     kind: for_each_dir
     level: error
-    select: "packages/php"
+    select: "legacy/packages/php"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -156,7 +154,7 @@ rules:
   - id: layout-php-folders
     kind: for_each_dir
     level: error
-    select: "packages/php"
+    select: "legacy/packages/php"
     require:
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
@@ -166,23 +164,23 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/php/**"
-      - "!packages/php/README.md"
-      - "!packages/php/README.ko.md"
-      - "!packages/php/composer.json"
-      - "!packages/php/composer.lock"
+      - "legacy/packages/php/**"
+      - "!legacy/packages/php/README.md"
+      - "!legacy/packages/php/README.ko.md"
+      - "!legacy/packages/php/composer.json"
+      - "!legacy/packages/php/composer.lock"
       # the PHPUnit configuration of the php package: kit test-php-ext runs the package with the extension loaded and passes only a filter, so the test folder is declared here
-      - "!packages/php/phpunit.xml.dist"
-      - "!packages/php/tests/ConformanceCase.php"
-      - "!packages/php/tests/ConformanceTest.php"
-      - "!packages/php/tests/PersistTest.php"
-      - "!packages/php/examples/persist.php"
+      - "!legacy/packages/php/phpunit.xml.dist"
+      - "!legacy/packages/php/tests/ConformanceCase.php"
+      - "!legacy/packages/php/tests/ConformanceTest.php"
+      - "!legacy/packages/php/tests/PersistTest.php"
+      - "!legacy/packages/php/examples/persist.php"
     message: "C-2: a file that the php package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-rust-required
     kind: for_each_dir
     level: error
-    select: "packages/rust"
+    select: "legacy/packages/rust"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -198,7 +196,7 @@ rules:
   - id: layout-rust-folders
     kind: for_each_dir
     level: error
-    select: "packages/rust"
+    select: "legacy/packages/rust"
     require:
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
@@ -208,28 +206,26 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/rust/**"
-      - "!packages/rust/README.md"
-      - "!packages/rust/README.ko.md"
-      - "!packages/rust/Cargo.toml"
-      - "!packages/rust/Cargo.lock"
-      # the interface contract of the bindings, which binding reads beside the core crate (binding I-1, S-454)
-      - "!packages/rust/interface.json"
-      - "!packages/rust/build.rs"
-      - "!packages/rust/tests/conformance/main.rs"
-      - "!packages/rust/tests/conformance/vectors.rs"
-      - "!packages/rust/tests/persist.rs"
+      - "legacy/packages/rust/**"
+      - "!legacy/packages/rust/README.md"
+      - "!legacy/packages/rust/README.ko.md"
+      - "!legacy/packages/rust/Cargo.toml"
+      - "!legacy/packages/rust/Cargo.lock"
+      - "!legacy/packages/rust/build.rs"
+      - "!legacy/packages/rust/tests/conformance/main.rs"
+      - "!legacy/packages/rust/tests/conformance/vectors.rs"
+      - "!legacy/packages/rust/tests/persist.rs"
       # the dialect of the persist tests, the shared module of the test crates tests/conformance/ and tests/persist.rs (S-44-9)
-      - "!packages/rust/tests/common/mod.rs"
-      - "!packages/rust/examples/persist.rs"
+      - "!legacy/packages/rust/tests/common/mod.rs"
+      - "!legacy/packages/rust/examples/persist.rs"
       # the generated modules, tracked: the crate is installed as its tagged tree by its git tag (P34, config/generated.json, S-371)
-      - "!packages/rust/src/**"
+      - "!legacy/packages/rust/src/**"
     message: "C-2: a file that the rust package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-python-required
     kind: for_each_dir
     level: error
-    select: "packages/python"
+    select: "legacy/packages/python"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -244,7 +240,7 @@ rules:
   - id: layout-python-folders
     kind: for_each_dir
     level: error
-    select: "packages/python"
+    select: "legacy/packages/python"
     require:
       - { kind: file_exists, paths: "{path}/tests/**" }
       - { kind: file_exists, paths: "{path}/examples/**" }
@@ -254,25 +250,25 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/python/**"
-      - "!packages/python/README.md"
-      - "!packages/python/README.ko.md"
-      - "!packages/python/pyproject.toml"
-      - "!packages/python/constraints.txt"
-      - "!packages/python/pylock.toml"
-      - "!packages/python/tests/test_conformance.py"
-      - "!packages/python/tests/test_persist.py"
-      - "!packages/python/examples/persist.py"
+      - "legacy/packages/python/**"
+      - "!legacy/packages/python/README.md"
+      - "!legacy/packages/python/README.ko.md"
+      - "!legacy/packages/python/pyproject.toml"
+      - "!legacy/packages/python/constraints.txt"
+      - "!legacy/packages/python/pylock.toml"
+      - "!legacy/packages/python/tests/test_conformance.py"
+      - "!legacy/packages/python/tests/test_persist.py"
+      - "!legacy/packages/python/examples/persist.py"
       # the package of the examples (S3): an empty package file that makes examples an installed package, polyspec_fsm_examples
-      - "!packages/python/examples/__init__.py"
+      - "!legacy/packages/python/examples/__init__.py"
       # the package of the tests (S-395): an empty package file that unittest needs to discover them, which kit runtime-targets checks on CI
-      - "!packages/python/tests/__init__.py"
+      - "!legacy/packages/python/tests/__init__.py"
     message: "C-2: a file that the python package does not allow; add it to its canonical, required or allowed files with its reason"
 
   - id: layout-php-ext-required
     kind: for_each_dir
     level: error
-    select: "packages/php-ext"
+    select: "legacy/packages/php-ext"
     require:
       - { kind: file_exists, paths: "{path}/README.md" }
       - { kind: file_exists, paths: "{path}/README.ko.md" }
@@ -284,31 +280,25 @@ rules:
     kind: file_absent
     level: error
     paths:
-      - "packages/php-ext/**"
-      - "!packages/php-ext/README.md"
-      - "!packages/php-ext/README.ko.md"
-      - "!packages/php-ext/composer.json"
-      - "!packages/php-ext/composer.lock"
+      - "legacy/packages/php-ext/**"
+      - "!legacy/packages/php-ext/README.md"
+      - "!legacy/packages/php-ext/README.ko.md"
+      - "!legacy/packages/php-ext/composer.json"
+      - "!legacy/packages/php-ext/composer.lock"
     message: "C-2: a file that the php-ext package does not allow; add it to its canonical, required or allowed files with its reason"
 
   # ---- The exceptions of fsm to the common layout rules (S9): each exception names its reason in the comment above it ----
 
-  # The golden stub of the PHP extension is test data: packages/compiler/tests/golden/php-ext holds the expected output of
+  # The golden stub of the PHP extension is test data: legacy/packages/compiler/tests/golden/php-ext holds the expected output of
   # the compiler for the php-ext kind, which php-ext-backend.test.mjs compares with the generated files. It is not the stub
-  # of a package; the stub of the package is generated and not tracked.
+  # of a package. The stub of a package is packages/php-ext/src/*.stub.php (S10), and the legacy package keeps the place of its
+  # generated, untracked stub, legacy/packages/php-ext/src/.
   - id: php-ext-stub-place
     paths:
       - "**/*.stub.php"
-      - "!packages/compiler/tests/golden/php-ext/src/*.stub.php"
-
-  # The conformance suite of the rust package stays in the crate: Cargo's test target tests/conformance/main.rs and its
-  # module vectors.rs lie in packages/rust, the crate whose Cargo.toml names them, and build.rs and
-  # tests/common/mod.rs are shared with that crate; a suite outside the crate cannot be a target of its manifest.
-  - id: suites-at-root
-    paths:
-      - "packages/**/integration"
-      - "packages/**/conformance"
-      - "!packages/rust/tests/conformance"
+      - "!packages/php-ext/src/*.stub.php"
+      - "!legacy/packages/php-ext/src/*.stub.php"
+      - "!legacy/packages/compiler/tests/golden/php-ext/src/*.stub.php"
 
   # The VitePress site of docs/ is one npm project: docs/package.json and docs/package-lock.json are the input of npm ci in
   # docs (make docs-build, and the Pages workflow that runs it), and the site's config lies in docs/.vitepress.
@@ -335,7 +325,16 @@ rules:
   - id: runtime-language
     paths:
       - "packages/js/**/*.{ts,mts,cts,tsx}"
+      - "legacy/packages/js/**/*.{ts,mts,cts,tsx}"
       - "packages/*/js/**/*.{ts,mts,cts,tsx}"
       - "!packages/**/*.d.ts"
       - "!packages/**/*.d.mts"
       - "!packages/**/*.d.cts"
+      - "!legacy/packages/**/*.d.ts"
+      - "!legacy/packages/**/*.d.mts"
+      - "!legacy/packages/**/*.d.cts"
+
+  # The hand-written packages and the fsm-gen output are under legacy/ until plan V-6 (5) removes them (plan f6, FP-6, step 3-2;
+  # structure ST-22, ST-38), so legacy is a root folder of fsm beside the common ones.
+  - id: layout-root-folders
+    paths: ["*", "!packages", "!contracts", "!docs", "!scripts", "!tests", "!examples", "!benchmarks", "!config", "!.github", "!.githooks", "!.kit", "!.mise", "!.claude", "!legacy"]

@@ -1,5 +1,5 @@
 <!-- doc-id: readme-compiler -->
-<!-- source-sha256: 7496fd24763dbdec52a1414479332f377e1c95ce8cb653d309cbcb8e60c08fcf -->
+<!-- source-sha256: f1635ab2d7214731ad2901e207f6c77b9304ea672f50970912afb3cae8360893 -->
 # @polyspec/fsm-compiler
 
 [English](README.md)
@@ -20,7 +20,7 @@ conformance vector를 쓰고, 여섯 언어의 소스를 생성한다. 의존성
 | io | `src/io/files.mjs`, `src/io/git.mjs` | store와 cli가 쓰는 파일의 원자적 쓰기와 git 명령. `node:fs`와 `node:child_process` 위에 있다 |
 | cli | `src/cli/fsm-gen.mjs`, `src/cli/write-generated.mjs` | 명령 줄. `fsm.config.json`으로 store를 고르고, 검사 결과를 출력하고, 종료 코드를 정한다. `write-generated.mjs`는 생성 파일을 쓰고 header가 없는 파일을 거부한다 |
 
-core는 `node:`를 import하지 않으므로 GUI(`packages/gui`)가 그대로 import한다. 컴파일러의 테스트는 `packages/compiler/tests/`에
+core는 `node:`를 import하지 않으므로 GUI(`packages/gui`)가 그대로 import한다. 컴파일러의 테스트는 `legacy/packages/compiler/tests/`에
 있다(`make compiler-test`): 규칙, store, `tests/golden/`의 golden 파일과 맞춘 backend, 프로세스로 실행한 명령 줄.
 
 명령은 한 경로를 따른다: store가 정의와 lock을 읽고, core가 검사하고 lock을 대조하며, 그 뒤에야 backend나 store가 쓴다. 검사 결과가
@@ -39,7 +39,7 @@ save({ definitions, lock }) → Promise<void>
 - `save`는 정의와 lock을 쓴다. 파일마다 원자적으로 쓴다(임시 파일과 rename). 그래서 파일 하나는 옛것이거나 새것이다. 파일들 사이는
   원자적이지 않아서, 중간에 멈추면 다음 명령이 `E_LOCK_MISMATCH`로 보고한다.
 - store는 검사하지 않는다. 검사는 `run`과 `copy`의 core가 하며, store에 쓰기를 요청하기 전에 끝난다.
-- database store(`packages/db/src/db-store.mjs`의 `DbStore`)는 같은 계약을 구현하며, 모든 것을 한 transaction에 쓴다. load는 같은
+- database store(`legacy/packages/db/src/db-store.mjs`의 `DbStore`)는 같은 계약을 구현하며, 모든 것을 한 transaction에 쓴다. load는 같은
   객체를 돌려주므로, 모든 명령이 json, mermaid, db store에서 같은 결과를 준다.
 
 `run(command, store, options)`는 `check`, `lock`, `save`, `vectors`, `gen`을 실행한다. `copy(from, to)`는 `from`을 읽고, `to`가 비었는지
@@ -57,7 +57,7 @@ save({ definitions, lock }) → Promise<void>
 | `vectors --out <file>` | store | `{ machines: [{ machine, cases }] }` | `check`의 검사 결과가 있으면 멈춘다 |
 | `gen --kind <kind> --out <dir>` | store | 한 종류의 생성 파일 | `check`의 검사 결과가 있으면 멈춘다. 출력 디렉터리는 루트 README의 설명대로 쓴다 |
 
-명령 줄은 `packages/compiler/src/cli/fsm-gen.mjs`다. `--project <dir>`의 기본값은 현재 디렉터리이며, store는
+명령 줄은 `legacy/packages/compiler/src/cli/fsm-gen.mjs`다. `--project <dir>`의 기본값은 현재 디렉터리이며, store는
 `<project>/fsm.config.json`이 고른다: `json` 또는 `mermaid`. 다른 store는 `E_STORE_NOT_CONFIGURED`다.
 
 `order` 예제에서 각 명령을 실제로 실행한 결과다(표준 출력의 `[fsm-gen] <command>: ok`, 종료 코드 0):

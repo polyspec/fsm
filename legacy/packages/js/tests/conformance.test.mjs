@@ -17,7 +17,7 @@ import { dialectOf, serverDsn } from '../../db/tests/dialect.mjs';
 import { inspect } from 'node:util';
 
 /** The vectors of every machine: the file of the oracle, read when the test runs. */
-const { machines: vectors } = JSON.parse(readFileSync(new URL('../../../contracts/conformance/vectors.json', import.meta.url), 'utf8'));
+const { machines: vectors } = JSON.parse(readFileSync(new URL('../../../../contracts/conformance/vectors.json', import.meta.url), 'utf8'));
 
 /**
  * The input of a from_code case as the npm kind decodes it (docs/spec/fsm.md, B-6): the oracle gives it as a decimal string, which

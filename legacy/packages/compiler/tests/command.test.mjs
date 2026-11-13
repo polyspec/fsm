@@ -10,7 +10,7 @@ import test, { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const PACKAGE = fileURLToPath(new URL('..', import.meta.url));
-const ROOT = path.resolve(PACKAGE, '../..');
+const ROOT = path.resolve(PACKAGE, '../../..');
 const prefix = mkdtempSync(path.join(tmpdir(), 'fsm-gen-prefix-'));
 
 after(() => rmSync(prefix, { recursive: true, force: true }));

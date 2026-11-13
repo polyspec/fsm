@@ -1,5 +1,5 @@
 <!-- doc-id: fsm-gui-readme -->
-<!-- source-sha256: 7f66dd479467c98474caa87bda0afe425516250aa8a0dd8329587446e162536c -->
+<!-- source-sha256: 30c9bf91016e7107a4650789abf858460d41f5a329f5e11e8267ed0644a79bef -->
 # fsm GUI
 
 [English](README.md).
@@ -11,7 +11,7 @@
 보여준다. 같은 페이지에서 기계를 편집한다. 상태와 event를 추가하고, 바꾸고, 이름을 바꾸고, 삭제하며, 기계를 추가하고 삭제한다.
 
 GUI는 규칙을 소유하지 않는다. 정의는 `fsm.config.json`이 지정한 store(json, mermaid 또는 db)에서 오며, 모든 검사와 모든 쓰기는
-`packages/compiler`의 core `run`을 거친다. `fsm-gen`과 `fsm-db`가 적용하는 규칙과 같다. core가 거부한 저장은 아무것도
+`legacy/packages/compiler`의 core `run`을 거친다. `fsm-gen`과 `fsm-db`가 적용하는 규칙과 같다. core가 거부한 저장은 아무것도
 쓰지 않으며, 페이지가 검사 결과를 보여준다.
 
 ## 설정
@@ -24,7 +24,7 @@ npm install -g ./packages/gui   # puts the command fsm-gui on the PATH, linked t
 ```
 
 `make gui-build`는 고정된 패키지(hyper v0.0.17, crudui v0.0.5, template v0.0.9, mermaid 12.2.0)를 받으려고 한 번 네트워크가
-필요하다. 서버는 `mise.toml`의 Node.js 26.12.0으로 실행한다. store가 database인 프로젝트는 `packages/db`의 orm 패키지도
+필요하다. 서버는 `mise.toml`의 Node.js 26.12.0으로 실행한다. store가 database인 프로젝트는 `legacy/packages/db`의 orm 패키지도
 설치해야 한다: `make db-deps`(`make gui-build`가 먼저 실행한다).
 
 ## 실행
@@ -55,7 +55,7 @@ store는 `fsm.config.json`을 따른다.
 |---|---|
 | `{"store":"json"}` | `machines/*.fsm.json`과 `fsm.lock.json` |
 | `{"store":"mermaid"}` | `machines/*.fsm.mmd`와 `fsm.lock.json` |
-| `{"store":"db","dsnEnv":"FSM_DSN"}` | DSN이 `FSM_DSN`의 값인 database. `packages/db`의 orm 패키지를 설치해야 한다(`make db-deps`) |
+| `{"store":"db","dsnEnv":"FSM_DSN"}` | DSN이 `FSM_DSN`의 값인 database. `legacy/packages/db`의 orm 패키지를 설치해야 한다(`make db-deps`) |
 
 GUI가 쓸 수 없는 설정이면 시작이 종료 상태 1로 멈추고 검사 결과를 출력한다. 사용 오류(알 수 없는 옵션, 0부터 65535가 아닌 port)는
 종료 상태 2로 끝난다.

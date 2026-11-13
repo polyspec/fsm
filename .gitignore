@@ -4,32 +4,35 @@
 /node_modules/
 /.results/
 /packages/*/node_modules/
+/legacy/packages/*/node_modules/
 # The documentation site (docs/.vitepress/config.mts, make docs-build): the packages it installs and its build output.
 /docs/node_modules/
 /docs/.vitepress/dist/
 /docs/.vitepress/cache/
 /packages/*/vendor
 /packages/*/target/
-/packages/python/**/__pycache__/
-/packages/python/.venv/
-/packages/python/src/*.egg-info/
+/legacy/packages/*/vendor
+/legacy/packages/*/target/
+/legacy/packages/python/**/__pycache__/
+/legacy/packages/python/.venv/
+/legacy/packages/python/src/*.egg-info/
 # The files that fsm-gen and orm-gen write (make fsm-gen and make fsm-db-gen; AGENTS.md, Generated files). The golden files of
-# packages/compiler/tests/golden are their tracked proof. /packages/php-ext/src/ holds the phpize output too. packages/go/src and
-# packages/rust/src are tracked: the Go module and the Rust crate are installed as the tagged tree (P34, config/generated.json).
-/packages/db/src/models/
-/packages/go/examples/model/
-/packages/js/src/
-/packages/js/examples/model/
-/packages/php/src/
-/packages/php/examples/model/
-/packages/php-ext/src/
-/packages/php-ext/tests/
-/packages/php-ext/examples/
-/packages/python/src/polyspec_fsm/
-/packages/python/examples/model/
+# legacy/packages/compiler/tests/golden are their tracked proof. /legacy/packages/php-ext/src/ holds the phpize output too. legacy/packages/go/src and
+# legacy/packages/rust/src are tracked: the Go module and the Rust crate are installed as the tagged tree (P34, config/generated.json).
+/legacy/packages/db/src/models/
+/legacy/packages/go/examples/model/
+/legacy/packages/js/src/
+/legacy/packages/js/examples/model/
+/legacy/packages/php/src/
+/legacy/packages/php/examples/model/
+/legacy/packages/php-ext/src/
+/legacy/packages/php-ext/tests/
+/legacy/packages/php-ext/examples/
+/legacy/packages/python/src/polyspec_fsm/
+/legacy/packages/python/examples/model/
 /packages/gui/build/
-# The files that make bindings writes from packages/rust/interface.json (binding L-1, S-454). The Go files zz_generated_*.go are
-# ignored too while the Go module packages/go holds the hand-written package, whose tests would build them (plan f6, step 3-2).
+# The files that make bindings writes from packages/rust/interface.json (binding L-1, S-454), the Go files zz_generated_*.go of the
+# Go module packages/go among them.
 /packages/ts/generated/
 /packages/ts/wasm/generated/
 /packages/python/generated/
@@ -37,8 +40,8 @@
 /packages/go/internal/ffi/generated/
 /packages/go/**/zz_generated_*.go
 /packages/gui/public/assets/
-/packages/php*/.phpunit.result.cache
-/packages/php*/.phpunit.cache/
+/legacy/packages/php*/.phpunit.result.cache
+/legacy/packages/php*/.phpunit.cache/
 
 # Generated files of the install, build, cache and test runs (AGENTS.md, Generated files)
 vendor/

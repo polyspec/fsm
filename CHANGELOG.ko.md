@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 59db566fd14dad5930382328e8ee0985800c4f56d42e35309bd88be5b8b2150c -->
+<!-- source-sha256: c197f99dda9373ab886c60be2e0e9d97fc73450668b06d3f65d1c2f4d52ec56d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 손으로 쓴 package와 fsm-gen 출력이 `legacy/packages/`로 옮겨 간다(계획 f6, 단계 3-2): compiler, db, go, js, php, php-ext, python, rust. 생성 바인딩이 `packages/`를 차지하기 위해서이며, `packages/rust`에는 `interface.json`만 남는다. 그 대상은 `legacy-<task>-<runtime>`이고 `legacy-build`와 `legacy-test`로 묶이며 `build`와 `test`가 이를 선행 조건으로 갖는다. S10의 관문인 `lint-php-ext`와 `test-php-ext`는 단계 3a까지 legacy extension을 돈다. 이 package들은 릴리스에서 빠지고 `notReleased`에 적힌다. Makefile, `.gitignore`, config 파일, knip, 문서 사이트, script와 도구 시험이 새 경로를 이름하고, 옮긴 시험 가운데 루트에 닿는 상대 경로는 한 단계 늘어난다. runtime 시험은 새 경로에서 앞 commit의 수로 돈다: Go 295, npm 290과 294, PHP 294 세 번, Python 294, Rust 290과 294. compiler-test는 시험 341개, db-test는 35개, gui-test는 241개를 통과한다. GUI는 단계 9a까지 여섯 파일에서 `legacy/packages/compiler`와 `legacy/packages/db`를 import하며, checklist 행이 그 목록을 적는다 (S-456).
 - `packages/db/src/models`가 없는 checkout에서 `make fsm-js-test`와 `make test-js`가 실패했다: case가 `packages/db/tests/dialect.mjs`를 import하고 그 파일이 그 model을 import하므로, node가 `ERR_MODULE_NOT_FOUND`를 보고하고 시험이 하나도 돌지 않았다. 이제 `fsm-js-test`가 `fsm-db-gen`과 db 설치를 선행 조건으로 이름한다 (HR-85). model을 지운 뒤 `make test-js`가 model을 쓰고 시험 290개와 294개를 통과한다 (S-455).
 - 인터페이스 계약 `packages/rust/interface.json`이 crate packages/rust의 공개 member를 다섯 target php, python, node, go, wasm으로 묶는다: 다섯 기계마다 state와 event enum, step record, 함수 initial, code, key, from_code, is_final, events_from, target, apply. 그 case 212개는 `contracts/cases.json`에 있고 `contracts/conformance/vectors.json`에서 옮겼다. Makefile에 대상 bindings, bindings-check, lint-bindings, test-bindings, check-declarations, node-package, test-node, test-wasm, test-python-binding, test-php-binding, test-go-binding이 있고, packages/ts/tests에 Node와 WASM의 case runner가 있다. 바인딩 package와 루트 Cargo workspace는 계획 f6 단계 3-2까지 추적하지 않는다. 커밋된 tree에 대한 binding 8faad21의 end-to-end 검사는 모든 target을 GN-4(루트 Cargo.toml 없음)에서 실패한다. 루트 workspace와 scaffold된 package를 더한 사본에서는 다섯 target이 모두 생성되고, 모든 binding crate가 컴파일에 실패한다: 코어 오류는 `binding_core::Kinds`를 구현한 enum이 아니라 struct `fsm::Error`이고, 코어는 계약 타입이 `i64`와 list를 주는 자리에서 `serde_json::Value`, `i32`, `&[Event]`를 받으며, 생성된 PHP, Python, Node, WASM crate는 다섯 module의 member를 두 번 정의한다. `make name-check`가 `contracts/cases.json`의 96줄에서 실패했다. 이 줄은 바인딩 case 꼴에서 raise된 오류의 null인 HTTP field이며, 그 field의 이름이 옛 라이브러리 이름이다. `scripts/check-name.mts`가 그 파일의 그 field를 이유와 함께 허용하고, `tests/check-name`의 시험이 그 파일의 다른 옛 이름 사용을 계속 finding으로 둔다. `make rules-check`가 실패했다: 바인딩 checkout이 필요한 `make bindings-check`에 어떤 CI job이나 hook도 닿지 않기 때문이다. 이제 계약의 AGENTS 규칙이 binding이 고정된 package가 될 때까지 어떤 도구도 그 규칙을 지키지 않는다고 적는다 (S-454).
 

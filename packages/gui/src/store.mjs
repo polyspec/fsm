@@ -2,12 +2,12 @@
 // fsm.config.json names. The GUI owns no rule, so it only selects the store, and every command goes through core run.
 // openStore returns { store, close } or { findings } with the reason in the same finding shape as the core (E_STORE_NOT_
 // CONFIGURED), and it never falls back to another store. The db store is imported only when it is selected, because its
-// orm package is installed with packages/db.
+// orm package is installed with legacy/packages/db.
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { jsonStore } from '../../compiler/src/store-json/store.mjs';
-import { mermaidStore } from '../../compiler/src/store-mermaid/store.mjs';
+import { jsonStore } from '../../../legacy/packages/compiler/src/store-json/store.mjs';
+import { mermaidStore } from '../../../legacy/packages/compiler/src/store-mermaid/store.mjs';
 
 const notConfigured = (at, message) => ({ code: 'E_STORE_NOT_CONFIGURED', machine: null, path: at, message });
 const isObject = value => typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -38,8 +38,8 @@ export async function openStore(project, env) {
   if (dsn === undefined || dsn === '') {
     return { findings: [notConfigured('$.dsnEnv', `the environment variable ${config.dsnEnv} is not set`)] };
   }
-  const { connect } = await import('../../db/src/models/models.ts');
-  const { dbStore } = await import('../../db/src/db-store.mjs');
+  const { connect } = await import('../../../legacy/packages/db/src/models/models.ts');
+  const { dbStore } = await import('../../../legacy/packages/db/src/db-store.mjs');
   const db = await connect(dsn);
   return { store: dbStore(db), close: async () => db.close() };
 }

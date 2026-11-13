@@ -15,7 +15,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 // The tests of the python package are a package (S-395): unittest discovers a directory only as a package, and kit's runtime-targets
 // refuses a tests/ folder without __init__.py on CI (run 41250601308).
 test('the python tests folder is a package with __init__.py (S-395)', () => {
-  assert.ok(existsSync(path.join(ROOT, 'packages/python/tests/__init__.py')), 'packages/python/tests/__init__.py is missing');
+  assert.ok(existsSync(path.join(ROOT, 'legacy/packages/python/tests/__init__.py')), 'legacy/packages/python/tests/__init__.py is missing');
 });
 
 // The inputs of python-tools-test name files of the repository (S-396): run-tests reads each --inputs path, and CI refused one that

@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 63f7aa9fc6ee9b9459f2c20c5845f83b0cefe31c1c107bc0c21ef24977a330e5 -->
+<!-- source-sha256: 5e088ab8245cc8df97b73b829869888f833b62e3b183de2f10e6f2a015488bc3 -->
 # 개발
 
 [English](AGENTS.md)
@@ -43,18 +43,24 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   Enforced by: `make name-check`
 - Own: 모든 README 쌍(root, compiler, db, GUI, 언어 패키지)에는 필수 절과 같은 제목을 가진 한국어 짝이 있다(`scripts/check-readmes.mts`).
   Enforced by: `make readme-check`
+- Own: 손으로 쓴 package와 fsm-gen 출력(`compiler`, `db`, `go`, `js`, `php`, `php-ext`, `python`, `rust`)은 계획 V-6 (5)가
+  지울 때까지 `legacy/packages/` 아래에 있다. 생성 바인딩이 `packages/`를 차지하기 때문이다(계획 f6, FP-6, 단계 3-2). 그
+  대상은 `legacy-<task>-<runtime>`이고 `legacy-<task>`로 묶으며, `build`와 `test`는 `legacy-build`와 `legacy-test`를 선행 조건으로
+  갖는다(구조 ST-38). 이 package들은 릴리스에서 빠진다(`config/release.json`, `notReleased`). GUI는 계획 단계 9a가 그 import를
+  node 바인딩으로 바꿀 때까지 `legacy/packages/compiler`와 `legacy/packages/db`를 import하는 살아 있는 코드다. 그 import의 목록은
+  checklist의 S-456 행이다. 구조 계획이 요구하는 커밋된 검사(F5S-4)가 아직 없기 때문이다.
+  Enforced by: none, F5S-4의 검사가 생길 때까지 GUI의 legacy import 목록은 리뷰가 지킨다.
 - Own: 바인딩의 인터페이스 계약은 `packages/rust/interface.json`이다. 계약은 처음부터 다섯 target php, python, node, go, wasm을
   적고, 그 case는 `contracts/cases.json`이며 `contracts/conformance/vectors.json`의 입력과 기대값에서 옮긴다. 계약이 지어낸 case는
-  fsm에 있는 동작을 시험하지 않기 때문이다. 바인딩 package와 그것을 담는 루트 Cargo workspace는 계획 f6 단계 3-2가 손으로 쓴
-  언어 package를 `legacy/`로 옮긴 뒤에만 추적한다. binding scaffold가 `packages/php-ext`, `packages/python`, `packages/go`의
-  manifest와 `packages/php-ext/src` 폴더를 쓰는데, 이것들은 그 package의 것이기 때문이다. 그때까지 `make bindings-check`가 없거나
-  다른 바인딩 파일을 하나씩 이름한다.
+  fsm에 있는 동작을 시험하지 않기 때문이다. 바인딩 package와 그것을 담는 루트 Cargo workspace는
+  계획 f6 단계 3a부터 추적한다. 단계 3a는 단계 3-2가 손으로 쓴 언어 package를 `legacy/`로 옮긴 다음 단계다. 그때까지
+  `make bindings-check`가 없거나 다른 바인딩 파일을 하나씩 이름한다.
   Enforced by: none, binding은 아직 lock이 고정하는 package가 아니므로 어떤 CI job도 `make bindings-check`를 돌릴 수 없다. 이
   대상은 BINDING에 binding checkout의 cli를 받아야 한다.
 
 ## 생성 파일
 
-- Own: 생성 파일은 Git에 추적하지 않는다. 여기에는 의존성 설치(`node_modules/`, `vendor/`, 가상 환경), 빌드 산출물(`dist/`, `target/`, `*.tsbuildinfo`), 캐시(`.cache/`, `__pycache__/`, `.pytest_cache/`), 테스트 실행 산출물(`test-results/`, `playwright-report/`, PHPUnit 캐시), 도구 다운로드(`var/`)가 포함된다. 예외는 저장소가 의도적으로 필요로 하는 파일뿐이며 이것만 추적한다: lock 파일(`package-lock.json`, `composer.lock`, `Cargo.lock`, uv lock, `mise.lock`), 이 문서가 밝히는 커밋된 생성 문서, 테스트 fixture, 그리고 Go module과 Rust crate가 tag된 tree로 릴리스하는 생성 소스 `packages/go/src`와 `packages/rust/src`(P34)다. `config/generated.json`이 이유와 함께 이들을 추적하고, `make fsm-gen`이 쓰는 것과 다르면 `make layout-check`가 실패한다(S-371). 각 `.gitignore`가 나머지 경로를 덮으며, 새 생성기는 같은 commit에서 ignore 항목을 추가한다.
+- Own: 생성 파일은 Git에 추적하지 않는다. 여기에는 의존성 설치(`node_modules/`, `vendor/`, 가상 환경), 빌드 산출물(`dist/`, `target/`, `*.tsbuildinfo`), 캐시(`.cache/`, `__pycache__/`, `.pytest_cache/`), 테스트 실행 산출물(`test-results/`, `playwright-report/`, PHPUnit 캐시), 도구 다운로드(`var/`)가 포함된다. 예외는 저장소가 의도적으로 필요로 하는 파일뿐이며 이것만 추적한다: lock 파일(`package-lock.json`, `composer.lock`, `Cargo.lock`, uv lock, `mise.lock`), 이 문서가 밝히는 커밋된 생성 문서, 테스트 fixture, 그리고 Go module과 Rust crate가 `legacy/`로 옮기기 전에 tag된 tree로 릴리스한 생성 소스 `legacy/packages/go/src`와 `legacy/packages/rust/src`(P34)다. `config/generated.json`이 이유와 함께 이들을 추적하고, `make fsm-gen`이 쓰는 것과 다르면 `make layout-check`가 실패한다(S-371). 각 `.gitignore`가 나머지 경로를 덮으며, 새 생성기는 같은 commit에서 ignore 항목을 추가한다.
   Enforced by: none, 리뷰에서 판단한다. `make layout-check`는 Git이 각 install 폴더를 무시하고 생성 파일을 추적하지 않는지 검사한다.
 
 ## 체크리스트

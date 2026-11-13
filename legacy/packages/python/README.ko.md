@@ -1,5 +1,5 @@
 <!-- doc-id: readme-python -->
-<!-- source-sha256: 236238f1b7d01259313f4f9492ab15bada999842ba76d9ade69225ce4b481696 -->
+<!-- source-sha256: 8e1fa862e942adf21c91295e7029ba17dea52273d53d69c64f8bec87a7aa1cf2 -->
 # polyspec-fsm
 
 [English](README.md)
@@ -101,7 +101,7 @@ transaction 안에서 실행한다. row를 잠금(`for_update()`) 아래 읽고,
 row를 갱신한다:
 
 ```python
-# packages/python/examples/persist.py, transition
+# legacy/packages/python/examples/persist.py, transition
 def transition(db, machine, row_id, expected, event):
     """One attempt of the transition `event` from the observed state `expected` on the row `row_id`.
 
@@ -131,12 +131,12 @@ python 패키지는 가상환경의 Python 3.14가 필요하다. checkout 루트
 ```sh
 make install-tools TOOLS=python            # online: Python 3.14 of pythonBuild in config/toolchain.json, into var/tools (var/tools/bin/python3; no system path changes)
 make fsm-python-install    # online: .venv, made by the kit tool (make python-venv) from the install-tools Python 3.14 as a copy, filled from pylock.toml (kit's make python-lock: orm v0.0.18 and ordered-json v0.0.9 from their release wheels, every artifact by sha256)
-make test-python                       # offline: the vector cases and the persist cases, run by the kit runner with --venv .venv (no PATH change)
+make legacy-test-python                       # offline: the vector cases and the persist cases, run by the kit runner with --venv .venv (no PATH change)
 make python-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 290개 case 중 290개 통과다. `tests/test_conformance.py`는 vector case마다 unittest method 하나를 `test_<feature>__<id>`
 이름으로 만들고, 생성 함수나 오류 code의 결과를 단언한다. 생성 파일은 추적하지 않는다.
-`make fsm-python-gen`이 생성하며 `make test-python`이 먼저 실행한다. `make parity-python`은 모든 case의
+`make fsm-python-gen`이 생성하며 `make legacy-test-python`이 먼저 실행한다. `make parity-python`은 모든 case의
 결과 기록을 검사한다. `uv.lock`이 트리의 모든 package를 잠근다(정확한 버전, sha256 hash, git commit). `make python-lock-check`가 이를 `pyproject.toml`과 대조하고, kit gate가 읽는 PEP 751 export `pylock.toml`이 현재 export인지 검사한다.

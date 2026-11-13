@@ -55,7 +55,7 @@ The package `order` of the example machine has these functions (`src/order/order
 `Step` has the fields `To State` and `Changed bool`. Each function returns its result and an `error`; the error is nil or a
 `*fsm.Error`.
 
-The persistence example `packages/go/examples/persist.go` contains the complete `Apply` use in a transaction, and it is the
+The persistence example `legacy/packages/go/examples/persist.go` contains the complete `Apply` use in a transaction, and it is the
 pattern to copy (see Persistence). The pure call is the same for a value that is not in a database:
 
 ```go
@@ -109,7 +109,7 @@ the file serves every machine: a machine's `decide` is the `Apply` of the observ
 stored code. The `decide` of every machine is written once, in `tests/vectors_test.go`, over the key tables of the machine:
 
 ```go
-// packages/go/tests/vectors_test.go, machine.decide
+// legacy/packages/go/tests/vectors_test.go, machine.decide
 func (m machine[S, E]) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(m.states, "state", expected)
@@ -137,7 +137,7 @@ func (m machine[S, E]) decide(expected, event string) func(stored int64) (int32,
 The transaction of the persistence example is this function:
 
 ```go
-// packages/go/examples/persist.go, Transition
+// legacy/packages/go/examples/persist.go, Transition
 // Transition is one attempt on the row id: the row is read under its lock, decide runs on the stored code, and the row is updated
 // only when the stored state changed. It returns the code of the target and whether the stored state changed. An error of decide
 // (E_CONFLICT, E_INVALID_TRANSITION or E_UNKNOWN_CODE) is returned, and the transaction rolls back, so the stored state stays as it
@@ -181,11 +181,11 @@ From the checkout (the modules must be downloaded once, online):
 ```sh
 make fsm-go-install   # go mod download
 make fsm-go-test      # GOPROXY=off, the conformance tests and the persistence example on SQLite
-make test-go                      # the same from the root
+make legacy-test-go                      # the same from the root
 make go-persist-test-postgres     # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 The run passes 89 of 89 cases: `tests/conformance_test.go` runs one subtest per vector case of `contracts/conformance/vectors.json`, named
-by its case name `<feature>__<id>`. The generated packages of `src/` are tracked, since a consumer installs the tagged tree of the module: `make fsm-go-gen` writes them, `make test-go` runs it first, and `make layout-check` fails when the tracked files differ from what it writes. The go
-release is the go line of `packages/go/go.mod` (`go 1.27.2`, the Go pin of kit).
+by its case name `<feature>__<id>`. The generated packages of `src/` are tracked, since a consumer installs the tagged tree of the module: `make fsm-go-gen` writes them, `make legacy-test-go` runs it first, and `make layout-check` fails when the tracked files differ from what it writes. The go
+release is the go line of `legacy/packages/go/go.mod` (`go 1.27.2`, the Go pin of kit).

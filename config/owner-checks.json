@@ -65,7 +65,7 @@
     },
     {
       "paths": [
-        "packages/compiler/**",
+        "legacy/packages/compiler/**",
         "contracts/schema/fsm.schema.json",
         "contracts/machines/**",
         "contracts/fsm.lock.json",
@@ -80,8 +80,8 @@
     },
     {
       "paths": [
-        "packages/db/**",
-        "packages/db/schema/**"
+        "legacy/packages/db/**",
+        "legacy/packages/db/schema/**"
       ],
       "targets": [
         "db-test",
@@ -92,7 +92,7 @@
     },
     {
       "paths": [
-        "packages/js/**"
+        "legacy/packages/js/**"
       ],
       "targets": [
         "layout-check",
@@ -105,11 +105,11 @@
     },
     {
       "paths": [
-        "packages/go/**"
+        "legacy/packages/go/**"
       ],
       "targets": [
         "layout-check",
-        "test-go",
+        "legacy-test-go",
         "go-persist-test-postgres",
         "go-persist-test-mysql"
       ]
@@ -134,7 +134,7 @@
     },
     {
       "paths": [
-        "packages/compiler/**",
+        "legacy/packages/compiler/**",
         "contracts/schema/fsm.schema.json",
         "contracts/machines/**",
         "contracts/fsm.lock.json",
@@ -148,8 +148,8 @@
     },
     {
       "paths": [
-        "packages/db/**",
-        "packages/db/schema/**"
+        "legacy/packages/db/**",
+        "legacy/packages/db/schema/**"
       ],
       "targets": [
         "db-test",
@@ -159,11 +159,11 @@
     },
     {
       "paths": [
-        "packages/php/**"
+        "legacy/packages/php/**"
       ],
       "targets": [
         "layout-check",
-        "test-php",
+        "legacy-test-php",
         "php-persist-test-postgres",
         "php-persist-test-mysql"
       ]
@@ -191,19 +191,19 @@
     },
     {
       "paths": [
-        "packages/rust/**"
+        "legacy/packages/rust/**"
       ],
       "targets": [
         "layout-check",
         "rust-persist-test",
-        "test-rust",
+        "legacy-test-rust",
         "rust-persist-test-postgres",
         "rust-persist-test-mysql"
       ]
     },
     {
       "paths": [
-        "packages/js/**"
+        "legacy/packages/js/**"
       ],
       "targets": [
         "layout-check",
@@ -215,22 +215,22 @@
     },
     {
       "paths": [
-        "packages/python/**"
+        "legacy/packages/python/**"
       ],
       "targets": [
         "layout-check",
-        "test-python",
+        "legacy-test-python",
         "python-persist-test-postgres",
         "python-persist-test-mysql"
       ]
     },
     {
       "paths": [
-        "packages/php-ext/**"
+        "legacy/packages/php-ext/**"
       ],
       "targets": [
         "layout-check",
-        "test-php-ext",
+        "legacy-test-php-ext",
         "php-ext-persist-test-postgres",
         "php-ext-persist-test-mysql"
       ]
@@ -386,10 +386,10 @@
     },
     {
       "paths": [
-        "packages/php-ext/**"
+        "legacy/packages/php-ext/**"
       ],
       "targets": [
-        "lint-php-ext",
+        "legacy-lint-php-ext",
         "duplication-check"
       ]
     },
@@ -405,7 +405,7 @@
     {
       "paths": [
         "ruff.toml",
-        "packages/python/pyproject.toml"
+        "legacy/packages/python/pyproject.toml"
       ],
       "targets": [
         "lint-python"
@@ -431,7 +431,7 @@
     {
       "paths": [
         "clippy.toml",
-        "packages/rust/Cargo.toml"
+        "legacy/packages/rust/Cargo.toml"
       ],
       "targets": [
         "lint-rust"

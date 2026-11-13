@@ -1,5 +1,5 @@
 <!-- doc-id: readme-go -->
-<!-- source-sha256: 81409b62f1f61dccfe6f5affb69c565273bd0904d7f592347ff6c0a3494cdfdf -->
+<!-- source-sha256: 45f467e5808aa7210ebcccafad29eaa8bd97922e2590de6488eaaf4474d85a3f -->
 # github.com/polyspec/fsm/packages/go
 
 [English](README.md)
@@ -54,7 +54,7 @@ adapter는 machine package `<module>/src/<machine>`의 함수와 상수다. pers
 
 `Step`은 `To State`와 `Changed bool` 필드를 가진다. 각 함수는 결과와 `error`를 돌려준다. `error`는 nil이거나 `*fsm.Error`다.
 
-영속화 예제 `packages/go/examples/persist.go`는 transaction 안에서 `Apply`를 완전하게 쓰는 예이며, 따라 할 패턴이다(영속화 절).
+영속화 예제 `legacy/packages/go/examples/persist.go`는 transaction 안에서 `Apply`를 완전하게 쓰는 예이며, 따라 할 패턴이다(영속화 절).
 database를 거치지 않는 순수 호출은 다음과 같다:
 
 ```go
@@ -101,14 +101,14 @@ Go에는 null이 없으므로 0 값이 설정되지 않은 필드다.
 
 ## 영속화
 
-`packages/go/examples/persist.go`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다.
+`legacy/packages/go/examples/persist.go`는 SQLite, PostgreSQL, MySQL과 polyspec orm 위에서 `docs/spec/fsm.md`, B-4의 패턴이다. 저장된 상태는 row의 code다.
 `Transition`은 한 transaction 안에서 시도 한 번을 실행한다. row를 잠금 아래 읽고, 저장된 code를 `decide`에 넘기며, `decide`가 변경을
 알릴 때만 row를 쓴다. `Decide`는 `func(stored int64) (to int32, changed bool, err error)`이므로 이 파일은 모든 기계에 쓰인다. 기계의
 `decide`는 관찰한 상태와 event에 대한 `Apply`를 저장된 code의 `FromCode`에 적용하는 것이다. 모든 기계의 `decide`는 기계의 key 표 위에서
 `tests/vectors_test.go`에 한 번 쓰인다:
 
 ```go
-// packages/go/tests/vectors_test.go, machine.decide
+// legacy/packages/go/tests/vectors_test.go, machine.decide
 func (m machine[S, E]) decide(expected, event string) func(stored int64) (int32, bool, error) {
 	return func(stored int64) (int32, bool, error) {
 		from, err := lookup(m.states, "state", expected)
@@ -136,7 +136,7 @@ func (m machine[S, E]) decide(expected, event string) func(stored int64) (int32,
 영속화 예제의 transaction 본체는 이 함수다:
 
 ```go
-// packages/go/examples/persist.go, Transition
+// legacy/packages/go/examples/persist.go, Transition
 // Transition is one attempt on the row id: the row is read under its lock, decide runs on the stored code, and the row is updated
 // only when the stored state changed. It returns the code of the target and whether the stored state changed. An error of decide
 // (E_CONFLICT, E_INVALID_TRANSITION or E_UNKNOWN_CODE) is returned, and the transaction rolls back, so the stored state stays as it
@@ -179,11 +179,11 @@ checkout에서 실행한다(module은 한 번 온라인으로 받아야 한다):
 ```sh
 make fsm-go-install   # go mod download
 make fsm-go-test      # GOPROXY=off, the conformance tests and the persistence example on SQLite
-make test-go                      # the same from the root
+make legacy-test-go                      # the same from the root
 make go-persist-test-postgres     # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make go-persist-test-mysql        # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 89개 case 중 89개 통과다. `tests/conformance_test.go`는 `contracts/conformance/vectors.json`의 vector case마다 하나의 subtest를
-case 이름 `<feature>__<id>`로 실행한다. 소비자가 module의 tag된 tree를 설치하므로 `src/`의 생성 패키지는 추적한다. `make fsm-go-gen`이 생성하고 `make test-go`가 먼저 실행하며, 추적 파일이 그 출력과 다르면 `make layout-check`가 실패한다. go
-release는 `packages/go/go.mod`의 go 줄(`go 1.27.2`, kit의 Go pin)이다.
+case 이름 `<feature>__<id>`로 실행한다. 소비자가 module의 tag된 tree를 설치하므로 `src/`의 생성 패키지는 추적한다. `make fsm-go-gen`이 생성하고 `make legacy-test-go`가 먼저 실행하며, 추적 파일이 그 출력과 다르면 `make layout-check`가 실패한다. go
+release는 `legacy/packages/go/go.mod`의 go 줄(`go 1.27.2`, kit의 Go pin)이다.

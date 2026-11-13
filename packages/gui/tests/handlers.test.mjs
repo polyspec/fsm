@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import { jsonStore } from '../../compiler/src/store-json/store.mjs';
+import { jsonStore } from '../../../legacy/packages/compiler/src/store-json/store.mjs';
 import {
   BAD_JSON_TEXT, ORDER_JSON_TEXT, ORDER_LOCK_TEXT, ORDER_MERMAID_TEXT,
 } from './canonical.mjs';

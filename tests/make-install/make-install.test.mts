@@ -20,7 +20,7 @@ const PLAYWRIGHT = '1.64.0';
 const BROWSER = `var/deps/playwright-${PLAYWRIGHT}`;
 
 // The directories whose npm install is keyed on the sha256 of its lock (S-358): the stamp is var/deps/npm/<dir>-<sha256>.
-const NPM_DIRS = ['packages/js', 'packages/db', 'packages/gui', 'docs'];
+const NPM_DIRS = ['legacy/packages/js', 'legacy/packages/db', 'packages/gui', 'docs'];
 
 /** The npm stamp of the directory `npmDir` in the sandbox `dir`, as the Makefile names it (the first 16 hex digits of the lock's sha256). */
 function npmStamp(dir: string, npmDir: string): string {
@@ -32,9 +32,9 @@ function npmStamp(dir: string, npmDir: string): string {
 // var/tools/mise/shims/python3 is the shim of the Python that install-tools installs with mise (S-41, kit K127), which the
 // Python environment depends on.
 const STAMPS = [
-  'packages/php/vendor/composer/installed.json',
-  'packages/php-ext/vendor/composer/installed.json',
-  'packages/python/.venv/.installed',
+  'legacy/packages/php/vendor/composer/installed.json',
+  'legacy/packages/php-ext/vendor/composer/installed.json',
+  'legacy/packages/python/.venv/.installed',
   'var/deps/go',
   'var/deps/rust',
 ];
@@ -42,7 +42,7 @@ const STAMPS = [
 // The install line that make prints for each dependency (its recipe as make -n shows it).
 const INSTALL: ReadonlyMap<string, RegExp> = new Map([
   ['npm', /fsm-js-install/],
-  ['db', /cd packages\/db && .*npm ci/],
+  ['db', /cd legacy\/packages\/db && .*npm ci/],
   ['gui', /cd packages\/gui && .*npm ci/],
   ['docs', /cd docs && .*npm ci/],
   ['php', /fsm-php-install/],
@@ -63,11 +63,11 @@ function installLine(name: string): RegExp {
 const TARGETS = [
   { target: 'npm-types', line: /npm-types\.json/, needs: ['npm'] },
   { target: 'fsm-js-test', line: /--results \.results\/npm\.json/, needs: ['npm'] },
-  { target: 'test-go', line: /go --cwd packages\/go/, needs: ['go'] },
-  { target: 'test-php', line: /phpunit --cwd packages\/php --results/, needs: ['php'] },
-  { target: 'test-php-ext', line: /php-extension\.m[jt]s test/, needs: ['php-ext'] },
-  { target: 'test-python', line: /run-tests\.m[jt]s python --venv/, needs: ['python'] },
-  { target: 'test-rust', line: /--results \.results\/rust\.json/, needs: ['rust'] },
+  { target: 'legacy-test-go', line: /go --cwd legacy\/packages\/go/, needs: ['go'] },
+  { target: 'legacy-test-php', line: /phpunit --cwd legacy\/packages\/php --results/, needs: ['php'] },
+  { target: 'legacy-test-php-ext', line: /php-extension\.m[jt]s test/, needs: ['php-ext'] },
+  { target: 'legacy-test-python', line: /run-tests\.m[jt]s python --venv/, needs: ['python'] },
+  { target: 'legacy-test-rust', line: /--results \.results\/rust\.json/, needs: ['rust'] },
   { target: 'db-test', line: /db-test\.json/, needs: ['db'] },
   { target: 'gui-test', line: /gui-test\.json/, needs: ['gui', 'db'] },
   { target: 'docs-build', line: /vitepress\.js build/, needs: ['docs'] },
@@ -79,11 +79,11 @@ const TARGETS = [
 const GENERATES: ReadonlyMap<string, string> = new Map([
   ['npm-types', 'npm'],
   ['fsm-js-test', 'npm'],
-  ['test-go', 'go'],
-  ['test-php', 'php'],
-  ['test-php-ext', 'php-ext'],
-  ['test-python', 'python'],
-  ['test-rust', 'rust'],
+  ['legacy-test-go', 'go'],
+  ['legacy-test-php', 'php'],
+  ['legacy-test-php-ext', 'php-ext'],
+  ['legacy-test-python', 'python'],
+  ['legacy-test-rust', 'rust'],
 ]);
 
 /** The line of the fsm-gen call that writes the src of the kind `kind`. */
@@ -138,9 +138,9 @@ test('the composer vendor is keyed on composer.json too: its autoload is not in 
   for (const kind of ['php', 'php-ext']) {
     const dir = sandbox(t, { installed: true });
     const now = Date.now() / 1000;
-    assert.equal(lineIndex(dryRun(dir, `test-${kind}`), installLine(kind)), -1, `an installed ${kind} vendor installs again`);
-    utimesSync(path.join(dir, `packages/${kind}/composer.json`), now + 60, now + 60);
-    assert.ok(lineIndex(dryRun(dir, `test-${kind}`), installLine(kind)) >= 0, `a newer composer.json of ${kind} does not install its vendor again`);
+    assert.equal(lineIndex(dryRun(dir, `legacy-test-${kind}`), installLine(kind)), -1, `an installed ${kind} vendor installs again`);
+    utimesSync(path.join(dir, `legacy/packages/${kind}/composer.json`), now + 60, now + 60);
+    assert.ok(lineIndex(dryRun(dir, `legacy-test-${kind}`), installLine(kind)) >= 0, `a newer composer.json of ${kind} does not install its vendor again`);
   }
 });
 
@@ -177,19 +177,19 @@ test('an npm dependency is keyed on the content of its lock: a changed lock inst
   const dir = sandbox(t, { installed: true });
   assert.equal(lineIndex(dryRun(dir, 'npm-types'), installLine('npm')), -1, 'an installed npm dependency installs again');
   // The same lock path with other content, and an mtime older than the stamp: make by mtime alone would keep the stamp.
-  writeFileSync(path.join(dir, 'packages/js/package-lock.json'), '{"changed":true}\n');
-  utimesSync(path.join(dir, 'packages/js/package-lock.json'), Date.now() / 1000 - 7200, Date.now() / 1000 - 7200);
+  writeFileSync(path.join(dir, 'legacy/packages/js/package-lock.json'), '{"changed":true}\n');
+  utimesSync(path.join(dir, 'legacy/packages/js/package-lock.json'), Date.now() / 1000 - 7200, Date.now() / 1000 - 7200);
   assert.ok(lineIndex(dryRun(dir, 'npm-types'), installLine('npm')) >= 0, 'a changed npm lock does not install again');
 });
 
 test('the python environment is keyed on pylock.toml: a newer lock installs it again, a newer manifest alone does not', (t) => {
   const dir = sandbox(t, { installed: true });
   const now = Date.now() / 1000;
-  put(dir, { 'packages/python/pyproject.toml': '\n' });
-  utimesSync(path.join(dir, 'packages/python/pyproject.toml'), now + 60, now + 60);
-  assert.equal(lineIndex(dryRun(dir, 'test-python'), installLine('python')), -1, 'pyproject.toml alone reinstalls the python environment');
-  utimesSync(path.join(dir, 'packages/python/pylock.toml'), now + 120, now + 120);
-  assert.ok(lineIndex(dryRun(dir, 'test-python'), installLine('python')) >= 0, 'a newer pylock.toml does not reinstall the python environment');
+  put(dir, { 'legacy/packages/python/pyproject.toml': '\n' });
+  utimesSync(path.join(dir, 'legacy/packages/python/pyproject.toml'), now + 60, now + 60);
+  assert.equal(lineIndex(dryRun(dir, 'legacy-test-python'), installLine('python')), -1, 'pyproject.toml alone reinstalls the python environment');
+  utimesSync(path.join(dir, 'legacy/packages/python/pylock.toml'), now + 120, now + 120);
+  assert.ok(lineIndex(dryRun(dir, 'legacy-test-python'), installLine('python')) >= 0, 'a newer pylock.toml does not reinstall the python environment');
 });
 
 test('gui-browser-test downloads the browser once, then needs no network', (t) => {
@@ -247,7 +247,7 @@ test('each target generates the files of its kind after the install and before i
   }
 });
 
-test('the targets that read the models of packages/db generate them after the install of db and before their recipe', (t) => {
+test('the targets that read the models of legacy/packages/db generate them after the install of db and before their recipe', (t) => {
   const dir = sandbox(t);
   const targets = [
     { target: 'db-test', line: /db-test\.json/ },
@@ -257,8 +257,8 @@ test('the targets that read the models of packages/db generate them after the in
   for (const { target, line } of targets) {
     const out = dryRun(dir, target);
     const run = lineIndex(out, line);
-    const gen = lineIndex(out, /cd packages\/db && .*npm run gen/);
-    assert.ok(gen >= 0 && gen < run, `${target} does not generate the models of packages/db before its recipe:\n${out}`);
+    const gen = lineIndex(out, /cd legacy\/packages\/db && .*npm run gen/);
+    assert.ok(gen >= 0 && gen < run, `${target} does not generate the models of legacy/packages/db before its recipe:\n${out}`);
     assert.ok(lineIndex(out, installLine('db')) < gen, `${target} generates the models before the install of db:\n${out}`);
   }
 });

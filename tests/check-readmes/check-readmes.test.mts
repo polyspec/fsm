@@ -82,40 +82,40 @@ test('a Korean twin with a different number of headings is a finding', (t) => {
 
 test('a missing Korean twin is a finding', (t) => {
   const files = complete();
-  delete files['packages/go/README.ko.md'];
+  delete files['legacy/packages/go/README.ko.md'];
   const root = tree(t, files);
   assert.deepEqual(readmeFindings(root), [
-    { file: 'packages/go/README.ko.md', message: 'the Korean twin is missing' },
+    { file: 'legacy/packages/go/README.ko.md', message: 'the Korean twin is missing' },
   ]);
 });
 
 test('a missing English README is a finding', (t) => {
   const files = complete();
-  delete files['packages/rust/README.md'];
+  delete files['legacy/packages/rust/README.md'];
   const root = tree(t, files);
   assert.deepEqual(readmeFindings(root), [
-    { file: 'packages/rust/README.md', message: 'the README is missing' },
+    { file: 'legacy/packages/rust/README.md', message: 'the README is missing' },
   ]);
 });
 
 test('a heading inside a fenced code block is not a section', (t) => {
   const files = complete();
-  const pair = pairOf('packages/js/README.md');
+  const pair = pairOf('legacy/packages/js/README.md');
   const sections = pair.sections.filter(section => section !== 'Errors');
   files[pair.en] = `${english(pair, sections)}\n\`\`\`sh\n## Errors\n\`\`\`\n`;
   files[pair.ko] = korean(textOf(files, pair.en));
   const root = tree(t, files);
   assert.deepEqual(readmeFindings(root), [
-    { file: 'packages/js/README.md', message: 'missing section ## Errors' },
+    { file: 'legacy/packages/js/README.md', message: 'missing section ## Errors' },
   ]);
 });
 
 test('the command prints each finding and exits 1, and exits 0 when there is none', (t) => {
   const files = complete();
-  delete files['packages/go/README.ko.md'];
+  delete files['legacy/packages/go/README.ko.md'];
   const failing = spawnSync(process.execPath, [SCRIPT, '--root', tree(t, files)], { encoding: 'utf8' });
   assert.equal(failing.status, 1, failing.stdout + failing.stderr);
-  assert.match(failing.stderr, /^\[check-readmes\] packages\/go\/README\.ko\.md: the Korean twin is missing$/m);
+  assert.match(failing.stderr, /^\[check-readmes\] legacy\/packages\/go\/README\.ko\.md: the Korean twin is missing$/m);
 
   const passing = spawnSync(process.execPath, [SCRIPT, '--root', tree(t, complete())], { encoding: 'utf8' });
   assert.equal(passing.status, 0, passing.stdout + passing.stderr);

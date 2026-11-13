@@ -1,5 +1,5 @@
 <!-- doc-id: readme-rust -->
-<!-- source-sha256: 4f6527767e25bd2b8c4bf5fb2ac58f0a933b0be490a009f913b88b7268b272c2 -->
+<!-- source-sha256: f5cfa9987129d39e8dbf0e83ae8027f0f8dee957ed66ffa724b9413459de67fd -->
 # polyspec-fsm
 
 [English](README.md)
@@ -61,7 +61,7 @@ module `order`의 함수(`src/order.rs`):
 
 `Step`은 `to: State`와 `changed: bool` 필드를 가진다. `from_code`는 `i64`를 받으므로, database가 돌려준 값을 줄이지 않고 그대로 넘긴다.
 
-완전한 `apply` 호출은 `packages/rust/tests/conformance/vectors.rs`의 adapter macro에 있는 `decide` 함수이며, persist case가 이를
+완전한 `apply` 호출은 `legacy/packages/rust/tests/conformance/vectors.rs`의 adapter macro에 있는 `decide` 함수이며, persist case가 이를
 `check_persist`에 넘긴다(`machine`은 machine의 module이고 order 예제에서는 `order`다):
 
 ```rust
@@ -115,7 +115,7 @@ closure가 변화를 알릴 때만 row를 쓴다. deadlock이면 transaction을 
 순수하므로 재실행해도 안전하다). machine 오류는 쓰기 없이 돌려주고, deadlock이 아닌 데이터베이스 오류는 한 번 시도한 뒤 돌려준다:
 
 ```rust
-// packages/rust/examples/persist.rs, transition_with_fault (transition calls it with no fault)
+// legacy/packages/rust/examples/persist.rs, transition_with_fault (transition calls it with no fault)
 pub async fn transition_with_fault(
     db: &Db,
     id: i64,
@@ -150,11 +150,11 @@ checkout 루트에서 실행한다:
 ```sh
 make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.29 by its git tag)
 make fsm-rust-test      # cargo test through kit's run-tests
-make test-rust                      # the same from the root
+make legacy-test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 실행 결과는 89개 case 중 89개 통과이며, crate 컴파일을 포함해 약 100초가 걸린다. `tests/conformance/main.rs`에는 libtest harness가 없다. libtest-mimic이
 `contracts/conformance/vectors.json`의 vector case마다 trial 하나를 실행하며 이름은 case 이름 `<feature>__<id>`다(`vectors::<feature>__<id>`). 각 trial은 `tests/conformance/vectors.rs`에 있는 자기 machine의 adapter를 거쳐 `main.rs`의 검사 함수를 부른다. 영속화 case는 자기 tokio runtime에서 실행된다. toolchain은
-루트의 `rust-toolchain.toml`(Rust 1.99.0)이다. 소비자가 git tag로 crate의 tag된 tree를 설치하므로 `src/`의 생성 module은 추적한다. `make fsm-rust-gen`이 생성하고 `make test-rust`가 먼저 실행하며, 추적 파일이 그 출력과 다르면 `make layout-check`가 실패한다.
+루트의 `rust-toolchain.toml`(Rust 1.99.0)이다. 소비자가 git tag로 crate의 tag된 tree를 설치하므로 `src/`의 생성 module은 추적한다. `make fsm-rust-gen`이 생성하고 `make legacy-test-rust`가 먼저 실행하며, 추적 파일이 그 출력과 다르면 `make layout-check`가 실패한다.

@@ -28,6 +28,6 @@
     "@polyspec/ordered-json": "$@polyspec/ordered-json"
   },
   "scripts": {
-    "prepack": "node ../compiler/src/cli/fsm-gen.mjs gen --project ../../contracts --kind npm --out src"
+    "prepack": "node ../compiler/src/cli/fsm-gen.mjs gen --project ../../../contracts --kind npm --out src"
   }
 }

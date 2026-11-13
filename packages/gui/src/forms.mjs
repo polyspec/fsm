@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { compileForm, createForm, sequenceRowKey } from '@polyspec/crudui-generator-core';
 import { renderForm } from '@polyspec/crudui-generator-html';
 import { parse as parseYaml } from 'yaml';
-import { nextCode } from '../../compiler/src/core/lock.mjs';
+import { nextCode } from '../../../legacy/packages/compiler/src/core/lock.mjs';
 
 /** The crudui declaration of the machine edit form (crud/machine.yml); the names of its fields are under `form[...]`. */
 const EDIT_SPEC = parseYaml(readFileSync(new URL('../crud/machine.yml', import.meta.url), 'utf8'));

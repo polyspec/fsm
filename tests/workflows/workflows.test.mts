@@ -119,9 +119,9 @@ test('the node, go, php and rust versions come from the files that declare them'
   assert.match(text(miseTool('node'), 'node of mise.toml'), /^\d+\.\d+\.\d+$/);
 
   // Go is a tool of mise.toml, which make install installs with mise (S-44-6): the workflow sets up no Go of its own, and the
-  // go directive of packages/go/go.mod is that release.
+  // go directive of legacy/packages/go/go.mod is that release.
   assert.doesNotMatch(CHECK_JOB, /setup-go|go-version/, 'the check job sets up a Go of its own');
-  const goRoot = 'packages/go';
+  const goRoot = 'legacy/packages/go';
   const edit = spawnSync('go', ['mod', 'edit', '-json'], { cwd: path.join(ROOT, goRoot), encoding: 'utf8' });
   assert.equal(edit.status, 0, edit.stderr);
   const goMod: unknown = JSON.parse(edit.stdout);

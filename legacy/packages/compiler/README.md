@@ -21,7 +21,7 @@ The package has five parts. The core is the only part that holds the rules; the 
 | cli | `src/cli/fsm-gen.mjs`, `src/cli/write-generated.mjs` | the command line, which chooses the store from `fsm.config.json`, prints the findings and sets the exit code; `write-generated.mjs` writes the generated files and refuses files without the header |
 
 The core imports nothing from `node:`, so the GUI (`packages/gui`) imports it as it is. The tests of the compiler are in
-`packages/compiler/tests/` (`make compiler-test`): the rules, the stores, the backends against the golden files in
+`legacy/packages/compiler/tests/` (`make compiler-test`): the rules, the stores, the backends against the golden files in
 `tests/golden/`, and the command line run as processes.
 
 A command follows one path: the store loads the definitions and the lock, the core validates them and checks the lock, and
@@ -42,7 +42,7 @@ save({ definitions, lock }) → Promise<void>
   is either old or new; across files the write is not atomic, and a stop in the middle leaves `E_LOCK_MISMATCH` for the next
   command to report.
 - A store does not validate. The core does, in `run` and in `copy`, before a store is asked to write.
-- The database store (`DbStore` in `packages/db/src/db-store.mjs`) implements the same contract and writes everything in
+- The database store (`DbStore` in `legacy/packages/db/src/db-store.mjs`) implements the same contract and writes everything in
   one transaction. Its load returns the same objects, so every command gives the same result on the json, mermaid and db stores.
 
 `run(command, store, options)` runs `check`, `lock`, `save`, `vectors` and `gen`. `copy(from, to)` loads `from`, checks that
@@ -60,7 +60,7 @@ and the lock of `from`, unchanged. Both functions return `{ findings }`; `vector
 | `vectors --out <file>` | the store | `{ machines: [{ machine, cases }] }` | stops on any finding of `check` |
 | `gen --kind <kind> --out <dir>` | the store | the generated files of one kind | stops on any finding of `check`; the output directory is written as described in the root README |
 
-The command line is `packages/compiler/src/cli/fsm-gen.mjs`. Its `--project <dir>` defaults to the current directory, and
+The command line is `legacy/packages/compiler/src/cli/fsm-gen.mjs`. Its `--project <dir>` defaults to the current directory, and
 the store is chosen by `<project>/fsm.config.json`: `json` or `mermaid`. Any other store is `E_STORE_NOT_CONFIGURED`.
 
 Real runs of each command on the `order` example (the output of `[fsm-gen] <command>: ok` on standard output, exit 0):

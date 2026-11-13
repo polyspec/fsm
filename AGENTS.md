@@ -48,19 +48,26 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
 - Own: Every README pair (root, compiler, db, GUI, language packages) has its required sections and a Korean twin with the same
   headings (`scripts/check-readmes.mts`).
   Enforced by: `make readme-check`
+- Own: The hand-written packages and the fsm-gen output (`compiler`, `db`, `go`, `js`, `php`, `php-ext`, `python`, `rust`) are
+  under `legacy/packages/` until plan V-6 (5) removes them, so that the generated bindings take `packages/` (plan f6, FP-6, step
+  3-2). Their targets are `legacy-<task>-<runtime>`, grouped by `legacy-<task>`, and `build` and `test` take `legacy-build` and
+  `legacy-test` (structure ST-38). They leave the release (`config/release.json`, `notReleased`). The GUI is live code that imports
+  `legacy/packages/compiler` and `legacy/packages/db` until plan step 9a replaces those imports with the node binding; the list of
+  those imports is the row S-456 of the checklist, because the committed check that the structure plan asks for (F5S-4) does not
+  exist yet.
+  Enforced by: none, the list of the GUI imports of legacy is kept by review until the check of F5S-4 exists.
 - Own: The interface contract of the bindings is `packages/rust/interface.json`. It names the five targets php, python, node, go
   and wasm from the start, and its cases are `contracts/cases.json`, taken from the inputs and expectations of
   `contracts/conformance/vectors.json`, because a case that the contract invents tests no behavior that fsm has. The binding
-  packages and the root Cargo workspace that holds them are tracked only after plan f6 step 3-2 moves the hand-written language
-  packages to `legacy/`, because binding scaffold writes the manifests of `packages/php-ext`, `packages/python` and `packages/go`
-  and the folder `packages/php-ext/src`, which those packages own; until then `make bindings-check` names each binding file that
-  is missing or differs.
+  packages and the root Cargo workspace that holds them are tracked from plan f6 step 3a, the step after step 3-2 moved the
+  hand-written language packages to `legacy/`; until then `make bindings-check` names each binding file that is missing or
+  differs.
   Enforced by: none, binding is not yet a package that a lock pins, so no CI job can run `make bindings-check`, which needs
   BINDING set to the cli of a binding checkout.
 
 ## Generated files
 
-- Own: Generated files are never tracked in Git. This covers dependency installs (`node_modules/`, `vendor/`, virtual environments), build output (`dist/`, `target/`, `*.tsbuildinfo`), caches (`.cache/`, `__pycache__/`, `.pytest_cache/`), test run artifacts (`test-results/`, `playwright-report/`, PHPUnit caches) and tool downloads (`var/`). The only exceptions are the files the repository deliberately needs: lock files (`package-lock.json`, `composer.lock`, `Cargo.lock`, uv locks, `mise.lock`), committed generated documents that this file names, test fixtures, and the generated sources `packages/go/src` and `packages/rust/src`, which the Go module and the Rust crate release as their tagged tree (P34): `config/generated.json` tracks them with their reason, and `make layout-check` fails when they differ from what `make fsm-gen` writes (S-371). Each `.gitignore` covers the other paths; a new generator adds its ignore entry in the same commit.
+- Own: Generated files are never tracked in Git. This covers dependency installs (`node_modules/`, `vendor/`, virtual environments), build output (`dist/`, `target/`, `*.tsbuildinfo`), caches (`.cache/`, `__pycache__/`, `.pytest_cache/`), test run artifacts (`test-results/`, `playwright-report/`, PHPUnit caches) and tool downloads (`var/`). The only exceptions are the files the repository deliberately needs: lock files (`package-lock.json`, `composer.lock`, `Cargo.lock`, uv locks, `mise.lock`), committed generated documents that this file names, test fixtures, and the generated sources `legacy/packages/go/src` and `legacy/packages/rust/src`, which the Go module and the Rust crate released as their tagged tree before they moved under `legacy/` (P34): `config/generated.json` tracks them with their reason, and `make layout-check` fails when they differ from what `make fsm-gen` writes (S-371). Each `.gitignore` covers the other paths; a new generator adds its ignore entry in the same commit.
   Enforced by: none, a judgement at review; `make layout-check` checks that Git ignores each install folder and tracks no generated file.
 
 ## Checklist

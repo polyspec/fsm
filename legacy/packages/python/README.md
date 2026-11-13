@@ -104,7 +104,7 @@ A transition runs in one transaction: the row is read under its lock (`for_updat
 caller observed, and the row is updated only when the step changed:
 
 ```python
-# packages/python/examples/persist.py, transition
+# legacy/packages/python/examples/persist.py, transition
 def transition(db, machine, row_id, expected, event):
     """One attempt of the transition `event` from the observed state `expected` on the row `row_id`.
 
@@ -135,12 +135,12 @@ The python package needs Python 3.14 in a virtual environment. From the checkout
 ```sh
 make install-tools TOOLS=python            # online: Python 3.14 of pythonBuild in config/toolchain.json, into var/tools (var/tools/bin/python3; no system path changes)
 make fsm-python-install    # online: .venv, made by the kit tool (make python-venv) from the install-tools Python 3.14 as a copy, filled from pylock.toml (kit's make python-lock: orm v0.0.18 and ordered-json v0.0.9 from their release wheels, every artifact by sha256)
-make test-python                       # offline: the vector cases and the persist cases, run by the kit runner with --venv .venv (no PATH change)
+make legacy-test-python                       # offline: the vector cases and the persist cases, run by the kit runner with --venv .venv (no PATH change)
 make python-persist-test-postgres # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make python-persist-test-mysql    # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
 
 The run passes 290 of 290 cases. `tests/test_conformance.py` generates one unittest method per vector case, named
 `test_<feature>__<id>`, and asserts the result of the generated function or its error code. The generated files are not tracked:
-`make fsm-python-gen` writes them, and `make test-python` runs it first. `make parity-python` checks the result record of every case. `uv.lock` locks every package of the tree (exact versions, sha256
+`make fsm-python-gen` writes them, and `make legacy-test-python` runs it first. `make parity-python` checks the result record of every case. `uv.lock` locks every package of the tree (exact versions, sha256
 hashes, git commits), and `make python-lock-check` checks it against `pyproject.toml`, and that `pylock.toml`, the PEP 751 export the kit gate reads, is its current export.

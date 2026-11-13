@@ -10,8 +10,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const SRC = path.join(REPO, 'packages/compiler/src');
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+const SRC = path.join(REPO, 'legacy/packages/compiler/src');
 
 // A static import or export that names its module: `import … from 'x'`, `export … from 'x'`, `import 'x'`, at the start of a line.
 // The words before `from` hold no quote, so a `from` inside a string of a declaration is not a module.

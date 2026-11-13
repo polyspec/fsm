@@ -1,6 +1,6 @@
 // Tests of the db store of the GUI (docs/spec/fsm.md, B-2; docs/plans/fsm-v1/plan.md, C-6 and C-7): the database that the
-// DSN in the environment names is read through the DB store of packages/db, and the list page shows its machines. The
-// database is a SQLite file in a temporary project, with the schema of packages/db/schema/fsm.dbs installed by the same orm package.
+// DSN in the environment names is read through the DB store of legacy/packages/db, and the list page shows its machines. The
+// database is a SQLite file in a temporary project, with the schema of legacy/packages/db/schema/fsm.dbs installed by the same orm package.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { openStore } from '../src/store.mjs';

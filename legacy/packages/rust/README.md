@@ -61,7 +61,7 @@ The functions of the module `order` (`src/order.rs`):
 `Step` has the fields `to: State` and `changed: bool`. `from_code` takes an `i64`, so a value that a database returns is passed
 without narrowing it.
 
-A complete `apply` call is the `decide` function of the adapter macro in `packages/rust/tests/conformance/vectors.rs`, which the persist
+A complete `apply` call is the `decide` function of the adapter macro in `legacy/packages/rust/tests/conformance/vectors.rs`, which the persist
 cases pass to `check_persist` (`machine` is the module of the machine, `order` for the order example):
 
 ```rust
@@ -117,7 +117,7 @@ again (orm `transaction`, three retries by default; the closure is pure, so a re
 without a write, and a database error other than a deadlock is returned after one attempt:
 
 ```rust
-// packages/rust/examples/persist.rs, transition_with_fault (transition calls it with no fault)
+// legacy/packages/rust/examples/persist.rs, transition_with_fault (transition calls it with no fault)
 pub async fn transition_with_fault(
     db: &Db,
     id: i64,
@@ -153,7 +153,7 @@ From the checkout root:
 ```sh
 make fsm-rust-install   # cargo fetch --locked: the crates of Cargo.lock (the orm release v0.0.29 by its git tag)
 make fsm-rust-test      # cargo test through kit's run-tests
-make test-rust                      # the same from the root
+make legacy-test-rust                      # the same from the root
 make rust-persist-test-postgres   # the persist cases on PostgreSQL (FSM_TEST_PG_DSN; a missing DSN exits 2)
 make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_DSN)
 ```
@@ -161,5 +161,5 @@ make rust-persist-test-mysql      # the persist cases on MySQL (FSM_TEST_MYSQL_D
 The run passes 89 of 89 cases in about 100 seconds, which includes the compilation of the crate. `tests/conformance/main.rs` has no libtest harness: libtest-mimic runs one
 trial per vector case of `contracts/conformance/vectors.json`, named by its case name `<feature>__<id>` (`vectors::<feature>__<id>`), and each calls a
 check function of `main.rs` through the adapter of its machine in `tests/conformance/vectors.rs`; the persist cases run on a tokio runtime of their own. The toolchain is `rust-toolchain.toml` at the root (Rust 1.99.0). The generated modules
-of `src/` are tracked, since a consumer installs the tagged tree of the crate by its git tag: `make fsm-rust-gen` writes them, `make test-rust`
+of `src/` are tracked, since a consumer installs the tagged tree of the crate by its git tag: `make fsm-rust-gen` writes them, `make legacy-test-rust`
 runs it first, and `make layout-check` fails when the tracked files differ from what it writes.

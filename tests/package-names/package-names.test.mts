@@ -11,18 +11,18 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const read = (file: string) => readFileSync(path.join(root, file), 'utf8');
 
 test('the TS runtime is the public package @polyspec/fsm', () => {
-  const manifest: unknown = JSON.parse(read('packages/js/package.json'));
+  const manifest: unknown = JSON.parse(read('legacy/packages/js/package.json'));
   assert.ok(typeof manifest === 'object' && manifest !== null && 'name' in manifest);
   assert.equal(manifest.name, '@polyspec/fsm');
   assert.equal('private' in manifest, false);
 });
 
 test('the Python wheel is polyspec-fsm', () => {
-  const project = read('packages/python/pyproject.toml').split(/^\[project\]/m)[1] ?? '';
+  const project = read('legacy/packages/python/pyproject.toml').split(/^\[project\]/m)[1] ?? '';
   assert.equal(project.match(/^name = "([^"]+)"/m)?.[1], 'polyspec-fsm');
 });
 
 test('the Rust crate is polyspec-fsm', () => {
-  const crate = read('packages/rust/Cargo.toml').split(/^\[package\]/m)[1] ?? '';
+  const crate = read('legacy/packages/rust/Cargo.toml').split(/^\[package\]/m)[1] ?? '';
   assert.equal(crate.match(/^name = "([^"]+)"/m)?.[1], 'polyspec-fsm');
 });

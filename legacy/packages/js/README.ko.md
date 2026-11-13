@@ -1,5 +1,5 @@
 <!-- doc-id: readme-npm -->
-<!-- source-sha256: cdc61343dd48228861819deb5243aca3c47c1d7f0715fad38acd9e56487f479a -->
+<!-- source-sha256: 7c9341915bd9ef39ead6f30352002103a6dcb744c238d670f197567ad2076c66 -->
 # @polyspec/fsm
 
 [English](README.md)
@@ -116,7 +116,7 @@ transaction 안에서 실행한다. row를 잠금(`forUpdate`) 아래 읽고, ev
 때만 row를 갱신한다:
 
 ```js
-// packages/js/examples/persist.mjs, transition
+// legacy/packages/js/examples/persist.mjs, transition
 export async function transition(db, machine, id, expected, event) {
   return db.transaction(async () => {
     const row = await new Item().connect(db).id(id).forUpdate().get();
@@ -144,4 +144,4 @@ make fsm-js-test      # tests/conformance.test.mjs through kit's run-tests
 case 이름 `<feature>__<id>`로 실행한다. 영속화 case는 `FSM_TEST_DIALECT`의 dialect(기본은 SQLite)에서 `examples/persist.mjs`를 실행한다.
 `tests/persist.test.mjs`는 한 row의 두 전이를 동시에 실행하고 deadlock 재시도를 검사한다(`make npm-persist-test`). 루트의
 `tests/npm-types`는 TypeScript 컴파일러로 `.d.ts` 파일을 검사한다(`make npm-types`). 생성 파일은 추적하지 않는다. `make fsm-js-gen`이
-생성하며 `make test-js`와 `make npm-types`가 먼저 실행한다.
+생성하며 `make legacy-test-js`와 `make npm-types`가 먼저 실행한다.

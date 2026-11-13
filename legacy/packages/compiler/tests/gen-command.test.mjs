@@ -11,7 +11,7 @@ import { jsonStore } from '../src/store-json/store.mjs';
 import { HERE, gen, tempDir } from './cli-support.mjs';
 import { ORDER_PROJECT } from './order-project.mjs';
 
-const ROOT = path.resolve(HERE, '../../..');
+const ROOT = path.resolve(HERE, '../../../..');
 const GOLDEN = path.join(HERE, 'golden/npm');
 const GOLDEN_PHP = path.join(HERE, 'golden/php');
 

@@ -11,7 +11,7 @@ import { FEATURES, vectors } from '../src/core/vectors.mjs';
 import { fiveStateOrder as order } from './order-machines.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, '../../..');
+const ROOT = path.resolve(HERE, '../../../..');
 
 /** A two-state machine: start (initial) -go-> end (final). */
 const twoStep = () => ({

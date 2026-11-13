@@ -86,7 +86,7 @@ test('the site builds from the repository documents, with the English and Korean
   assert.equal(result.status, 0, `the build failed\n${result.stdout}${result.stderr}`);
   assert.deepEqual(warningLines(result.stdout + result.stderr), [], 'the build prints a warning');
   const out = path.join(REPO, 'docs/.vitepress/dist');
-  for (const page of ['index.html', 'README.ko.html', 'packages/go/index.html', 'docs/spec/fsm.html', 'docs/plans/fsm-v1/plan.html']) {
+  for (const page of ['index.html', 'README.ko.html', 'legacy/packages/go/index.html', 'docs/spec/fsm.html', 'docs/plans/fsm-v1/plan.html']) {
     assert.ok(existsSync(path.join(out, page)), `the build produced no ${page}`);
   }
   // A repository file that is not a site page is linked to its public repository, not to a dead route (C-8).

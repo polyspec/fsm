@@ -1,5 +1,5 @@
 <!-- doc-id: readme-db -->
-<!-- source-sha256: 13a569245ef2f1485de83aa8b264b2eae493a22c7ec5fbfef632d4f0de4643d0 -->
+<!-- source-sha256: 004481c63dd5b845b12dfa43f3df064e7d330e527cdcd24df4c36dc47e3c25c9 -->
 # @polyspec/fsm-db
 
 [English](README.md)
@@ -27,7 +27,7 @@ fsm의 DB store와 그 명령줄 `fsm-db`다. fsm 프로젝트는 정의와 lock
 
    `dsnEnv`는 DSN을 담은 환경 변수의 이름이다. DSN 자체는 파일에 쓰지 않는다.
 3. 그 변수에 database의 DSN을 설정한다([DSN](#dsn) 참고).
-4. 명령 `fsm-db`를 PATH에 둔다: 저장소 루트에서 `npm install -g ./packages/db`. npm은 clone의 package를 link하므로
+4. 명령 `fsm-db`를 PATH에 둔다: 저장소 루트에서 `npm install -g ./legacy/packages/db`. npm은 clone의 package를 link하므로
    명령은 clone의 코드를 실행한다.
 5. 여섯 table을 만든다: `fsm-db install`.
 
