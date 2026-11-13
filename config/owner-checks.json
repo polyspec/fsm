@@ -295,7 +295,8 @@
         ".github/workflows/**",
         ".github/actions/**",
         "tests/workflows/**",
-        ".php-version"
+        ".php-version",
+        "config/release.json"
       ],
       "targets": [
         "workflows-test"
