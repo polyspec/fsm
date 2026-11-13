@@ -1130,7 +1130,7 @@ checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 [[package]]
 name = "polyspec-binding-core"
 version = "0.0.1"
-source = "git+https://github.com/polyspec/binding.git?branch=v1%2Frust-core#ae511fd5a33edc51ff84dcf602b32570457437fd"
+source = "git+https://github.com/polyspec/binding.git?branch=v1%2Frust-core#a03ba03e6f03dadf442ceada2e34f82610864b53"
 dependencies = [
  "indexmap",
  "tokio",

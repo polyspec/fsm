@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: c8d2f26dd8155cabc82d1dfddbbbb41f64bd600ff35e8ef1ba16bf5687cea301 -->
+<!-- source-sha256: 7a1cfccc4c2b5fc3b366f3ae6ad489bcb72290e37416015885dac44cf1d86e9d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- Cargo.lock이 polyspec-binding-core를 binding a03ba03에 고정하고, 추적하는 binding 소스 다섯 개(`packages/{php-ext,python,ts,ts/wasm,go/internal/ffi}/src/lib.rs`)는 binding a03ba03이 scaffold하는 것이다. crate 속성 `allow`마다 규칙을 reason으로, 설명을 주석으로 둔다. `binding check`는 아무것도 보고하지 않는다(CK-19, CK-20).
 - Go conformance 시험은 `contracts` 폴더를 `FSM_CONTRACTS`에서만 읽었다. 그래서 binding의 end-to-end 검사가 commit된 tree의 사본에서 그 변수 없이 돌리는 `packages/go`의 `go test ./...`가 "FSM_CONTRACTS names the folder contracts; make test-go-conformance sets it"로 실패했다. 이제 시험은 Python 시험처럼 package 폴더에서 가장 가까운, `contracts/conformance/vectors.json`을 가진 부모 폴더를 쓰고, `make test-go-conformance`는 그 변수를 두지 않는다. Red: 변수 없는 레시피가 그 메시지로 실패했다. Green: binding 46f61fb로 vector 259개가 통과하고, `input_type`이 있는 `from_code` vector 20개는 S-467이 적은 대로 이름으로 실패한다(S-468).
 - Go conformance runner(S-467)가 `input_type`이 있는 `from_code` vector 20개를 `FromCode`의 타입 확인으로 대신하지 않는다. 그 확인은 코어의 거부를 실행하지 않았다: 각 vector는 이름으로 실패하고, binding GN-13이 어떤 target에서 언어 꼴이 없는 입력에 주는 test feature `case-test` 진입점을 기다린다.
 - legacy 시험의 공통 suite에 Go 바인딩 runner가 생겼다: `packages/go/tests/conformance_test.go`가 `conformance.mjs`처럼 vector 279개를 돌리고, `make test-go-conformance`가 `make test-go-binding` 뒤에 그것을 돌린다. `input_type`이 있는 `from_code` 입력은 `FromCode`가 받는 `int64`의 값이 아니므로, 시험은 그 타입과 대응표의 kind `invalid_number`를 확인한다. `test-go-binding`은 생성기가 더는 쓰지 않는 S-454의 machine별 package(`in_review`, `limits`, ...)를 이름 붙였는데, 이제 root package, `errors`, `internal`을 이름 붙인다. Red: fsm이 고정한 binding ae511fd는 Go target을 거부한다(`machine: a class unit is not generated for Go yet`). binding 88fcaa3으로는 생성 시험 552개와 vector 279개가 통과한다 (S-467).
