@@ -459,6 +459,37 @@
         "commit-names-test",
         "commit-names-check"
       ]
+    },
+    {
+      "paths": [
+        "scripts/container.mts",
+        "tests/container/**"
+      ],
+      "targets": [
+        "container-test"
+      ]
+    },
+    {
+      "paths": [
+        "scripts/persist-servers.mts",
+        "scripts/container.mts",
+        "config/containers.json",
+        "tests/persist-servers/**"
+      ],
+      "targets": [
+        "persist-servers-test"
+      ]
+    },
+    {
+      "paths": [
+        "Makefile",
+        "tests/support/stand-ins.mts"
+      ],
+      "targets": [
+        "workflows-test",
+        "container-test",
+        "persist-servers-test"
+      ]
     }
   ]
 }

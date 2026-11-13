@@ -83,6 +83,11 @@ export const ALLOWED: readonly Allowed[] = Object.freeze([
     reason: 'the consumer status column, a state value: its accessors (getStatus, setStatus, orderByStatusAsc), statusOf and status_of, and the column words of the persistence examples and docs',
   },
   {
+    files: ['scripts/persist-servers.mts', 'tests/persist-servers/**', 'tests/container/**', 'docs/plans/fsm-v1/plan.md', 'docs/plans/fsm-v1/plan.ko.md'],
+    match: /\bstatus\.networks\b|'status'|"status":|\{ status: \{ networks:/,
+    reason: 'the key status of the JSON that the inspect of Apple container prints, which holds the networks of a container: the program fixes the name, and scripts/persist-servers.mts reads the address of a container from it (S-472-1)',
+  },
+  {
     files: ['contracts/cases.json'],
     match: /"status": (?:null|\d+)(?=,)/,
     reason: 'the status field of a raised error in the binding cases (binding G-5): the HTTP status of the error kind, which fsm leaves null',

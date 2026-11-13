@@ -1,0 +1,17 @@
+{
+  "comment": "The images of the PostgreSQL and MySQL servers of the tests, which scripts/persist-servers.mts runs in the container program of the platform (docs/plans/fsm-v1/plan.md, C-6; S-472-1). Each image is pinned by the digest of its index, which names one image for every platform; version names the release that the digest holds. make persist-images pulls them. A new release replaces the version and the digest of its entry together.",
+  "images": {
+    "postgres": {
+      "version": "17.11",
+      "reference": "docker.io/library/postgres@sha256:f4c66b820c6f974249089d3d16d86a3698eae11e8746eb6644b2271031e91232",
+      "reason": "a tag such as postgres:17 names another image after each release of the image, so the result of a run would depend on the day of its pull; the digest names the same bytes on Darwin and on Linux, the release of the PostgreSQL server of orm's tests",
+      "removal": "when no test of fsm runs on a PostgreSQL server, the entry leaves with the targets of the PostgreSQL dialect"
+    },
+    "mysql": {
+      "version": "8.4.11",
+      "reference": "docker.io/library/mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "reason": "a tag such as mysql:8.4 names another image after each release of the image, so the result of a run would depend on the day of its pull; the digest names the same bytes on Darwin and on Linux, the release of the MySQL server of orm's tests",
+      "removal": "when no test of fsm runs on a MySQL server, the entry leaves with the targets of the MySQL dialect"
+    }
+  }
+}

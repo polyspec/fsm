@@ -22,6 +22,9 @@
     "go",
     // The tests of the recipes (tests/make-install, tests/python-tools) run make -n on the root Makefile.
     "make",
+    // tests/persist-servers/persist-servers.test.mts makes the named pipe on which a stand-in server waits, with the mkfifo
+    // of the system; node has no call that makes one.
+    "mkfifo",
     // legacy/packages/compiler/tests/php-backend.test.mjs and php-ext-backend.test.mjs (make compiler-test) lint the generated PHP with
     // php -l and run it, the extension with php -d extension.
     "php"

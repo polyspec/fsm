@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: 758f588d1b5254330c2727dd728167bed8f30f10f7fb4c82850b8d14a3c4ec0b -->
+<!-- source-sha256: bf0953d83181ca26b1e0652041cdaf8a881b5e7c94d66d99b850b58a33a26e8d -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -269,13 +269,13 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
 - 로컬 서버(S-37, 이 항목의 실행): PostgreSQL 17.11(`initdb`, `pg_ctl`, 실행마다 data 디렉터리와 socket 디렉터리)과 MySQL 8.4.11(`mysqld --initialize-insecure`, `--daemonize`)을 각각 포트 55432와 33306에 띄웠다. database는 `fsm_test`, 사용자는 `fsm`이다. DSN은 `postgres://fsm@127.0.0.1:55432/fsm_test?sslmode=disable`와 `mysql://fsm:fsm@127.0.0.1:33306/fsm_test`였다. 실행 뒤 서버를 멈추고 data 디렉터리를 지웠다.
 - CI와 `make check`의 서버(S-472-1, 결정): 테스트의 PostgreSQL과 MySQL 서버는 make target 하나가 소유하는 container에서 실행하고, job `check`에는 `services` 블록이 없다. 머신에 설치된 서버는 쓰지 않는다.
   - pin: `config/containers.json`이 두 이미지를 index의 digest로 고정한다. `docker.io/library/postgres`는 17.11, `docker.io/library/mysql`은 8.4.11이고, 위 로컬 서버의 release와 같다. 이 파일은 각 pin의 이유와 제거 조건을 적는다. 이미지와 digest는 두 플랫폼에서 하나이므로, 두 플랫폼의 테스트가 같은 바이트의 서버에 연결한다.
-  - 프로그램: `scripts/container.sh`가 container 프로그램의 명령을 가진다. 프로그램은 플랫폼만으로 정한다. Darwin은 Apple `container`, Linux는 `docker`다. 어떤 변수도 프로그램을 고르지 않는다. PATH에 없는 프로그램은 모든 동사를 즉시 실패시키고, 프로그램의 이름과 설치 방법을 적는다. 동사는 `program`, `pull`, `present`, `run`, `delete`, `inspect`다.
+  - 프로그램: `scripts/container.mts`가 container 프로그램의 명령을 가진다. 프로그램은 플랫폼만으로, 곧 `uname -s`가 출력하는 이름으로 정한다. Darwin은 Apple `container`, Linux는 `docker`다. 이 script는 S9가 저장소의 infrastructure에 요구하는 대로 TypeScript다. 어떤 변수도 프로그램을 고르지 않는다. PATH에 없는 프로그램은 모든 동사를 즉시 실패시키고, 프로그램의 이름과 설치 방법을 적는다. 동사는 `program`, `pull`, `present`, `run`, `delete`, `inspect`다.
   - 이미지: `make persist-images`가 두 이미지를 pull하며, 이미지를 내려받는 target은 이것뿐이다. 설치되지 않은 이미지로 시작한 실행은 container를 시작하기 전에 실패하고 `make persist-images`를 적는다.
   - 실행: `make persist-servers TARGETS="..."`는 `scripts/persist-servers.mts run -- make ci-targets`를 실행한다. script는 두 서버를 각각의 container에서 attach 상태로 시작한다. container 이름은 실행의 process id와 무작위 4바이트를 가진 `fsm-persist-<pid>-<random>-postgres`와 `fsm-persist-<pid>-<random>-mysql`이므로, 한 머신의 두 실행이 container를 공유하지 않는다. 포트는 게시하지 않는다.
   - 준비: script는 각 container의 출력을 줄 단위로 읽고, 이미지가 초기화를 끝낸 뒤 서버가 연결을 받는다고 적는 줄에서 다음으로 넘어간다. `PostgreSQL init process complete` 다음의 `database system is ready to accept connections`, 그리고 `MySQL init process done` 다음의 `port: 3306`이 있는 `ready for connections`다. 각 쌍의 첫 줄이 필요한 이유는 이미지가 초기화를 위해 임시 서버를 띄우고 그 서버도 둘째 줄을 적기 때문이다. sleep도 polling도 시간 제한도 없다. 준비 줄 전에 멈춘 container는 출력의 마지막 줄들과 함께 target을 실패시킨다.
   - 주소: script는 프로그램의 `inspect`가 출력하는 JSON에서 각 container의 주소를 읽는다. docker는 `NetworkSettings.Networks.<network>.IPAddress`, Apple `container`는 prefix 길이를 뺀 `status.networks[].ipv4Address`다. DSN은 그 주소와 container 안 서버의 포트를 적는다.
   - account는 이미지가 container의 환경에서 만드는 것이다. PostgreSQL은 `POSTGRES_USER=fsm`, `POSTGRES_PASSWORD=fsm`, `POSTGRES_DB=fsm_test`이므로 `fsm`은 `createEmptyDatabase`가 만드는 database의 owner가 되는 superuser다. MySQL은 `MYSQL_ROOT_PASSWORD=root`, `MYSQL_USER=fsm`, `MYSQL_PASSWORD=fsm`, `MYSQL_DATABASE=fsm_test`이고, account `root`와 `fsm`은 모든 host에서 연결한다.
-  - 끝: script는 아래 네 변수와 함께 명령을 실행하고, SIGINT와 SIGTERM을 명령에 전달하고, 명령이 끝나거나 실패할 때와 실행이 두 signal 중 하나를 받을 때 두 container를 제거한다. 서버를 시작하는 중에 받은 signal에도 제거한다. 종료 상태는 명령의 종료 상태이고, 두 signal에는 130과 143이다.
+  - 끝: script는 아래 네 변수와 함께 명령을 실행하고, SIGINT와 SIGTERM을 명령에 전달하고, 명령이 끝나거나 실패할 때, 서버의 시작이 실패할 때, 실행이 두 signal 중 하나를 받을 때 두 container를 제거한다. 서버를 시작하는 중에 받은 signal은 시작이 끝난 뒤 명령 없이 실행을 끝낸다. 종료 상태는 명령의 종료 상태이고, 두 signal에는 130과 143이다. 제거가 실패하면 아직 실행 중일 수 있는 container의 이름을 적고 실행을 실패시킨다.
   - `make check`와 `make ci-suite`는 `make persist-servers`를 통해 target을 실행한다. 테스트는 `tests/container`(`make container-test`)와 `tests/persist-servers`(`make persist-servers-test`)다. 각 테스트는 자신이 쓴 `uname`, `docker`, `container` 대역 프로그램으로 script를 실행하므로 container runtime이 필요 없다.
 ```text
 FSM_TEST_PG_DSN=postgres://fsm:fsm@<address of the PostgreSQL container>:5432/fsm_test?sslmode=disable
@@ -402,7 +402,7 @@ owner-checks 매핑(각 항목이 자기 부분을 추가한다):
   - `compiler-test`, `db-test`, `gui-test`
   - `python-tools-test` (`tests/python-tools`: checkout의 Python. S-41: `var/tools/bin/python3`은 `install-tools`가 만들고, 인터프리터를 uv로 설치하는 recipe가 없으며, `install-python` 타깃이 없고, `config/toolchain.json`이 `pythonBuild`를 선언한다. 복사한 Makefile에서 `make -n`으로 실행하며 네트워크를 쓰지 않는다)
   - `workflows-test`(`tests/workflows`: CI와 Pages 워크플로의 pin, 버전, 규칙, C-10, S-21)
-  - `container-test`(`tests/container`: 두 플랫폼에서 `scripts/container.sh`의 명령)와 `persist-servers-test`(`tests/persist-servers`: `scripts/persist-servers.mts`의 시작, 준비 줄, DSN, 이른 종료, 제거), C-6, S-472-1
+  - `container-test`(`tests/container`: 두 플랫폼에서 `scripts/container.mts`의 명령)와 `persist-servers-test`(`tests/persist-servers`: `scripts/persist-servers.mts`의 시작, 준비 줄, DSN, 이른 종료, 제거), C-6, S-472-1
   - `persist-images`와 `persist-servers`(PostgreSQL과 MySQL target의 이미지와 서버, C-6, S-472-1)
   - `test-<kind>`, `packages-test`(`kinds`의 `test-<kind>`를 `make -j6`으로)
 - `check` = `node $(KIT)/full-run.$(KIT_EXT) run $(CHECK_TARGETS)`

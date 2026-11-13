@@ -1,7 +1,8 @@
 // Tests of the CI and Pages workflows (docs/plans/fsm-v1/plan.md, C-10 and Verification; docs/plans/fsm-v1/checklist.md, S-21).
 // The workflows are read as text, so the test needs no YAML parser and no network. Each version is compared with the file
-// that declares it, and the services and env of the CI job with the block that plan C-6 holds, so the plan and the workflow
-// cannot drift apart. The action pins are the commits that the template repository verified for the same versions.
+// that declares it. The CI job holds no block services and no variable of a server: it pulls the images of the PostgreSQL
+// and MySQL servers and runs its suite through make persist-servers, which starts them in containers (plan C-6, S-472-1),
+// and it uploads its report. The action pins are the commits that the template repository verified for the same versions.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -10,6 +11,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'smol-toml';
 import { cleanEnv } from '../support/make-sandbox.mts';
+import { standIns } from '../support/stand-ins.mts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (file: string): string => readFileSync(path.join(ROOT, file), 'utf8');
@@ -187,13 +189,68 @@ test('the suite of the CI job, make check and the owners of the core crate run i
   }
 });
 
+// The servers of the persist targets (plan C-6, S-472-1): the job declares no server and no DSN. Its step of the images
+// downloads them, and its suite step is one make target that owns the containers of the run.
+test('the check job holds no services and no DSN: it pulls the images and runs its suite through make persist-servers', () => {
+  assert.doesNotMatch(CI, /^ *services:/m, 'ci.yml holds a block services');
+  assert.doesNotMatch(CI.split('\n').filter(line => !line.trim().startsWith('#')).join('\n'), /FSM_TEST_/, 'ci.yml sets a variable of a server');
+  const steps = stepsOf(CHECK_JOB);
+  const images = steps.findIndex(entry => /\n {8}run: make persist-images$/m.test(entry));
+  const suite = steps.findIndex(entry => entry.includes('Run the suite targets through make ci-targets'));
+  assert.ok(images >= 0, 'no step of the check job runs make persist-images');
+  assert.ok(steps.findIndex(entry => /\n {8}run: make install$/m.test(entry)) < images && images < suite, 'make persist-images does not run after make install and before the suite');
+  const step = text(steps[suite], 'the step of the suite targets');
+  assert.match(step, /\n {8}if: \$\{\{ !cancelled\(\) \}\}\n/, 'the suite step does not run after a failed check of the hooks');
+  const targets = /\n {8}run: make persist-servers TARGETS="([^"]*)"$/m.exec(step)?.[1];
+  assert.ok(targets !== undefined, `the suite step is not make persist-servers TARGETS="...":\n${step}`);
+  // Every target that reads a DSN, and the tests of the two scripts of the servers, run in that step.
+  const makefile = read('Makefile');
+  const reading = [...makefile.matchAll(/^([a-z][a-z0-9-]*):.*\n\t@\$\(call require_dsn,/gm)].map(match => text(match[1], 'a target that requires a DSN'));
+  assert.ok(reading.length >= 14, `the Makefile holds ${String(reading.length)} targets that require a DSN`);
+  for (const target of [...reading, 'container-test', 'persist-servers-test']) assert.ok(targets.split(' ').includes(target), `the suite step does not run ${target}`);
+  const check = /^CHECK_TARGETS := (.*)$/m.exec(makefile)?.[1]?.split(' ') ?? [];
+  for (const target of [...reading, 'container-test', 'persist-servers-test']) assert.ok(check.includes(target), `make check does not run ${target}`);
+});
+
+// A dry run prints the recipe of the servers and starts nothing: the stand-in uname of the case names a platform without a
+// container program, so a recipe that ran would fail.
+test('make persist-servers runs TARGETS through make ci-targets under scripts/persist-servers.mts, and make check and make ci-suite run through it', t => {
+  const { directory } = standIns(t, 'DryRun');
+  const dry = (goal: string, env: Record<string, string> = {}) => make(['-n', goal], { PATH: `${directory}:${process.env.PATH ?? ''}`, ...env });
+  const servers = dry('persist-servers', { TARGETS: 'db-test-postgres db-test-mysql' });
+  assert.equal(servers.code, 0, servers.output);
+  assert.match(servers.output, /^\S+\/node scripts\/persist-servers\.mts run -- \S*make ci-targets TARGETS="db-test-postgres db-test-mysql"$/m);
+  assert.doesNotMatch(servers.output, /persist-servers:|container\.mts:/, 'the dry run ran the recipe of the servers');
+  const images = dry('persist-images');
+  assert.equal(images.code, 0, images.output);
+  assert.match(images.output, /^\S+\/node scripts\/persist-servers\.mts pull$/m);
+  for (const goal of ['check', 'ci-suite']) {
+    const suite = dry(goal);
+    assert.equal(suite.code, 0, suite.output);
+    assert.match(suite.output, /^\S+\/node scripts\/persist-servers\.mts run -- \S*make ci-targets TARGETS="[^"]*\bdb-test-postgres\b[^"]*"$/m, `${goal} does not run its targets with the servers`);
+    assert.doesNotMatch(suite.output, /persist-servers:|container\.mts:/, `the dry run of ${goal} ran the recipe of the servers`);
+  }
+});
+
+// Each job that runs targets uploads its report (plan C-10): the report of make ci-targets, also after a failed target.
+test('the check job uploads the report of make ci-targets as its last step, also after a failure', () => {
+  const steps = stepsOf(CHECK_JOB);
+  const upload = text(steps.at(-1), 'the last step of the check job');
+  assert.match(upload, /\n {8}uses: actions\/upload-artifact@[0-9a-f]{40}/, `the last step of the check job uploads no artifact:\n${upload}`);
+  assert.match(upload, /\n {8}if: \$\{\{ !cancelled\(\) \}\}\n/);
+  assert.match(upload, /\n {10}name: fsm-report-check\n/);
+  const report = /^CI_REPORT \?= (\S+)$/m.exec(read('Makefile'))?.[1];
+  assert.ok(report !== undefined, 'the Makefile sets no CI_REPORT');
+  assert.ok(upload.includes(`\n          path: ${report}/\n`), `the step does not upload ${report}/:\n${upload}`);
+});
+
 /** The result of `make <goals>` in the repository with the variables `env` added and no inherited make flags; `-n` in `goals` prints the recipe and runs nothing. */
-function make(goals: string[], env: Record<string, string> = {}): { status: number | null; output: string } {
+function make(goals: string[], env: Record<string, string> = {}): { code: number | null; output: string } {
   const clean = cleanEnv();
   // The variables that the recipes below read are those of the case alone.
   for (const name of ['RESULTS', 'FAIL_SKIPPED', 'TAG', 'RUNNER_TEMP', 'TARGETS', 'TOOLS', 'RUNTIME', 'GROUP']) Reflect.deleteProperty(clean, name);
   const result = spawnSync('make', ['--no-print-directory', ...goals], { cwd: ROOT, encoding: 'utf8', env: { ...clean, ...env } });
-  return { status: result.status, output: `${result.stdout}${result.stderr}` };
+  return { code: result.status, output: `${result.stdout}${result.stderr}` };
 }
 
 // The targets that the steps of the workflows run in place of a shell command (S-472): the last job of ci and of the pipeline,
@@ -201,34 +258,34 @@ function make(goals: string[], env: Record<string, string> = {}): { status: numb
 test('make ci-passed passes only when every job of RESULTS succeeded', () => {
   const results = (shared: string, runtime: string): Record<string, string> => ({ RESULTS: JSON.stringify({ shared: { result: shared, outputs: {} }, runtime: { result: runtime, outputs: {} } }) });
   const good = make(['ci-passed', 'FAIL_SKIPPED=1'], results('success', 'success'));
-  assert.equal(good.status, 0, good.output);
+  assert.equal(good.code, 0, good.output);
   for (const [shared, runtime] of [['success', 'failure'], ['cancelled', 'success'], ['failure', 'skipped'], ['success', 'skipped']] as const) {
     const bad = make(['ci-passed', 'FAIL_SKIPPED=1'], results(shared, runtime));
-    assert.notEqual(bad.status, 0, `ci-passed passed with shared ${shared} and runtime ${runtime}:\n${bad.output}`);
+    assert.notEqual(bad.code, 0, `ci-passed passed with shared ${shared} and runtime ${runtime}:\n${bad.output}`);
   }
   const unset = make(['ci-passed', 'FAIL_SKIPPED=1']);
-  assert.notEqual(unset.status, 0, `ci-passed passed with no RESULTS:\n${unset.output}`);
+  assert.notEqual(unset.code, 0, `ci-passed passed with no RESULTS:\n${unset.output}`);
   assert.match(unset.output, /RESULTS is not set/);
 });
 
 test('make release-checkout and make release-undraft read TAG from the environment and fail without it', () => {
   for (const target of ['release-checkout', 'release-undraft']) {
     const missing = make([target]);
-    assert.notEqual(missing.status, 0, `${target} passed with no TAG`);
+    assert.notEqual(missing.code, 0, `${target} passed with no TAG`);
     assert.match(missing.output, new RegExp(`${target}: TAG is required`));
   }
   const checkout = make(['-n', 'release-checkout'], { TAG: 'v0.0.1' });
-  assert.equal(checkout.status, 0, checkout.output);
+  assert.equal(checkout.code, 0, checkout.output);
   assert.match(checkout.output, /^git checkout --quiet "\$TAG"$/m);
 });
 
 test('make bootstrap installs the lock with the npm of devEngines outside the checkout, and gui-browser-libraries runs the Playwright of packages/gui', () => {
   const bootstrap = make(['-n', 'bootstrap']);
-  assert.equal(bootstrap.status, 0, bootstrap.output);
+  assert.equal(bootstrap.code, 0, bootstrap.output);
   assert.match(bootstrap.output, /devEngines\.packageManager\.version/);
   assert.match(bootstrap.output, /cd "\$\{RUNNER_TEMP:-\$\{TMPDIR:-\/tmp\}\}" && .* exec --yes --package="npm@\$version" -- npm --prefix "\$root" ci --ignore-scripts$/m);
   const libraries = make(['-n', 'gui-browser-libraries']);
-  assert.equal(libraries.status, 0, libraries.output);
+  assert.equal(libraries.code, 0, libraries.output);
   assert.match(libraries.output, /^cd packages\/gui && sudo env PATH="\$PATH" +node_modules\/\.bin\/playwright install-deps chromium$/m);
   assert.match(step(stepsOf(CHECK_JOB), 'Install the system libraries of Chromium'), /\n {8}run: make gui-browser-libraries$/m);
 });
@@ -237,14 +294,14 @@ test('make bootstrap installs the lock with the npm of devEngines outside the ch
 // environment of the step, which make reads as the variable of that name, so the recipe receives what the command line gave it.
 test('a make variable of the environment of a step reaches the recipe, and the runner of config/ci.json is the runner of the jobs', () => {
   const targets = make(['-n', 'ci-targets'], { TARGETS: 'kit-gates-runtime-php docs-check' });
-  assert.equal(targets.status, 0, targets.output);
+  assert.equal(targets.code, 0, targets.output);
   assert.match(targets.output, /ci-targets\.m[jt]s -k \S+ kit-gates-runtime-php docs-check$/m);
   const tools = make(['-n', 'install-tools'], { TOOLS: 'php composer' });
-  assert.equal(tools.status, 0, tools.output);
+  assert.equal(tools.code, 0, tools.output);
   assert.match(tools.output, /install-tools\.m[jt]s --no-self-update php composer$/m);
   for (const verb of ['setup', 'context-prepare', 'context-cleanup']) {
     const setup = make(['-n', `kit-ci-${verb}`, 'GROUP=runtime'], { RUNTIME: 'php-ext' });
-    assert.equal(setup.status, 0, setup.output);
+    assert.equal(setup.code, 0, setup.output);
     assert.match(setup.output, new RegExp(`ci-setup\\.m[jt]s --${verb} runtime php-ext$`, 'm'));
   }
   const pipeline = read('.github/workflows/ci-pipeline.yml');
