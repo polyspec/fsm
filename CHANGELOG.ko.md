@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 16eb7d1c7533d8718f1170f1bb7cd032e048b54b075092372660760dea134958 -->
+<!-- source-sha256: 03f24fe752f255014c6cfa04b3f8579d066771f2febe2b1fbc83d4e5a31a61ae -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make test-php-binding`이 `legacy/packages/php-ext`로 옮겨 간 PHP extension의 PHPUnit 설치 `packages/php-ext/vendor/composer/installed.json`을 선행 조건으로 이름했고, make가 그 파일을 만들 규칙이 없다며 멈췄다. 이제 이 대상은 `legacy/packages/php-ext`의 설치를 이름하고 생성 시험을 그 PHPUnit에서 돌린다. binding scaffold가 `packages/php-ext`에 쓰는 composer.json은 PHPUnit을 요구하지 않기 때문이다. S-456의 GUI import와 이 설치가 살아 있는 코드의 legacy 읽기다 (S-456).
 - 계획 f6 단계 3a: 루트 `Cargo.toml`이 코어 crate `packages/rust`와 다섯 바인딩 crate의 workspace이며 fsm의 lint를 갖고, 루트 `Cargo.lock`이 polyspec-binding-core를 f63a655에 고정한다. 계약 `packages/rust/interface.json`이 코어의 class `machine`과 record `step`을 묶는다. `machine`의 factory `parse(definition, reserved)`는 기계 파일을 읽는다(`docs/spec/fsm.md`, B-7, 새 절). 상태와 event는 key이고 code는 `int`이며, kind는 conflict, invalid_transition, unknown_code, reserved_code, unknown_state, unknown_event, invalid_definition이다. `contracts/cases.json`에는 case 234개가 있다: `contracts/conformance/vectors.json`에서 온 223개와 코어에만 있는 kind의 11개(FSM-B7-1부터 FSM-B7-3)다. case가 아닌 vector와 그 이유는 B-7에 있다: persist 11개(코어는 store를 갖지 않는다), 상태 자리에 raw code를 주는 36개, from_code에 string, bool, float를 주는 20개(바인딩의 인자 오류, GN-11). binding scaffold가 쓰는 바인딩 package를 추적하며 릴리스에서 뺀다(`notReleased`). `make test-rust`는 코어에서 case를 돌리고 `make lint-rust`는 바인딩 crate를 뺀다. `make bindings-check`는 전에는 없는 바인딩 파일을 모두 이름했고, 이제 CK-20만 보고한다: binding commit이 옮길 때까지 남는 고정 f63a655다. `make layout-check`는 binding scaffold가 `[lints]` 표를 쓰는 다섯 바인딩 manifest에서 lint-cargo-lints로 실패하고, `make test-rust`는 단계 4가 코어를 쓸 때까지 실패한다 (S-457).
 - 손으로 쓴 package와 fsm-gen 출력이 `legacy/packages/`로 옮겨 간다(계획 f6, 단계 3-2): compiler, db, go, js, php, php-ext, python, rust. 생성 바인딩이 `packages/`를 차지하기 위해서이며, `packages/rust`에는 `interface.json`만 남는다. 그 대상은 `legacy-<task>-<runtime>`이고 `legacy-build`와 `legacy-test`로 묶이며 `build`와 `test`가 이를 선행 조건으로 갖는다. S10의 관문인 `lint-php-ext`와 `test-php-ext`는 바인딩 package가 이를 통과할 때까지 legacy extension을 돈다. 이 package들은 릴리스에서 빠지고 `notReleased`에 적힌다. Makefile, `.gitignore`, config 파일, knip, 문서 사이트, script와 도구 시험이 새 경로를 이름하고, 옮긴 시험 가운데 루트에 닿는 상대 경로는 한 단계 늘어난다. runtime 시험은 새 경로에서 앞 commit의 수로 돈다: Go 295, npm 290과 294, PHP 294 세 번, Python 294, Rust 290과 294. compiler-test는 시험 341개, db-test는 35개, gui-test는 241개를 통과한다. GUI는 단계 9a까지 여섯 파일에서 `legacy/packages/compiler`와 `legacy/packages/db`를 import하며, checklist 행이 그 목록을 적는다 (S-456).
 - `packages/db/src/models`가 없는 checkout에서 `make fsm-js-test`와 `make test-js`가 실패했다: case가 `packages/db/tests/dialect.mjs`를 import하고 그 파일이 그 model을 import하므로, node가 `ERR_MODULE_NOT_FOUND`를 보고하고 시험이 하나도 돌지 않았다. 이제 `fsm-js-test`가 `fsm-db-gen`과 db 설치를 선행 조건으로 이름한다 (HR-85). model을 지운 뒤 `make test-js`가 model을 쓰고 시험 290개와 294개를 통과한다 (S-455).

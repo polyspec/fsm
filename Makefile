@@ -399,11 +399,12 @@ test-wasm: node-package
 	FSM_CASES=$(BINDING_CASES) $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-wasm.json --inputs packages/ts --inputs contracts/cases.json -- --expose-gc --test-concurrency=1 generated.wasm.test.mjs cases.wasm.test.mjs
 
 # The extension of the PHP binding, built against the PHP of var/tools and loaded into it; the stub is linted, then the generated
-# tests run on the PHPUnit of packages/php-ext.
-test-php-binding: bindings packages/php-ext/vendor/composer/installed.json
+# tests run on the PHPUnit of legacy/packages/php-ext, the only PHPUnit that a lock of fsm installs: the composer.json that binding
+# scaffold writes for packages/php-ext requires no PHPUnit.
+test-php-binding: bindings legacy/packages/php-ext/vendor/composer/installed.json
 	cargo build --locked -p polyspec-fsm-php-ext --features panic-test
 	$(KIT_TOOLS)/bin/php -l packages/php-ext/generated/polyspec_fsm.stub.php
-	$(RUN_TESTS) phpunit --cwd packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-binding.json --inputs packages/php-ext/generated -- generated/tests
+	$(RUN_TESTS) phpunit --cwd legacy/packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-binding.json --inputs packages/php-ext/generated -- $(CURDIR)/packages/php-ext/generated/tests
 
 # The static library with the test features (binding GN-13b), which Go links through CGO_LDFLAGS; gofmt and go vet of the Go
 # packages of the binding, then their generated tests on go test, with the Go of mise.toml and GOTOOLCHAIN=local; the recipes name
