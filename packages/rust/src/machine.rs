@@ -3,7 +3,7 @@
 
 use serde_json::{Map, Value};
 
-use crate::Error;
+use crate::{Error, Finding};
 
 /// The largest code of a state (B-5, E_CODE_RANGE): codes are in the 32-bit range.
 const CODE_MAX: i64 = 2_147_483_647;
@@ -289,5 +289,15 @@ impl Machine {
             actual: self.code_at(actual),
             event: self.events[event].number,
         })
+    }
+
+    /// The findings of B-5 of every machine of `definitions`, the JSON text of a list of machine objects without `$schema`,
+    /// in document order within a machine and in input order across machines (FSM-B7-4). An empty list means that the
+    /// definitions are valid.
+    ///
+    /// # Errors
+    /// [`Error::InvalidDefinition`] when `definitions` is not JSON.
+    pub fn validate(definitions: &str) -> Result<Vec<Finding>, Error> {
+        crate::validate::validate(definitions)
     }
 }

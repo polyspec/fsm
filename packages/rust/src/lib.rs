@@ -4,6 +4,8 @@
 
 mod error;
 mod machine;
+mod validate;
 
 pub use error::Error;
 pub use machine::{Machine, Step};
+pub use validate::Finding;

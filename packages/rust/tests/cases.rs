@@ -1,11 +1,11 @@
 //! The cases of contracts/cases.json on the core, one trial per case (binding G-5): each case reads its machine with
-//! `Machine::parse` from the keys definition and reserved, calls the member of its group with the keys of its parameters, and
+//! `Machine::parse` from the keys definition and reserved (the static validate takes definitions instead), calls the member of its group with the keys of its parameters, and
 //! compares the result with returns or the kind of the error with raises.
 
 use std::path::PathBuf;
 
 use libtest_mimic::{Arguments, Failed, Trial};
-use polyspec_fsm::{Error, Machine, Step};
+use polyspec_fsm::{Error, Finding, Machine, Step};
 use serde_json::{json, Map, Value};
 
 /// The case file: contracts/cases.json of the nearest parent folder of the crate that holds it.
@@ -42,6 +42,10 @@ fn machine(case: &Map<String, Value>) -> Result<Result<Machine, Error>, Failed> 
 
 /// The result of the member `member` on a case, as the JSON value that returns gives.
 fn call(member: &str, case: &Map<String, Value>) -> Result<Result<Value, Error>, Failed> {
+    if member == "validate" {
+        let finding = |finding: Finding| json!({ "code": finding.code, "machine": finding.machine, "path": finding.path, "message": finding.message });
+        return Ok(Machine::validate(text(case, "definitions")?).map(|findings| Value::Array(findings.into_iter().map(finding).collect())));
+    }
     let machine = match machine(case)? {
         Ok(machine) => machine,
         Err(error) => return Ok(Err(error)),

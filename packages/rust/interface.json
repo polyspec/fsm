@@ -420,6 +420,35 @@
             "path": "polyspec_fsm::Machine::apply",
             "receiver": "&self"
           }
+        },
+        {
+          "id": "machine.validate",
+          "name": [
+            "validate"
+          ],
+          "kind": "static",
+          "visibility": "public",
+          "parameters": [
+            {
+              "name": [
+                "definitions"
+              ],
+              "type": "text",
+              "required": true
+            }
+          ],
+          "returns": {
+            "list": {
+              "unit": "finding"
+            }
+          },
+          "raises": [
+            "polyspec_fsm::Error::InvalidDefinition"
+          ],
+          "wait": "none",
+          "core": {
+            "path": "polyspec_fsm::Machine::validate"
+          }
         }
       ]
     },
@@ -446,6 +475,50 @@
             "changed"
           ],
           "type": "bool",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "finding",
+      "name": [
+        "finding"
+      ],
+      "module": "",
+      "kind": "record",
+      "visibility": "public",
+      "origin": "generated",
+      "core_type": "polyspec_fsm::Finding",
+      "fields": [
+        {
+          "name": [
+            "code"
+          ],
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": [
+            "machine"
+          ],
+          "type": {
+            "optional": "text"
+          },
+          "required": true,
+          "reason": "B-5"
+        },
+        {
+          "name": [
+            "path"
+          ],
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": [
+            "message"
+          ],
+          "type": "text",
           "required": true
         }
       ]
@@ -497,6 +570,11 @@
       "member": "machine.parse",
       "file": "contracts/cases.json",
       "group": "machine.parse"
+    },
+    {
+      "member": "machine.validate",
+      "file": "contracts/cases.json",
+      "group": "machine.validate"
     }
   ]
 }

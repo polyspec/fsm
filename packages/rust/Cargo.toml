@@ -14,8 +14,9 @@ include = ["/src/**/*.rs", "/interface.json", "/README.md"]
 # The kind interface that the generated bindings read from the core error (binding design E-1). The git source is the binding
 # repository; the root Cargo.lock pins its commit, the same source as the generated binding crates.
 polyspec-binding-core = { git = "https://github.com/polyspec/binding.git", branch = "v1/rust-core" }
-# The reader of a definition (docs/spec/fsm.md, B-1), at the exact pin of polyspec-binding-core.
-serde_json = "=1.0.154"
+# The reader of a definition (docs/spec/fsm.md, B-1), at the exact pin of polyspec-binding-core. validate reports its findings
+# in the order of the keys of the document (B-5), so a map keeps its keys in their order (preserve_order).
+serde_json = { version = "=1.0.154", features = ["preserve_order"] }
 
 [dev-dependencies]
 libtest-mimic = "=0.8.2"

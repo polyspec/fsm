@@ -1,5 +1,5 @@
 {
-  "comment": "The cases of the Rust core and of the bindings generated from it, one group per member of packages/rust/interface.json in the case convention of binding G-5: the keys are the parameter names of the member, and a method takes its receiver from the keys of the factory machine.parse (definition, the text of a file of contracts/machines, and reserved, the reserved codes of contracts/fsm.lock.json). The cases with no rule come from contracts/conformance/vectors.json; the cases with a rule give the kinds that only the core has (docs/spec/fsm.md, B-7). returns is the result and raises the kind and the category of the error.",
+  "comment": "The cases of the Rust core and of the bindings generated from it, one group per member of packages/rust/interface.json in the case convention of binding G-5: the keys are the parameter names of the member, and a method takes its receiver from the keys of the factory machine.parse (definition, the text of a file of contracts/machines, and reserved, the reserved codes of contracts/fsm.lock.json). The cases with no rule come from contracts/conformance/vectors.json; the cases with the rules FSM-B7-1 to FSM-B7-3 give the kinds that only the core has, and the cases of machine.validate (FSM-B7-4) are the calls of validate that the tests of legacy/packages/compiler/tests/validate-{structure,graph,names}.test.mjs make, with the findings of legacy validate.mjs; their ids name the file and the place of the test (docs/spec/fsm.md, B-7). returns is the result and raises the kind and the category of the error.",
   "machine.initial": [
     {
       "id": "in_review_initial",
@@ -2687,6 +2687,3794 @@
       "reserved": [
         3
       ],
+      "raises": {
+        "kind": "invalid_definition",
+        "status": null,
+        "category": "value",
+        "message": null
+      }
+    }
+  ],
+  "machine.validate": [
+    {
+      "id": "validate_structure_t01_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_structure_t02_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[]",
+      "returns": []
+    },
+    {
+      "id": "validate_structure_t03_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "{\"machine\":\"order\"}",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": null,
+          "path": "$",
+          "message": "the definitions are a object; they must be an array of machines"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t04_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[\"order\"]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": null,
+          "path": "$",
+          "message": "the machine definition is a string; it must be an object"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t05_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": null,
+          "path": "$",
+          "message": "a machine lacks machine; it is required"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t06_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":7,\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": null,
+          "path": "$.machine",
+          "message": "machine is a number; it must be a string"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t07_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$",
+          "message": "a machine lacks states; it is required"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t08_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":{},\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states",
+          "message": "states is a object; it must be an array"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t09_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[\"draft\",{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[0]",
+          "message": "the state is a string; it must be an object"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t10_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[0]",
+          "message": "a state lacks key; it is required"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t11_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[0]",
+          "message": "a state lacks code; it is required"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t12_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true,\"label\":\"Draft\"},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[0].label",
+          "message": "label is not a field of a state"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t13_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":1,\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[0].key",
+          "message": "key is a number; it must be a string"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t14_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":\"1\",\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[0].code",
+          "message": "code is \"1\"; it must be an integer"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t14_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1.5,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[0].code",
+          "message": "code is 1.5; it must be an integer"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t15_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":false},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[0].initial",
+          "message": "initial is false; it must be true when present, because the canonical form omits it"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t16_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":false}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[1].final",
+          "message": "final is false; it must be true when present, because the canonical form omits it"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t17_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":{}}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events",
+          "message": "events is a object; it must be an array"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t18_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0]",
+          "message": "an event lacks key; it is required"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t19_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}],\"label\":\"Next\"}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0].label",
+          "message": "label is not a field of an event"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t20_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\"}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0]",
+          "message": "an event lacks edges; it is required"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t21_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":{}}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0].edges",
+          "message": "edges is a object; it must be an array"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t22_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0].edges",
+          "message": "edges is empty; an event has at least one edge"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t23_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[[\"draft\",\"done\"]]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0].edges[0]",
+          "message": "the edge is an array; it must be an object with the fields from and to"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t24_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0].edges[0]",
+          "message": "an edge lacks to; it is required"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t25_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\",\"guard\":\"x\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0].edges[0].guard",
+          "message": "guard is not a field of an edge"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t26_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":1,\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0].edges[0].from",
+          "message": "from is a number; it must be a string"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t27_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}],\"$schema\":\"../schema/fsm.schema.json\"}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.$schema",
+          "message": "$schema is not a field of a machine"
+        }
+      ]
+    },
+    {
+      "id": "validate_structure_t28_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"done\",\"code\":\"two\",\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[[\"draft\",\"done\"]]}]},{\"machine\":\"other\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":false},{\"key\":\"done\",\"code\":2,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states[1].code",
+          "message": "code is \"two\"; it must be an integer"
+        },
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[0].edges[0]",
+          "message": "the edge is an array; it must be an object with the fields from and to"
+        },
+        {
+          "code": "E_SCHEMA",
+          "machine": "other",
+          "path": "$.states[0].initial",
+          "message": "initial is false; it must be true when present, because the canonical form omits it"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t01_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_graph_t02_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"ghost\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_UNKNOWN_STATE_REF",
+          "machine": "order",
+          "path": "$.events[0].edges[1].to",
+          "message": "ghost is not a state of the machine"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t03_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"ghost\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_UNREACHABLE",
+          "machine": "order",
+          "path": "$.states[1]",
+          "message": "state paid is not reachable from the initial state"
+        },
+        {
+          "code": "E_UNKNOWN_STATE_REF",
+          "machine": "order",
+          "path": "$.events[0].edges[0].from",
+          "message": "ghost is not a state of the machine"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t04_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"draft\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SELF_LOOP",
+          "machine": "order",
+          "path": "$.events[1].edges[0]",
+          "message": "the edge of cancel leaves draft and enters it; a self transition is not allowed"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t05_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"},{\"from\":\"draft\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_NONDETERMINISTIC",
+          "machine": "order",
+          "path": "$.events[0].edges[2]",
+          "message": "event next leaves draft for paid and for done; one state and event have one target"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t06_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"},{\"from\":\"draft\",\"to\":\"paid\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_DUPLICATE_EDGE",
+          "machine": "order",
+          "path": "$.events[0].edges[2]",
+          "message": "the edge draft -> paid repeats an edge of event next"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t07_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_INITIAL_COUNT",
+          "machine": "order",
+          "path": "$.states",
+          "message": "the machine has 0 initial states; it needs exactly one"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t08_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2,\"initial\":true},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_INITIAL_COUNT",
+          "machine": "order",
+          "path": "$.states",
+          "message": "the machine has 2 initial states; it needs exactly one"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t09_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"},{\"from\":\"done\",\"to\":\"draft\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_FINAL_OUTGOING",
+          "machine": "order",
+          "path": "$.events[1].edges[1]",
+          "message": "final state done has an outgoing edge of event cancel"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t10_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true},{\"key\":\"island\",\"code\":4,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_UNREACHABLE",
+          "machine": "order",
+          "path": "$.states[3]",
+          "message": "state island is not reachable from the initial state"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t11_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true},{\"key\":\"island\",\"code\":4}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_UNREACHABLE",
+          "machine": "order",
+          "path": "$.states[3]",
+          "message": "state island is not reachable from the initial state"
+        },
+        {
+          "code": "E_DEAD_END",
+          "machine": "order",
+          "path": "$.states[3]",
+          "message": "state island is not final and has no outgoing edge"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t12_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_DEAD_END",
+          "machine": "order",
+          "path": "$.states[1]",
+          "message": "state paid is not final and has no outgoing edge"
+        }
+      ]
+    },
+    {
+      "id": "validate_graph_t13_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"cancel\",\"edges\":[{\"from\":\"draft\",\"to\":\"draft\"},{\"from\":\"draft\",\"to\":\"done\",\"note\":\"x\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.events[1].edges[1].note",
+          "message": "note is not a field of an edge"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t01_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t02_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"Order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "Order",
+          "path": "$.machine",
+          "message": "machine key Order is not lower case letters and digits joined by single underscores"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t02_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"_order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "_order",
+          "path": "$.machine",
+          "message": "machine key _order is not lower case letters and digits joined by single underscores"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t02_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order_\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "order_",
+          "path": "$.machine",
+          "message": "machine key order_ is not lower case letters and digits joined by single underscores"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t02_c004",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"or__der\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "or__der",
+          "path": "$.machine",
+          "message": "machine key or__der is not lower case letters and digits joined by single underscores"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t02_c005",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"1order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "1order",
+          "path": "$.machine",
+          "message": "machine key 1order is not lower case letters and digits joined by single underscores"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t02_c006",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"or-der\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "or-der",
+          "path": "$.machine",
+          "message": "machine key or-der is not lower case letters and digits joined by single underscores"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t03_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"Paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"Paid\"},{\"from\":\"Paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key Paid is not lower case letters and digits joined by single underscores"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t03_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next-step\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "order",
+          "path": "$.events[0].key",
+          "message": "event key next-step is not lower case letters and digits joined by single underscores"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"fsm\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "fsm",
+          "path": "$.machine",
+          "message": "machine key fsm is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"index\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "index",
+          "path": "$.machine",
+          "message": "machine key index is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"lib\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "lib",
+          "path": "$.machine",
+          "message": "machine key lib is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c004",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"main\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "main",
+          "path": "$.machine",
+          "message": "machine key main is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c005",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"internal\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "internal",
+          "path": "$.machine",
+          "message": "machine key internal is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c006",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"init\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "init",
+          "path": "$.machine",
+          "message": "machine key init is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c007",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"testdata\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "testdata",
+          "path": "$.machine",
+          "message": "machine key testdata is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c008",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"vendor\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "vendor",
+          "path": "$.machine",
+          "message": "machine key vendor is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c009",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"error\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "error",
+          "path": "$.machine",
+          "message": "machine key error is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c010",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"len\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "len",
+          "path": "$.machine",
+          "message": "machine key len is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c011",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"iota\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "iota",
+          "path": "$.machine",
+          "message": "machine key iota is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c012",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"nil\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "nil",
+          "path": "$.machine",
+          "message": "machine key nil is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c013",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"func\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "func",
+          "path": "$.machine",
+          "message": "machine key func is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c014",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"range\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "range",
+          "path": "$.machine",
+          "message": "machine key range is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c015",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"fn\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "fn",
+          "path": "$.machine",
+          "message": "machine key fn is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c016",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"impl\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "impl",
+          "path": "$.machine",
+          "message": "machine key impl is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c017",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"gen\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "gen",
+          "path": "$.machine",
+          "message": "machine key gen is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c018",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"try\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "try",
+          "path": "$.machine",
+          "message": "machine key try is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c019",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"def\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "def",
+          "path": "$.machine",
+          "message": "machine key def is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c020",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"lambda\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "lambda",
+          "path": "$.machine",
+          "message": "machine key lambda is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c021",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"nonlocal\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "nonlocal",
+          "path": "$.machine",
+          "message": "machine key nonlocal is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c022",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"function\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "function",
+          "path": "$.machine",
+          "message": "machine key function is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c023",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"var\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "var",
+          "path": "$.machine",
+          "message": "machine key var is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c024",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"typeof\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "typeof",
+          "path": "$.machine",
+          "message": "machine key typeof is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c025",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"implements\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "implements",
+          "path": "$.machine",
+          "message": "machine key implements is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c026",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"null\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "null",
+          "path": "$.machine",
+          "message": "machine key null is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c027",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"true\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "true",
+          "path": "$.machine",
+          "message": "machine key true is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t04_c028",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"false\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "false",
+          "path": "$.machine",
+          "message": "machine key false is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t05_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"examples\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t05_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"vectors\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t05_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"machines\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t05_c004",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"expectation\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t05_c005",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"lookup\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t06_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"tests\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t07_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"te_stdata\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "te_stdata",
+          "path": "$.machine",
+          "message": "machine key te_stdata is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t07_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"in_it\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "in_it",
+          "path": "$.machine",
+          "message": "machine key in_it is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t08_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"orders\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t08_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order_item\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t08_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"fsmes\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t08_c004",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"machine_init\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t08_c005",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"functional\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t09_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"self\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"self\"},{\"from\":\"self\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key self is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"class\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"class\"},{\"from\":\"class\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key class is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"note\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"note\"},{\"from\":\"note\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key note is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c004",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"classdef\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"classdef\"},{\"from\":\"classdef\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key classdef is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c005",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"style\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"style\"},{\"from\":\"style\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key style is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c006",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"click\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"click\"},{\"from\":\"click\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key click is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c007",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"href\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"href\"},{\"from\":\"href\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key href is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c008",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"default\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"default\"},{\"from\":\"default\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key default is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c009",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"state\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"state\"},{\"from\":\"state\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key state is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c010",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"statediagram\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"statediagram\"},{\"from\":\"statediagram\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key statediagram is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c011",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"scale\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"scale\"},{\"from\":\"scale\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key scale is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c012",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"acctitle\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"acctitle\"},{\"from\":\"acctitle\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key acctitle is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c013",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"accdescr\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"accdescr\"},{\"from\":\"accdescr\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key accdescr is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c014",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"root_start\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"root_start\"},{\"from\":\"root_start\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key root_start is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t09_c015",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"root_end\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"root_end\"},{\"from\":\"root_end\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key root_end is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t10_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"self\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.events[0].key",
+          "message": "event key self is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t10_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"class\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.events[0].key",
+          "message": "event key class is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t11_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"null\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"null\"},{\"from\":\"null\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t11_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"note\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t12_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]},{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_DUPLICATE_KEY",
+          "machine": "order",
+          "path": "$.machine",
+          "message": "machine key order repeats the machine at index 0"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t13_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order_item\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]},{\"machine\":\"orderitem\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_DUPLICATE_KEY",
+          "machine": "orderitem",
+          "path": "$.machine",
+          "message": "machine key orderitem equals machine key order_item at index 0 after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t14_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":{},\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]},{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "order",
+          "path": "$.states",
+          "message": "states is a object; it must be an array"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t15_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true},{\"key\":\"done\",\"code\":4,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_DUPLICATE_KEY",
+          "machine": "order",
+          "path": "$.states[3].key",
+          "message": "state key done repeats a state of the machine"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t16_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]},{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_DUPLICATE_KEY",
+          "machine": "order",
+          "path": "$.events[1].key",
+          "message": "event key next repeats an event of the machine"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t17_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":1},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_DUPLICATE_CODE",
+          "machine": "order",
+          "path": "$.states[1].code",
+          "message": "code 1 is used by another state of the machine"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t18_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":0,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_CODE_RANGE",
+          "machine": "order",
+          "path": "$.states[0].code",
+          "message": "code 0 is outside 1 to 2147483647"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t18_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":-1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_CODE_RANGE",
+          "machine": "order",
+          "path": "$.states[0].code",
+          "message": "code -1 is outside 1 to 2147483647"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t18_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":2147483648,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_CODE_RANGE",
+          "machine": "order",
+          "path": "$.states[0].code",
+          "message": "code 2147483648 is outside 1 to 2147483647"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t19_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":2147483647,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t20_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"fsm\",\"states\":{},\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_SCHEMA",
+          "machine": "fsm",
+          "path": "$.states",
+          "message": "states is a object; it must be an array"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"fsm\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "fsm",
+          "path": "$.machine",
+          "message": "machine key fsm is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"index\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "index",
+          "path": "$.machine",
+          "message": "machine key index is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"lib\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "lib",
+          "path": "$.machine",
+          "message": "machine key lib is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c004",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"main\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "main",
+          "path": "$.machine",
+          "message": "machine key main is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c005",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"internal\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "internal",
+          "path": "$.machine",
+          "message": "machine key internal is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c006",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"init\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "init",
+          "path": "$.machine",
+          "message": "machine key init is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c007",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"testdata\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "testdata",
+          "path": "$.machine",
+          "message": "machine key testdata is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c008",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"vendor\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "vendor",
+          "path": "$.machine",
+          "message": "machine key vendor is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c009",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"any\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "any",
+          "path": "$.machine",
+          "message": "machine key any is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c010",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"bool\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "bool",
+          "path": "$.machine",
+          "message": "machine key bool is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c011",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"byte\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "byte",
+          "path": "$.machine",
+          "message": "machine key byte is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c012",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"comparable\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "comparable",
+          "path": "$.machine",
+          "message": "machine key comparable is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c013",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"complex64\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "complex64",
+          "path": "$.machine",
+          "message": "machine key complex64 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c014",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"complex128\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "complex128",
+          "path": "$.machine",
+          "message": "machine key complex128 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c015",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"error\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "error",
+          "path": "$.machine",
+          "message": "machine key error is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c016",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"float32\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "float32",
+          "path": "$.machine",
+          "message": "machine key float32 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c017",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"float64\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "float64",
+          "path": "$.machine",
+          "message": "machine key float64 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c018",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"int\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "int",
+          "path": "$.machine",
+          "message": "machine key int is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c019",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"int8\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "int8",
+          "path": "$.machine",
+          "message": "machine key int8 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c020",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"int16\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "int16",
+          "path": "$.machine",
+          "message": "machine key int16 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c021",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"int32\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "int32",
+          "path": "$.machine",
+          "message": "machine key int32 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c022",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"int64\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "int64",
+          "path": "$.machine",
+          "message": "machine key int64 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c023",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"rune\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "rune",
+          "path": "$.machine",
+          "message": "machine key rune is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c024",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"string\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "string",
+          "path": "$.machine",
+          "message": "machine key string is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c025",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"uint\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "uint",
+          "path": "$.machine",
+          "message": "machine key uint is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c026",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"uint8\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "uint8",
+          "path": "$.machine",
+          "message": "machine key uint8 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c027",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"uint16\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "uint16",
+          "path": "$.machine",
+          "message": "machine key uint16 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c028",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"uint32\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "uint32",
+          "path": "$.machine",
+          "message": "machine key uint32 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c029",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"uint64\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "uint64",
+          "path": "$.machine",
+          "message": "machine key uint64 is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c030",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"uintptr\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "uintptr",
+          "path": "$.machine",
+          "message": "machine key uintptr is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c031",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"true\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "true",
+          "path": "$.machine",
+          "message": "machine key true is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c032",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"false\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "false",
+          "path": "$.machine",
+          "message": "machine key false is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c033",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"iota\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "iota",
+          "path": "$.machine",
+          "message": "machine key iota is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c034",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"nil\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "nil",
+          "path": "$.machine",
+          "message": "machine key nil is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c035",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"append\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "append",
+          "path": "$.machine",
+          "message": "machine key append is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c036",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"cap\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "cap",
+          "path": "$.machine",
+          "message": "machine key cap is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c037",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"clear\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "clear",
+          "path": "$.machine",
+          "message": "machine key clear is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c038",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"close\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "close",
+          "path": "$.machine",
+          "message": "machine key close is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c039",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"complex\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "complex",
+          "path": "$.machine",
+          "message": "machine key complex is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c040",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"copy\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "copy",
+          "path": "$.machine",
+          "message": "machine key copy is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c041",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"delete\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "delete",
+          "path": "$.machine",
+          "message": "machine key delete is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c042",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"imag\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "imag",
+          "path": "$.machine",
+          "message": "machine key imag is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c043",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"len\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "len",
+          "path": "$.machine",
+          "message": "machine key len is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c044",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"make\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "make",
+          "path": "$.machine",
+          "message": "machine key make is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c045",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"max\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "max",
+          "path": "$.machine",
+          "message": "machine key max is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c046",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"min\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "min",
+          "path": "$.machine",
+          "message": "machine key min is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c047",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"new\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "new",
+          "path": "$.machine",
+          "message": "machine key new is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c048",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"panic\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "panic",
+          "path": "$.machine",
+          "message": "machine key panic is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c049",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"print\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "print",
+          "path": "$.machine",
+          "message": "machine key print is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c050",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"println\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "println",
+          "path": "$.machine",
+          "message": "machine key println is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c051",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"real\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "real",
+          "path": "$.machine",
+          "message": "machine key real is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c052",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"recover\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "recover",
+          "path": "$.machine",
+          "message": "machine key recover is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c053",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"break\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "break",
+          "path": "$.machine",
+          "message": "machine key break is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c054",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"case\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "case",
+          "path": "$.machine",
+          "message": "machine key case is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c055",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"chan\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "chan",
+          "path": "$.machine",
+          "message": "machine key chan is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c056",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"const\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "const",
+          "path": "$.machine",
+          "message": "machine key const is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c057",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"continue\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "continue",
+          "path": "$.machine",
+          "message": "machine key continue is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c058",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"default\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "default",
+          "path": "$.machine",
+          "message": "machine key default is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c059",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"defer\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "defer",
+          "path": "$.machine",
+          "message": "machine key defer is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c060",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"else\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "else",
+          "path": "$.machine",
+          "message": "machine key else is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c061",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"fallthrough\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "fallthrough",
+          "path": "$.machine",
+          "message": "machine key fallthrough is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c062",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"for\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "for",
+          "path": "$.machine",
+          "message": "machine key for is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c063",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"func\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "func",
+          "path": "$.machine",
+          "message": "machine key func is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c064",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"go\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "go",
+          "path": "$.machine",
+          "message": "machine key go is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c065",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"goto\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "goto",
+          "path": "$.machine",
+          "message": "machine key goto is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c066",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"if\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "if",
+          "path": "$.machine",
+          "message": "machine key if is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c067",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"import\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "import",
+          "path": "$.machine",
+          "message": "machine key import is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c068",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"interface\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "interface",
+          "path": "$.machine",
+          "message": "machine key interface is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c069",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"map\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "map",
+          "path": "$.machine",
+          "message": "machine key map is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c070",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"package\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "package",
+          "path": "$.machine",
+          "message": "machine key package is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c071",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"range\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "range",
+          "path": "$.machine",
+          "message": "machine key range is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c072",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"return\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "return",
+          "path": "$.machine",
+          "message": "machine key return is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c073",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"select\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "select",
+          "path": "$.machine",
+          "message": "machine key select is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c074",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"struct\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "struct",
+          "path": "$.machine",
+          "message": "machine key struct is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c075",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"switch\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "switch",
+          "path": "$.machine",
+          "message": "machine key switch is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c076",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"type\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "type",
+          "path": "$.machine",
+          "message": "machine key type is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c077",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"var\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "var",
+          "path": "$.machine",
+          "message": "machine key var is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c078",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"as\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "as",
+          "path": "$.machine",
+          "message": "machine key as is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c079",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"async\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "async",
+          "path": "$.machine",
+          "message": "machine key async is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c080",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"await\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "await",
+          "path": "$.machine",
+          "message": "machine key await is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c081",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"crate\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "crate",
+          "path": "$.machine",
+          "message": "machine key crate is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c082",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"dyn\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "dyn",
+          "path": "$.machine",
+          "message": "machine key dyn is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c083",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"enum\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "enum",
+          "path": "$.machine",
+          "message": "machine key enum is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c084",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"extern\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "extern",
+          "path": "$.machine",
+          "message": "machine key extern is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c085",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"fn\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "fn",
+          "path": "$.machine",
+          "message": "machine key fn is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c086",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"impl\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "impl",
+          "path": "$.machine",
+          "message": "machine key impl is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c087",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"in\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "in",
+          "path": "$.machine",
+          "message": "machine key in is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c088",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"let\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "let",
+          "path": "$.machine",
+          "message": "machine key let is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c089",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"loop\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "loop",
+          "path": "$.machine",
+          "message": "machine key loop is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c090",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"match\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "match",
+          "path": "$.machine",
+          "message": "machine key match is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c091",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"mod\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "mod",
+          "path": "$.machine",
+          "message": "machine key mod is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c092",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"move\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "move",
+          "path": "$.machine",
+          "message": "machine key move is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c093",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"mut\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "mut",
+          "path": "$.machine",
+          "message": "machine key mut is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c094",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"pub\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "pub",
+          "path": "$.machine",
+          "message": "machine key pub is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c095",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"ref\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "ref",
+          "path": "$.machine",
+          "message": "machine key ref is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c096",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"self\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "self",
+          "path": "$.machine",
+          "message": "machine key self is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c097",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"Self\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "Self",
+          "path": "$.machine",
+          "message": "machine key Self is not lower case letters and digits joined by single underscores"
+        },
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "Self",
+          "path": "$.machine",
+          "message": "machine key Self is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c098",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"static\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "static",
+          "path": "$.machine",
+          "message": "machine key static is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c099",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"super\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "super",
+          "path": "$.machine",
+          "message": "machine key super is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c100",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"trait\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "trait",
+          "path": "$.machine",
+          "message": "machine key trait is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c101",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"unsafe\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "unsafe",
+          "path": "$.machine",
+          "message": "machine key unsafe is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c102",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"use\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "use",
+          "path": "$.machine",
+          "message": "machine key use is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c103",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"where\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "where",
+          "path": "$.machine",
+          "message": "machine key where is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c104",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"while\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "while",
+          "path": "$.machine",
+          "message": "machine key while is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c105",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"abstract\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "abstract",
+          "path": "$.machine",
+          "message": "machine key abstract is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c106",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"become\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "become",
+          "path": "$.machine",
+          "message": "machine key become is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c107",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"box\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "box",
+          "path": "$.machine",
+          "message": "machine key box is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c108",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"do\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "do",
+          "path": "$.machine",
+          "message": "machine key do is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c109",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"final\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "final",
+          "path": "$.machine",
+          "message": "machine key final is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c110",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"gen\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "gen",
+          "path": "$.machine",
+          "message": "machine key gen is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c111",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"macro\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "macro",
+          "path": "$.machine",
+          "message": "machine key macro is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c112",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"override\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "override",
+          "path": "$.machine",
+          "message": "machine key override is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c113",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"priv\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "priv",
+          "path": "$.machine",
+          "message": "machine key priv is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c114",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"try\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "try",
+          "path": "$.machine",
+          "message": "machine key try is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c115",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"typeof\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "typeof",
+          "path": "$.machine",
+          "message": "machine key typeof is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c116",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"unsized\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "unsized",
+          "path": "$.machine",
+          "message": "machine key unsized is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c117",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"virtual\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "virtual",
+          "path": "$.machine",
+          "message": "machine key virtual is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c118",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"yield\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "yield",
+          "path": "$.machine",
+          "message": "machine key yield is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c119",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"False\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "False",
+          "path": "$.machine",
+          "message": "machine key False is not lower case letters and digits joined by single underscores"
+        },
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "False",
+          "path": "$.machine",
+          "message": "machine key False is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c120",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"None\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "None",
+          "path": "$.machine",
+          "message": "machine key None is not lower case letters and digits joined by single underscores"
+        },
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "None",
+          "path": "$.machine",
+          "message": "machine key None is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c121",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"True\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "True",
+          "path": "$.machine",
+          "message": "machine key True is not lower case letters and digits joined by single underscores"
+        },
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "True",
+          "path": "$.machine",
+          "message": "machine key True is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c122",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"and\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "and",
+          "path": "$.machine",
+          "message": "machine key and is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c123",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"assert\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "assert",
+          "path": "$.machine",
+          "message": "machine key assert is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c124",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"class\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "class",
+          "path": "$.machine",
+          "message": "machine key class is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c125",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"def\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "def",
+          "path": "$.machine",
+          "message": "machine key def is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c126",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"del\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "del",
+          "path": "$.machine",
+          "message": "machine key del is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c127",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"elif\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "elif",
+          "path": "$.machine",
+          "message": "machine key elif is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c128",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"except\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "except",
+          "path": "$.machine",
+          "message": "machine key except is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c129",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"finally\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "finally",
+          "path": "$.machine",
+          "message": "machine key finally is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c130",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"from\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "from",
+          "path": "$.machine",
+          "message": "machine key from is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c131",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"global\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "global",
+          "path": "$.machine",
+          "message": "machine key global is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c132",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"is\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "is",
+          "path": "$.machine",
+          "message": "machine key is is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c133",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"lambda\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "lambda",
+          "path": "$.machine",
+          "message": "machine key lambda is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c134",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"nonlocal\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "nonlocal",
+          "path": "$.machine",
+          "message": "machine key nonlocal is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c135",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"not\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "not",
+          "path": "$.machine",
+          "message": "machine key not is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c136",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"or\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "or",
+          "path": "$.machine",
+          "message": "machine key or is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c137",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"pass\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "pass",
+          "path": "$.machine",
+          "message": "machine key pass is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c138",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"raise\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "raise",
+          "path": "$.machine",
+          "message": "machine key raise is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c139",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"with\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "with",
+          "path": "$.machine",
+          "message": "machine key with is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c140",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"catch\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "catch",
+          "path": "$.machine",
+          "message": "machine key catch is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c141",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"debugger\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "debugger",
+          "path": "$.machine",
+          "message": "machine key debugger is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c142",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"export\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "export",
+          "path": "$.machine",
+          "message": "machine key export is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c143",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"extends\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "extends",
+          "path": "$.machine",
+          "message": "machine key extends is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c144",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"function\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "function",
+          "path": "$.machine",
+          "message": "machine key function is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c145",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"instanceof\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "instanceof",
+          "path": "$.machine",
+          "message": "machine key instanceof is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c146",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"null\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "null",
+          "path": "$.machine",
+          "message": "machine key null is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c147",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"this\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "this",
+          "path": "$.machine",
+          "message": "machine key this is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c148",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"throw\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "throw",
+          "path": "$.machine",
+          "message": "machine key throw is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c149",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"void\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "void",
+          "path": "$.machine",
+          "message": "machine key void is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c150",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"implements\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "implements",
+          "path": "$.machine",
+          "message": "machine key implements is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c151",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"private\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "private",
+          "path": "$.machine",
+          "message": "machine key private is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c152",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"protected\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "protected",
+          "path": "$.machine",
+          "message": "machine key protected is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t21_c153",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"public\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "public",
+          "path": "$.machine",
+          "message": "machine key public is reserved (docs/spec/fsm.md, B-5), after its underscores are removed"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"self\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"self\"},{\"from\":\"self\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key self is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"class\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"class\"},{\"from\":\"class\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key class is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"note\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"note\"},{\"from\":\"note\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key note is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c004",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"classdef\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"classdef\"},{\"from\":\"classdef\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key classdef is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c005",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"style\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"style\"},{\"from\":\"style\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key style is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c006",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"click\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"click\"},{\"from\":\"click\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key click is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c007",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"href\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"href\"},{\"from\":\"href\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key href is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c008",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"default\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"default\"},{\"from\":\"default\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key default is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c009",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"state\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"state\"},{\"from\":\"state\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key state is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c010",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"statediagram\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"statediagram\"},{\"from\":\"statediagram\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key statediagram is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c011",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"scale\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"scale\"},{\"from\":\"scale\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key scale is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c012",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"acctitle\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"acctitle\"},{\"from\":\"acctitle\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key acctitle is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c013",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"accdescr\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"accdescr\"},{\"from\":\"accdescr\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key accdescr is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c014",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"root_start\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"root_start\"},{\"from\":\"root_start\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key root_start is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c015",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"root_end\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"root_end\"},{\"from\":\"root_end\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key root_end is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c016",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"self\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.events[0].key",
+          "message": "event key self is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t22_c017",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"class\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_RESERVED",
+          "machine": "order",
+          "path": "$.events[0].key",
+          "message": "event key class is reserved (docs/spec/fsm.md, B-5)"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t23_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t23_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1\"},{\"from\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t23_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": []
+    },
+    {
+      "id": "validate_names_t24_c001",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+          "path": "$.machine",
+          "message": "machine key a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a is 65 characters; the maximum is 64"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t24_c002",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"next\",\"edges\":[{\"from\":\"draft\",\"to\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a\"},{\"from\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "order",
+          "path": "$.states[1].key",
+          "message": "state key a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a is 65 characters; the maximum is 64"
+        }
+      ]
+    },
+    {
+      "id": "validate_names_t24_c003",
+      "rule": "FSM-B7-4",
+      "definitions": "[{\"machine\":\"order\",\"states\":[{\"key\":\"draft\",\"code\":1,\"initial\":true},{\"key\":\"paid\",\"code\":2},{\"key\":\"done\",\"code\":3,\"final\":true}],\"events\":[{\"key\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a\",\"edges\":[{\"from\":\"draft\",\"to\":\"paid\"},{\"from\":\"paid\",\"to\":\"done\"}]}]}]",
+      "returns": [
+        {
+          "code": "E_KEY_FORMAT",
+          "machine": "order",
+          "path": "$.events[0].key",
+          "message": "event key a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a is 65 characters; the maximum is 64"
+        }
+      ]
+    },
+    {
+      "id": "validate_not_json",
+      "rule": "FSM-B7-4",
+      "definitions": "[",
       "raises": {
         "kind": "invalid_definition",
         "status": null,
