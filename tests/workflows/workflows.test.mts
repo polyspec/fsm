@@ -175,8 +175,9 @@ test('the suite of the CI job, make check and the owners of the core crate run i
   assert.ok(check.split(' ').includes('test-rust'), `make check does not run test-rust: ${check}`);
   const owners: unknown = field(JSON.parse(read('config/owner-checks.json')), 'owners', 'config/owner-checks.json');
   if (!Array.isArray(owners)) throw new Error('owners of config/owner-checks.json must be an array');
+  const rules: unknown[] = owners;
   for (const owned of ['packages/rust/**', 'contracts/cases.json', 'Cargo.toml', 'Cargo.lock']) {
-    const rule = owners.find(owner => {
+    const rule = rules.find((owner: unknown) => {
       const paths: unknown = field(owner, 'paths', 'an owner');
       const targets: unknown = field(owner, 'targets', 'an owner');
       return Array.isArray(paths) && paths.includes(owned) && Array.isArray(targets) && targets.includes('test-rust');
