@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 32671c8fdf749bb23ae076712fa539d0d3dd07cfb9a2da0178e989cde0780372 -->
+<!-- source-sha256: aedb5db89cf8fa22dc86ca40d8e4809252ed10b0b23df6250bbb138963d73bda -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 저장소가 자기 라이선스의 본문을 갖는다(S-471). `LICENSE`는 polyspec 저장소의 저작권 줄 `Copyright (c) 2026 Polyspec`을 쓴 MIT 라이선스다. 이전에는 `package.json`, `packages/gui/package.json`, `packages/ts/package.json`, `packages/php-ext/composer.json`이 라이선스 `MIT`를 적었고, 어떤 추적 파일도 그 본문을 갖지 않았다. `config/layout.kit.yml`이 루트의 이 파일을 허용하고, `make name-check`의 규칙이 이 파일을 소유한다. 라이선스의 본문을 읽는 검사는 없으므로 이 변경에는 실패하는 Red가 없다. `make owner-validate`(경로 375개), `make layout-check`, `make owner-check PATHS=LICENSE`로 확인했다.
 - S-469가 commit 이름을 뺀 항목이 사실을 직접 적는다(S-469-1). 이전에는 영어 변경 기록의 9개 줄이 binding을 `the binding of that run`으로, 항목 2개가 `a newer commit of binding`으로, 항목 1개가 `the commit of the change`로 적었고, 한국어 변경 기록은 그 문장에서 `binding`만 적었다. 이제 각 항목은 binding을 `Cargo.lock`이 고정한 것으로, 또는 그 binding이 생성하는 것(Go target, Go의 class unit, GN-13g)으로 적고, tree를 commit된 tree로 적고, CK-20을 그 finding으로 적는다. 곧 `Cargo.lock`의 고정이 검사를 실행하는 binding의 commit이 아니라는 것이다. S-461의 suite 항목은 binding의 commit 하나를 적고 있었는데, 이름 뒤에 `:`가 와서 `make commit-names-check`가 보고하지 않았다. 그 항목은 이제 commit을 적지 않는다. `CHANGELOG.md`의 문장 15개, `CHANGELOG.ko.md`의 문장 16개, `docs/plans/fsm-v1`의 각 checklist의 문장 2개가 바뀌었다. Red: `make text-absent`가 첫 문구를 9개 줄에서, S-461 항목의 commit을 1개 줄에서 찾았다. 각 문구에 대한 `make text-absent`, `make commit-names-check`, `make docs-check`로 확인했다.
 - checklist에 열린 행 S-470이 있다. release가 바인딩 package(PIE 확장 `polyspec/fsm`, wheel `polyspec-fsm`, npm package `@polyspec/fsm`과 그 플랫폼 package, Rust crate의 tag, Go module)를 담으며, kit 0.0.111과 Go module의 tag 형태를 기다린다. `config/release.json`의 `notReleased`에 있는 코어 crate와 바인딩 package의 각 manifest 사유가 그 행과 조건을 적는다. `make release-coverage`와 `make docs-check`로 확인했다.
 - 추적되는 파일은 Git commit을 적지 않는다(S-469). `AGENTS.md`가 규칙과 이유를 적고, `make commit-names-check`(`scripts/check-commit-names.mts`)가 추적되는 Markdown 파일에서 숫자와 글자를 가진 16진수 7~40자리 낱말을 실패시킨다. `make commit-names-test`가 그 검사기를 시험하며, 둘 다 CI suite와 `make check`에서, 그리고 문서의 owner check로 돈다. 이전에는 이 변경 기록, 두 checklist, `docs/spec/fsm.md`, `docs/operations/verification/gui.md`가 fsm, binding, kit, crudui의 commit을 적었다. 각 항목은 commit 이름 없이 사실, 곧 입력과 동작과 시험 수를 남긴다. `make commit-names-test`(3개 통과, 0개 실패)와 `make commit-names-check`로 확인했다.

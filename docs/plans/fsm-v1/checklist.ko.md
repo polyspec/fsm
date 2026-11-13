@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: fb94237898f8b807c9852a4a78ae55d924ef553f340828aae5fd3fb39874e8f5 -->
+<!-- source-sha256: ba9b9d2d68366707144a8ab3bf9407971f21926cffe6409091c3a366147afdb6 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -143,4 +143,4 @@
 | S-469-1 | S-469가 commit 이름을 뺀 항목이 사실을 직접 적는다. 항목은 binding을 `Cargo.lock`이 고정한 것으로, 또는 그 binding이 생성하는 것으로 적고, tree를 commit된 tree로, 변경을 그 전과 뒤로 적는다. `그 실행의 binding`, `binding의 더 새로운 commit`, `변경의 commit`으로 적지 않는다. S-461의 suite 항목은 binding의 commit 하나를 적고 있었는데, 이름 뒤에 `:`가 와서 검사가 보고하지 않았다. 그 항목은 이제 commit을 적지 않는다 | `CHANGELOG.md`, `CHANGELOG.ko.md`, `docs/plans/fsm-v1/checklist.md`, `docs/plans/fsm-v1/checklist.ko.md` | `make commit-names-check`, `make docs-check` | [ ] |
 | S-469-2 | `make commit-names-check`가 commit 이름 검사를 kit의 utility로 실행하고, `scripts/check-commit-names.mts`와 `tests/check-commit-names`를 지운다. 이 script는 fsm, php-serialization, session-store가 각각 가진 복사본이다. 그 utility를 담은 kit의 릴리스를 기다린다 | `Makefile`, `scripts/check-commit-names.mts`, `tests/check-commit-names/**`, `config/owner-checks.json`, `package.json` | `make commit-names-check` | [ ] |
 | S-470 | release가 바인딩 package를 담는다. `config/release.json`이 PHP 확장의 Composer package `polyspec/fsm`(PIE), wheel `polyspec-fsm`, npm package `@polyspec/fsm`과 그 플랫폼 package, Rust crate `polyspec-fsm`의 tag, Go module `github.com/polyspec/fsm/packages/go`(`goModules`)를 적고, `packages/rust`, `packages/ts`, `packages/python`, `packages/php-ext`, `packages/go`의 어떤 manifest도 `notReleased`에 남지 않는다. 플랫폼 자산을 만드는 kit 0.0.111과 Go module의 tag 형태, 곧 release commit과 `packages/go/vX.Y.Z`를 기다린다. package 없는 release는 Rust core로의 이동을 끝내지 않는다 | `config/release.json`, `packages/php-ext/composer.json`, `packages/python/pyproject.toml`, `packages/ts/package.json`, `packages/rust/Cargo.toml`, `packages/go/go.mod` | `make release-coverage` | [ ] |
-| S-471 | 저장소가 자기 라이선스의 본문을 갖는다. `LICENSE`는 `package.json`, `packages/gui/package.json`, `packages/ts/package.json`, `packages/php-ext/composer.json`이 적는 MIT 라이선스이고, polyspec 저장소의 저작권 줄을 쓴다 | `LICENSE`, `config/owner-checks.json` | `make owner-validate`, `make layout-check` | [ ] |
+| S-471 | 저장소가 자기 라이선스의 본문을 갖는다. `LICENSE`는 `package.json`, `packages/gui/package.json`, `packages/ts/package.json`, `packages/php-ext/composer.json`이 적는 MIT 라이선스이고, polyspec 저장소의 저작권 줄을 쓴다 | `LICENSE` | `make owner-validate`, `make layout-check` | [ ] |
