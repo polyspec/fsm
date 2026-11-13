@@ -6,6 +6,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The five `from_code` cases `<machine>_from_code_int64_max` are back in `contracts/cases.json`, which holds 234 cases again: leaving them out reduced the cases. They fail on node, and B-7 states the defect of the binding specification that makes them fail, with its lines (S-457).
 - `make name-check` failed on `packages/rust/src/error.rs`, at the method of `binding_core::Kinds` that returns the HTTP code of an error kind, which the error enum of the core implements and whose name binding fixes. `scripts/check-name.mts` allows that method signature under `packages/rust/src/` with its reason, and a test keeps every other use of the old name there a finding (S-458).
 - The end-to-end check failed 5 generated node tests: the `from_code` cases `<machine>_from_code_int64_max` give 9223372036854775807, which a JavaScript number cannot hold, so the node binding refused it as an argument error instead of `unknown_code`. The five cases leave `contracts/cases.json`, which holds 229 cases, and B-7 states the reason (S-457).
 - `Machine::parse` took `reserved` as `Vec<i64>`, while the binding crates pass a list parameter by reference: the end-to-end check failed to compile the php, python, node and wasm crates with E0308 (expected `Vec<i64>`, found `&Vec<i64>`). `parse` now takes `&[i64]`; `make test-rust` passes 234 cases (S-458).
