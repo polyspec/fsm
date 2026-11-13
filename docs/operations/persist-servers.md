@@ -3,18 +3,20 @@
 
 [한국어](persist-servers.ko.md)
 
-The persistence tests of PostgreSQL and MySQL run on servers that one make target starts and removes through `bay`. This
-document is the procedure; the decision and its reasons are in [the plan](../plans/fsm-v1/plan.md), C-6, and the open work
-is in [the checklist](../plans/fsm-v1/checklist.md), S-475 and its sub-items.
+The persistence tests of PostgreSQL and MySQL run on servers that one make target pulls, starts and removes through `bay`.
+This document is the procedure; the decision and its reasons are in [the plan](../plans/fsm-v1/plan.md), C-6, and the open
+work is in [the checklist](../plans/fsm-v1/checklist.md), S-475 and its sub-items.
 
 ## What a machine needs
 
-- `bay` on PATH, with its machine setup applied: `bay check` passes. bay runs a Compose project on Apple `container` on
-  Darwin and on Docker on Linux. No target of this repository installs bay and no tracked file pins its release (S-475-4).
-  `bay install` applies the machine setup and asks a person for the administrator password; a run never runs it.
-- The container program of the platform on PATH: Apple `container` on Darwin, `docker` on Linux. A run asks it whether the
-  images are installed, and `make persist-images` pulls with it, because bay has no command for either (S-475-2).
-- The two images that `config/containers.json` pins by their digests, PostgreSQL 17.11 and MySQL 8.4.11.
+- `bay` on PATH, with its machine setup applied. bay runs a Compose project on Apple `container` on Darwin and on Docker on
+  Linux. No target of this repository installs bay and no tracked file pins its release (S-475-4); a run shows the version
+  of the bay that it used. `bay install` applies the machine setup and asks a person for the administrator password; a run
+  never runs it, and `bay up` fails and names the missing part when the setup is not complete.
+- The two images that `config/containers.json` pins by their digests, PostgreSQL 17.11 and MySQL 8.4.11, in the local store
+  of bay.
+
+No script of this repository calls `container` or `docker` itself.
 
 ## Commands
 
@@ -23,33 +25,30 @@ make persist-images
 make persist-servers TARGETS="db-test-postgres db-test-mysql"
 ```
 
-- `make persist-images` pulls the two images. It is the only target that downloads them: a run pulls nothing.
+- `make persist-images` pulls the two images with `bay pull`. It is the only target that downloads them: a run pulls
+  nothing.
 - `make persist-servers TARGETS="..."` runs the targets through `make ci-targets` with both servers. `make check` and
   `make ci-suite` run their targets through it.
 
 ## What a run does
 
-1. It fails at once when PATH holds no `bay` or no container program, and names the program and what installs it.
-2. It runs `bay check`. A failing check fails the run with the lines of the check; then run `bay install` and start the run
-   again.
-3. It asks the container program whether each image is installed. A missing image fails the run and names
-   `make persist-images`.
-4. It makes the directory `fsm-persist-<pid>-<random>` in the temporary directory of the system and writes `compose.yaml`
-   into it. The project has the name of the directory and the services `postgres` and `mysql`. The file publishes no port
-   of the host and mounts nothing. Each service declares a `healthcheck` that asks its server over TCP in the container,
-   `pg_isready` and `mysqladmin ping --protocol=tcp`, each 3 seconds and at most 100 times, the largest count that bay
-   accepts.
-5. It runs `bay up` in that directory and shows each line as `persist-servers: bay up: <line>`. bay checks the declared
-   health and returns after each service is healthy; the run waits for that return alone, with no sleep, no polling and no
-   time limit of its own.
-6. It runs `bay status --json` and reads the field `address` of each service of its project. The DSNs name that address and
-   the port of the server, `5432` and `3306`.
+1. It fails at once when PATH holds no `bay`, and names the program and what installs it.
+2. It shows `persist-servers: bay version: <JSON>`, what `bay version --json` prints.
+3. It makes the directory `fsm-persist-<pid>-<random>` in the temporary directory of the system and writes `compose.yaml`
+   into it, with the services `postgres` and `mysql`. The file publishes no port of the host and mounts nothing. Each
+   command of bay names the file and the project, the name of the directory: `bay -f <directory> -p <project> <command>`.
+4. It reads `bay images --json`. An image that the store lacks fails the run and names `make persist-images`; the run then
+   removes its directory.
+5. It runs `bay up -no-pull --json` and shows each line of its progress as `persist-servers: bay up: <line>`. Each service
+   declares a `healthcheck` that asks its server over TCP in the container, `pg_isready` and
+   `mysqladmin ping --protocol=tcp`; bay returns after each service is healthy. The run waits for that return alone, with no
+   sleep, no polling and no time limit of its own. The bound is in the file: a start period of 300 s for the initialization
+   of an image, then 3 failures, one ask each second.
+6. It reads the `host` and the `port` of each service from the JSON that `bay up` printed. The DSNs name them.
 7. It runs the targets with `FSM_TEST_PG_DSN`, `FSM_TEST_PG_ADMIN_DSN`, `FSM_TEST_MYSQL_DSN` and `FSM_TEST_MYSQL_ADMIN_DSN`.
-8. It runs `bay down` in the directory, removes the directory and shows `persist-servers: removed the project <project>`.
-   It does so when the targets end or fail, when `bay up` fails or an address is missing, and after SIGINT and SIGTERM.
-9. After a failed `bay up` or `bay down` it reads `bay status --json` to learn whether the project exists. bay registers a
-   project when it accepts its Compose file; without a group of the project in the JSON nothing of the run exists, so the
-   run removes its directory, and after such a `bay up` it runs no `bay down`.
+8. It runs `bay down`, removes the directory and shows `persist-servers: removed the project <project>`. It does so when the
+   targets end or fail, when `bay up` fails or its JSON names no service, and after SIGINT and SIGTERM. A signal that comes
+   while the servers start is forwarded to `bay up`, which removes what it created.
 
 The exit code of the run is that of the targets, 130 after SIGINT, 143 after SIGTERM and 1 for a failure of the run itself.
 
@@ -58,20 +57,15 @@ The exit code of the run is that of the targets, 130 after SIGINT, 143 after SIG
 | Line of the run | Cause | What to do |
 |---|---|---|
 | `persist-servers: bay is not found on PATH` | PATH holds no bay | Install bay and run `bay install` |
-| `persist-servers: bay check ended with <code>` | A part of the machine setup of bay is missing; the lines above name it | Run `bay install` |
-| `persist-servers: the image <reference> of <kind> is not installed` | The image is not in the container program | Run `make persist-images` |
-| `persist-servers: bay up ended with <code>` | A service did not start or did not get healthy within its 100 asks; the lines `persist-servers: <service>: <line>` above are the last 40 lines of each service | Read those lines; the run already removed the project |
-| `persist-servers: bay lists no project <project>: bay up made nothing` | bay refused the Compose file of the run; the lines `persist-servers: bay up: <line>` above say why | Correct what the lines name in `scripts/persist-servers.mts`; the run already removed its directory |
-| `persist-servers: bay status --json names no address of the service <service>` | The JSON of bay holds no address of a service of the project; the JSON follows the line | Compare the JSON with the fields that step 6 reads |
-| `persist-servers: bay down ended with <code>; the containers of the project <project> may still run` | bay did not remove the project, which it still lists | Run `bay down` in the directory that the line names, then remove that directory |
-| `persist-servers: bay down ended with <code>; bay lists no project <project>` | `bay down` failed and bay lists the project no more, so no container of the run exists | Nothing: the run already removed its directory |
+| `persist-servers: the image <reference> of <service> is not installed` | The store of bay lacks the image | Run `make persist-images` |
+| `persist-servers: bay up ended with <code>` | bay refused the file, a part of the machine setup is missing, or a service did not start or did not get healthy; the lines `persist-servers: bay up: <line>` above say which, with the output of a service whose health failed | Read those lines; for a missing part of the setup run `bay install`. The run already removed the project |
+| `persist-servers: bay up --json names no host and port of the service <service>` | The JSON of `bay up` holds no such service, host or port; the JSON follows the line | Compare the JSON with the fields that step 6 reads |
+| `persist-servers: bay down ended with <code>` | bay did not remove the project; its containers may still run | Run the command that the line shows, `bay -f <directory> -p <project> down`, then remove that directory |
 
 ## What is not verified and what waits
 
-- No run with real servers has shown yet that bay counts the asks during the initialization of an image against the 100,
-  and that both servers answer the first query after `bay up` returns (S-475).
-- `bay check` also reports the agent skill and the MCP registration of bay, which no server needs; whether a machine
-  without them fails the check is not verified (S-475-6).
-- The job `check` of CI installs no bay, so its suite step fails on the runner with the first line of the table (S-475-5).
-- The project name on the command line of bay (S-475-1), a pull through bay (S-475-2), a JSON output of `bay up`
-  (S-475-3) and a pinned release of bay (S-475-4) wait for releases of bay.
+- No run with real servers has passed yet (S-475). It must show the names of the fields of the JSON of `bay up`, how long
+  the initialization of each image takes against the start period, and that both servers answer the first query after
+  `bay up` returns.
+- The job `check` of CI installs no bay, so its steps `make persist-images` and `make ci-suite` fail on the runner with the
+  first line of the table (S-475-5), which waits for a pinned release of bay (S-475-4).
