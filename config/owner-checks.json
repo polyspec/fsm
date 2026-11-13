@@ -448,6 +448,17 @@
         "test-rust",
         "lint-rust"
       ]
+    },
+    {
+      "paths": [
+        "**/*.md",
+        "scripts/check-commit-names.mts",
+        "tests/check-commit-names/**"
+      ],
+      "targets": [
+        "commit-names-test",
+        "commit-names-check"
+      ]
     }
   ]
 }

@@ -552,7 +552,7 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 # nothing: the own suite of ci.yml is CHECK_TARGETS without them.
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
@@ -845,6 +845,15 @@ readme-test:
 
 readme-check:
 	$(NODE) scripts/check-readmes.mts
+
+# commit-names-test runs the tests of scripts/check-commit-names.mts; commit-names-check fails while a tracked document names a Git
+# commit (AGENTS.md, Rules; S-469).
+.PHONY: commit-names-test commit-names-check
+commit-names-test:
+	$(RUN_TESTS) node --results .results/commit-names-test.json --inputs scripts/check-commit-names.mts --inputs tests/check-commit-names -- --test-concurrency=1 tests/check-commit-names
+
+commit-names-check:
+	$(NODE) scripts/check-commit-names.mts
 
 # docs-deps installs the packages of the documentation site: the exact vitepress release of docs/package.json, locked in
 # docs/package-lock.json (docs/plans/fsm-v1/plan.md, C-8).

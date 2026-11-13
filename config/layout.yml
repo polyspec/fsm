@@ -34,7 +34,7 @@ rules:
       - "!packages/ts"
       - "!packages/gui"
 
-  # The tool tests of the root: the checks of scripts/ (check-name, check-readmes), the documentation site, the
+  # The tool tests of the root: the checks of scripts/ (check-name, check-readmes, check-commit-names), the documentation site, the
   # make targets of the package dependencies and of the Python toolchain, and the CI workflows.
   - id: layout-root-tests
     paths:
@@ -43,6 +43,7 @@ rules:
       # The shared helper of the root tool tests (a temporary Git checkout); it holds no test.
       - "!tests/support"
       - "!tests/check-readmes"
+      - "!tests/check-commit-names"
       - "!tests/docs-build"
       - "!tests/make-install"
       # the name tests of the released runtimes (S-410): the manifests of @polyspec/fsm, polyspec-fsm (python) and polyspec-fsm (rust)

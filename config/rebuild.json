@@ -25,6 +25,10 @@
     "scripts/root-option.mts": {
       "kind": "ecosystem",
       "tool": "node:util"
+    },
+    "scripts/check-commit-names.mts": {
+      "kind": "policy",
+      "reason": "fails a tracked document that names a Git commit, a rule of this repository (AGENTS.md, Rules): a release and a lock pin the name of a commit"
     }
   }
 }
