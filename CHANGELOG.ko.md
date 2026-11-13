@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 0016e65acd488d15391e3506d1535fdfb4dc5f2ef6dc10a8e3e7d31f80a8c89a -->
+<!-- source-sha256: c585b7c18176759db8263d7a2414cefb0280ee30e6d7d60f60a03b9fbece28fe -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make name-check`가 `packages/rust/src/error.rs`에서, 오류 종류의 HTTP code를 돌려주는 `binding_core::Kinds`의 method에서 실패했다. 이 method는 코어의 오류 enum이 구현하고, 그 이름은 binding이 정한다. `scripts/check-name.mts`는 `packages/rust/src/` 아래의 그 method signature를 이유와 함께 허용하고, 시험 하나가 그곳의 옛 이름의 다른 쓰임을 계속 발견으로 둔다 (S-458).
 - 종단 검사에서 생성된 node 시험 5개가 실패했다: `from_code` case `<machine>_from_code_int64_max`가 JavaScript number가 담지 못하는 9223372036854775807을 주므로, node 바인딩이 `unknown_code` 대신 인자 오류로 거부했다. 이 다섯 case는 `contracts/cases.json`에서 빠지고(이제 229개), B-7이 그 이유를 적는다 (S-457).
 - `Machine::parse`가 `reserved`를 `Vec<i64>`로 받았는데 바인딩 crate는 list 매개변수를 참조로 넘긴다. 그래서 종단 검사가 php, python, node, wasm crate를 E0308(`Vec<i64>`를 기대했는데 `&Vec<i64>`)로 컴파일하지 못했다. 이제 `parse`는 `&[i64]`를 받고, `make test-rust`가 case 234개를 통과한다 (S-458).
 - 계획 f6 단계 4: 코어 crate `packages/rust`에 class `Machine`과 record `Step`이 있다(`docs/spec/fsm.md`, B-7). `Machine::parse`는 기계 파일과 그 예약 code를 읽고, 코어가 돌릴 수 없는 것을 `invalid_definition`으로 거부한다(FSM-B7-1). `initial`, `code`, `key`, `from_code`, `is_final`, `events_from`, `target`, `apply`는 상태와 event의 key와 `i64` code 위에서 B-4와 B-6을 따른다. `Error`는 kind마다 variant 하나를 둔 enum이며 `binding_core::Kinds`와 `Display`를 구현한다. `make test-rust`는 코어에 `Machine`이 없어 시험을 빌드하지 못했고, 이제 `contracts/cases.json`의 case 234개를 통과한다 (S-458).

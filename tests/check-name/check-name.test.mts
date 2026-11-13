@@ -170,3 +170,12 @@ test('the status field of a raised error in contracts/cases.json is allowed, and
   assert.equal(other.result.status, 1, other.result.stdout + other.result.stderr);
   assert.match(other.result.stderr, /^\[check-name\] contracts\/cases\.json:1: /m);
 });
+
+test('the status method of binding_core::Kinds in packages/rust/src is allowed, and another status word there is not', (t) => {
+  const method = '    fn status(&self) -> Option<u16> {\n';
+  const allowed = check(t, { 'packages/rust/src/error.rs': method });
+  assert.equal(allowed.result.status, 0, allowed.result.stdout + allowed.result.stderr);
+  const other = check(t, { 'packages/rust/src/error.rs': 'let status = 1;\n' });
+  assert.equal(other.result.status, 1, other.result.stdout + other.result.stderr);
+  assert.match(other.result.stderr, /^\[check-name\] packages\/rust\/src\/error\.rs:1: /m);
+});
