@@ -318,7 +318,8 @@ legacy-test-php-ext: legacy-build-php-ext
 # root Cargo.lock with the commit of the cli (CK-20).
 # The binding packages and the root workspace that holds them are tracked since plan f6, step 3a; plan f6, step 3-2 moved the
 # hand-written packages that held the same folders to legacy/packages.
-.PHONY: bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-wasm \
+BINDING_TARGETS := php python node wasm go
+.PHONY: $(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-wasm \
 	test-python-binding test-php-binding test-go-binding
 BINDING ?=
 WASM_BINDGEN ?=
@@ -329,14 +330,18 @@ require_tool = test -n "$($(1))" || { echo "$@ needs $(1): $(2)" >&2; exit 2; }
 BINDING_CRATES := polyspec-fsm-node polyspec-fsm-wasm polyspec-fsm-python polyspec-fsm-php-ext polyspec-fsm-go
 BINDING_FEATURES := polyspec-fsm-node/panic-test,polyspec-fsm-wasm/panic-test,polyspec-fsm-python/panic-test,polyspec-fsm-php-ext/panic-test,polyspec-fsm-go/panic-test,polyspec-fsm-go/codec-test
 BINDING_CASES := $(CURDIR)/contracts/cases.json
+BINDING_INTERFACE := $(CURDIR)/packages/rust/interface.json
 BINDING_VAR := $(CURDIR)/var/bindings
 BINDING_TARGET := $(CURDIR)/target
 # The file name extension of a library that Cargo builds as a cdylib: dylib on macOS, so on Linux.
 CDYLIB := $(if $(filter Darwin,$(shell uname -s)),dylib,so)
 
-bindings:
+# bindings generates the five targets, each in its own target bindings-<target>, so that a target that binding does not generate
+# yet fails with its name and the targets that build on another target still run.
+bindings: $(foreach target,$(BINDING_TARGETS),bindings-$(target))
+$(foreach target,$(BINDING_TARGETS),bindings-$(target)):
 	@$(call require_tool,BINDING,the cli packages/ts/src/cli.ts of a binding checkout)
-	$(NODE) $(BINDING) generate --root $(CURDIR)
+	$(NODE) $(BINDING) generate --root $(CURDIR) --target $(@:bindings-%=%)
 
 bindings-check:
 	@$(call require_tool,BINDING,the cli packages/ts/src/cli.ts of a binding checkout)
@@ -350,14 +355,14 @@ lint-bindings: bindings
 test-bindings: lint-bindings check-declarations test-python-binding test-node test-wasm test-php-binding test-go-binding
 
 # The TypeScript compiler checks the generated declarations of the Node and WASM bindings in strict mode.
-check-declarations: bindings
+check-declarations: bindings-node bindings-wasm
 	@$(call require_tool,TSC,the TypeScript compiler of a binding checkout)
 	$(TSC) --noEmit --strict packages/ts/generated/index.d.ts
 	$(TSC) --noEmit --strict packages/ts/wasm/generated/index.d.ts
 
 # The wheel, built by maturin for the Python of mise.toml and installed into var/bindings/venv; the generated tests (binding G-5)
 # on unittest.
-test-python-binding: bindings
+test-python-binding: bindings-python
 	@$(call require_tool,MATURIN,the maturin of a binding checkout)
 	$(PYTHON_BIN) -m venv --clear $(BINDING_VAR)/venv
 	rm -rf $(BINDING_VAR)/wheels
@@ -370,7 +375,7 @@ test-python-binding: bindings
 # module and its glue, which wasm-bindgen writes into packages/ts/wasm/generated before the package is packed (binding GN-18, P-5).
 PLATFORM = $(shell $(NODE) -p 'process.platform + "-" + process.arch + (process.platform === "linux" ? "-gnu" : "")')
 WASM_BINDGEN_RELEASE = $(shell sed -n 's/^wasm-bindgen = "=\(.*\)"$$/\1/p' packages/ts/wasm/Cargo.toml)
-node-package: bindings
+node-package: bindings-node bindings-wasm
 	@$(call require_tool,WASM_BINDGEN,the wasm-bindgen CLI of the release of packages/ts/wasm/Cargo.toml)
 	test "$$($(WASM_BINDGEN) --version)" = "wasm-bindgen $(WASM_BINDGEN_RELEASE)"
 	cargo build --locked -p polyspec-fsm-wasm --target wasm32-unknown-unknown --features panic-test
@@ -389,19 +394,19 @@ node-package: bindings
 # The generated tests and the contract cases of the Node binding on node --test, against the installed package.
 test-node: node-package
 	cp packages/ts/generated/tests/generated.test.mjs packages/ts/tests/cases.mjs packages/ts/tests/cases.test.mjs $(BINDING_VAR)/node/
-	FSM_CASES=$(BINDING_CASES) $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-node.json --inputs packages/ts --inputs contracts/cases.json -- --test-concurrency=1 generated.test.mjs cases.test.mjs
+	FSM_CASES=$(BINDING_CASES) FSM_INTERFACE=$(BINDING_INTERFACE) $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-node.json --inputs packages/ts --inputs contracts/cases.json --inputs packages/rust/interface.json -- --test-concurrency=1 generated.test.mjs cases.test.mjs
 
 # The generated tests and the contract cases of the WASM binding through the subpath ./wasm of the installed package (binding
 # P-5); --expose-gc serves the generated tests that collect instances (binding GN-18a).
 test-wasm: node-package
 	cp packages/ts/wasm/generated/tests/generated.test.mjs $(BINDING_VAR)/node/generated.wasm.test.mjs
 	cp packages/ts/tests/cases.mjs packages/ts/tests/cases.wasm.test.mjs $(BINDING_VAR)/node/
-	FSM_CASES=$(BINDING_CASES) $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-wasm.json --inputs packages/ts --inputs contracts/cases.json -- --expose-gc --test-concurrency=1 generated.wasm.test.mjs cases.wasm.test.mjs
+	FSM_CASES=$(BINDING_CASES) FSM_INTERFACE=$(BINDING_INTERFACE) $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-wasm.json --inputs packages/ts --inputs contracts/cases.json --inputs packages/rust/interface.json -- --expose-gc --test-concurrency=1 generated.wasm.test.mjs cases.wasm.test.mjs
 
 # The extension of the PHP binding, built against the PHP of var/tools and loaded into it; the stub is linted, then the generated
 # tests run on the PHPUnit of legacy/packages/php-ext, the only PHPUnit that a lock of fsm installs: the composer.json that binding
 # scaffold writes for packages/php-ext requires no PHPUnit.
-test-php-binding: bindings legacy/packages/php-ext/vendor/composer/installed.json
+test-php-binding: bindings-php legacy/packages/php-ext/vendor/composer/installed.json
 	cargo build --locked -p polyspec-fsm-php-ext --features panic-test
 	$(KIT_TOOLS)/bin/php -l packages/php-ext/generated/polyspec_fsm.stub.php
 	$(RUN_TESTS) phpunit --cwd legacy/packages/php-ext --php-extension $(BINDING_TARGET)/debug/libpolyspec_fsm.$(CDYLIB) --results .results/test-php-binding.json --inputs packages/php-ext/generated -- $(CURDIR)/packages/php-ext/generated/tests
@@ -412,7 +417,7 @@ test-php-binding: bindings legacy/packages/php-ext/vendor/composer/installed.jso
 GO_BINDING_DIRS := errors internal in_review limits order standby ticket
 GO_BINDING_PACKAGES := $(foreach dir,$(GO_BINDING_DIRS),./$(dir)/...)
 GO_BINDING_ENV := GOTOOLCHAIN=local GOPROXY=off CGO_LDFLAGS=-L$(BINDING_TARGET)/debug GOFLAGS=-tags=polyspec_panic_test,polyspec_codec_test
-test-go-binding: bindings
+test-go-binding: bindings-go
 	cargo build --locked -p polyspec-fsm-go --features panic-test,codec-test
 	cd packages/go && test -z "$$($(KIT_TOOLS)/mise/shims/gofmt -l $(GO_BINDING_DIRS))"
 	cd packages/go && $(GO_BINDING_ENV) $(GO) vet $(GO_BINDING_PACKAGES)
