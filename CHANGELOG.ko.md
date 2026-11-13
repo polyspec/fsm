@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 5ad64b83319bd5e08cef44f16fc42ea31e7a2eda21b1f857fa4aed7144d7282a -->
+<!-- source-sha256: e94f5b8bf927e446e3807bce6792e7a39ff9020bd59f15073ed1670028157cc4 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- 코어의 manifest가 license를 적는다(`license = "MIT"`, 이 저장소의 npm 패키지가 적는 license와 같다). 바인딩 패키지는 코어의 license를 가지며, binding의 계약 검사는 license가 없는 코어를 거부한다(CK-71).
 
 - release가 core crate를 tag로 담는다(S-470-2). `config/release.json`이 crate `polyspec-fsm`의 manifest인 `packages/rust/Cargo.toml`을 `manifests`에서 `git-tag`로 분류하고, 그 manifest는 `notReleased`에서 빠진다. 이전에는 `packages/`의 모든 manifest가 crate를 포함해 `notReleased`에 있었는데, 설치된 kit은 consumer가 tag `vX.Y.Z`에서 가져오는 crate의 mode `git-tag`를 읽는다. `tests/workflows/workflows.test.mts`의 test가 이 분류를 요구한다. 이 test는 변경 전에 실패했고, `make workflows-test`는 20 passed이며, `make release-coverage`는 통과한다. row S-470은 나머지 각 부분에 필요한 것을 적는다. config/release.json의 kind `php-ext`, `wheel-abi3`, `npm-native`와 `goModule`을 가진 `go-static`은 0.0.110까지의 어떤 kit release에도 없고, binding package의 manifest는 `binding scaffold`가 쓰는데 아직 release field를 쓰지 않는다.
 - `rust-toolchain.toml`이 `clippy` 옆에 component `llvm-tools`를 적는다(S-470-1). 이전에는 `clippy`만 적었는데, Go module의 release는 `llvm-strip`, `llvm-size`, `llvm-nm`을 checkout의 toolchain의 component `llvm-tools`에서 읽는다. platform set은 `llvm-strip --strip-debug`로 static library의 debug section을 제거하고, release는 debug section이나 test symbol을 가진 library를 거부한다. 이제 파일의 component와 함께 toolchain을 설치하는 `make install`이 그것을 설치한다. `tests/workflows/workflows.test.mts`의 version test는 두 component를 요구하며, 변경 전에는 실패했다. S-470의 나머지 부분은 kit의 release와 manifest의 release field를 쓰는 binding이 필요하고, 그 row가 하나씩 적는다.

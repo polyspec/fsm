@@ -1,6 +1,7 @@
 [package]
 name = "polyspec-fsm"
 version = "0.0.13"
+license = "MIT"
 edition = "2021"
 rust-version = "1.99.0"
 description = "The core of fsm: a state machine read from its definition, its codes and keys, and its transitions"
