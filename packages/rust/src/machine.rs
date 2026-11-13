@@ -97,7 +97,7 @@ impl Machine {
     ///
     /// # Errors
     /// [`Error::InvalidDefinition`] names the JSON path of the refused part.
-    pub fn parse(definition: &str, reserved: Vec<i64>) -> Result<Machine, Error> {
+    pub fn parse(definition: &str, reserved: &[i64]) -> Result<Machine, Error> {
         let value: Value = serde_json::from_str(definition).map_err(|error| refused("$", &format!("it is not JSON: {error}")))?;
         let root = object(&value, "$", MACHINE_FIELDS)?;
         let name = text(root, "$", "machine")?;
@@ -154,7 +154,7 @@ impl Machine {
             let number = i64::try_from(index + 1).map_err(|error| refused(&path, &format!("the event has no number: {error}")))?;
             events.push(Event { key, number, edges });
         }
-        Ok(Machine { name, states, events, initial, reserved })
+        Ok(Machine { name, states, events, initial, reserved: reserved.to_vec() })
     }
 
     /// The key of the machine.

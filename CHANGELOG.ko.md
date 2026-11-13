@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 857277e28d848859c60f10ef719354e174645e6c0145eae18626e39ea1e171cc -->
+<!-- source-sha256: e82c9b4ec7de05e962ff8e0e44d47ed2cdda77a2da9eed909f5ce888b89978e6 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `Machine::parse`가 `reserved`를 `Vec<i64>`로 받았는데 바인딩 crate는 list 매개변수를 참조로 넘긴다. 그래서 종단 검사가 php, python, node, wasm crate를 E0308(`Vec<i64>`를 기대했는데 `&Vec<i64>`)로 컴파일하지 못했다. 이제 `parse`는 `&[i64]`를 받고, `make test-rust`가 case 234개를 통과한다 (S-458).
 - 계획 f6 단계 4: 코어 crate `packages/rust`에 class `Machine`과 record `Step`이 있다(`docs/spec/fsm.md`, B-7). `Machine::parse`는 기계 파일과 그 예약 code를 읽고, 코어가 돌릴 수 없는 것을 `invalid_definition`으로 거부한다(FSM-B7-1). `initial`, `code`, `key`, `from_code`, `is_final`, `events_from`, `target`, `apply`는 상태와 event의 key와 `i64` code 위에서 B-4와 B-6을 따른다. `Error`는 kind마다 variant 하나를 둔 enum이며 `binding_core::Kinds`와 `Display`를 구현한다. `make test-rust`는 코어에 `Machine`이 없어 시험을 빌드하지 못했고, 이제 `contracts/cases.json`의 case 234개를 통과한다 (S-458).
 - `make test-php-binding`이 `legacy/packages/php-ext`로 옮겨 간 PHP extension의 PHPUnit 설치 `packages/php-ext/vendor/composer/installed.json`을 선행 조건으로 이름했고, make가 그 파일을 만들 규칙이 없다며 멈췄다. 이제 이 대상은 `legacy/packages/php-ext`의 설치를 이름하고 생성 시험을 그 PHPUnit에서 돌린다. binding scaffold가 `packages/php-ext`에 쓰는 composer.json은 PHPUnit을 요구하지 않기 때문이다. S-456의 GUI import와 이 설치가 살아 있는 코드의 legacy 읽기다 (S-456).
 - 계획 f6 단계 3a: 루트 `Cargo.toml`이 코어 crate `packages/rust`와 다섯 바인딩 crate의 workspace이며 fsm의 lint를 갖고, 루트 `Cargo.lock`이 polyspec-binding-core를 f63a655에 고정한다. 계약 `packages/rust/interface.json`이 코어의 class `machine`과 record `step`을 묶는다. `machine`의 factory `parse(definition, reserved)`는 기계 파일을 읽는다(`docs/spec/fsm.md`, B-7, 새 절). 상태와 event는 key이고 code는 `int`이며, kind는 conflict, invalid_transition, unknown_code, reserved_code, unknown_state, unknown_event, invalid_definition이다. `contracts/cases.json`에는 case 234개가 있다: `contracts/conformance/vectors.json`에서 온 223개와 코어에만 있는 kind의 11개(FSM-B7-1부터 FSM-B7-3)다. case가 아닌 vector와 그 이유는 B-7에 있다: persist 11개(코어는 store를 갖지 않는다), 상태 자리에 raw code를 주는 36개, from_code에 string, bool, float를 주는 20개(바인딩의 인자 오류, GN-11). binding scaffold가 쓰는 바인딩 package를 추적하며 릴리스에서 뺀다(`notReleased`). `make test-rust`는 코어에서 case를 돌리고 `make lint-rust`는 바인딩 crate를 뺀다. `make bindings-check`는 전에는 없는 바인딩 파일을 모두 이름했고, 이제 CK-20만 보고한다: binding commit이 옮길 때까지 남는 고정 f63a655다. `make layout-check`는 binding scaffold가 `[lints]` 표를 쓰는 다섯 바인딩 manifest에서 lint-cargo-lints로 실패하고, `make test-rust`는 단계 4가 코어를 쓸 때까지 실패한다 (S-457).

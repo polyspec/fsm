@@ -37,7 +37,7 @@ fn machine(case: &Map<String, Value>) -> Result<Result<Machine, Error>, Failed> 
         .iter()
         .map(|code| code.as_i64().ok_or_else(|| Failed::from("a reserved code is not an int")))
         .collect::<Result<Vec<i64>, Failed>>()?;
-    Ok(Machine::parse(text(case, "definition")?, reserved))
+    Ok(Machine::parse(text(case, "definition")?, &reserved))
 }
 
 /// The result of the member `member` on a case, as the JSON value that returns gives.
