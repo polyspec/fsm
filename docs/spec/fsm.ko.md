@@ -1,5 +1,5 @@
 <!-- doc-id: spec-fsm -->
-<!-- source-sha256: 6a754e8a18df206b7bce4f4d4d4109f3695d20aa892ae3e8a6fa7ab936b1e82e -->
+<!-- source-sha256: 968d4e2a52b717176c869646e6b2a740dc89916bf7653cf035162d23064e8fc4 -->
 # fsm 정의
 
 [English](fsm.md)
@@ -276,4 +276,5 @@ stateDiagram-v2
 - **FSM-B7-2** 기계의 상태가 아닌 상태 key는 `unknown_state`이고, 기계의 event가 아닌 event key는 `unknown_event`이다.
 - **FSM-B7-3** `key(code)`는 `from_code`처럼 code의 상태 key를 준다: 예약 code는 `reserved_code`, 상태가 아닌 다른 code는 `unknown_code`다.
 - **FSM-B7-4** `machine`의 static `validate(definitions)`는 `$schema` 없는 기계 객체 목록의 JSON 텍스트를 받아, B-5의 finding을 record `finding`의 목록으로 B-5의 순서대로 돌려준다. `finding`은 `code`, `machine`(key, 또는 없음), `path`, `message`를 가지며, 그 값은 `legacy/packages/compiler/src/core/validate.mjs`가 주는 것과 같다. JSON이 아닌 텍스트는 `invalid_definition`이다. 그 case는 `legacy/packages/compiler/tests/validate-{structure,graph,names}.test.mjs`의 시험 65개가 하는 validate 호출과, validate.mjs가 돌려주는 finding이다.
+- **FSM-B7-5** kind `conflict`, `invalid_transition`, `unknown_code`, `reserved_code`는 오류 class `machine_error`의 instance이고, 그 읽기 전용 property `expected`, `actual`, `event`는 B-4와 B-6의 field다: 기대 상태의 code, 저장된 상태의 code, event의 번호이며, field가 해당하지 않으면 없음이다(`invalid_transition`은 `expected`와 `event`, `conflict`는 셋 모두, `unknown_code`와 `reserved_code`는 없음).
 - `from_code`의 인자는 `int`다. 다른 타입의 값(string, bool, float, null)은 B-6의 `E_UNKNOWN_CODE`가 아니라 언어 바인딩의 인자 오류(binding GN-11)이고, 상태 인자는 key이므로 raw code가 거기에 닿지 않는다. 그래서 그런 값이나 상태 자리의 raw code를 주는 B-6의 vector는 코어의 case가 아니다. `persist`의 vector도 아니다. 코어는 store를 갖지 않기 때문이다. 64-bit 최댓값 9223372036854775807을 주는 B-6의 `from_code` vector는 계약 타입 `int`의 범위 밖이다. `int`는 모든 target에서 같은 값이어야 하므로 그 범위는 ±(2^53 − 1)이다: binding 8faad21은 `int`에 Node 형태 `number`를 주고(docs/spec/contract-check.md:181, "`int` and `int64` have the forms of the contract types of the same names (Node `number` and `bigint`, T-1)"; 190행, 표의 `int` 행, node와 wasm은 `number`), Node의 2^53을 `invalid_number`로 거부한다(docs/spec/generator.md:454). 그래서 그 다섯 case `<machine>_from_code_int_max`는 그 범위의 끝값 9007199254740991을 주고, vector의 뜻과 기대값을 그대로 둔다: 어떤 상태도 갖지 않은 code는 아무리 커도 `unknown_code`다.

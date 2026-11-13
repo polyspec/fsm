@@ -108,19 +108,23 @@
     "kinds": [
       {
         "variant": "polyspec_fsm::Error::Conflict",
-        "category": "value"
+        "category": "value",
+        "class": "machine_error"
       },
       {
         "variant": "polyspec_fsm::Error::InvalidTransition",
-        "category": "value"
+        "category": "value",
+        "class": "machine_error"
       },
       {
         "variant": "polyspec_fsm::Error::UnknownCode",
-        "category": "value"
+        "category": "value",
+        "class": "machine_error"
       },
       {
         "variant": "polyspec_fsm::Error::ReservedCode",
-        "category": "value"
+        "category": "value",
+        "class": "machine_error"
       },
       {
         "variant": "polyspec_fsm::Error::UnknownState",
@@ -520,6 +524,75 @@
           ],
           "type": "text",
           "required": true
+        }
+      ]
+    },
+    {
+      "id": "machine_error",
+      "name": [
+        "machine",
+        "error"
+      ],
+      "module": "",
+      "kind": "error",
+      "visibility": "public",
+      "origin": "generated",
+      "category": "value",
+      "final": true,
+      "members": [
+        {
+          "id": "machine_error.expected",
+          "name": [
+            "expected"
+          ],
+          "kind": "property",
+          "visibility": "public",
+          "returns": {
+            "optional": "int"
+          },
+          "optional_reason": "B-6",
+          "wait": "none",
+          "raises": [],
+          "core": {
+            "path": "polyspec_fsm::Error::expected",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "machine_error.actual",
+          "name": [
+            "actual"
+          ],
+          "kind": "property",
+          "visibility": "public",
+          "returns": {
+            "optional": "int"
+          },
+          "optional_reason": "B-6",
+          "wait": "none",
+          "raises": [],
+          "core": {
+            "path": "polyspec_fsm::Error::actual",
+            "receiver": "&self"
+          }
+        },
+        {
+          "id": "machine_error.event",
+          "name": [
+            "event"
+          ],
+          "kind": "property",
+          "visibility": "public",
+          "returns": {
+            "optional": "int"
+          },
+          "optional_reason": "B-6",
+          "wait": "none",
+          "raises": [],
+          "core": {
+            "path": "polyspec_fsm::Error::event",
+            "receiver": "&self"
+          }
         }
       ]
     }

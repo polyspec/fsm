@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: 8c018007084a6875989a91e827a797489f1886ad7a09c6af800e05dc040fe0ab -->
+<!-- source-sha256: 2905a43adb0c80d42a4add6c4780c503caa486d54c8ce825c355b4634768ae77 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -133,3 +133,5 @@
 | S-462 | 계획 f6 단계 7a-1, PHP의 host: S-461의 suite를 `legacy/packages/php/tests/ConformanceTest.php`의 기대값으로 PHP 바인딩에서 돌린다. Red 먼저 | `packages/php-ext/tests/**`, `Makefile` | `make test-php-conformance BINDING=<cli of binding>` | [ ] |
 | S-463 | 계획 f6 단계 7a-1, Python의 host: S-461의 suite를 `legacy/packages/python/tests/test_conformance.py`의 기대값으로 Python 바인딩에서 돌린다. Red 먼저 | `packages/python/tests/**`, `Makefile` | `make test-python-conformance BINDING=<cli of binding> MATURIN=<maturin>` | [ ] |
 | S-464 | 계획 f6 단계 7b, WASM의 host: S-461의 suite를 WASM 바인딩, 곧 package의 subpath `./wasm`에서 돌린다. Red 먼저 | `packages/ts/tests/conformance.wasm.test.mjs`, `Makefile` | `make test-wasm-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [ ] |
+| S-465 | kind `conflict`, `invalid_transition`, `unknown_code`, `reserved_code`는 계약의 error unit `machine_error`의 instance이고, 그 읽기 전용 property `expected`, `actual`, `event`는 코어 오류에서 B-4와 B-6의 code를 주며, field가 해당하지 않으면 없음이다(`docs/spec/fsm.md`, FSM-B7-5). 그래서 바인딩 오류가 legacy `fsm.Error`의 field를 갖는다. Red: S-461에서 field가 없는 vector 69개 | `packages/rust/interface.json`, `packages/rust/src/error.rs`, `docs/spec/fsm.md` | `make test-rust`, `make test-node-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [ ] |
+| S-466 | 계획 f6 단계 2, 대응표: `contracts/conformance/changes.json`이 legacy vector의 각 오류를 바인딩의 kind로 대응시킨다(FSM-B7-6). 계획 f2 FP-7의 짝, 곧 계약 `int`의 값이 아닌 `from_code` 입력의 `E_UNKNOWN_CODE` ↔ 바인딩 경계의 `invalid_number`를 포함한다. S-461~S-464의 runner는 vector의 기대 kind를 이 표에서 읽고, 어느 행도 대응시키지 않는 오류의 vector는 실패한다. Red: S-461에서 `invalid_number`를 내는 vector 25개 | `contracts/conformance/changes.json`, `packages/ts/tests/conformance.mjs`, `packages/php-ext/tests/ConformanceTest.php`, `packages/python/tests/test_conformance.py` | `make test-node-conformance BINDING=<cli of binding> WASM_BINDGEN=<wasm-bindgen>` | [ ] |

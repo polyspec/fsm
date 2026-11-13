@@ -37,6 +37,41 @@ impl Error {
             Self::InvalidDefinition { .. } => "invalid_definition",
         }
     }
+
+    /// The fields of B-4 and B-6 of the error: the code of the expected state, the code of the stored state and the number of
+    /// the event (its place in the definition, from 1), each none where it does not apply (FSM-B7-5).
+    const fn fields(&self) -> (Option<i64>, Option<i64>, Option<i64>) {
+        match self {
+            Self::Conflict { expected, actual, event, .. } => (Some(*expected), Some(*actual), Some(*event)),
+            Self::InvalidTransition { expected, event, .. } => (Some(*expected), None, Some(*event)),
+            Self::UnknownCode { .. }
+            | Self::ReservedCode { .. }
+            | Self::UnknownState { .. }
+            | Self::UnknownEvent { .. }
+            | Self::InvalidDefinition { .. } => (None, None, None),
+        }
+    }
+
+    /// The code of the expected state, for `conflict` and `invalid_transition` (B-4; the property `expected` of the error
+    /// class `machine_error`, FSM-B7-5), none for the other kinds.
+    #[must_use]
+    pub const fn expected(&self) -> Option<i64> {
+        self.fields().0
+    }
+
+    /// The code of the stored state, for `conflict` (B-4; the property `actual` of `machine_error`, FSM-B7-5), none for the
+    /// other kinds.
+    #[must_use]
+    pub const fn actual(&self) -> Option<i64> {
+        self.fields().1
+    }
+
+    /// The number of the event, for `conflict` and `invalid_transition` (B-4; the property `event` of `machine_error`,
+    /// FSM-B7-5), none for the other kinds.
+    #[must_use]
+    pub const fn event(&self) -> Option<i64> {
+        self.fields().2
+    }
 }
 
 impl fmt::Display for Error {

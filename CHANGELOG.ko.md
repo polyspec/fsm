@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 83567ce2d729feffaff42740fcc3272906507726106c27ff502643fc3ab8bf83 -->
+<!-- source-sha256: f0dbb8b71dc1bb22c577c951c2c4168a349002545df83753ee8bd77160cd8757 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `conflict`, `invalid_transition`, `unknown_code`, `reserved_code`의 바인딩 오류에는 코어 오류가 갖고 legacy `fsm.Error`가 주던 field `expected`, `actual`, `event`가 없어, S-461의 vector 69개가 그 때문에 실패했다. 계약은 읽기 전용 property `expected`, `actual`, `event`(optional int)를 가진 error unit `machine_error`를 선언하고, 네 kind가 그것을 class로 이름하며, 코어 오류가 세 값을 준다(`Error::expected`, `Error::actual`, `Error::event`; FSM-B7-5). binding 1bf0025는 이것을 php, python, node, wasm에 생성하고 go에서는 거부한다: "machine_error: an error unit is not generated for go yet (E-2, E-7)" (S-465).
 - `make test-php-conformance`와 `make test-python-conformance`는 S-461의 suite를 PHP와 Python 바인딩에서 vector마다 시험 하나로 돌린다(`packages/php-ext/tests/ConformanceTest.php`, `packages/python/tests/test_conformance.py`). `from_code` vector의 입력은 string 입력이면 그 텍스트이고, 아니면 텍스트의 JSON 값이다. 그 값은 legacy 시험이 decode하는 int, float, bool이다. `packages/php-ext`는 Composer lock과 설치(`make binding-php-install`)를 갖고, `make lint-php`는 그 autoloader로 이 시험에 PHPStan을 돌린다 (S-462, S-463).
 - `make test-node-conformance`는 legacy 시험의 공통 suite `contracts/conformance/vectors.json`을 그 기대값으로 Node 바인딩에서 돌린다(`packages/ts/tests/conformance.mjs`). binding 1bf0025에서의 Red: `persist`를 뺀 vector 279개 중 185개가 통과하고 94개가 실패한다. 69개(apply 48, target 21)는 기대한 kind `conflict`나 `invalid_transition`을 내지만, vector가 주는 field `expected`, `actual`, `event`가 없다. 25개(string, bool, float, 분수, 64-bit 최댓값을 주는 `from_code`)는 vector가 `E_UNKNOWN_CODE`를 주는 자리에서 바인딩의 `invalid_number`를 낸다 (S-461).
 - `make test-node`와 `make test-wasm`이 모든 group에서 실패했다: case runner `packages/ts/tests/cases.mjs`가 S-454의 형태대로 기계마다 module을 불렀는데, package는 S-457의 class `Machine`을 내보낸다. 이제 runner는 member와 factory를 `packages/rust/interface.json`(`FSM_INTERFACE`)에서 읽는다: static은 class에서, method는 case key `definition`과 `reserved`로 `Machine.parse`가 준 instance에서 부르고, record는 계약의 field로 비교한다. `make bindings`는 binding이 생성하지 못하는 첫 target(go, class unit)에서 멈춰 다른 바인딩 대상이 돌지 않았다. 이제 target마다 `bindings-<target>`이 있고, 시험 대상은 자기 target만 생성한다 (S-460).
