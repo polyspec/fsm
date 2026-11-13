@@ -1,3 +1,5 @@
+//go:build polyspec_codec_test
+
 // Package tests runs the common suite of the legacy tests, contracts/conformance/vectors.json, with its expectations on the Go
 // binding of fsm (plan f6, step 7b; docs/plans/fsm-v1/checklist.md, S-467), as conformance.mjs does on the Node binding (S-461).
 // The folder contracts is that of the repository, the nearest parent folder of the test that holds
@@ -6,10 +8,10 @@
 // actual_value) goes through Key first, as the legacy tests send it through fromCode. An error is compared by its kind and by
 // the properties Expected, Actual and Event of MachineError (nil where the field does not apply, FSM-B7-5); the kind is the one
 // that the mapping table contracts/conformance/changes.json gives for the vector (docs/spec/fsm.md, FSM-B7-6). A from_code input
-// of an input_type (a string, a bool or a float) has no form in Go, whose FromCode takes an int64; the rule of binding GN-13
-// gives such an input an entry point of the test feature case-test, which passes the host value to the conversion of the core.
-// Until binding generates that entry point for Go, each such vector fails by its name with that reason. The persist vectors are
-// the cases of step 7p, which binds the store.
+// of an input_type (a string, a bool or a float) has no form in Go, whose FromCode takes an int64; binding GN-13g gives such a
+// value the function IntIn of internal/binding under the build tag polyspec_codec_test (feature codec-test), which passes the
+// Go value to the conversion of the core for the code, so this file builds with that tag only. The persist vectors are the
+// cases of step 7p, which binds the store.
 package tests
 
 import (
@@ -24,6 +26,7 @@ import (
 
 	fsm "github.com/polyspec/fsm/packages/go"
 	liberrors "github.com/polyspec/fsm/packages/go/errors"
+	"github.com/polyspec/fsm/packages/go/internal/binding"
 )
 
 // intMax is the largest integer of the contract int: the same value in every target (docs/spec/fsm.md, B-7).
@@ -266,21 +269,49 @@ func check(t *testing.T, rows []row, machine *fsm.Machine, v vector) {
 	}
 }
 
-// fromCode runs a from_code vector. An input of an input_type has no form in Go (FromCode takes an int64), so the vector waits
-// for the entry point of the test feature case-test that binding GN-13 gives it, and fails by its name until then.
+// hostValue is the Go value of a from_code input of an input_type, as the legacy test decodes it: the text of a string input,
+// the bool of a bool input and the float64 of a float input.
+func hostValue(t *testing.T, v vector) any {
+	t.Helper()
+	switch *v.InputType {
+	case "string":
+		return *v.Input
+	case "bool":
+		value, err := strconv.ParseBool(*v.Input)
+		if err != nil {
+			t.Fatalf("the bool input %s of %s: %v", *v.Input, v.ID, err)
+		}
+		return value
+	case "float":
+		value, err := strconv.ParseFloat(*v.Input, 64)
+		if err != nil {
+			t.Fatalf("the float input %s of %s: %v", *v.Input, v.ID, err)
+		}
+		return value
+	}
+	t.Fatalf("the input_type %s of %s is none of string, bool and float", *v.InputType, v.ID)
+	return nil
+}
+
+// fromCode runs a from_code vector. An input of an input_type has no form in Go (FromCode takes an int64), so its Go value goes
+// to the conversion of the core for the code through binding.IntIn (binding GN-13g); an integer above int64 goes as a uint64.
 func fromCode(t *testing.T, rows []row, machine *fsm.Machine, v vector, fails failure, result func(error, func())) {
 	t.Helper()
 	if v.Input == nil {
 		t.Fatalf("the from_code vector %s has no input", v.ID)
 	}
 	if v.InputType != nil {
-		t.Fatalf("%s: the %s input %s has no form in Go; it waits for the case-test entry point of binding GN-13, which passes the "+
-			"host value to the conversion of the core, whose kind %s the mapping table expects", v.ID, *v.InputType, *v.Input,
-			kindOf(t, rows, v, fails.Error))
+		result(binding.IntIn(hostValue(t, v), "code"), func() { t.Fatalf("%s: the input %s of an input_type passed", v.ID, *v.Input) })
+		return
 	}
 	code, err := strconv.ParseInt(*v.Input, 10, 64)
 	if err != nil {
-		t.Fatalf("the input %s of %s is no int64: %v", *v.Input, v.ID, err)
+		above, uintErr := strconv.ParseUint(*v.Input, 10, 64)
+		if uintErr != nil {
+			t.Fatalf("the input %s of %s is no int64 and no uint64: %v", *v.Input, v.ID, err)
+		}
+		result(binding.IntIn(above, "code"), func() { t.Fatalf("%s: the input %s above int64 passed", v.ID, *v.Input) })
+		return
 	}
 	got, err := machine.FromCode(code)
 	result(err, func() {
