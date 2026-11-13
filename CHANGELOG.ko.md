@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4e99afa58ca79aca230b8ad93db8f5a2f59c0c7fe06e0343d744ce0d44968251 -->
+<!-- source-sha256: 76e4b7c6c6c2a5ac9ecb1eb56fee953b473089eb451e218c3ceb78f5e433fea4 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 64-bit 최댓값의 `from_code` case 다섯 개는 계약 타입 `int`(±(2^53 − 1), 모든 target에서 같은 값)의 값이 아닌 9223372036854775807을 주어 node에서 실패했다. 이제 그 case들은 `<machine>_from_code_int_max`이고 그 범위의 끝값 9007199254740991을 주며, 기대값은 여전히 `unknown_code`다. B-7이 그 이유를 binding 명세의 줄과 함께 적는다 (S-457).
 - S-459가 끝났다: commit된 tree  `make test-rust`가 case 533개를 통과했다.
 - 코어가 B-5의 finding을 준다: `packages/rust`의 static `Machine::validate(definitions)`는 기계 목록의 JSON 텍스트를 받아 record `finding`(`code`, `machine`, `path`, `message`)을 B-5의 순서대로 `legacy/packages/compiler/src/core/validate.mjs`처럼 돌려주고, JSON이 아닌 텍스트는 `invalid_definition`으로 거부한다 (FSM-B7-4). `contracts/cases.json`은 `machine.validate`의 case 299개를 갖는다: `legacy/packages/compiler/tests/validate-{structure,graph,names}.test.mjs`의 시험 65개가 하는 서로 다른 호출 298개와 validate.mjs가 돌려주는 finding, 그리고 JSON이 아닌 텍스트 하나다. finding이 문서 순서를 따르므로 serde_json은 map의 key를 그 순서대로 둔다(`preserve_order`). `make test-rust`는 case 533개를 통과한다 (S-459).
 - `from_code` case `<machine>_from_code_int64_max` 다섯 개가 `contracts/cases.json`에 돌아왔고, 다시 234개다: 빼는 것은 case를 줄이는 것이었다. 이 case들은 node에서 실패하며, B-7이 그 실패를 만드는 binding 명세의 결함을 해당 줄과 함께 적는다 (S-457).
