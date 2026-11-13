@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4bc229d4daee2cd11b9d78f1b23e47440295aa07bb52002688b4c617077edb11 -->
+<!-- source-sha256: 887b911ac79315ba0e512d00c23cfef5198b51ea0f775df7260fb1c97cc850da -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- Go conformance runner(S-467)는 `input_type`이 있는 `from_code` 입력 20개를 그 Go 값, 곧 `string`, `bool`, `float64`로 binding GN-13g가 build tag `polyspec_codec_test` 아래 생성하는 `binding.IntIn(value, "code")`에 넘기고 mapping table의 kind `invalid_number`를 기대한다. `int64`를 넘는 정수는 `uint64`로 넘긴다. 시험 파일은 `//go:build polyspec_codec_test`를 갖고, `make test-go-conformance`의 `GOFLAGS`가 그 tag를 준다. Red: binding a03ba03에서는 빌드가 `undefined: binding.IntIn`으로 실패한다. Green: binding f8a2c3c(lane/go, GN-13g)의 생성기로, binding_core는 고정된 a03ba03의 것과 같고, 생성 시험 554개와 vector 279개가 통과하며 그 가운데 `input_type` vector 20개가 있다. binding 핀이 GN-13g를 담을 때까지 행은 열려 있다.
 - S-462와 S-463이 끝났다: commit된 tree 6f852f4와 binding a03ba03에서 `make test-php-conformance`가 생성 시험 557개와 vector 279개 중 279개를, `make test-python-conformance`가 생성 시험 555개와 vector 279개 중 279개를 통과했다.
 - Cargo.lock이 polyspec-binding-core를 binding a03ba03에 고정하고, 추적하는 binding 소스 다섯 개(`packages/{php-ext,python,ts,ts/wasm,go/internal/ffi}/src/lib.rs`)는 binding a03ba03이 scaffold하는 것이다. crate 속성 `allow`마다 규칙을 reason으로, 설명을 주석으로 둔다. `binding check`는 아무것도 보고하지 않고(CK-19, CK-20), 6f852f4에서 `make test-rust`가 시험 533개를 통과했고 `make lint-rust`가 통과했으며 `make lint-bindings`가 binding crate 다섯 개에 `-D warnings`로 clippy를 돌려 finding이 없었다.
 - Go conformance 시험은 `contracts` 폴더를 `FSM_CONTRACTS`에서만 읽었다. 그래서 binding의 end-to-end 검사가 commit된 tree의 사본에서 그 변수 없이 돌리는 `packages/go`의 `go test ./...`가 "FSM_CONTRACTS names the folder contracts; make test-go-conformance sets it"로 실패했다. 이제 시험은 Python 시험처럼 package 폴더에서 가장 가까운, `contracts/conformance/vectors.json`을 가진 부모 폴더를 쓰고, `make test-go-conformance`는 그 변수를 두지 않는다. Red: 변수 없는 레시피가 그 메시지로 실패했다. Green: binding 46f61fb로 vector 259개가 통과하고, `input_type`이 있는 `from_code` vector 20개는 S-467이 적은 대로 이름으로 실패한다(S-468).
