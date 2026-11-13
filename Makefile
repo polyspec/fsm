@@ -319,7 +319,7 @@ legacy-test-php-ext: legacy-build-php-ext
 # The binding packages and the root workspace that holds them are tracked since plan f6, step 3a; plan f6, step 3-2 moved the
 # hand-written packages that held the same folders to legacy/packages.
 BINDING_TARGETS := php python node wasm go
-.PHONY: $(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-node-conformance test-wasm \
+.PHONY: $(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings bindings-check lint-bindings test-bindings check-declarations node-package test-node test-node-conformance test-wasm test-wasm-conformance \
 	test-python-binding test-python-conformance test-php-binding test-php-conformance test-go-binding
 BINDING ?=
 WASM_BINDGEN ?=
@@ -353,7 +353,7 @@ lint-bindings: bindings
 	cargo clippy --locked $(foreach crate,$(BINDING_CRATES),-p $(crate)) --all-targets --features $(BINDING_FEATURES) -- -D warnings
 
 test-bindings: lint-bindings check-declarations test-python-binding test-python-conformance test-node test-node-conformance test-wasm test-php-binding \
-	test-php-conformance test-go-binding
+	test-php-conformance test-wasm-conformance test-go-binding
 
 # The TypeScript compiler checks the generated declarations of the Node and WASM bindings in strict mode.
 check-declarations: bindings-node bindings-wasm
@@ -414,6 +414,11 @@ test-wasm: node-package
 	cp packages/ts/wasm/generated/tests/generated.test.mjs $(BINDING_VAR)/node/generated.wasm.test.mjs
 	cp packages/ts/tests/cases.mjs packages/ts/tests/cases.wasm.test.mjs $(BINDING_VAR)/node/
 	FSM_CASES=$(BINDING_CASES) FSM_INTERFACE=$(BINDING_INTERFACE) $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-wasm.json --inputs packages/ts --inputs contracts/cases.json --inputs packages/rust/interface.json -- --expose-gc --test-concurrency=1 generated.wasm.test.mjs cases.wasm.test.mjs
+
+# The common suite of the legacy tests (S-464) on the WASM binding, the subpath ./wasm of the installed package.
+test-wasm-conformance: node-package
+	cp packages/ts/tests/conformance.mjs packages/ts/tests/conformance.wasm.test.mjs $(BINDING_VAR)/node/
+	FSM_CONTRACTS=$(CURDIR)/contracts $(RUN_TESTS) node --cwd $(BINDING_VAR)/node --results .results/test-wasm-conformance.json --inputs packages/ts --inputs contracts -- --test-concurrency=1 conformance.wasm.test.mjs
 
 # The extension of the PHP binding, built against the PHP of var/tools and loaded into it; the stub is linted, then the generated
 # tests run on the PHPUnit of legacy/packages/php-ext, the only PHPUnit that a lock of fsm installs: the composer.json that binding

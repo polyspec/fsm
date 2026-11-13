@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6f9add981047f6ac13b31990629f755357e275f2bf171b2c8aa13b4c85d70366 -->
+<!-- source-sha256: 4e21c88e6f82b1d1ca78914155e2a70d1a76a06a6c1de801adc38efd39c9e668 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- legacy 시험의 공통 suite가 package의 subpath `./wasm`인 WASM 바인딩에서 돈다: `make test-wasm-conformance`는 Node 바인딩의 runner로 `packages/ts/tests/conformance.wasm.test.mjs`를 돌리며, binding ae511fd로 vector 279개 중 279개를 통과한다. 첫 실행에서 통과했으므로 실패하는 Red는 없다: WASM 바인딩은 Node 바인딩과 같은 kind와 field를 준다 (S-464).
 - 바인딩 runner들에서 mapping table의 predicate `input_not_int`가 `from_code` 입력이 없는 vector에도 적용됐다: Python runner는 46개 vector에서 `KeyError: 'input'`을 냈고, PHP runner는 없는 key를 읽었으며, Node runner는 `Number(undefined)`가 NaN이라서만 false였다. 이제 `contracts/conformance/changes.json`의 정의대로 `input`이 있는 vector에만 적용된다. `make test-node-conformance`는 279개 중 279개, `make test-php-conformance`와 `make test-python-conformance`는 각각 279개 중 274개를 통과한다; 각 5개 실패는 `from_code` vector `*_from_code_int64_max`로, PHP·Python 바인딩이 입력 9223372036854775807을 `int`로 받아 core에 넘기고, core가 table이 기대하는 `invalid_number` 대신 `unknown_code`를 낸다 (S-462, S-463).
 - `make test-php-binding`와 `make test-python-binding`이 무시되는 폴더 `packages/<target>/generated`만 입력으로 이름 붙여서, 시험이 통과한 뒤 test runner가 실패시켰고(`--inputs packages/php-ext/generated names no tracked or new file`), 이에 의존하는 conformance 대상은 돌지 않았다. 이제 `make test-node`처럼 생성된 시험의 출처인 package, `contracts/cases.json`, `packages/rust/interface.json`을 이름 붙인다: PHP 557개와 Python 556개가 통과한다 (S-462, S-463).
 - S-460, S-461, S-465, S-466이 끝났다: commit된 tree  binding ae511fd로 `make test-node`는 567개, `make test-wasm`은 566개, `make test-node-conformance`는 vector 279개 중 279개, `make test-rust`는 533개를 통과했다.
