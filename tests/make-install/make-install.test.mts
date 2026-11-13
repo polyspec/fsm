@@ -38,6 +38,7 @@ const STAMPS = [
   'legacy/packages/python/.venv/.installed',
   'var/deps/go',
   'var/deps/rust',
+  'var/deps/binding',
 ];
 
 // The install line that make prints for each dependency (its recipe as make -n shows it).
@@ -52,6 +53,7 @@ const INSTALL: ReadonlyMap<string, RegExp> = new Map([
   ['python', /fsm-python-install/],
   ['go', /fsm-go-install/],
   ['rust', /fsm-rust-install/],
+  ['binding', /binding-install/],
 ]);
 
 /** The install line of the dependency `name`, which INSTALL must declare. */
@@ -74,6 +76,10 @@ const TARGETS = [
   { target: 'gui-test', line: /gui-test\.json/, needs: ['gui', 'db'] },
   { target: 'docs-build', line: /vitepress\.js build/, needs: ['docs'] },
   { target: 'docs-build-test', line: /docs-build-test\.json/, needs: ['docs'] },
+  // The lints that read installed and generated files (S-476, S-477): PHPStan reads the autoloader of each Composer project, and
+  // golangci-lint reads the Go files of each module, those that binding generates among them.
+  { target: 'lint-php', line: /lint-php\.m[jt]s/, needs: ['php', 'binding-php'] },
+  { target: 'lint-go', line: /lint-go\.m[jt]s/, needs: ['go', 'binding'] },
 ];
 
 // The kind whose generated files each target of TARGETS reads: no checkout tracks them, so the target generates them first
@@ -86,6 +92,8 @@ const GENERATES: ReadonlyMap<string, string> = new Map([
   ['legacy-test-php-ext', 'php-ext'],
   ['legacy-test-python', 'python'],
   ['legacy-test-rust', 'rust'],
+  ['lint-php', 'php'],
+  ['lint-go', 'go'],
 ]);
 
 /** The line of the fsm-gen call that writes the src of the kind `kind`. */
@@ -112,6 +120,12 @@ function sandbox(t: TestContext, { installed = false }: { installed?: boolean } 
     for (const file of stamps) utimesSync(path.join(dir, file), now, now);
   }
   return dir;
+}
+
+/** `value` as an object, which `what` names; throws when it is another value. */
+function record(value: unknown, what: string): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new Error(`${what} must be an object`);
+  return Object.fromEntries(Object.entries(value));
 }
 
 /** The output of `make -n <goal>` in dir, with no inherited make flags. Every recipe line is printed and no recipe runs. */
@@ -263,6 +277,30 @@ test('the targets that read the models of legacy/packages/db generate them after
     assert.ok(gen >= 0 && gen < run, `${target} does not generate the models of legacy/packages/db before its recipe:\n${out}`);
     assert.ok(lineIndex(out, installLine('db')) < gen, `${target} generates the models before the install of db:\n${out}`);
   }
+});
+
+test('lint-go generates the Go binding with the generator that Cargo.lock pins, after its install and before the lint (S-477)', (t) => {
+  const out = dryRun(sandbox(t), 'lint-go');
+  const install = lineIndex(out, /binding\.mts install /);
+  const generate = lineIndex(out, /binding\.mts generate --root \S+ --target go$/);
+  const lint = lineIndex(out, /lint-go\.m[jt]s/);
+  assert.ok(install >= 0 && install < generate, `lint-go does not install the generator before it generates the Go binding:\n${out}`);
+  assert.ok(generate < lint, `lint-go does not generate the Go binding before the lint:\n${out}`);
+  // A generator that is installed for the commit of Cargo.lock is not installed again, and the binding is still generated.
+  const again = dryRun(sandbox(t, { installed: true }), 'lint-go');
+  assert.equal(lineIndex(again, /binding\.mts install /), -1, `an installed generator is installed again:\n${again}`);
+  assert.ok(lineIndex(again, /binding\.mts generate --root \S+ --target go$/) >= 0, `lint-go does not generate the Go binding:\n${again}`);
+});
+
+test('each runtime job of config/ci.json installs and generates what its gate reads, with the tools that the setup runs (S-476, S-477)', () => {
+  const config: unknown = JSON.parse(readFileSync(path.join(ROOT, 'config/ci.json'), 'utf8'));
+  const setup = (runtime: string): unknown => record(record(record(config, 'config/ci.json').setup, 'setup').runtimes, 'setup.runtimes')[runtime];
+  // PHPStan of lint-php reads the autoloader of both Composer projects with tracked PHP files.
+  assert.deepEqual(setup('php'), ['fsm-php-install', 'binding-php-install', 'fsm-php-gen']);
+  // golangci-lint of lint-go reads the generated Go files of legacy/packages/go and of the binding module packages/go.
+  assert.deepEqual(setup('go'), ['deps-go', 'fsm-go-gen', 'legacy-build-go', 'binding-install', 'bindings-go']);
+  // The generator is found through cargo, the tool of the rust runtime, so the go job installs the Rust toolchain too.
+  assert.deepEqual(record(record(config, 'config/ci.json').tools, 'tools').go, ['rust']);
 });
 
 test('the gate that reads generated files generates the files of every kind first', (t) => {

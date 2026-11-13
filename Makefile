@@ -581,7 +581,7 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 # itself, so the workflow and make check cannot differ (S-474; make workflows-test).
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test container-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test binding-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test container-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
@@ -864,7 +864,13 @@ check:
 # make-install-test runs the tests of the package dependencies (tests/make-install): a target that needs a dependency installs it
 # first, and a present dependency is not installed again (docs/plans/fsm-v1/checklist.md, S-29).
 make-install-test:
-	$(RUN_TESTS) node --results .results/make-install-test.json --inputs Makefile --inputs packages --inputs tests/make-install -- --test-concurrency=1 $(or $(TESTS),tests/make-install)
+	$(RUN_TESTS) node --results .results/make-install-test.json --inputs Makefile --inputs config/ci.json --inputs packages --inputs tests/make-install -- --test-concurrency=1 $(or $(TESTS),tests/make-install)
+
+# binding-test runs the tests of scripts/binding.mts (tests/binding, S-477): the commit and the checkout of the generator from
+# the output of cargo metadata, and the folder of an installed generator; it runs no cargo, git or npm.
+.PHONY: binding-test
+binding-test:
+	$(RUN_TESTS) node --results .results/binding-test.json --inputs scripts/binding.mts --inputs tests/binding --inputs tests/support/tree.mts -- --test-concurrency=1 tests/binding
 
 # package-names-test runs the tests of the polyspec names of the released runtimes (tests/package-names, S-410): the TS runtime, the Python
 # wheel and the Rust crate name their packages polyspec-fsm, as the other polyspec packages do.

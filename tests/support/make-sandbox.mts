@@ -27,6 +27,8 @@ export const LOCKS = [
   'legacy/packages/python/pyproject.toml',
   'legacy/packages/go/go.sum',
   'legacy/packages/rust/Cargo.lock',
+  // The lock of the root Cargo workspace, which pins the commit of binding: the install of the generator is keyed on it.
+  'Cargo.lock',
 ];
 
 /** Copies the Makefile and the config it reads from the checkout `root` into the repository folder `tmp/fsm`, links the kit

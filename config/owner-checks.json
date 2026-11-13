@@ -322,6 +322,7 @@
     {
       "paths": [
         "Makefile",
+        "config/ci.json",
         "tests/make-install/**"
       ],
       "targets": [
@@ -461,6 +462,15 @@
       "targets": [
         "commit-names-test",
         "commit-names-check"
+      ]
+    },
+    {
+      "paths": [
+        "scripts/binding.mts",
+        "tests/binding/**"
+      ],
+      "targets": [
+        "binding-test"
       ]
     },
     {
