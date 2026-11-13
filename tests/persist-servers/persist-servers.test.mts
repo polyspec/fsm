@@ -93,6 +93,9 @@ const STARTING = 'starting 3 services';
 const HEALTHY = 'all services are healthy';
 const STOPPED = 'bay: the service mysql stopped before it was healthy';
 const RUNNING = 'the command runs';
+// The time that the stand-in date prints, and the file of the cgroup of a container that holds its highest memory use.
+const TIME = '2026-01-02T03:04:05Z';
+const PEAK = '/sys/fs/cgroup/memory.peak';
 
 /** What the stand-ins of a case do. */
 interface Stand {
@@ -116,6 +119,8 @@ interface Stand {
   other?: boolean;
   /** The words of the variable BAY, which start bay; the variable is not set when it is undefined. */
   started?: string;
+  /** The memory that the pin of an image holds in the copied config/containers.json. */
+  memory?: Partial<Record<Kind, string>>;
 }
 
 /** The root and the stand-ins of one case and what the test reads from them. */
@@ -146,6 +151,16 @@ function stage(t: TestContext, stand: Stand = {}): Stage {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     cpSync(path.join(ROOT, file), path.join(root, file));
   }
+  if (stand.memory !== undefined) {
+    const file = path.join(root, 'config/containers.json');
+    const pins: unknown = JSON.parse(readFileSync(file, 'utf8'));
+    for (const [kind, memory] of Object.entries(stand.memory)) {
+      const pinned = isRecord(pins) && isRecord(pins.images) ? pins.images[kind] : undefined;
+      assert.ok(isRecord(pinned), `config/containers.json pins no image of ${kind}`);
+      pinned.memory = memory;
+    }
+    writeFileSync(file, `${JSON.stringify(pins, null, 2)}\n`);
+  }
   const { directory, path: PATH, program: write } = standIns(t, 'Linux');
   for (const flag of ['absent', 'upFails', 'downFails', 'unlisted', 'other'] as const) {
     if (stand[flag] === true) writeFileSync(path.join(directory, flag), '');
@@ -161,6 +176,8 @@ printf '%s\\n' "$line" >> "$d/${file}"
 `;
   // sudo -n runs its command, as the sudo of a user without a password does.
   write('sudo', `${record('sudo', 'sudo-calls')}[ "$1" = -n ] || exit 2\nshift\nPATH='${directory}' exec "$@"\n`);
+  // date prints one time, so the report of a run is the same text in every case.
+  write('date', `[ "$1" = -u ] && [ "$2" = '+%Y-%m-%dT%H:%M:%SZ' ] || exit 2\necho '${TIME}'\n`);
   // git names the branch main and writes an empty file as its bundle.
   write('git', `${record('git', 'git-calls')}case "$1" in
 symbolic-ref) echo main ;;
@@ -209,6 +226,13 @@ up)
 	echo '${HEALTHY}' >&2
 	;;
 exec)
+	shift
+	while [ "$1" = -e ]; do shift 2; done
+	if [ "$2" = cat ]; then
+		[ "$3" = ${PEAK} ] || exit 2
+		echo 4096
+		exit 0
+	fi
 	echo '${RUNNING}'
 	if [ -p "$d/exec-waits" ]; then read -r _ < "$d/exec-waits"; fi
 	exit "$(cat "$d/exec-code")"
@@ -324,12 +348,15 @@ const WRITTEN = ['bay', 'version', '--json'];
 const VERSIONED = ['bay', 'version', '--json'];
 
 /**
- * The commands of bay of a run to the step `last`: the version and the plan of the writing, then the steps of run.sh. The
- * command of the host form is no command of bay.
+ * The commands of bay of a run to the step `last`: the version and the plan of the writing, then the steps of run.sh and the
+ * reading of the memory of each service. The command of the host form is no command of bay.
  */
 function steps(project: Named, last: 'images' | 'up' | 'exec', form: 'host' | 'runner' = 'runner'): string[][] {
   const all = [WRITTEN, [...project, 'plan', '--json'], VERSIONED, [...project, 'images'], [...project, 'up', '-no-pull'], ...(form === 'runner' ? [executed(project)] : [])];
-  return [...all.slice(0, { images: 4, up: 5, exec: 6 }[last]), ...(last === 'images' ? [] : [[...project, 'down']])];
+  // Once bay up was started, the memory of each service is read before the project is removed.
+  const services = form === 'runner' ? ['postgres', 'mysql', 'runner'] : ['postgres', 'mysql'];
+  const ending = [...services.map(service => [...project, 'exec', service, 'cat', PEAK]), [...project, 'down']];
+  return [...all.slice(0, { images: 4, up: 5, exec: 6 }[last]), ...(last === 'images' ? [] : ending)];
 }
 
 // ---- The host form, the default --------------------------------------------------------------------------------------
@@ -348,6 +375,8 @@ test('a run of the host form starts the servers alone, runs the command on the h
   assert.deepEqual(staged.left(), []);
   assert.ok(ended.stdout.startsWith(`${VERSION}\n`), ended.stdout);
   assert.match(ended.stderr, new RegExp(`^persist-servers: removed the project ${project[4]}$`, 'm'));
+  // The lines of the report are shown, because run removes the directory that holds the file.
+  for (const line of ['up exit 0', 'command exit 0', 'memory.peak postgres 4096', 'memory.peak mysql 4096', 'run exit 0']) assert.ok(ended.stderr.includes(`persist-servers: ${TIME} ${line}\n`), `the run does not show ${line}:\n${ended.stderr}`);
 });
 
 test('the code of a run of the host form is that of the command, and a failed bay up runs no command', async t => {
@@ -392,6 +421,16 @@ for (const [signal, code] of [['SIGTERM', 143], ['SIGINT', 130]] as const) {
     assert.deepEqual(staged.left(), []);
   });
 }
+
+// A limit of memory is a value of the pin of an image; a pin without one gives a service without a limit.
+test('the memory of a pin is the mem_limit of its service in the Compose file', async t => {
+  const staged = stage(t, { memory: { mysql: '768m' } });
+  const ended = await script(staged, ['run', '--', '/bin/sh', '-c', 'exit 0']);
+  assert.deepEqual([ended.code, ended.signal], [0, null], ended.stderr);
+  const image = `    image: "${reference('mysql')}"\n`;
+  assert.equal(staged.composed(), SERVERS.replace(image, `${image}    mem_limit: "768m"\n`));
+  assert.doesNotMatch(SERVERS, /mem_limit/);
+});
 
 // ---- The runner form ---------------------------------------------------------------------------------------------------
 
@@ -447,6 +486,17 @@ test('write of the runner form writes the directory of a run and prints it, and 
   const pulled = spawnSync('/bin/sh', [path.join(project[2], 'run.sh'), 'pull'], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
   assert.equal(pulled.status, 0, pulled.stderr);
   assert.deepEqual(staged.calls().slice(-2), [VERSIONED, [...project, 'pull']]);
+  // The report of the two runs of the directory: the time of each step, and the memory of each service of the run.
+  const event = (text: string): string => `${TIME} ${text}`;
+  const stepped = (name: string): string[] => [event(`${name} start`), event(`${name} exit 0`)];
+  assert.deepEqual(readFileSync(path.join(project[2], 'report.txt'), 'utf8').split('\n'), [
+    ...stepped('version'), ...stepped('images'), ...stepped('up'), ...stepped('command'),
+    event('memory.peak postgres 4096'), event('memory.peak mysql 4096'), event('memory.peak runner 4096'),
+    ...stepped('down'), event('run exit 0'),
+    ...stepped('version'), ...stepped('pull'), event('run exit 0'),
+    '',
+  ]);
+  for (const line of [event('command exit 0'), event('memory.peak runner 4096'), event('run exit 0')]) assert.ok(ran.stderr.includes(`persist-servers: ${line}\n`), `the run does not show the line ${line} of its report:\n${ran.stderr}`);
   const unknown = spawnSync('/bin/sh', [path.join(project[2], 'run.sh'), 'start'], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
   assert.equal(unknown.status, 2);
   assert.match(unknown.stderr, /^usage: sh run\.sh \[run\|pull\]$/m);
