@@ -834,24 +834,26 @@ install: fsm-install
 	$(MAKE) --no-print-directory install-link
 fsm-install: install-kit $(PACKAGE_DEPS)
 
-# persist-images pulls the images of the PostgreSQL and MySQL servers of the tests, which config/containers.json pins by their
-# digests, with bay pull. It is the only target that downloads them. persist-servers runs TARGETS through make ci-targets with
-# both servers and with the four FSM_TEST_* variables of those servers in the environment of the targets:
-# scripts/persist-servers.mts writes the Compose project of the run into a temporary directory of its own, reads from bay
-# whether the images are installed, starts the project with bay up -no-pull --json, whose return is the ready event, reads the
-# host and the port of each server from that JSON, and runs bay down and removes the directory when the targets end or fail
-# and after SIGINT and SIGTERM (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1, S-475). Both need bay
-# on PATH; no target installs bay (S-475-4).
-# PERSIST_MAKE names the make of the run for the recipe of persist-servers: make runs a recipe line that holds its variable
-# MAKE also in a dry run, which would start the servers, and it only prints a line that names that make through another
-# variable.
-.PHONY: persist-images persist-servers persist-servers-test
-PERSIST_MAKE = $(MAKE)
+# persist-servers runs TARGETS through make ci-targets with the PostgreSQL and MySQL servers of the tests, in the service runner
+# of a Compose project that bay runs: scripts/persist-servers.mts writes the directory of the run, var/persist-servers/<project>,
+# with the Compose file of the images that config/containers.json pins by their digests, run.sh, runner.sh and the bundle of
+# the branch, and runs sh run.sh, which starts no program but bay. run.sh starts the project with bay up -no-pull, whose return
+# is the ready event, runs the command in runner with the four FSM_TEST_* variables, and removes the project with bay down,
+# also after a failure and a signal (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1, S-475, S-475-7).
+# The targets run on the committed tree of the branch, in the runner, where make is the make of that container: the recipe
+# names it by the word make, never by the make of this run.
+# persist-images pulls the images with bay pull; it is the only target that downloads them. persist-servers-write writes the
+# directory of a run and prints its path, for a machine that holds sh and bay alone: the directory is moved there and
+# sh <directory>/run.sh runs it. The three targets need bay and git on PATH; no target installs bay (S-475-4).
+.PHONY: persist-images persist-servers persist-servers-write persist-servers-test
 persist-images:
 	$(NODE) scripts/persist-servers.mts pull
 
 persist-servers:
-	$(NODE) scripts/persist-servers.mts run -- $(PERSIST_MAKE) ci-targets TARGETS="$(TARGETS)"
+	$(NODE) scripts/persist-servers.mts run -- make ci-targets TARGETS="$(TARGETS)"
+
+persist-servers-write:
+	$(NODE) scripts/persist-servers.mts write -- make ci-targets TARGETS="$(TARGETS)"
 
 # check runs the full suite once per committed tree, after the last item is committed; ci-targets runs the targets to their end.
 # ci-suite runs the suite of ci.yml. Both run their targets with the servers of persist-servers, so the PostgreSQL and MySQL
@@ -879,12 +881,12 @@ package-names-test:
 workflows-test:
 	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs config/owner-checks.json --inputs config/release.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs legacy/packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs .github/actions --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts tests/workflows/rules.test.mts
 
-# persist-servers-test runs the tests of scripts/persist-servers.mts (tests/persist-servers): the Compose project of a run, the
-# commands of bay, the hosts and ports that bay reports in the DSNs of the command, a failed start, the signals and the
-# removal, against a stand-in bay that the test writes, so it needs neither bay nor a container runtime
-# (docs/plans/fsm-v1/plan.md, C-6; S-472-1, S-475).
+# persist-servers-test runs the tests of scripts/persist-servers.mts (tests/persist-servers): the directory of a run, its
+# Compose file, the steps of run.sh as commands of bay, the order of runner.sh, a failed start, the signals and the removal.
+# Each case copies the script into a root of its own and runs it against stand-ins of bay and git that it writes, so it needs
+# neither bay nor a container runtime (docs/plans/fsm-v1/plan.md, C-6; S-472-1, S-475, S-475-7).
 persist-servers-test:
-	$(RUN_TESTS) node --results .results/persist-servers-test.json --inputs scripts/persist-servers.mts --inputs config/containers.json --inputs tests/persist-servers --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/persist-servers
+	$(RUN_TESTS) node --results .results/persist-servers-test.json --inputs scripts/persist-servers.mts --inputs config/containers.json --inputs mise.toml --inputs tests/persist-servers --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/persist-servers
 
 # name-test runs the tests of scripts/check-name.mts; name-check fails while a tracked file or path names the library by its old
 # outside the allowlist of the checker (docs/plans/fsm-v1/checklist.md, S-18; the library is named fsm).

@@ -12,7 +12,7 @@
 // states. A stand-in waits on a named pipe, never on time.
 import assert from 'node:assert/strict';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createInterface } from 'node:readline';
@@ -127,7 +127,8 @@ interface Stage {
 
 /** Copies the script into a root of its own and writes the stand-ins: uname, git and bay, as `stand` says. */
 function stage(t: TestContext, stand: Stand = {}): Stage {
-  const root = mkdtempSync(path.join(tmpdir(), 'fsm-persist-root-'));
+  // The script names its checkout by the real path of its own file, so the root is the real path of its directory.
+  const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'fsm-persist-root-')));
   t.after(() => { rmSync(root, { recursive: true, force: true }); });
   for (const file of READ) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });

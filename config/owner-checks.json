@@ -467,6 +467,7 @@
       "paths": [
         "scripts/persist-servers.mts",
         "config/containers.json",
+        "mise.toml",
         "tests/persist-servers/**"
       ],
       "targets": [

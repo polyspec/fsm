@@ -1,59 +1,62 @@
 #!/usr/bin/env node
-// persist-servers runs a command with the PostgreSQL and the MySQL server of the tests, each in a container of the run, from
-// the images that config/containers.json pins by their digests (docs/plans/fsm-v1/plan.md, C-6;
-// docs/plans/fsm-v1/checklist.md, S-472-1, S-475).
+// persist-servers writes the directory of a run of the PostgreSQL and the MySQL server of the tests, which sh and bay
+// execute alone, from the images that config/containers.json pins by their digests (docs/plans/fsm-v1/plan.md, C-6;
+// docs/plans/fsm-v1/checklist.md, S-472-1, S-475, S-475-7).
 //
-//   node scripts/persist-servers.mts run -- <command> [argument...]
-//   node scripts/persist-servers.mts pull
+//   node scripts/persist-servers.mts write -- <command> [argument...]   writes the directory and prints its path
+//   node scripts/persist-servers.mts run -- <command> [argument...]     writes it, runs sh run.sh and removes it
+//   node scripts/persist-servers.mts pull                               writes it, runs sh run.sh pull and removes it
 //
 // bay pulls, starts and removes the servers: it runs a Compose project on Apple container on Darwin and on Docker on Linux,
-// and this file calls no container program itself. A run makes a directory of its own in the temporary directory of the
-// system, fsm-persist-<pid>-<random>, whose name holds the process id of the run and 4 random bytes, and writes its
-// compose.yaml into it. Each command of bay names that file and the project, the name of the directory, by the options -f
-// and -p before the command; bay names each container <project>-<service> and keeps two names apart, so two runs share no
-// project and no container. The file publishes no port and mounts nothing.
+// and no file of a run calls a container program itself. The machine that runs the servers and the command needs sh, bay
+// and the container engine of bay, and nothing of its host beside them: this file only writes, and the run.sh that it
+// writes, a POSIX file that starts no program but bay, executes. For another machine the directory alone is moved there.
 //
-// A run needs bay on PATH and fails at once without it, with its name and what installs it. It first shows what bay version
-// --json prints, so the record of a run names the bay that made its result (S-475-4). It checks no machine setup: bay up
-// changes none, and with a part missing it fails and names the part and bay install.
+// The directory is var/persist-servers/<project> of the checkout, which Git ignores; the project is
+// fsm-persist-<pid>-<random>, with the process id of this process and 4 random bytes, so two runs share no directory, no
+// project and no container. It holds:
 //
-// run downloads nothing: bay images --json, which fetches nothing, tells whether each image is installed, and an image that
-// is not fails the run before a server starts and names make persist-images, the target of pull; bay up -no-pull then fails
-// before it creates anything when the store lacks an image. pull writes the same Compose file into a directory of its own,
-// runs bay pull on it and removes the directory.
+//   compose.yaml   the services postgres, mysql and runner; no service publishes a port
+//   run.sh         the steps of the run, each a command of bay -f <directory> -p <project>
+//   runner.sh      the steps that run inside runner: the installation order of the repository, then the command
+//   tree.bundle    the Git bundle of the branch of the checkout, the committed tree that the command runs on
 //
-// Waiting for the servers has no sleep, no polling and no time limit in this file: each service declares a healthcheck, the
-// program of its server over TCP in its container, bay runs it at the start and returns from up after each service is
-// healthy, and that return is the ready event. The values of a healthcheck are declarations that bay evaluates (plan C-6
-// states the reason of each value). The run shows each line of the progress of bay as `persist-servers: bay <verb>: <line>`.
+// The command runs in the service runner, a Debian image with a command that does not end, which mounts the directory of
+// the run read-only and nothing of the checkout: runner.sh clones the bundle into the container, so the tools and the
+// build outputs of the runner never meet those of the host. The command gets the four variables of the servers,
+// FSM_TEST_PG_DSN, FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and FSM_TEST_MYSQL_ADMIN_DSN, with the host and the port of
+// each server as bay plan --json gives them when the directory is written. This file builds no name of a service itself,
+// because the form of the name belongs to bay.
 //
-// The command runs with the four variables of the servers, FSM_TEST_PG_DSN, FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and
-// FSM_TEST_MYSQL_ADMIN_DSN, which name the host and the port of each service as the JSON of bay up --json holds them. The
-// run builds no name of a service itself, because the form of the name belongs to bay.
+// No file of a run has a sleep, a polling or a time limit of its own: each server declares a healthcheck, the program of
+// the server over TCP in its container, bay runs it and returns from up after each server is healthy, and that return is
+// the ready event. The values of a healthcheck are declarations that bay evaluates (plan C-6 states the reason of each).
 //
-// Once bay up was started, the run runs bay down and removes its directory when the command ends or fails and when bay up
-// fails; bay down ends with 0 also for a project of which bay made nothing. SIGINT and SIGTERM are forwarded to the command;
-// a signal that comes while the servers start is forwarded to bay up, which removes what it created, and the run then ends
-// without the command. A bay down that fails fails the run, which keeps its directory and shows the command that removes
-// the project, because that command needs the Compose file. The exit code is that of the command, 130 or 143 for the two
-// signals, and 1 for a failure of the run itself.
-import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
+// run.sh removes the project with bay down once bay up was started, by a trap also after a failed step and on SIGINT,
+// SIGTERM and SIGHUP, which first end the command of bay that runs. A bay down that fails fails the run and writes the file
+// down-failed into the directory; run then keeps the directory. The exit code of run is that of run.sh: that of the
+// command, 1 for a step that failed before it, and 130 or 143 for the two signals.
+import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { accessSync, constants, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { accessSync, constants, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { createInterface } from 'node:readline';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const PINS = path.join(ROOT, 'config/containers.json');
-const USAGE = 'usage: scripts/persist-servers.mts run -- <command> [argument...] | pull';
+const TOOLS = path.join(ROOT, 'mise.toml');
+const RUNS = path.join(ROOT, 'var/persist-servers');
+const USAGE = 'usage: scripts/persist-servers.mts run -- <command> [argument...] | write -- <command> [argument...] | pull';
+// The path in runner of the directory of the run, and the file that run.sh writes into the directory after a failed bay down.
+const MOUNT = '/persist-run';
+const DOWN_FAILED = 'down-failed';
 // The declarations of a healthcheck, which bay evaluates: the start period is the time of the initialization of an image,
-// whose failed asks do not count, and the first ask that succeeds ends the wait; a failed ask is followed by the next after
-// 1 s, where the default is 30 s; one ask of a server in the same container may take 5 s; and 3 failures count after the
-// start period, the default of Compose.
+// whose failed asks do not count, and the first ask that succeeds ends the wait, so the bound of 300 s, about four times
+// the 70 s that MySQL took on a Linux arm64 machine, costs a ready server nothing; a failed ask is followed by the next
+// after 1 s, where the default is 30 s; one ask of a server in the same container may take 5 s; and 3 failures count after
+// the start period, the default of Compose.
 const HEALTH = ['start_period: "300s"', 'interval: "1s"', 'timeout: "5s"', 'retries: 3'];
 
-/** A failure of the run that ends it with `code` and the message on standard error. */
+/** A failure that ends the command with `code` and the message on standard error. */
 class Failure extends Error {
   code: number;
 
@@ -64,7 +67,7 @@ class Failure extends Error {
 }
 
 type Kind = 'postgres' | 'mysql';
-// A kind is the name of its service in the Compose file of a run.
+// A kind is the name of the service of its server in the Compose file of a run.
 const KINDS: readonly Kind[] = ['postgres', 'mysql'];
 
 /**
@@ -121,22 +124,45 @@ function parse(text: string, source: string): unknown {
   }
 }
 
-/** The reference of the image of `kind`, which config/containers.json pins by its digest. */
-function image(kind: Kind): string {
-  const reference = field(field(field(parse(readFileSync(PINS, 'utf8'), PINS), 'images'), kind), 'reference');
-  if (typeof reference !== 'string' || !/@sha256:[0-9a-f]{64}$/.test(reference)) throw new Failure(`persist-servers: ${PINS} pins no image of ${kind} by its digest`);
+/** The pin of the image `name` in config/containers.json. */
+function pinned(name: Kind | 'runner'): unknown {
+  return field(field(parse(readFileSync(PINS, 'utf8'), PINS), 'images'), name);
+}
+
+/** The reference of the image `name`, which config/containers.json pins by its digest. */
+function image(name: Kind | 'runner'): string {
+  const reference = field(pinned(name), 'reference');
+  if (typeof reference !== 'string' || !/@sha256:[0-9a-f]{64}$/.test(reference)) throw new Failure(`persist-servers: ${PINS} pins no image of ${name} by its digest`);
   return reference;
 }
 
-/** Writes a line of the run to standard error. */
-function show(line: string): void {
-  process.stderr.write(`${line}\n`);
+/** The system packages that the runner installs, which the pin of its image names. */
+function packages(): string[] {
+  const names = field(pinned('runner'), 'packages');
+  if (!Array.isArray(names) || names.length === 0) throw new Failure(`persist-servers: ${PINS} names no packages of the runner`);
+  return names.map(name => {
+    if (typeof name !== 'string' || !/^[a-z0-9][a-z0-9.+-]*$/.test(name)) throw new Failure(`persist-servers: ${PINS} names the package ${JSON.stringify(name)} of the runner, which is no name of a package`);
+    return name;
+  });
+}
+
+/** The version of Node.js that mise.toml pins, which the runner installs before the tools of the checkout exist. */
+function nodeVersion(): string {
+  const version = /^node = "(\d+\.\d+\.\d+)"$/m.exec(readFileSync(TOOLS, 'utf8'))?.[1];
+  if (version === undefined) throw new Failure(`persist-servers: ${TOOLS} names no version of node`);
+  return version;
+}
+
+/** The word `text` as one word of a line of sh. */
+function quoted(text: string): string {
+  return `'${text.replaceAll("'", "'\\''")}'`;
 }
 
 /**
  * The Compose file of a run: a service for each server, with the image of its pin, the port of its server in `expose`, the
- * environment of its accounts and its healthcheck. Each text is written as a JSON string, which YAML reads as the same
- * string. The file names no project, no host port, no domain, no volume and no path.
+ * environment of its accounts and its healthcheck, and the service runner. Each text is written as a JSON string, which
+ * YAML reads as the same string. The file names no project and no host port. Its one mount is the directory of the run
+ * itself, read-only, by the one relative path that a run writes: with it the directory works wherever it lies.
  */
 function composeFile(): string {
   const lines = ['services:'];
@@ -146,7 +172,150 @@ function composeFile(): string {
     for (const [name, value] of Object.entries(server.environment)) lines.push(`      ${name}: ${JSON.stringify(value)}`);
     lines.push('    healthcheck:', `      test: [${['CMD', ...server.health].map(word => JSON.stringify(word)).join(', ')}]`, ...HEALTH.map(declared => `      ${declared}`));
   }
+  // The command of runner does not end, so the container stays for the commands of bay exec. Its targets verify no
+  // certificate, so it runs without the trust of bay.
+  lines.push('  runner:', `    image: ${JSON.stringify(image('runner'))}`, '    command: ["sleep", "infinity"]', `    volumes: ["./:${MOUNT}:ro"]`, '    x-bay:', '      trust: false');
   return `${lines.join('\n')}\n`;
+}
+
+/**
+ * runner.sh, which runs inside runner with the command of the run as its arguments: the installation order of the
+ * repository on the image of the pin, and then the command, in the clone of the bundle of `branch`. A step that fails ends
+ * the file with its exit code.
+ */
+function runnerFile(branch: string): string {
+  const node = nodeVersion();
+  return `${[
+    '#!/bin/sh',
+    '# Runs in the service runner of a run of scripts/persist-servers.mts, with the command of the run as its arguments',
+    '# (docs/plans/fsm-v1/plan.md, C-6). It installs what the targets of the repository need on the image of the runner,',
+    '# clones the bundle of the branch into the container and runs the command there. The container is new in each run, so',
+    '# each run installs again (S-475-8). Nothing is written into the directory of the run, which is mounted read-only.',
+    'set -eu',
+    'export DEBIAN_FRONTEND=noninteractive',
+    'work=/persist-work',
+    'mkdir -p "$work/tmp"',
+    'export TMPDIR="$work/tmp" CARGO_HOME="$work/cargo" RUSTUP_HOME="$work/rustup"',
+    "echo 'persist-runner: the system packages' >&2",
+    'apt-get update -q',
+    `apt-get install -y -q ${packages().join(' ')}`,
+    '# make bootstrap starts the npm of the machine, so Node.js at the version of mise.toml comes before it.',
+    'case "$(uname -m)" in',
+    'aarch64 | arm64) arch=arm64 ;;',
+    'x86_64 | amd64) arch=x64 ;;',
+    '*) echo "persist-runner: no archive of Node.js is named for $(uname -m)" >&2; exit 1 ;;',
+    'esac',
+    `echo 'persist-runner: Node.js ${node}' >&2`,
+    `curl -fsSL "https://nodejs.org/dist/v${node}/node-v${node}-linux-$arch.tar.xz" | tar -xJ -C /usr/local --strip-components=1`,
+    '# make install installs the toolchain of rust-toolchain.toml with rustup, which no package of the image provides.',
+    "echo 'persist-runner: rustup' >&2",
+    'curl -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain none --profile minimal',
+    'PATH="$CARGO_HOME/bin:$PATH"',
+    'export PATH',
+    `echo 'persist-runner: the tree of the branch ${branch}' >&2`,
+    `git clone -q -b ${branch} ${MOUNT}/tree.bundle "$work/tree"`,
+    'cd "$work/tree"',
+    "echo 'persist-runner: make bootstrap and make install' >&2",
+    'make bootstrap',
+    'make install',
+    "echo 'persist-runner: the command' >&2",
+    'exec "$@"',
+  ].join('\n')}\n`;
+}
+
+/**
+ * run.sh of the project `name`: the steps of a run, each a command of bay, whose exit code decides the run. The command of
+ * the run, `command`, runs in runner with `variables`. The file starts no program but bay: what else it does is of sh
+ * itself. A step runs as a job that the file waits for, so a signal reaches the trap at once, which ends the step.
+ */
+function runFile(name: string, variables: Record<string, string>, command: readonly string[]): string {
+  const exec = ['exec', ...Object.entries(variables).flatMap(([key, value]) => ['-e', quoted(`${key}=${value}`)]), 'runner', 'sh', `${MOUNT}/runner.sh`, ...command.map(quoted)];
+  return `${[
+    '#!/bin/sh',
+    '# Executes a run that scripts/persist-servers.mts wrote into this directory, with sh and bay alone',
+    '# (docs/plans/fsm-v1/plan.md, C-6):',
+    '#',
+    '#   sh run.sh        starts the servers and the runner, runs the command in the runner and removes the project',
+    '#   sh run.sh pull   pulls the images of the project, the only step that downloads an image',
+    '#',
+    '# Each step is one command of bay, and its exit code decides the run. The exit code is that of the command, 1 for a',
+    '# step that failed before it, and 130, 143 and 129 after SIGINT, SIGTERM and SIGHUP.',
+    'set -u',
+    'case "$0" in',
+    '*/*) directory=${0%/*} ;;',
+    '*) directory=. ;;',
+    'esac',
+    'cd "$directory" || exit 1',
+    'directory=$PWD',
+    `project=${quoted(name)}`,
+    '# child is the command of bay that runs, started is set once bay up was started, and code is the exit code of the run.',
+    'child=',
+    'started=',
+    'code=1',
+    'step() {',
+    '\tbay -f "$directory" -p "$project" "$@" &',
+    '\tchild=$!',
+    '\twait "$child"',
+    '\tended=$?',
+    '\tchild=',
+    '\treturn "$ended"',
+    '}',
+    '# finish ends the command of bay that runs and removes the project that bay up may have started. bay down ends with 0',
+    '# also for a project that holds no container. After a failed bay down the directory is marked, because bay down needs',
+    '# its Compose file.',
+    'finish() {',
+    "\ttrap '' INT TERM HUP",
+    '\ttrap - EXIT',
+    '\tif [ -n "$child" ]; then',
+    '\t\tkill -TERM "$child" 2>/dev/null',
+    '\t\twait "$child"',
+    '\tfi',
+    '\tif [ -n "$started" ]; then',
+    '\t\tif bay -f "$directory" -p "$project" down; then',
+    '\t\t\techo "persist-servers: removed the project $project" >&2',
+    '\t\telse',
+    `\t\t\t: > "$directory/${DOWN_FAILED}"`,
+    '\t\t\techo "persist-servers: bay down failed; the containers of the project $project may still run: run bay -f $directory -p $project down" >&2',
+    '\t\t\t[ "$code" -ne 0 ] || code=1',
+    '\t\tfi',
+    '\tfi',
+    '\texit "$code"',
+    '}',
+    'trap finish EXIT',
+    "trap 'code=130; exit' INT",
+    "trap 'code=143; exit' TERM",
+    "trap 'code=129; exit' HUP",
+    'case "${1:-run}" in',
+    'run) ;;',
+    'pull)',
+    '\tstep version || exit',
+    '\tstep pull',
+    '\tcode=$?',
+    '\texit',
+    '\t;;',
+    '*)',
+    "\techo 'usage: sh run.sh [run|pull]' >&2",
+    '\tcode=2',
+    '\texit',
+    '\t;;',
+    'esac',
+    '# The release of the bay that runs, for the record of the run.',
+    'step version || exit',
+    '# bay images fetches nothing and fails when the store lacks an image.',
+    'step images || {',
+    '\techo "persist-servers: an image of the project $project is not installed: run make persist-images, or sh $directory/run.sh pull" >&2',
+    '\texit',
+    '}',
+    '# bay up returns after each server is healthy; it pulls nothing and changes no machine setup.',
+    'started=1',
+    'step up -no-pull || {',
+    '\techo "persist-servers: bay up failed before the servers of the project $project were healthy" >&2',
+    '\texit',
+    '}',
+    `step ${exec.join(' ')}`,
+    'code=$?',
+    'exit',
+  ].join('\n')}\n`;
 }
 
 /** Whether a directory of PATH holds the executable file `name`. */
@@ -161,169 +330,102 @@ function onPath(name: string): boolean {
   });
 }
 
-/** The Compose project of one run or one pull: its name and its directory, which holds its compose.yaml. */
-interface Project {
-  name: string;
-  directory: string;
+/** Runs `program` with `args` in the checkout and returns its standard output; fails when it did not start or ended with another code than 0. */
+function output(program: string, args: readonly string[]): string {
+  const ran = spawnSync(program, args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  if (ran.error) throw new Failure(`persist-servers: ${program}: ${ran.error.message}`);
+  if (ran.status !== 0) throw new Failure(`persist-servers: ${program} ${args.join(' ')} ended with ${String(ran.status ?? ran.signal)}:\n${ran.stderr}${ran.stdout}`.trimEnd());
+  return ran.stdout;
 }
 
 /**
- * Fails unless PATH holds bay, shows the version of that bay, and makes the project of this process: a directory of its own
- * in the temporary directory of the system with the Compose file of a run.
- */
-function project(): Project {
-  // The file is built first, so a pin that is wrong fails before anything is made.
-  const composed = composeFile();
-  if (!onPath('bay')) throw new Failure('persist-servers: bay is not found on PATH: install bay and apply its machine setup with bay install');
-  const version = spawnSync('bay', ['version', '--json'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-  if (version.error) throw new Failure(`persist-servers: bay: ${version.error.message}`);
-  if (version.status !== 0) throw new Failure(`persist-servers: bay version --json ended with ${String(version.status ?? version.signal)}:\n${version.stderr}${version.stdout}`.trimEnd());
-  show(`persist-servers: bay version: ${version.stdout.trim()}`);
-  const name = `fsm-persist-${String(process.pid)}-${randomBytes(4).toString('hex')}`;
-  const directory = path.join(tmpdir(), name);
-  mkdirSync(directory, { mode: 0o700 });
-  writeFileSync(path.join(directory, 'compose.yaml'), composed);
-  return { name, directory };
-}
-
-/** How a command of bay ended: its exit code, or the signal that ended it, and what it wrote to standard output when that was kept. */
-interface Ran {
-  end: number | NodeJS.Signals | null;
-  stdout: string;
-}
-
-/**
- * Runs the command `args` of bay on the project `of` and resolves with how it ended. Each line that bay writes to standard
- * error is shown as `persist-servers: bay <verb>: <line>`. Its standard output is shown the same way, or kept as the text
- * of the result when `kept`, for a command that prints JSON. bay runs in a process group of its own, so a signal of the
- * terminal reaches the run alone; `started` receives the process, so the run can forward a signal to it.
- */
-function bay(of: Project, args: readonly string[], kept = false, started: (child: ChildProcess) => void = () => undefined): Promise<Ran> {
-  return new Promise((resolve, reject) => {
-    const child = spawn('bay', ['-f', of.directory, '-p', of.name, ...args], { detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
-    started(child);
-    const label = `persist-servers: bay ${args[0] ?? ''}`;
-    let stdout = '';
-    if (kept) child.stdout.setEncoding('utf8').on('data', (text: string) => { stdout += text; });
-    for (const stream of kept ? [child.stderr] : [child.stdout, child.stderr]) createInterface({ input: stream }).on('line', line => { show(`${label}: ${line}`); });
-    child.on('error', error => { reject(new Failure(`persist-servers: bay: ${error.message}`)); });
-    // close comes after the end of both streams, so every line of bay was shown and all of its output was kept.
-    child.on('close', (code, signal) => { resolve({ end: code ?? signal, stdout }); });
-  });
-}
-
-/**
- * Fails unless the local store of bay holds the image of each service of `of`: `bay images --json` prints an array with
- * the service, the image and `present` of each, fetches nothing and ends with 1 when an image is missing.
- */
-async function installed(of: Project): Promise<void> {
-  const ran = await bay(of, ['images', '--json'], true);
-  const entries: unknown = ran.stdout.trim() === '' ? undefined : parse(ran.stdout, 'the output of bay images --json');
-  if (!Array.isArray(entries)) throw new Failure(`persist-servers: bay images --json ended with ${String(ran.end)} and printed no array:\n${ran.stdout}`.trimEnd());
-  const missing = entries.filter(entry => field(entry, 'present') !== true);
-  if (missing.length > 0) throw new Failure(missing.map(entry => `persist-servers: the image ${String(field(entry, 'image'))} of ${String(field(entry, 'service'))} is not installed: run make persist-images`).join('\n'));
-  if (ran.end !== 0) throw new Failure(`persist-servers: bay images --json ended with ${String(ran.end)}:\n${ran.stdout}`.trimEnd());
-}
-
-/**
- * The host and the port of the service of each kind, `<host>:<port>`, as the JSON `text` of `bay up --json` holds them: the
- * fields host and port of the entry of that name in its array services. A service that the JSON does not hold, a host that
- * is no text or is empty and a port that is no number fail the run.
+ * The host and the port of the service of each kind, `<host>:<port>`, as the JSON `text` of `bay plan --json` holds them:
+ * the fields host and port of the entry of that name in its array services. A service that the JSON does not hold, a host
+ * that is no text or is empty and a port that is no number fail the writing.
  */
 function addresses(text: string): Record<Kind, string> {
-  const services = field(parse(text, 'the output of bay up --json'), 'services');
+  const services = field(parse(text, 'the output of bay plan --json'), 'services');
   const address = (kind: Kind): string => {
     const service: unknown = Array.isArray(services) ? services.find(each => field(each, 'name') === kind) : undefined;
     const [host, port] = [field(service, 'host'), field(service, 'port')];
-    if (typeof host !== 'string' || host === '' || typeof port !== 'number') throw new Failure(`persist-servers: bay up --json names no host and port of the service ${kind}:\n${text}`.trimEnd());
+    if (typeof host !== 'string' || host === '' || typeof port !== 'number') throw new Failure(`persist-servers: bay plan --json names no host and port of the service ${kind}:\n${text}`.trimEnd());
     return `${host}:${String(port)}`;
   };
   return { postgres: address('postgres'), mysql: address('mysql') };
 }
 
-const SIGNALS = { SIGINT: 130, SIGTERM: 143 } as const;
-type Signal = keyof typeof SIGNALS;
-
-/** Runs `command` with the servers and returns the exit code of the run. */
-async function run(command: readonly string[]): Promise<number> {
-  const [file, ...args] = command;
-  if (file === undefined) throw new Failure(USAGE, 2);
-  const of = project();
-  // state is what the listeners of the signals share with the run: the signal that it received, and the process that the
-  // signal is forwarded to, bay up while the servers start and then the command.
-  const state: { received?: Signal; child?: ChildProcess } = {};
-  const receive = (signal: Signal) => (): void => {
-    state.received = signal;
-    state.child?.kill(signal);
-  };
-  const listeners = { SIGINT: receive('SIGINT'), SIGTERM: receive('SIGTERM') };
-  process.on('SIGINT', listeners.SIGINT);
-  process.on('SIGTERM', listeners.SIGTERM);
-  let code = 1;
-  // started tells that bay up ran, so bay may hold the project.
-  let started = false;
-  let kept = false;
+/** Writes the directory of a run of `command` and returns its path. Fails at once unless PATH holds bay; a failure after the directory was made removes it. */
+function write(command: readonly string[]): string {
+  // The files are built first, so a pin that is wrong fails before anything is made.
+  const composed = composeFile();
+  packages();
+  nodeVersion();
+  if (!onPath('bay')) throw new Failure('persist-servers: bay is not found on PATH: install bay and apply its machine setup with bay install');
+  const branch = output('git', ['symbolic-ref', '--short', 'HEAD']).trim();
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(branch)) throw new Failure(`persist-servers: the checkout is on no branch that a line of sh can name: ${JSON.stringify(branch)}`);
+  const name = `fsm-persist-${String(process.pid)}-${randomBytes(4).toString('hex')}`;
+  const directory = path.join(RUNS, name);
+  mkdirSync(directory, { recursive: true });
   try {
-    await installed(of);
-    if (state.received === undefined) {
-      started = true;
-      const up = await bay(of, ['up', '-no-pull', '--json'], true, child => { state.child = child; });
-      delete state.child;
-      if (state.received === undefined) {
-        if (up.end !== 0) throw new Failure(`persist-servers: bay up ended with ${String(up.end)} before the servers of the project ${of.name} were healthy`);
-        const hosts = addresses(up.stdout);
-        const variables: Record<string, string> = {};
-        for (const kind of KINDS) Object.assign(variables, SERVERS[kind].variables(hosts[kind]));
-        code = await new Promise<number>((resolve, reject) => {
-          const spawned = spawn(file, args, { env: { ...process.env, ...variables }, stdio: 'inherit' });
-          state.child = spawned;
-          spawned.on('error', error => { reject(new Failure(`persist-servers: ${file}: ${error.message}`)); });
-          spawned.on('exit', (ended, signal) => { resolve(ended ?? (signal === 'SIGINT' || signal === 'SIGTERM' ? SIGNALS[signal] : 1)); });
-        });
-      }
-    }
-    // A signal that came before the command ran ends the run with its code.
-    if (state.received !== undefined && state.child === undefined) code = SIGNALS[state.received];
-  } finally {
-    delete state.child;
-    if (started) {
-      // The project is removed also after a failed bay up: bay down ends with 0 for a project of which bay made nothing. A
-      // bay that did not start is a failed removal too.
-      const down = await bay(of, ['down']).then(ran => ran.end, (error: unknown) => (error instanceof Error ? error.message : String(error)));
-      if (down === 0) show(`persist-servers: removed the project ${of.name}`);
-      else {
-        kept = true;
-        show(`persist-servers: bay down ended with ${String(down)}; the containers of the project ${of.name} may still run: run bay -f ${of.directory} -p ${of.name} down`);
-        if (code === 0) code = 1;
-      }
-    }
-    process.off('SIGINT', listeners.SIGINT);
-    process.off('SIGTERM', listeners.SIGTERM);
-    if (!kept) rmSync(of.directory, { recursive: true, force: true });
+    writeFileSync(path.join(directory, 'compose.yaml'), composed);
+    const hosts = addresses(output('bay', ['-f', directory, '-p', name, 'plan', '--json']));
+    const variables: Record<string, string> = {};
+    for (const kind of KINDS) Object.assign(variables, SERVERS[kind].variables(hosts[kind]));
+    output('git', ['bundle', 'create', path.join(directory, 'tree.bundle'), branch]);
+    writeFileSync(path.join(directory, 'runner.sh'), runnerFile(branch));
+    writeFileSync(path.join(directory, 'run.sh'), runFile(name, variables, command));
+  } catch (error) {
+    rmSync(directory, { recursive: true, force: true });
+    throw error;
   }
-  return code;
+  return directory;
 }
 
-/** Pulls each pinned image with bay pull, on the Compose file of a run in a directory of its own; it is the only command that downloads. */
-async function pull(): Promise<void> {
-  const of = project();
+const SIGNALS = { SIGINT: 130, SIGTERM: 143 } as const;
+
+/**
+ * Writes the directory of a run of `command`, runs its run.sh with `args` and returns its exit code. SIGINT and SIGTERM
+ * are forwarded to run.sh, whose trap removes the project. The directory is removed unless run.sh marked it after a failed
+ * bay down.
+ */
+async function execute(command: readonly string[], args: readonly string[]): Promise<number> {
+  const directory = write(command);
   try {
-    const ran = await bay(of, ['pull']);
-    if (ran.end !== 0) throw new Failure(`persist-servers: bay pull ended with ${String(ran.end)}`);
+    return await new Promise<number>((resolve, reject) => {
+      // sh is started by its path, the one that POSIX names, so the run needs no PATH for it.
+      const child = spawn('/bin/sh', [path.join(directory, 'run.sh'), ...args], { stdio: 'inherit' });
+      const listeners = { SIGINT: (): void => { child.kill('SIGINT'); }, SIGTERM: (): void => { child.kill('SIGTERM'); } };
+      process.on('SIGINT', listeners.SIGINT);
+      process.on('SIGTERM', listeners.SIGTERM);
+      const ended = (): void => {
+        process.off('SIGINT', listeners.SIGINT);
+        process.off('SIGTERM', listeners.SIGTERM);
+      };
+      child.on('error', error => {
+        ended();
+        reject(new Failure(`persist-servers: /bin/sh: ${error.message}`));
+      });
+      child.on('close', (code, signal) => {
+        ended();
+        resolve(code ?? (signal === 'SIGINT' || signal === 'SIGTERM' ? SIGNALS[signal] : 1));
+      });
+    });
   } finally {
-    rmSync(of.directory, { recursive: true, force: true });
+    if (!existsSync(path.join(directory, DOWN_FAILED))) rmSync(directory, { recursive: true, force: true });
   }
 }
 
 if (import.meta.main) {
   const [verb, separator, ...command] = process.argv.slice(2);
   try {
-    if (verb === 'run' && separator === '--' && command.length > 0) process.exitCode = await run(command);
-    else if (verb === 'pull' && separator === undefined) await pull();
+    if (verb === 'run' && separator === '--' && command.length > 0) process.exitCode = await execute(command, []);
+    else if (verb === 'write' && separator === '--' && command.length > 0) process.stdout.write(`${write(command)}\n`);
+    // The step pull runs no command in the runner, so the directory of a pull is written with a command that does nothing.
+    else if (verb === 'pull' && separator === undefined) process.exitCode = await execute(['true'], ['pull']);
     else throw new Failure(USAGE, 2);
   } catch (error) {
     if (!(error instanceof Failure)) throw error;
-    show(error.message);
+    process.stderr.write(`${error.message}\n`);
     process.exitCode = error.code;
   }
 }
