@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: f9e10f6260cfbe2f3735563d913eb88eb8ae71a3242c4c5a494ea243e09d2623 -->
+<!-- source-sha256: 4e99afa58ca79aca230b8ad93db8f5a2f59c0c7fe06e0343d744ce0d44968251 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- S-459가 끝났다: commit된 tree  `make test-rust`가 case 533개를 통과했다.
 - 코어가 B-5의 finding을 준다: `packages/rust`의 static `Machine::validate(definitions)`는 기계 목록의 JSON 텍스트를 받아 record `finding`(`code`, `machine`, `path`, `message`)을 B-5의 순서대로 `legacy/packages/compiler/src/core/validate.mjs`처럼 돌려주고, JSON이 아닌 텍스트는 `invalid_definition`으로 거부한다 (FSM-B7-4). `contracts/cases.json`은 `machine.validate`의 case 299개를 갖는다: `legacy/packages/compiler/tests/validate-{structure,graph,names}.test.mjs`의 시험 65개가 하는 서로 다른 호출 298개와 validate.mjs가 돌려주는 finding, 그리고 JSON이 아닌 텍스트 하나다. finding이 문서 순서를 따르므로 serde_json은 map의 key를 그 순서대로 둔다(`preserve_order`). `make test-rust`는 case 533개를 통과한다 (S-459).
 - `from_code` case `<machine>_from_code_int64_max` 다섯 개가 `contracts/cases.json`에 돌아왔고, 다시 234개다: 빼는 것은 case를 줄이는 것이었다. 이 case들은 node에서 실패하며, B-7이 그 실패를 만드는 binding 명세의 결함을 해당 줄과 함께 적는다 (S-457).
 - `make name-check`가 `packages/rust/src/error.rs`에서, 오류 종류의 HTTP code를 돌려주는 `binding_core::Kinds`의 method에서 실패했다. 이 method는 코어의 오류 enum이 구현하고, 그 이름은 binding이 정한다. `scripts/check-name.mts`는 `packages/rust/src/` 아래의 그 method signature를 이유와 함께 허용하고, 시험 하나가 그곳의 옛 이름의 다른 쓰임을 계속 발견으로 둔다 (S-458).

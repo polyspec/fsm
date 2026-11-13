@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: 3b187dd2e97440f66a18a10c0111473d11c7ab3849eb25993deef496692efc11 -->
+<!-- source-sha256: ba39022f403a5f82ab1ac540421d8b5243e3f3b9bcc1af3611da39269b79c072 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -127,4 +127,4 @@
 | S-456 | 계획 f6 단계 3-2: package compiler, db, go, js, php, php-ext, python, rust가 `legacy/packages/`로 옮겨 가고(FP-6), 그 대상은 Go `-timeout=0`을 지킨 `legacy-<task>-<runtime>`이며(ST-38), 릴리스에서 빠지고, 모든 시험이 새 경로에서 돌고, runtime 시험은 앞 commit의 시험 수로 돈다. GUI는 단계 9a까지 `packages/gui/src/forms.mjs:10`, `packages/gui/src/handlers.mjs:11-12`, `packages/gui/src/store.mjs:9-10,41-42`, `packages/gui/tests/edit-support.mjs:9-11,17`, `packages/gui/tests/handlers.test.mjs:8`, `packages/gui/tests/mermaid-parse.test.mjs:22`에서 legacy를 읽고, `make test-php-binding`은 `legacy/packages/php-ext`의 PHPUnit에서 돈다. F5S-4의 검사가 아직 없으므로 이 행이 그 목록이다 | `Makefile`, `legacy/packages/**`, `packages/gui/**`, `config/*`, `tests/**`, `scripts/*` | `make packages-test compiler-test db-test gui-test` | [o] |
 | S-457 | 계획 f6 단계 3a: 루트 Cargo workspace와 그 lock, 코어 crate `packages/rust`의 manifest, class `machine`의 계약과 그 case(`docs/spec/fsm.md`, B-7), 추적하는 binding scaffold, 코어에서 도는 `make test-rust`, 바인딩 crate를 뺀 `make lint-rust`. polyspec-binding-core의 고정을 f63a655에서 옮기는 binding commit을 기다린다(CK-20) | `Cargo.toml`, `Cargo.lock`, `packages/rust/Cargo.toml`, `packages/rust/interface.json`, `contracts/cases.json`, `packages/{ts,python,php-ext,go}/**`, `Makefile` | `make bindings-check BINDING=<cli of binding>` | [~] |
 | S-458 | 계획 f6 단계 4: `packages/rust`의 코어 `Machine`과 `Step`(`docs/spec/fsm.md`, B-7): 정의 읽기, code, key, from_code, is_final, events_from, target, apply와 `binding_core::Kinds`를 구현한 `Error` enum | `packages/rust/src/**` | `make test-rust` | [o] |
-| S-459 | 계획 f6 단계 4: 코어의 `validate(definitions)`가 `legacy/packages/compiler/src/core/validate.mjs`처럼 B-5의 finding(`{code, machine, path, message}`, 문서 순서와 입력 순서)을 주고, 그 case는 `legacy/packages/compiler/tests/validate-{structure,graph,names}.test.mjs`의 시험 65개에서 온다 | `packages/rust/src/**`, `packages/rust/interface.json`, `contracts/cases.json` | `make test-rust` | [ ] |
+| S-459 | 계획 f6 단계 4: 코어의 `validate(definitions)`가 `legacy/packages/compiler/src/core/validate.mjs`처럼 B-5의 finding(`{code, machine, path, message}`, 문서 순서와 입력 순서)을 주고, 그 case는 `legacy/packages/compiler/tests/validate-{structure,graph,names}.test.mjs`의 시험 65개에서 온다 | `packages/rust/src/**`, `packages/rust/interface.json`, `contracts/cases.json` | `make test-rust` | [o] |
