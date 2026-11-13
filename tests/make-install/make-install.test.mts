@@ -34,6 +34,7 @@ function npmStamp(dir: string, npmDir: string): string {
 const STAMPS = [
   'legacy/packages/php/vendor/composer/installed.json',
   'legacy/packages/php-ext/vendor/composer/installed.json',
+  'packages/php-ext/vendor/composer/installed.json',
   'legacy/packages/python/.venv/.installed',
   'var/deps/go',
   'var/deps/rust',
@@ -47,6 +48,7 @@ const INSTALL: ReadonlyMap<string, RegExp> = new Map([
   ['docs', /cd docs && .*npm ci/],
   ['php', /fsm-php-install/],
   ['php-ext', /fsm-php-ext-install/],
+  ['binding-php', /binding-php-install/],
   ['python', /fsm-python-install/],
   ['go', /fsm-go-install/],
   ['rust', /fsm-rust-install/],

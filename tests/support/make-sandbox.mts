@@ -17,6 +17,9 @@ export const LOCKS = [
   'legacy/packages/php/composer.json',
   'legacy/packages/php-ext/composer.lock',
   'legacy/packages/php-ext/composer.json',
+  // The Composer project of the PHP binding, which make install installs for the autoloader of its tests.
+  'packages/php-ext/composer.lock',
+  'packages/php-ext/composer.json',
   // The release zips of the Composer artifact repository (S-44-8, S-44-8-1): both Composer packages are keyed on their pins
   // in config/release-assets.json too.
   'config/release-assets.json',
