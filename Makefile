@@ -586,13 +586,14 @@ release-coverage:
 # RELEASE_TARGET, so that an asset holds nothing of a development build. Each step is a line that starts a standard tool (GN-19).
 RELEASE_ASSETS ?= var/release/assets
 RELEASE_TARGET ?= var/release/target
-# release_host sets host to the Rust triple of the toolchain and go to the directory of the Go module of its platform (GN-19a),
-# and ends the recipe $(1) with 2 on a host that is no platform of the release.
+# release_host sets host to the Rust triple of the toolchain, go to the directory of the Go module of its platform and pie to
+# the part of the name of a PHP extension archive that names its platform (GN-19a), and ends the recipe $(1) with 2 on a host
+# that is no platform of the release.
 release_host = host=$$(rustc --print host-tuple) || exit 1; \
 	case "$$host" in \
-	x86_64-unknown-linux-gnu) go=linux_amd64 ;; \
-	aarch64-unknown-linux-gnu) go=linux_arm64 ;; \
-	aarch64-apple-darwin) go=darwin_arm64 ;; \
+	x86_64-unknown-linux-gnu) go=linux_amd64 pie=x86_64-linux-glibc ;; \
+	aarch64-unknown-linux-gnu) go=linux_arm64 pie=arm64-linux-glibc ;; \
+	aarch64-apple-darwin) go=darwin_arm64 pie=arm64-darwin-bsdlibc ;; \
 	*) echo "$(1): the host $$host is no platform of the release: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu, aarch64-apple-darwin" >&2; exit 2 ;; \
 	esac
 
@@ -622,6 +623,33 @@ release-wheel: bindings-python
 	@$(call release_host,release-wheel); \
 	set -ex; \
 	CARGO_TARGET_DIR=$(RELEASE_TARGET) MATURIN_PEP517_ARGS=--locked SOURCE_DATE_EPOCH=$$(git log -1 --format=%ct HEAD) $(UV) build --wheel --python python3 --out-dir $(RELEASE_ASSETS)/wheel packages/python
+
+# release-php-ext builds the PHP extension of the platform of the host for the minor of the PHP that PHP names (GN-19d,
+# S-470-6), with the php-config of PHP_CONFIG, the one beside that PHP unless it is given. The cdylib is copied as
+# polyspec_fsm.so into a directory of RELEASE_TARGET for that PHP build, which must load it without a php.ini before it is
+# packed, and the archive takes the name by which PIE finds a pre-packaged binary: the version of the crate, the minor, the
+# platform, and debug and zts as that PHP reports them. The archive enters the assets under another name and is renamed there.
+PHP_CONFIG ?= $(PHP)-config
+.PHONY: release-php-ext
+release-php-ext:
+	@test -n "$(PHP)" || { echo 'release-php-ext: PHP is required, for example make release-php-ext PHP=php' >&2; exit 2; }
+	@$(call release_host,release-php-ext); \
+	set -ex; \
+	PHP=$(PHP) PHP_CONFIG=$(PHP_CONFIG) CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-php-ext; \
+	version=$$(cargo pkgid -p polyspec-fsm-php-ext); version=$${version##*@}; \
+	minor=$$($(PHP) -n -r 'echo PHP_MAJOR_VERSION, ".", PHP_MINOR_VERSION;'); \
+	build=$$($(PHP) -n -r 'echo PHP_DEBUG ? "-debug" : "", "-", PHP_ZTS ? "zts" : "nts";'); \
+	copy=$(abspath $(RELEASE_TARGET))/php-ext/php$$minor$$build; \
+	mkdir -p "$$copy"; \
+	cp $(RELEASE_TARGET)/release/libpolyspec_fsm.$(CDYLIB) "$$copy/polyspec_fsm.so"; \
+	$(PHP) -n -d extension="$$copy/polyspec_fsm.so" -r 'exit(extension_loaded("polyspec_fsm") ? 0 : 1);'; \
+	name=php_polyspec_fsm-v$${version}_php$$minor-$$pie$$build.zip; \
+	rm -f "$$copy/$$name"; \
+	(cd "$$copy" && zip -q -9 -X "$$name" polyspec_fsm.so); \
+	out=$(RELEASE_ASSETS)/php-ext; \
+	mkdir -p "$$out"; \
+	cp "$$copy/$$name" "$$out/.$$name.part"; \
+	mv "$$out/.$$name.part" "$$out/$$name"
 
 # release-test runs the tests of the recipes of the assets (tests/release) against stand-ins of the tools that they start.
 .PHONY: release-test

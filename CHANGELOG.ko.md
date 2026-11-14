@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 0e3b18ea2bd3e8c2e4c7dd2ee25d6bc0c0f1d4b2a4a6ddc84e34f688e706b714 -->
+<!-- source-sha256: 2b2c642abae8b695f7dfe9c4ccf72c0da3c086e312d64a68dc9893b2542b561d -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make release-php-ext PHP=<php>`가 host platform과 그 PHP minor의 PHP 확장을 build하고 묶는다(S-470-6, plan C-11, binding GN-19d). 입력: 릴리스의 host에서 `make release-php-ext PHP=<php>`, `PHP_CONFIG`는 선택. 이전 동작: 릴리스의 PHP 확장을 build하는 recipe가 없었다. 기대 동작: recipe는 `PHP`, `PHP_CONFIG`(주어지지 않으면 그 PHP 옆의 `php-config`), `RELEASE_TARGET`인 `CARGO_TARGET_DIR`과 함께 `cargo build --release --locked -p polyspec-fsm-php-ext`를 실행하고, cdylib를 `polyspec_fsm.so`로 복사하고, `php -n -d extension=<절대 경로>`가 그것을 load해야 하며, 그 PHP에서 읽은 `debug`와 `zts`로 `RELEASE_ASSETS/php-ext/php_polyspec_fsm-v<crate 버전>_php<X.Y>-<PIE platform>[-debug]-<zts|nts>.zip`를 `zip -q -9 -X`로 묶는다. load되지 않는 확장은 아무것도 묶지 않고, `PHP`가 없는 실행과 다른 host는 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(24개 통과). 확장의 시험은 이전에 `No rule to make target`으로 실패했다.
 - `make release-wheel`이 host platform의 Python 바인딩 abi3 wheel을 build한다(S-470-5, plan C-11, binding GN-19c). 입력: 릴리스의 host에서 `make release-wheel`. 이전 동작: platform의 wheel을 build하는 recipe가 없었다. 기대 동작: recipe는 Python 바인딩을 생성한 뒤, checkout의 uv로 `MATURIN_PEP517_ARGS=--locked`, HEAD의 commit 시각인 `SOURCE_DATE_EPOCH`, `RELEASE_TARGET`인 `CARGO_TARGET_DIR`과 함께 `uv build --wheel --python python3 --out-dir RELEASE_ASSETS/wheel packages/python`를 실행한다. 다른 host는 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(10개 통과). wheel의 시험 세 개는 이전에 `No rule to make target`으로 실패했다.
 - `make release-go-static`이 host platform의 Go module 정적 library를 build한다(S-470-4, plan C-11, binding GN-19b). 입력: 릴리스의 host(`x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`, `aarch64-apple-darwin`)에서 `make release-go-static`. 이전 동작: platform의 릴리스 asset을 build하는 recipe가 없었다. 기대 동작: recipe는 `CARGO_TARGET_DIR`을 `RELEASE_TARGET`으로 두고 `cargo build --release --locked -p polyspec-fsm-go`를 실행하고, 사본의 debug section을 toolchain의 `llvm-strip`으로 지우고, 그 사본의 이름을 `RELEASE_ASSETS/go/<Go 디렉터리>/libpolyspec_fsm_go.a`로 바꾼다. 다른 host는 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(7개 통과). 시험은 이전에 `No rule to make target`으로 실패했다.
 - 문서 사이트가 `docs/operations/persist-servers.md`와 함께 build된다(S-482). 입력: `make docs-build`와 `make docs-build-test`. 이전 동작: runner 형태를 다루는 code span이 `<commit>` 뒤에서 줄이 바뀌어 다음 줄이 `<part>`로 시작했고, VitePress가 그것을 HTML tag로 읽어 build가 그 page에서 `Element is missing end tag`로 끝났다. 기대 동작: code span `bay job add -key <commit> <part>`가 한 줄에 있고 사이트가 build된다. `make docs-build`로 검증했다.
