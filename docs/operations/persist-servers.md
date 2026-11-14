@@ -55,30 +55,32 @@ In the runner form the targets run on the committed tree of the branch of the ch
 
 A job runs in a process of the agent of bay on the machine that holds it and keeps its state, its exit code, its time and
 its output, so a connection that ends while the job runs ends no job and loses no result. The machine of development
-queues each job there over `ssh` and waits for it through the peer link of bay. `<machine>` is the `ssh` host,
-`<remote>` a directory there, and `<peer>` the name of that machine as an approved peer of the bay of this machine.
+queues each job there over `ssh` and waits for it there over `ssh`, so the wait runs on the machine of the job.
+`<machine>` is the `ssh` host and `<remote>` a directory there.
 
 ```sh
 directory=$(make -s persist-servers-write TARGETS="db-test-postgres db-test-mysql")
 project=${directory##*/}
 scp -r "$directory" <machine>:<remote>/
 ssh <machine> sh <remote>/$project/run.sh pull          # only when the images are not there
-build=$(ssh <machine> sh <remote>/$project/run.sh add build)
-bay job wait -peer <peer> -timeout 24h "$build"
-check=$(ssh <machine> sh <remote>/$project/run.sh add check)
-bay job wait -peer <peer> -timeout 24h "$check"
-bay job show -peer <peer> "$check"
-bay job logs -peer <peer> "$check"
+ssh <machine> sh <remote>/$project/run.sh add build
+ssh <machine> sh <remote>/$project/run.sh wait build
+ssh <machine> sh <remote>/$project/run.sh add check     # only after wait build ended with 0
+ssh <machine> sh <remote>/$project/run.sh wait check
 ssh <machine> rm -r <remote>/$project
 ```
 
-- Queue `check` only after `bay job wait` of `build` ended with 0: `check` runs on what `build` installed.
+- `sh run.sh add <part>` prints the id of the job alone on standard output, so `id=$(ssh <machine> sh <remote>/$project/run.sh add build)`
+  holds it; every other line of `run.sh` is on standard error. It writes the id to `job-<part>` of the directory, which
+  `wait <part>` reads.
 - `sh run.sh add <part>` queues the job with the commit of the bundle as its key, so after a connection that ended before
   the id was read, the same command returns the same job and queues no second one.
-- `bay job wait -peer` reads the job again when the link drops, and ends with 0 for a job that succeeded and 1 for one
-  that did not. When its bound ends first, the job runs on: wait again with the same id.
-- `bay job logs -peer` prints the end of the output; the whole output is the file that `bay job show` names, on that
-  machine.
+- `sh run.sh wait <part>` shows the output of the job, waits for it and writes its record, `bay job show -json`, to
+  `job-<part>.json` of the directory. It ends with 0 when the job ended and succeeded, 1 when it ended and did not, 3 when
+  it has not ended or bay shows no record, and 2 when `add` did not queue the part. It cancels nothing: after a
+  connection that dropped or the code 3, the job runs on and the same command waits again.
+- Queue `check` only after `wait build` ended with 0: `check` runs on what `build` installed.
+- Remove the directory there after the last job ended: it holds the records of the jobs.
 - Remove the directory there after the last job ended. `runner.sh` gave the files of `work/` to the owner of the
   directory, so no rights of the container are needed.
 
@@ -95,10 +97,12 @@ nothing of the checkout; the job `build` writes the tools and the clone below `w
 `report.txt` holds one line for each event, the time in UTC and the event: `<step> start` and `<step> exit <code>` for
 each step, and `run exit <code>`. The steps are `version` and `images`, then `up`, `command` and `down` in the host form,
 and in the runner form `add <part>`, `logs <part>`, `wait <part>` and `show <part>` for `build` and then `check`, with the
-line `job <part> <id>`. The host form also writes `memory.peak <service> <bytes>` for each service, the highest use that
+line `job <part> <id>`; `sh run.sh add <part>` writes the lines of `add <part>`, and `sh run.sh wait <part>` those of
+`version`, `logs <part>`, `wait <part>` and `show <part>`. The host form also writes `memory.peak <service> <bytes>` for each service, the highest use that
 the cgroup of its container recorded, read with `bay exec <service> cat /sys/fs/cgroup/memory.peak` before the project is
-removed; `not read` stands for a container that has no such file. In the runner form `bay job show` prints the record of
-each job, which holds its memory peak where the machine reports one. The run shows each line as `persist-servers: <line>`;
+removed; `not read` stands for a container that has no such file. In the runner form `bay job show -json` writes the
+record of each job to `job-<part>.json`, which `run.sh` also shows; `bay job list` shows the memory peak of each job where
+the machine reports one. The run shows each line as `persist-servers: <line>`;
 the targets that remove the directory leave these lines alone.
 
 A machine may hold less memory than the services of a run take together: on a Linux machine of 3.7 GB the containers of bay
@@ -126,14 +130,17 @@ starts no other program but `date`, for the time of its report.
    step that runs.
 
 In the runner form steps 3 to 5 are the two jobs. For `build` and then `check`, `run.sh` runs `bay job add -key <commit>
-<part>`, `bay job logs -f -timeout 24h <id>`, `bay job wait -timeout 24h <id>` and `bay job show <id>`, and queues
-`check` only after `build` succeeded. `build` runs `runner.sh build`: the system packages, Node.js, rustup, the clone of
+<part>`, `bay job logs -f -timeout 24h <id>`, `bay job wait -timeout 24h <id>` and `bay job show -json <id>`, judges the
+job by its record, and queues `check` only after `build` succeeded. The record decides and not the exit code of
+`bay job wait`, which is 1 also when the wait ends before the job. `build` runs `runner.sh build`: the system packages, Node.js, rustup, the clone of
 `tree.bundle`, `make bootstrap` and `make install`, below `work/`. bay starts the servers before the container of `check`,
 as `bay up` does, and `check` runs `runner.sh check make ci-targets TARGETS="..."` with the DSNs in its environment. bay
-takes the project down after each job. A signal ends the step that runs and cancels the job that has not ended.
+takes the project down after each job. A signal ends the step that runs and cancels the job that has not ended, and so
+does a job whose end is not known, because the directory that it reads is removed after the run.
 
-The exit code of the host form is that of the targets; of the runner form 0 when both jobs succeeded and 1 for a job that
-did not; and 1 for a step that failed before, and 130, 143 and 129 after the three signals.
+The exit code of the host form is that of the targets; of the runner form 0 when both jobs succeeded, 1 for a job that
+did not and 3 for a job whose end is not known; and 1 for a step that failed before, and 130, 143 and 129 after the three
+signals.
 
 ## Failures
 
@@ -146,9 +153,11 @@ did not; and 1 for a step that failed before, and 130, 143 and 129 after the thr
 | `persist-servers: an image of the project <project> is not installed` | The store of bay lacks an image | Run `make persist-images`, or `sh <directory>/run.sh pull` on the machine of the run |
 | `persist-servers: bay up failed before the servers of the project <project> were healthy` | bay refused the file, a part of the machine setup is missing, or a server did not start or did not get healthy; the lines of bay above say which | Read those lines; for a missing part of the setup run `bay install`. The run already removed the project |
 | `persist-servers: bay job add failed for the job <part> of the project <project>` | bay refused the file or the agent of bay did not answer; the lines of bay above say which | Read those lines; `bay job list` shows the queue of the machine |
+| `persist-servers: the job <part> <id> of the project <project> did not succeed` | The job ended with another state than `succeeded`; its record above names its exit code | Read the output of the job above and `job-<part>.json` |
+| `persist-servers: the job <part> <id> of the project <project> has not ended` | `bay job wait` ended before the job, at its bound | Run the command that the line shows, `sh <directory>/run.sh wait <part>`, again |
+| `persist-servers: the job <part> <id> of the project <project> has no record` | `bay job show` failed; the lines of bay above say why | Run the command that the line shows again; `bay job list` shows the queue of the machine |
+| `persist-servers: the job <part> of the project <project> is not queued here` | `sh run.sh wait <part>` ran in a directory where `add <part>` did not run | Run `sh <directory>/run.sh add <part>` in that directory first |
 | `persist-servers: bay down failed` | bay did not remove the project; its containers may still run. The directory stays and holds the file `down-failed` | Run the command that the line shows, `bay -f <directory> -p <project> down`, then remove the directory |
-
-A job that did not succeed ends `bay job wait` with 1: `bay job show <id>` names its exit code and the file of its output.
 
 ## bay on a runner of CI
 

@@ -516,7 +516,9 @@ test('a run of the host form starts the servers alone, runs the command on the h
   assert.deepEqual(staged.calls(), hosted(project, 'up'));
   assert.deepEqual(staged.git(), []);
   assert.deepEqual(staged.left(), []);
-  assert.ok(ended.stdout.startsWith(`${VERSION}\n`), ended.stdout);
+  // The output of bay is on standard error; the standard output is that of the command, which writes to its file.
+  assert.ok(ended.stderr.includes(`\n${VERSION}\n`), ended.stderr);
+  assert.equal(ended.stdout, '');
   assert.match(ended.stderr, new RegExp(`^persist-servers: removed the project ${project[4]}$`, 'm'));
   // The lines of the report are shown, because run removes the directory that holds the file.
   for (const line of ['up exit 0', 'command exit 0', 'memory.peak postgres 4096', 'memory.peak mysql 4096', 'run exit 0']) assert.ok(ended.stderr.includes(`persist-servers: ${TIME} ${line}\n`), `the run does not show ${line}:\n${ended.stderr}`);
@@ -632,7 +634,8 @@ test('a run of the runner form queues the job build and then the job check with 
   assert.deepEqual(staged.left(), [], 'the run left its directory');
   // The record of a run names the bay that made its result, and holds the output of each job and its record, all on
   // standard error: the standard output of run.sh holds results alone.
-  assert.ok(ended.stderr.startsWith(`persist-servers: bay version: ${VERSION}\n${VERSION}\n`), ended.stderr);
+  assert.ok(ended.stderr.startsWith(`persist-servers: bay version: ${VERSION}\n`), ended.stderr);
+  assert.ok(ended.stderr.includes(`\n${VERSION}\n`), ended.stderr);
   assert.equal(ended.stdout, '');
   for (const id of Object.values(JOBS)) {
     assert.match(ended.stderr, new RegExp(`^${RUNNING} ${id}$`, 'm'));
@@ -939,7 +942,7 @@ test('a bay that PATH does not hold fails every verb at once, with its name and 
 for (const [signal, code] of [['SIGTERM', 143], ['SIGINT', 130]] as const) {
   test(`${signal} while the job build runs ends bay job logs and cancels the job`, async t => {
     const staged = stage(t, { logsWaits: true });
-    const ended = await script(staged, RUN, (line, stream, kill) => { if (stream === 'stdout' && line === `${RUNNING} ${JOBS.build}`) kill(signal); });
+    const ended = await script(staged, RUN, (line, stream, kill) => { if (stream === 'stderr' && line === `${RUNNING} ${JOBS.build}`) kill(signal); });
     assert.deepEqual([ended.code, ended.signal], [code, null], ended.stderr);
     const project = named(staged);
     const build = building(project);

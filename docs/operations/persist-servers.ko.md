@@ -1,5 +1,5 @@
 <!-- doc-id: operations-persist-servers -->
-<!-- source-sha256: 8e55783819c5f7121da30cebd24061c081b69afb76aa2de3900442de5b69f770 -->
+<!-- source-sha256: 897b209f91a270456b9cf4efd5844f7259a80935307092c645b50fae4eab09bb -->
 # 영속성 테스트의 서버
 
 [English](persist-servers.md)
@@ -50,32 +50,32 @@ runner 형태에서 target은 checkout의 branch의 commit된 tree에서 돈다.
 ## 다른 머신에서의 실행
 
 job은 그것을 가진 머신의 bay agent의 process에서 돌고 그 상태, 종료 코드, 시간, 출력을 남긴다. 그래서 job이 도는 동안
-연결이 끊겨도 job은 끝나지 않고 결과도 잃지 않는다. 개발 머신은 각 job을 `ssh`로 그곳의 큐에 넣고 bay의 peer 연결로 그것을
-기다린다. `<machine>`은 `ssh` host이고, `<remote>`는 그곳의 디렉터리이며, `<peer>`는 이 머신의 bay가 승인한 peer로서의 그
-머신의 이름이다.
+연결이 끊겨도 job은 끝나지 않고 결과도 잃지 않는다. 개발 머신은 각 job을 `ssh`로 그곳의 큐에 넣고 `ssh`로 그곳에서
+기다린다. 그래서 기다림은 job의 머신에서 돈다. `<machine>`은 `ssh` host이고, `<remote>`는 그곳의 디렉터리다.
 
 ```sh
 directory=$(make -s persist-servers-write TARGETS="db-test-postgres db-test-mysql")
 project=${directory##*/}
 scp -r "$directory" <machine>:<remote>/
 ssh <machine> sh <remote>/$project/run.sh pull          # 이미지가 그곳에 없을 때만
-build=$(ssh <machine> sh <remote>/$project/run.sh add build)
-bay job wait -peer <peer> -timeout 24h "$build"
-check=$(ssh <machine> sh <remote>/$project/run.sh add check)
-bay job wait -peer <peer> -timeout 24h "$check"
-bay job show -peer <peer> "$check"
-bay job logs -peer <peer> "$check"
+ssh <machine> sh <remote>/$project/run.sh add build
+ssh <machine> sh <remote>/$project/run.sh wait build
+ssh <machine> sh <remote>/$project/run.sh add check     # wait build가 0으로 끝난 뒤에만
+ssh <machine> sh <remote>/$project/run.sh wait check
 ssh <machine> rm -r <remote>/$project
 ```
 
-- `check`는 `build`의 `bay job wait`이 0으로 끝난 뒤에만 큐에 넣는다. `check`는 `build`가 설치한 것 위에서 돈다.
+- `sh run.sh add <part>`는 job의 id만 표준 출력에 출력한다. 그래서 `id=$(ssh <machine> sh <remote>/$project/run.sh add build)`가
+  그것을 담는다. `run.sh`의 다른 모든 줄은 표준 오류에 있다. 이것은 id를 디렉터리의 `job-<part>`에 쓰고, `wait <part>`가 그것을
+  읽는다.
 - `sh run.sh add <part>`는 bundle의 commit을 key로 job을 큐에 넣는다. 그래서 id를 읽기 전에 연결이 끊겼으면, 같은 명령이
   같은 job을 돌려주고 두 번째 job을 넣지 않는다.
-- `bay job wait -peer`는 연결이 끊기면 job을 다시 읽고, 성공한 job에 0, 성공하지 않은 job에 1로 끝난다. 그 한도가 먼저
-  끝나도 job은 계속 돈다. 같은 id로 다시 기다린다.
-- `bay job logs -peer`는 출력의 끝을 출력한다. 출력 전체는 그 머신에서 `bay job show`가 적는 파일이다.
-- 마지막 job이 끝난 뒤 그곳의 디렉터리를 지운다. `runner.sh`가 `work/`의 파일을 디렉터리의 소유자에게 넘겼으므로
-  container의 권한이 필요 없다.
+- `sh run.sh wait <part>`는 job의 출력을 보여 주고, 그것을 기다리고, 그 기록 `bay job show -json`을 디렉터리의
+  `job-<part>.json`에 쓴다. job이 끝나고 성공하면 0, 끝나고 성공하지 않으면 1, 끝나지 않았거나 bay가 기록을 보여 주지
+  않으면 3, `add`가 그 part를 큐에 넣지 않았으면 2로 끝난다. 이것은 아무것도 취소하지 않는다. 연결이 끊긴 뒤나 코드 3 뒤에도
+  job은 계속 돌고, 같은 명령이 다시 기다린다.
+- `check`는 `wait build`가 0으로 끝난 뒤에만 큐에 넣는다. `check`는 `build`가 설치한 것 위에서 돈다.
+- 마지막 job이 끝난 뒤 그곳의 디렉터리를 지운다. 그 디렉터리가 job의 기록을 가진다.
 
 ## 실행의 디렉터리
 
@@ -89,10 +89,11 @@ bundle인 `tree.bundle`도 있다. 각 job은 이 디렉터리를 쓰기 가능�
 `report.txt`는 사건마다 한 줄을 가지며, 한 줄은 UTC 시각과 사건이다. 각 단계의 `<step> start`와 `<step> exit <code>`,
 그리고 `run exit <code>`다. 단계는 `version`과 `images`이고, 그다음 host 형태에서는 `up`, `command`, `down`, runner
 형태에서는 `build`와 그다음 `check`에 대한 `add <part>`, `logs <part>`, `wait <part>`, `show <part>`와 줄
-`job <part> <id>`다. host 형태는 각 service의 `memory.peak <service> <bytes>`도 쓴다. 그 container의 cgroup이 기록한 최고
+`job <part> <id>`다. `sh run.sh add <part>`는 `add <part>`의 줄을 쓰고, `sh run.sh wait <part>`는 `version`, `logs <part>`,
+`wait <part>`, `show <part>`의 줄을 쓴다. host 형태는 각 service의 `memory.peak <service> <bytes>`도 쓴다. 그 container의 cgroup이 기록한 최고
 사용량이고, project를 제거하기 전에 `bay exec <service> cat /sys/fs/cgroup/memory.peak`로 읽는다. 그 파일이 없는
-container에는 `not read`가 적힌다. runner 형태에서는 `bay job show`가 각 job의 기록을 출력하고, 머신이 보고하는 경우 그
-기록이 메모리 최고치를 가진다. 실행은 각 줄을 `persist-servers: <line>`으로 보여 준다. 디렉터리를 지우는 target에서는 이
+container에는 `not read`가 적힌다. runner 형태에서는 `bay job show -json`이 각 job의 기록을 `job-<part>.json`에 쓰고,
+`run.sh`가 그것도 보여 준다. 머신이 보고하는 경우 `bay job list`가 각 job의 메모리 최고치를 보여 준다. 실행은 각 줄을 `persist-servers: <line>`으로 보여 준다. 디렉터리를 지우는 target에서는 이
 줄만 남는다.
 
 머신은 실행의 service들이 함께 쓰는 것보다 적은 메모리를 가질 수 있다. 3.7 GB의 Linux 머신에서 bay의 container들은 합계
@@ -118,14 +119,16 @@ host 형태의 명령을 뺀 각 단계는 `bay -f <file> -p <project>`의 명�
    먼저 실행 중인 단계를 끝낸다.
 
 runner 형태에서 단계 3부터 5는 job 두 개다. `run.sh`는 `build`와 그다음 `check`에 대해 `bay job add -key <commit> <part>`,
-`bay job logs -f -timeout 24h <id>`, `bay job wait -timeout 24h <id>`, `bay job show <id>`를 실행하고, `build`가 성공한
-뒤에만 `check`를 큐에 넣는다. `build`는 `runner.sh build`를 실행한다. system package, Node.js, rustup, `tree.bundle`의
+`bay job logs -f -timeout 24h <id>`, `bay job wait -timeout 24h <id>`, `bay job show -json <id>`를 실행하고, job을 그
+기록으로 판정하며, `build`가 성공한 뒤에만 `check`를 큐에 넣는다. `bay job wait`의 종료 코드가 아니라 기록이 판정한다.
+`bay job wait`는 기다림이 job보다 먼저 끝날 때에도 1이기 때문이다. `build`는 `runner.sh build`를 실행한다. system package, Node.js, rustup, `tree.bundle`의
 clone, `make bootstrap`, `make install`이고, `work/` 아래에 설치한다. bay는 `bay up`처럼 `check`의 container 전에 서버를
 시작하고, `check`는 DSN을 환경에 받아 `runner.sh check make ci-targets TARGETS="..."`를 실행한다. bay는 각 job 뒤에
-project를 내린다. signal은 실행 중인 단계를 끝내고 끝나지 않은 job을 취소한다.
+project를 내린다. signal은 실행 중인 단계를 끝내고 끝나지 않은 job을 취소한다. 끝을 알 수 없는 job도 취소한다. 그 job이
+읽는 디렉터리가 실행 뒤에 지워지기 때문이다.
 
-종료 코드는 host 형태에서 target의 종료 코드이고, runner 형태에서 두 job이 성공하면 0, 성공하지 않은 job에 1이다. 그
-전에 실패한 단계에는 1, 세 signal 뒤에는 130, 143, 129다.
+종료 코드는 host 형태에서 target의 종료 코드이고, runner 형태에서 두 job이 성공하면 0, 성공하지 않은 job에 1, 끝을 알 수
+없는 job에 3이다. 그 전에 실패한 단계에는 1, 세 signal 뒤에는 130, 143, 129다.
 
 ## 실패
 
@@ -138,9 +141,11 @@ project를 내린다. signal은 실행 중인 단계를 끝내고 끝나지 않�
 | `persist-servers: an image of the project <project> is not installed` | bay의 store에 이미지가 없다 | `make persist-images`를 실행하거나, 실행의 머신에서 `sh <directory>/run.sh pull`을 실행한다 |
 | `persist-servers: bay up failed before the servers of the project <project> were healthy` | bay가 파일을 거부했거나, 머신 설정의 한 부분이 빠졌거나, 서버가 시작하지 못했거나 healthy가 되지 않았다. 위의 bay의 줄이 어느 것인지 적는다 | 그 줄을 읽는다. 설정의 빠진 부분이면 `bay install`을 실행한다. 실행은 이미 project를 제거했다 |
 | `persist-servers: bay job add failed for the job <part> of the project <project>` | bay가 파일을 거부했거나 bay의 agent가 답하지 않았다. 위의 bay의 줄이 어느 것인지 적는다 | 그 줄을 읽는다. `bay job list`가 머신의 큐를 보여 준다 |
+| `persist-servers: the job <part> <id> of the project <project> did not succeed` | job이 `succeeded`가 아닌 상태로 끝났다. 위의 기록이 그 종료 코드를 적는다 | 위의 job의 출력과 `job-<part>.json`을 읽는다 |
+| `persist-servers: the job <part> <id> of the project <project> has not ended` | `bay job wait`가 그 한도에서 job보다 먼저 끝났다 | 그 줄이 보여 주는 명령 `sh <directory>/run.sh wait <part>`를 다시 실행한다 |
+| `persist-servers: the job <part> <id> of the project <project> has no record` | `bay job show`가 실패했다. 위의 bay의 줄이 이유를 적는다 | 그 줄이 보여 주는 명령을 다시 실행한다. `bay job list`가 머신의 큐를 보여 준다 |
+| `persist-servers: the job <part> of the project <project> is not queued here` | `add <part>`가 실행되지 않은 디렉터리에서 `sh run.sh wait <part>`를 실행했다 | 그 디렉터리에서 먼저 `sh <directory>/run.sh add <part>`를 실행한다 |
 | `persist-servers: bay down failed` | bay가 project를 제거하지 못했다. container가 아직 실행 중일 수 있다. 디렉터리는 남고 파일 `down-failed`를 가진다 | 그 줄이 보여 주는 명령 `bay -f <directory> -p <project> down`을 실행하고, 디렉터리를 지운다 |
-
-성공하지 않은 job은 `bay job wait`을 1로 끝낸다. `bay job show <id>`가 그 종료 코드와 출력 파일을 적는다.
 
 ## CI의 runner의 bay
 
