@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: 41631e72d61230e5f9fbb2b69c01aac3d20d5b8f0c8e07d41ccff98a8829cddf -->
+<!-- source-sha256: 9a88adc85107364955916b48a44f936aef79df1a536ab4f0c576f7b9f897460d -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -170,3 +170,4 @@
 | S-479 | 서버의 실행이 MySQL 8.4.11의 준비 줄에서 다음으로 넘어가고 단계마다 줄을 보인다. CI run 43551106408에서 `make ci-suite`는 03:28에 두 서버의 준비 줄을 보인 뒤 취소될 때까지 3시간 45분 동안 아무것도 보이지 않았다. mysqld의 준비 줄은 `... port: 3306  MySQL Community Server - GPL.`인데 `scripts/persist-servers.mts`는 `port: 3306`을 줄 끝에서만 찾았으므로, 서버가 쓰지 않는 줄을 기다리고 명령을 시작하지 않았다. `tests/persist-servers`의 stand-in 줄은 `port: 3306`에서 끝났다. 기대: 초기화 뒤의 mysqld 준비 줄이 사건이고 그 port는 줄 안에서 읽는다. 다른 port의 준비 줄은 그 줄과 함께 실행을 바로 실패시킨다. stand-in 줄은 MySQL 8.4.11의 줄이다. 실행은 container의 시작, 각 서버의 초기화와 준비 줄, 명령의 시작과 끝, 제거를 보인다 | `scripts/persist-servers.mts`, `tests/persist-servers/**`, `docs/plans/fsm-v1/plan.md` | `make persist-servers-test` | [o] |
 | S-480 | host 형태의 명령은 실행을 시작한 쪽의 디렉터리에서 돈다. CI run 43571414109에서 두 서버가 healthy가 된 뒤 `make ci-targets`가 `var/persist-servers/<project>`에서 `No rule to make target 'ci-targets'`로 끝났다. `run.sh`는 자기 파일을 위해 실행의 디렉터리로 들어가고 명령도 그곳, Makefile이 없는 곳에서 시작했다. 기대: host 형태의 `run.sh`는 자기가 시작된 디렉터리를 기억해 그곳에서 명령을 시작하고, bay의 단계는 절대 경로의 파일을 그대로 쓴다 | `scripts/persist-servers.mts`, `tests/persist-servers/**`, `docs/plans/fsm-v1/plan.md` | `make persist-servers-test` | [o] |
 | S-481 | runner 형태의 job `check`의 서버가 실행보다 오래 남지 않는다. Linux arm64 머신에서 어떤 실행의 job `check`가 도는 동안 bay의 agent가 다시 시작해 그 job을 넘겨받고 성공을 기록한 뒤, PostgreSQL과 MySQL의 container를 몇 시간 동안 돌게 두었다. bay는 job 뒤에 project를 내리지만 agent가 job의 실행을 넘겨받은 뒤에는 내리지 않고, `run.sh`는 `bay down`을 실행하지 않았다. 기대: job `check`가 끝나면 전체 실행과 `sh run.sh wait check`가 `bay -f compose.yaml -p <project> down`을 실행한다. 이 명령은 container가 없는 project에도 0으로 끝나고, 실패한 bay down은 그것을 1로 실패시키고 project를 제거하는 명령을 적는다 | `scripts/persist-servers.mts`, `tests/persist-servers/**`, `docs/plans/fsm-v1/plan.md`, `docs/operations/persist-servers.md` | `make persist-servers-test` | [o] |
+| S-482 | 문서 사이트가 영속성 서버의 운영 문서와 함께 build된다. `make docs-build`와 `make docs-build-test`가 `docs/operations/persist-servers.md (116:176): Element is missing end tag`로 실패했다. code span이 `<commit>` 뒤에서 줄이 바뀌어 다음 줄이 `<part>`로 시작했고, VitePress가 그것을 HTML tag로 읽었다. 기대: code span이 한 줄에 있고 두 target이 통과한다 | `docs/operations/persist-servers.md` | `make docs-build` | [o] |

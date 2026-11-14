@@ -129,8 +129,8 @@ starts no other program but `date`, for the time of its report.
 5. The host form: `bay down`, by a trap: also when a step failed and after SIGINT, SIGTERM and SIGHUP, which first end the
    step that runs.
 
-In the runner form steps 3 to 5 are the two jobs. For `build` and then `check`, `run.sh` runs `bay job add -key <commit>
-<part>`, `bay job logs -f -timeout 24h <id>`, `bay job wait -timeout 24h <id>` and `bay job show -json <id>`, judges the
+In the runner form steps 3 to 5 are the two jobs. For `build` and then `check`, `run.sh` runs
+`bay job add -key <commit> <part>`, `bay job logs -f -timeout 24h <id>`, `bay job wait -timeout 24h <id>` and `bay job show -json <id>`, judges the
 job by its record, and queues `check` only after `build` succeeded. The record decides and not the exit code of
 `bay job wait`, which is 1 also when the wait ends before the job. `build` runs `runner.sh build`: the system packages, Node.js, rustup, the clone of
 `tree.bundle`, `make bootstrap` and `make install`, below `work/`. bay starts the servers before the container of `check`,

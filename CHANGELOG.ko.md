@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 38bc905190de04a1785efe4d34b298ae205a179db285a8bb231ca0b35cbe349e -->
+<!-- source-sha256: 1bf32895927e6db3c073be8964416da95d16191064ce0d567c7348833aaed34a -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 문서 사이트가 `docs/operations/persist-servers.md`와 함께 build된다(S-482). 입력: `make docs-build`와 `make docs-build-test`. 이전 동작: runner 형태를 다루는 code span이 `<commit>` 뒤에서 줄이 바뀌어 다음 줄이 `<part>`로 시작했고, VitePress가 그것을 HTML tag로 읽어 build가 그 page에서 `Element is missing end tag`로 끝났다. 기대 동작: code span `bay job add -key <commit> <part>`가 한 줄에 있고 사이트가 build된다. `make docs-build`로 검증했다.
 - 영속성 서버 runner 형태의 job `check`의 서버가 실행보다 오래 남지 않는다(S-481). 입력: job `check`가 도는 동안 bay agent가 다시 시작한 Linux arm64 머신의 runner 형태 실행. 이전 동작: agent가 그 job을 넘겨받아 성공을 기록하고 PostgreSQL과 MySQL의 container를 몇 시간 동안 돌게 두었다. bay는 job 뒤에 project를 내리지만 넘겨받은 뒤에는 내리지 않고, `run.sh`는 `bay down`을 실행하지 않았기 때문이다. 기대 동작: job `check`가 끝나면 전체 실행과 `sh run.sh wait check`가 `bay -f compose.yaml -p <project> down`을 실행한다. 이 명령은 container가 없는 project에도 0으로 끝나고, 실패한 bay down은 그것을 1로 실패시키고 project를 제거하는 명령을 적는다. `node --test tests/persist-servers/persist-servers.test.mts`로 검증했다(34개 통과). 새 시험은 이전에 job 뒤의 bay down이 없어 실패했다.
 - 영속성 서버의 host 형태 명령이 실행을 시작한 쪽의 디렉터리에서 돈다(S-480). 입력: CI job `check`의 `make ci-suite`. 이 target은 `make persist-servers`를 실행하고, 그것이 `make ci-targets`를 실행한다. 이전 동작: `run.sh`가 자기 파일을 위해 `var/persist-servers/<project>`로 들어가 명령도 그곳에서 시작했으므로, 두 서버가 healthy가 된 뒤 make가 `No rule to make target 'ci-targets'`로 끝났고 실행은 2로 끝났다. 기대 동작: host 형태의 `run.sh`는 자기가 시작된 디렉터리를 기억해 그곳에서 명령을 시작한다. `node --test tests/persist-servers/persist-servers.test.mts`로 검증했다(33개 통과). 새 시험은 이전에 실행의 디렉터리를 받아 실패했다.
 - 영속성 테스트 서버의 실행이 MySQL 8.4.11의 준비 줄에서 다음으로 넘어간다(S-479). 입력: CI job `check`의 `make ci-suite`. 이전 동작: mysqld의 준비 줄은 `... port: 3306  MySQL Community Server - GPL.`인데 `scripts/persist-servers.mts`는 `port: 3306`을 줄 끝에서만 찾았으므로, 실행은 서버가 쓰지 않는 줄을 끝없이 기다렸고 target을 시작하지 않았으며 서버의 줄 뒤로 아무것도 보이지 않았다. CI run 43551106408은 3시간 45분 뒤 취소되었다. 기대 동작: 초기화 뒤의 mysqld 준비 줄이 사건이고 그 port는 줄 안에서 읽는다. 다른 port의 준비 줄은 그 줄과 함께 실행을 바로 실패시킨다. 실행은 container의 시작, 각 서버의 초기화와 준비 줄, 명령의 시작과 끝, 제거에서 줄을 하나씩 보인다. `make persist-servers-test`로 검증했다(14개 통과). S-475와의 merge는 S-475의 script를 남긴다. 그 script에서는 bay가 서버를 시작하고 healthcheck로 준비를 판정하므로, 준비 줄을 읽지 않는다.

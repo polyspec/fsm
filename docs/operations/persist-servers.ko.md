@@ -1,5 +1,5 @@
 <!-- doc-id: operations-persist-servers -->
-<!-- source-sha256: 0d4971d574074bfc341f22aa09a4a7a9e3a9b261c34e2ec7e3b3a8bf839fc9cf -->
+<!-- source-sha256: 9632b186aa3d56fdc89a516e7bad2eeb49fe2a0cf5d96fc2e63da51ae64181f3 -->
 # 영속성 테스트의 서버
 
 [English](persist-servers.md)
