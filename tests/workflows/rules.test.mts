@@ -188,7 +188,8 @@ function platformFindings(file: string, text: string): string[] {
       platform = undefined;
     }
   }
-  if (JSON.stringify(Object.entries(entries).sort()) !== JSON.stringify(Object.entries(PLATFORM_RUNNERS).sort()))
+  const byPlatform = (left: [string, string], right: [string, string]): number => left[0].localeCompare(right[0]);
+  if (JSON.stringify(Object.entries(entries).sort(byPlatform)) !== JSON.stringify(Object.entries(PLATFORM_RUNNERS).sort(byPlatform)))
     found.push(`${file}: the job platform runs on ${JSON.stringify(entries)}, not on ${JSON.stringify(PLATFORM_RUNNERS)}`);
   return found;
 }

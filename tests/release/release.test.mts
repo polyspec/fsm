@@ -3,12 +3,13 @@
 // stand-ins of rustc, cargo and the llvm-strip of the toolchain that the case writes, so it builds nothing: the stand-ins record
 // their arguments and write the files that the real tools write.
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
 import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import napi from '@napi-rs/cli/package.json' with { type: 'json' };
 import { cleanEnv, copyMakeFiles } from '../support/make-sandbox.mts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -32,9 +33,25 @@ interface Php {
 const COMMIT_DATE = '2026-01-02T03:04:05Z';
 const COMMIT_EPOCH = String(Date.parse(COMMIT_DATE) / 1000);
 
+// The major release of LLVM that config/toolchain.json pins for the bindgen of ext-php-rs.
+/** The value at the keys `keys` of the JSON text `text`, or undefined where a key names no member of an object. */
+function jsonAt(text: string, ...keys: string[]): unknown {
+  let value: unknown = JSON.parse(text);
+  for (const key of keys) {
+    if (typeof value !== 'object' || value === null) return undefined;
+    const member: unknown = Object.getOwnPropertyDescriptor(value, key)?.value;
+    value = member;
+  }
+  return value;
+}
+
+const LLVM_MAJOR = String(jsonAt(readFileSync(path.join(ROOT, 'config/toolchain.json'), 'utf8'), 'llvm', 'version'));
+
 /** A copy of the Makefile with the stand-ins of one case. */
 interface Sandbox {
   dir: string;
+  /** The LLVM of the case, which LLVM_ROOT names: its clang answers the major release of config/toolchain.json. */
+  llvm: string;
   /** The PHP of the case, by its path: the Makefile puts the tools of the checkout, a PHP among them, before the PATH of a case. */
   php: string;
   sysroot: string;
@@ -75,6 +92,7 @@ esac
 pkgid) echo 'path+file:///checkout/packages/php-ext#polyspec-fsm-php-ext@1.2.3'; exit 0 ;;
 esac
 printf 'cargo\\tCARGO_TARGET_DIR=%s\\tPHP=%s\\tPHP_CONFIG=%s\\n' "$CARGO_TARGET_DIR" "$PHP" "$PHP_CONFIG" >> '${calls}'
+[ -z "$LIBCLANG_PATH" ] || printf 'llvm\\tLIBCLANG_PATH=%s\\tCLANG_PATH=%s\\n' "$LIBCLANG_PATH" "$CLANG_PATH" >> '${calls}'
 mkdir -p "$CARGO_TARGET_DIR/release"
 case "$*" in
 *polyspec-fsm-go*) printf 'library with debug sections\\n' > "$CARGO_TARGET_DIR/release/libpolyspec_fsm_go.a" ;;
@@ -151,6 +169,14 @@ printf 'zip of %s\\n' "$5" > "$4"
 while [ "$1" != --out-dir ]; do shift; done
 mkdir -p "$2" && printf 'wheel\\n' > "$2/polyspec_fsm-0.0.13-cp314-abi3-platform.whl"
 `);
+  // The LLVM of the release of the PHP extension: config/toolchain.json pins its major release, and the case holds a clang
+  // of that release and a libclang.
+  mkdirSync(path.join(dir, 'config'), { recursive: true });
+  copyFileSync(path.join(ROOT, 'config/toolchain.json'), path.join(dir, 'config/toolchain.json'));
+  const llvm = path.join(tmp, 'llvm');
+  program(path.join(llvm, 'bin/clang'), `case "$1" in -dumpversion) echo '${LLVM_MAJOR}.1.8' ;; *) exit 9 ;; esac\n`);
+  mkdirSync(path.join(llvm, 'lib'), { recursive: true });
+  writeFileSync(path.join(llvm, 'lib/libclang.so'), '');
   // The commit of HEAD, whose time is the SOURCE_DATE_EPOCH of a wheel.
   const git = (...args: string[]): void => {
     spawnSync('git', ['-C', dir, ...args], { env: { ...cleanEnv(), GIT_AUTHOR_DATE: COMMIT_DATE, GIT_COMMITTER_DATE: COMMIT_DATE, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@example.invalid', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@example.invalid' } });
@@ -158,25 +184,40 @@ mkdir -p "$2" && printf 'wheel\\n' > "$2/polyspec_fsm-0.0.13-cp314-abi3-platform
   git('commit', '-q', '--allow-empty', '-m', 'release');
   return {
     dir,
+    llvm,
     php: path.join(bin, 'php'),
     sysroot,
     env: { ...cleanEnv(), PATH: `${bin}:/usr/bin:/bin` },
-    calls: () => (existsSync(calls) ? readFileSync(calls, 'utf8').split('\n').filter(line => line !== '').map(line => line.split('\t')) : []),
+    calls: () => (existsSync(calls) ? readFileSync(calls, 'utf8').split('\n').filter((line: string) => line !== '').map(line => line.split('\t')) : []),
   };
 }
 
-/** Runs make with `args` in the sandbox. */
-function make(box: Sandbox, args: string[]): ReturnType<typeof spawnSync<string>> {
-  return spawnSync('make', ['--no-print-directory', ...args], { cwd: box.dir, encoding: 'utf8', env: box.env });
+/** Runs make with `args` in the sandbox, with the LLVM of the case. */
+function make(box: Sandbox, args: string[]): SpawnSyncReturns<string> {
+  return spawnSync('make', ['--no-print-directory', ...args, `LLVM_ROOT=${box.llvm}`], { cwd: box.dir, encoding: 'utf8', env: box.env });
 }
 
 // ---- release-go-static (GN-19b, S-470-4) --------------------------------------------------------------------------------
+
+// The generation of the Go binding is a prerequisite of the library; a case marks it as done, so make runs the recipe alone.
+const GENERATED_GO = ['-o', 'bindings-go'];
+
+test('release-go-static generates the Go binding first, so that a checkout without generated files builds', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  writeFileSync(path.join(box.dir, 'Cargo.lock'), '');
+  const ran = make(box, ['-n', 'release-go-static']);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const lines = ran.stdout.split('\n');
+  const generate = lines.findIndex(line => / generate --root \S+ --target go$/.test(line));
+  const build = lines.findIndex(line => line.includes('cargo build --release --locked -p polyspec-fsm-go'));
+  assert.ok(generate >= 0 && build > generate, ran.stdout);
+});
 
 test('release-go-static builds the Go library of the platform of the host and strips a copy with the llvm-strip of the toolchain', async t => {
   for (const { triple, go } of PLATFORMS) {
     await t.test(triple, t2 => {
       const box = sandbox(t2, triple);
-      const ran = make(box, ['release-go-static']);
+      const ran = make(box, [...GENERATED_GO, 'release-go-static']);
       assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
       const asset = path.join(box.dir, 'var/release/assets/go', go, 'libpolyspec_fsm_go.a');
       assert.equal(readFileSync(asset, 'utf8'), 'stripped\n');
@@ -200,7 +241,7 @@ test('release-go-static builds the Go library of the platform of the host and st
 
 test('release-go-static writes into RELEASE_ASSETS and builds into RELEASE_TARGET', t => {
   const box = sandbox(t, 'aarch64-apple-darwin');
-  const ran = make(box, ['release-go-static', 'RELEASE_ASSETS=out/assets', 'RELEASE_TARGET=out/target']);
+  const ran = make(box, [...GENERATED_GO, 'release-go-static', 'RELEASE_ASSETS=out/assets', 'RELEASE_TARGET=out/target']);
   assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
   assert.equal(readFileSync(path.join(box.dir, 'out/assets/go/darwin_arm64/libpolyspec_fsm_go.a'), 'utf8'), 'stripped\n');
   assert.ok(box.calls().some(call => call[0] === 'cargo' && call[1] === 'CARGO_TARGET_DIR=out/target'), JSON.stringify(box.calls()));
@@ -208,7 +249,7 @@ test('release-go-static writes into RELEASE_ASSETS and builds into RELEASE_TARGE
 
 test('release-go-static fails with 2 on a host that is no platform of the release, and builds nothing', t => {
   const box = sandbox(t, 'x86_64-pc-windows-msvc');
-  const ran = make(box, ['release-go-static']);
+  const ran = make(box, [...GENERATED_GO, 'release-go-static']);
   assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
   assert.match(ran.stderr, /release-go-static: the host x86_64-pc-windows-msvc is no platform of the release: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu, aarch64-apple-darwin/);
   assert.deepEqual(box.calls().filter(call => call[0] !== 'rustc'), []);
@@ -216,7 +257,7 @@ test('release-go-static fails with 2 on a host that is no platform of the releas
 
 test('a strip that fails leaves no library in the assets', t => {
   const box = sandbox(t, 'aarch64-unknown-linux-gnu', true);
-  const ran = make(box, ['release-go-static']);
+  const ran = make(box, [...GENERATED_GO, 'release-go-static']);
   assert.notEqual(ran.status, 0, `${ran.stdout}${ran.stderr}`);
   assert.equal(existsSync(path.join(box.dir, 'var/release/assets/go/linux_arm64/libpolyspec_fsm_go.a')), false);
 });
@@ -353,9 +394,9 @@ test('release-php-ext fails with 2 on a host that is no platform of the release,
 const GENERATED_NODE = ['-o', 'bindings-node', '-o', 'bindings-wasm'];
 
 /** The files of the npm archive `file` and the text of its package.json. */
-function archive(file: string): { files: string[]; manifest: Record<string, unknown> } {
-  const files = spawnSync('tar', ['-tzf', file], { encoding: 'utf8' }).stdout.split('\n').filter(line => line !== '').sort();
-  const manifest = JSON.parse(spawnSync('tar', ['-xzOf', file, 'package/package.json'], { encoding: 'utf8' }).stdout) as Record<string, unknown>;
+function archive(file: string): { files: string[]; manifest: string } {
+  const files = spawnSync('tar', ['-tzf', file], { encoding: 'utf8' }).stdout.split('\n').filter((line: string) => line !== '').sort();
+  const manifest = spawnSync('tar', ['-xzOf', file, 'package/package.json'], { encoding: 'utf8' }).stdout;
   return { files, manifest };
 }
 
@@ -369,8 +410,9 @@ test('release-npm-platform builds the addon of the host with the napi CLI and pa
       assert.equal(spawnSync('ls', ['-A', assets], { encoding: 'utf8' }).stdout, `polyspec-fsm-${platform}-0.0.13.tgz\n`);
       const { files, manifest } = archive(path.join(assets, `polyspec-fsm-${platform}-0.0.13.tgz`));
       assert.deepEqual(files, [`package/fsm.${platform}.node`, 'package/package.json']);
-      assert.equal(manifest.name, `@polyspec/fsm-${platform}`);
-      const work = path.join(realpathSync(box.dir), 'var/release/target/npm', platform);
+      assert.equal(jsonAt(manifest, 'name'), `@polyspec/fsm-${platform}`);
+      // The folder of the run is inside the npm package, which napi requires of a package folder.
+      const work = path.join(realpathSync(box.dir), 'packages/ts/npm', platform);
       const napi = box.calls().filter(call => call[0] === 'napi');
       assert.deepEqual(napi, [
         ['napi', 'build', '--platform', '--release', '--no-js', '--manifest-path', 'packages/ts/Cargo.toml', '--package-json-path', 'packages/ts/package.json', '--target-dir', 'var/release/target', '--output-dir', `${work}/addons`, '--target', triple, '--', '--locked'],
@@ -403,9 +445,9 @@ test('release-npm packs @polyspec/fsm with the platform packages in optionalDepe
     'package/wasm/generated/fsm_wasm.d.ts', 'package/wasm/generated/fsm_wasm.js', 'package/wasm/generated/fsm_wasm_bg.wasm',
     'package/wasm/generated/index.d.ts', 'package/wasm/generated/index.mjs', 'package/wasm/generated/state.mjs',
   ]);
-  assert.deepEqual(manifest.optionalDependencies, { '@polyspec/fsm-linux-x64-gnu': '0.0.13', '@polyspec/fsm-linux-arm64-gnu': '0.0.13', '@polyspec/fsm-darwin-arm64': '0.0.13' });
+  assert.deepEqual(jsonAt(manifest, 'optionalDependencies'), { '@polyspec/fsm-linux-x64-gnu': '0.0.13', '@polyspec/fsm-linux-arm64-gnu': '0.0.13', '@polyspec/fsm-darwin-arm64': '0.0.13' });
   // The tracked manifest names no platform package.
-  assert.equal(JSON.parse(readFileSync(path.join(box.dir, 'packages/ts/package.json'), 'utf8')).optionalDependencies, undefined);
+  assert.equal(jsonAt(readFileSync(path.join(box.dir, 'packages/ts/package.json'), 'utf8'), 'optionalDependencies'), undefined);
   assert.deepEqual(box.calls().filter(call => call[0] === 'cargo'), [
     ['cargo', 'build', '--release', '--locked', '-p', 'polyspec-fsm-wasm', '--target', 'wasm32-unknown-unknown'],
     ['cargo', 'CARGO_TARGET_DIR=var/release/target', 'PHP=', 'PHP_CONFIG='],
@@ -433,7 +475,7 @@ test('release-npm-platform and release-npm generate the Node binding first', t =
 // ---- release-go-module (GN-19f, S-470-8) -----------------------------------------------------------------------------------
 
 /** Runs release-go-module in the sandbox with the generator of the case, which prints `ref` and fails when `fails`. */
-function releaseGoModule(box: Sandbox, args: string[], ref: string | undefined, fails = false): ReturnType<typeof spawnSync<string>> {
+function releaseGoModule(box: Sandbox, args: string[], ref: string | undefined, fails = false): SpawnSyncReturns<string> {
   const tmp = path.dirname(box.dir);
   if (ref !== undefined) writeFileSync(path.join(tmp, 'ref'), ref);
   if (fails) writeFileSync(path.join(tmp, 'fails'), '');
@@ -604,4 +646,36 @@ test('release-binding-check runs the release check of binding on the contract', 
   const ran = make(box, ['release-binding-check', `BINDING=${path.join(path.dirname(box.dir), 'binding.mjs')}`]);
   assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
   assert.deepEqual(box.calls().filter(call => call[0] === 'binding'), [['binding', 'check', `${realpathSync(box.dir)}/packages/rust/interface.json`, '--release']]);
+});
+
+// ---- The LLVM of the PHP extension and the napi CLI (S-470-9) -------------------------------------------------------------
+
+test('release-php-ext builds with the libclang and the clang of the LLVM of config/toolchain.json', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  const ran = make(box, [...GENERATED_PHP, 'release-php-ext', `PHP=${box.php}`]);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  assert.deepEqual(box.calls().filter(call => call[0] === 'llvm'), [['llvm', `LIBCLANG_PATH=${box.llvm}/lib`, `CLANG_PATH=${box.llvm}/bin/clang`]]);
+});
+
+test('release-php-ext fails with 2 and builds nothing without the LLVM of config/toolchain.json', async t => {
+  const cases: [string, (box: Sandbox) => void, RegExp][] = [
+    ['no clang', box => { rmSync(path.join(box.llvm, 'bin/clang')); }, new RegExp(`needs the libclang and the clang of LLVM ${LLVM_MAJOR} \\(config/toolchain\\.json\\) in .*; make install-llvm installs it`)],
+    ['no libclang', box => { rmSync(path.join(box.llvm, 'lib/libclang.so')); }, /make install-llvm installs it/],
+    ['a clang of another release', box => { program(path.join(box.llvm, 'bin/clang'), "echo '22.1.0'\n"); }, new RegExp(`/bin/clang is clang 22\\.1\\.0, not ${LLVM_MAJOR} \\(config/toolchain\\.json\\)`)],
+  ];
+  for (const [name, change, message] of cases) {
+    await t.test(name, t2 => {
+      const box = sandbox(t2, 'x86_64-unknown-linux-gnu');
+      change(box);
+      const ran = make(box, [...GENERATED_PHP, 'release-php-ext', `PHP=${box.php}`]);
+      assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
+      assert.match(ran.stderr, message);
+      assert.deepEqual(box.calls().filter(call => call[0] === 'cargo'), []);
+    });
+  }
+});
+
+test('the napi CLI that the recipes run is the release that package.json pins', () => {
+  const pinned = jsonAt(readFileSync(path.join(ROOT, 'package.json'), 'utf8'), 'devDependencies', '@napi-rs/cli');
+  assert.equal(napi.version, pinned);
 });

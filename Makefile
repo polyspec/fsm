@@ -607,9 +607,10 @@ release_host = host=$$(rustc --print host-tuple) || exit 1; \
 # release-go-static builds the static library of the Go module (GN-19b, S-470-4) and strips the debug sections of a copy in
 # RELEASE_TARGET with the llvm-strip of the component llvm-tools of the toolchain, never the strip of PATH, which differs by
 # machine. The stripped copy enters the assets under another name and is renamed there, so the assets never hold a library
-# that is half written or not stripped.
+# that is half written or not stripped. The crate includes the generated files of the Go binding, which no checkout tracks, so
+# the recipe generates them first.
 .PHONY: release-go-static
-release-go-static:
+release-go-static: bindings-go
 	@$(call release_host,release-go-static); \
 	set -ex; \
 	CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-go; \
@@ -638,16 +639,27 @@ release-wheel: bindings-python
 # build, which must load it without a php.ini before it is packed, and the archive takes the name by which PIE finds a
 # pre-packaged binary: the version of the crate, the minor, the platform, and debug and zts as that PHP reports them. The
 # archive enters the assets under another name and is renamed there.
-.PHONY: release-php-ext
+# The bindgen of ext-php-rs loads a libclang through clang-sys, which takes the libclang of the highest LLVM that it finds, and
+# asks the clang of PATH for the directories of the headers that it includes. On a machine with several LLVM releases the two
+# differ: the ubuntu-26.04 runners hold LLVM 20, 21 and 22 with clang 21 as /usr/bin/clang, and libclang 22 failed on the x86
+# headers of clang 21. So the recipe gives the build the libclang (LIBCLANG_PATH) and the clang (CLANG_PATH) of the one LLVM
+# whose major release config/toolchain.json pins, from LLVM_ROOT: /usr/lib/llvm-<major> on Linux and the Homebrew formula
+# llvm@<major> on macOS unless it is given; make install-llvm installs it.
+LLVM_MAJOR = $(shell sed -n '/"llvm": {/,/}/s/^ *"version": "\([0-9]*\)".*/\1/p' config/toolchain.json)
+LLVM_ROOT ?= $(if $(filter Darwin,$(shell uname -s)),/opt/homebrew/opt/llvm@$(LLVM_MAJOR),/usr/lib/llvm-$(LLVM_MAJOR))
+.PHONY: release-php-ext install-llvm
 release-php-ext: bindings-php
 	@test -n "$(PHP)" || { echo 'release-php-ext: PHP is required, for example make release-php-ext PHP=php' >&2; exit 2; }
+	@test -n "$(LLVM_MAJOR)" || { echo 'release-php-ext: config/toolchain.json pins no major release of LLVM (llvm.version)' >&2; exit 2; }
+	@test -x "$(LLVM_ROOT)/bin/clang" && ls "$(LLVM_ROOT)/lib" | grep -q '^libclang' || { echo 'release-php-ext: the bindgen of ext-php-rs needs the libclang and the clang of LLVM $(LLVM_MAJOR) (config/toolchain.json) in $(LLVM_ROOT); make install-llvm installs it' >&2; exit 2; }
+	@test "$$("$(LLVM_ROOT)/bin/clang" -dumpversion | cut -d. -f1)" = "$(LLVM_MAJOR)" || { echo "release-php-ext: $(LLVM_ROOT)/bin/clang is clang $$("$(LLVM_ROOT)/bin/clang" -dumpversion), not $(LLVM_MAJOR) (config/toolchain.json)" >&2; exit 2; }
 	@$(call release_host,release-php-ext); \
 	php=$$(command -v '$(PHP)') || { echo 'release-php-ext: no PHP $(PHP) on PATH' >&2; exit 2; }; \
 	case "$$php" in /*) ;; *) php=$(CURDIR)/$$php ;; esac; \
 	config=$$(command -v '$(or $(PHP_CONFIG),$(PHP)-config)') || { echo 'release-php-ext: no php-config $(or $(PHP_CONFIG),$(PHP)-config) on PATH' >&2; exit 2; }; \
 	case "$$config" in /*) ;; *) config=$(CURDIR)/$$config ;; esac; \
 	set -ex; \
-	PHP="$$php" PHP_CONFIG="$$config" CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-php-ext; \
+	PHP="$$php" PHP_CONFIG="$$config" LIBCLANG_PATH=$(LLVM_ROOT)/lib CLANG_PATH=$(LLVM_ROOT)/bin/clang CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-php-ext; \
 	version=$$(cargo pkgid -p polyspec-fsm-php-ext); version=$${version##*@}; \
 	minor=$$("$$php" -n -r 'echo PHP_MAJOR_VERSION, ".", PHP_MINOR_VERSION;'); \
 	build=$$("$$php" -n -r 'echo PHP_DEBUG ? "-debug" : "", "-", PHP_ZTS ? "zts" : "nts";'); \
@@ -662,6 +674,15 @@ release-php-ext: bindings-php
 	mkdir -p "$$out"; \
 	cp "$$copy/$$name" "$$out/.$$name.part"; \
 	mv "$$out/.$$name.part" "$$out/$$name"
+
+# install-llvm installs the LLVM of config/toolchain.json with the package manager of the platform, which the release of the PHP
+# extension needs: the formula llvm@<major> of Homebrew on macOS, and the packages clang-<major> and libclang-<major>-dev of apt
+# on Linux, where a runner holds them already.
+install-llvm:
+	@test -n "$(LLVM_MAJOR)" || { echo 'install-llvm: config/toolchain.json pins no major release of LLVM (llvm.version)' >&2; exit 2; }
+	@if test -x "$(LLVM_ROOT)/bin/clang" && ls "$(LLVM_ROOT)/lib" | grep -q '^libclang'; then echo "install-llvm: LLVM $(LLVM_MAJOR) is installed in $(LLVM_ROOT)"; \
+	elif test "$$(uname -s)" = Darwin; then set -x; $(ONLINE) brew install llvm@$(LLVM_MAJOR); \
+	else set -x; sudo apt-get install --yes clang-$(LLVM_MAJOR) libclang-$(LLVM_MAJOR)-dev; fi
 
 # The platforms of the npm package, by the names of their platform packages (GN-19a), and the napi CLI of the devDependency
 # @napi-rs/cli of the root package.json, by its bin link.
@@ -680,11 +701,12 @@ release_pack = (cd $(1) && $(NPM) pack --ignore-scripts --pack-destination $(2))
 # release-npm-platform builds the Node addon of the platform of the host and packs its npm platform package (GN-19e,
 # S-470-7) with the napi CLI: napi build writes the addon, and create-npm-dirs and artifacts write the package of the platform
 # with a configuration of the run that names the triple of the host alone, because napi artifacts fails for a configured
-# platform whose addon another runner builds.
+# platform whose addon another runner builds. The folder of the run is packages/ts/npm/<platform>, which Git ignores: napi
+# refuses a package folder outside the package of --package-json-path when no workspace of npm holds both.
 .PHONY: release-npm-platform
 release-npm-platform: bindings-node
 	@$(call release_host,release-npm-platform); \
-	work=$(abspath $(RELEASE_TARGET))/npm/$$platform; \
+	work=$(CURDIR)/packages/ts/npm/$$platform; \
 	set -ex; \
 	rm -rf "$$work"; \
 	mkdir -p "$$work/pack"; \

@@ -35,6 +35,8 @@
 # Go module packages/go among them.
 /packages/ts/generated/
 /packages/ts/wasm/generated/
+# The folders of make release-npm-platform, in which napi writes and packs the npm package of a platform.
+/packages/ts/npm/
 /packages/python/generated/
 /packages/php-ext/generated/
 /packages/go/internal/ffi/generated/

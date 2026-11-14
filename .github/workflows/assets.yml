@@ -71,6 +71,10 @@ jobs:
       - name: Build the wheel
         if: ${{ !cancelled() }}
         run: make release-wheel
+      # The LLVM of config/toolchain.json, whose libclang and clang the bindgen of ext-php-rs uses.
+      - name: Install the LLVM of config/toolchain.json
+        if: ${{ !cancelled() }}
+        run: make install-llvm
       - name: Build the PHP extension
         if: ${{ !cancelled() }}
         run: make release-php-ext PHP=php
