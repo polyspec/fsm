@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: b43adb26b9fcc498d63ab18a152c8aae112d38ee955489cf4bc1f7c1a01a3317 -->
+<!-- source-sha256: c246c516a61a6d6b51d336b7fee81aa7deda5292a77666b92ec99af2e9c23136 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make release-go-module TAG=vX.Y.Z`가 릴리스의 Go module을 싣는다(S-470-8, plan C-11, binding GN-19f). 입력: 각 platform의 library가 `RELEASE_ASSETS/go`에 있는 tag의 checkout에서 `make release-go-module TAG=vX.Y.Z`. 이전 동작: Go module의 consumer가 읽는 commit과 tag `packages/go/vX.Y.Z`를 만드는 recipe가 없었다. 기대 동작: recipe는 Go 바인딩을 생성하고 `binding release-go-module --root <checkout> --tag <TAG> --libraries RELEASE_ASSETS/go --work RELEASE_TARGET/go-module`를 실행한 뒤, 명령이 출력한 reference `refs/tags/packages/go/<TAG>`를 `origin`에 push한다. 명령이 아무것도 출력하지 않으면(remote에 이미 tag가 있으면) 또는 명령이 실패하면 아무것도 push하지 않고, 다른 출력에는 실패한다. `TAG`가 없는 실행은 2로 실패하고 아무것도 실행하지 않는다. `make release-test`로 검증했다(40개 통과). 새 시험 여섯 개 가운데 다섯 개는 이전에 실패했다.
 - `make release-npm-platform`과 `make release-npm`이 릴리스의 npm 패키지를 build하고 묶는다(S-470-7, plan C-11, binding GN-19e, GN-3c). 입력: 릴리스의 host에서 `make release-npm-platform`, 그리고 `make release-npm WASM_BINDGEN=<wasm-bindgen>`. 이전 동작: 릴리스의 npm 패키지를 묶는 recipe가 없었다. 기대 동작: `release-npm-platform`은 새로 정확한 버전으로 고정한 devDependency `@napi-rs/cli` 3.10.12의 napi CLI로 addon을 build하고(`napi build --platform --release --no-js ... --target <host> -- --locked`), host만 이름 붙인 실행의 설정으로 `napi create-npm-dirs`와 `napi artifacts`가 platform 패키지를 쓰게 한 뒤 `RELEASE_ASSETS/npm/polyspec-fsm-<platform>-<version>.tgz`를 묶는다. `release-npm`은 생성된 Node loader, release로 build한 WASM 바인딩, 그리고 세 platform 패키지를 패키지 버전으로 담은 `optionalDependencies`를 가진 사본에서 `RELEASE_ASSETS/npm/polyspec-fsm-<version>.tgz`를 묶고, 추적되는 manifest에는 platform 패키지가 없다. 다른 host와 `WASM_BINDGEN`이 없는 실행은 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(34개 통과). 새 시험 다섯 개는 이전에 실패했다.
 - 루트 `Cargo.lock`이 polyspec-binding-core를 GN-3c와 GN-19f의 명령 `binding release-go-module`을 담은 binding `v1/rust-core`의 fa5954b7에 고정한다(S-470-3). 입력: `make bindings-check`와 `binding scaffold --root .`. 이전 동작: 고정한 ff4bd37은 둘 다 담지 않아, 릴리스의 Go module commit을 만들 recipe가 없었다. 기대 동작: 고정한 generator가 contract를 검사하고, `binding scaffold`와 `make bindings`가 추적되는 manifest와 생성 파일을 지금 그대로 쓴다. `make bindings-check`와 `make bindings`로 검증했고, 추적되는 파일은 바뀌지 않았다.
 - `make release-php-ext`가 생성물이 없는 checkout에서 build되고, `PHP`를 PATH 위의 이름으로 받는다(S-470-6). 입력: 새 checkout에서 `make release-php-ext PHP=<php>`, 또는 `PHP=php`. 이전 동작: recipe가 PHP 바인딩을 생성하지 않아 cargo가 `couldn't find file packages/php-ext/generated/lib.rs`로 멈췄고, `PHP`를 적힌 그대로 cargo에 넘겨 ext-php-rs의 build script가 `PHP=php`를 `php executable not found at php`로 거부했다. 기대 동작: `release-wheel`이 `bindings-python`에 의존하듯 recipe가 `bindings-php`에 의존하고, cargo를 시작하기 전에 `PHP`와 `PHP_CONFIG`를 PATH에서 절대 경로로 푼다. `make release-test`로 검증했다(26개 통과). 새 시험 두 개는 이전에 실패했다.

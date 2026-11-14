@@ -125,6 +125,19 @@ mkdir -p "$2" && for file in fsm_wasm.js fsm_wasm.d.ts fsm_wasm_bg.wasm; do prin
     mkdirSync(path.dirname(path.join(dir, 'packages/ts', file)), { recursive: true });
     writeFileSync(path.join(dir, 'packages/ts', file), `${file}\n`);
   }
+  // The git of PATH records a push and runs the git of the system for every other command.
+  program(path.join(bin, 'git'), `case "$1" in push) ${record}exit 0 ;; esac\nexec /usr/bin/git "$@"\n`);
+  // A generator of the command line: it records its arguments and the folders of the libraries, and prints the reference
+  // that the case names in the file ref.
+  writeFileSync(path.join(tmp, 'binding.mjs'), `import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
+const args = process.argv.slice(2);
+appendFileSync(${JSON.stringify(calls)}, ['binding', ...args].join('\\t') + '\\n');
+const libraries = args[args.indexOf('--libraries') + 1];
+appendFileSync(${JSON.stringify(calls)}, ['libraries', ...(existsSync(libraries) ? readdirSync(libraries).sort() : [])].join('\\t') + '\\n');
+const ref = ${JSON.stringify(path.join(tmp, 'ref'))};
+if (existsSync(ref)) process.stdout.write(readFileSync(ref, 'utf8'));
+process.exit(existsSync(${JSON.stringify(path.join(tmp, 'fails'))}) ? 1 : 0);
+`);
   // zip records its directory and writes the archive that it names.
   program(path.join(bin, 'zip'), `${record}printf 'zip\\tPWD=%s\\n' "$PWD" >> '${calls}'
 printf 'zip of %s\\n' "$5" > "$4"
@@ -414,4 +427,71 @@ test('release-npm-platform and release-npm generate the Node binding first', t =
     assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
     assert.ok(/ generate --root \S+ --target node$/m.test(ran.stdout), ran.stdout);
   }
+});
+
+// ---- release-go-module (GN-19f, S-470-8) -----------------------------------------------------------------------------------
+
+/** Runs release-go-module in the sandbox with the generator of the case, which prints `ref` and fails when `fails`. */
+function releaseGoModule(box: Sandbox, args: string[], ref: string | undefined, fails = false): ReturnType<typeof spawnSync<string>> {
+  const tmp = path.dirname(box.dir);
+  if (ref !== undefined) writeFileSync(path.join(tmp, 'ref'), ref);
+  if (fails) writeFileSync(path.join(tmp, 'fails'), '');
+  for (const { go } of PLATFORMS) {
+    mkdirSync(path.join(box.dir, 'var/release/assets/go', go), { recursive: true });
+  }
+  return make(box, ['-o', 'bindings-go', 'release-go-module', `BINDING=${path.join(tmp, 'binding.mjs')}`, ...args]);
+}
+
+test('release-go-module makes the commit and the tag of the Go module with binding and pushes the reference that it prints', t => {
+  const box = sandbox(t, 'aarch64-apple-darwin');
+  const ran = releaseGoModule(box, ['TAG=v1.2.3'], 'refs/tags/packages/go/v1.2.3\n');
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const real = realpathSync(box.dir);
+  assert.deepEqual(box.calls().filter(call => call[0] === 'binding' || call[0] === 'libraries' || call[0] === 'git'), [
+    ['binding', 'release-go-module', '--root', real, '--tag', 'v1.2.3', '--libraries', `${real}/var/release/assets/go`, '--work', `${real}/var/release/target/go-module`],
+    ['libraries', 'darwin_arm64', 'linux_amd64', 'linux_arm64'],
+    ['git', 'push', 'origin', 'refs/tags/packages/go/v1.2.3'],
+  ]);
+});
+
+test('release-go-module pushes nothing when the remote holds the tag already', t => {
+  const box = sandbox(t, 'aarch64-apple-darwin');
+  const ran = releaseGoModule(box, ['TAG=v1.2.3'], '');
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  assert.match(ran.stdout, /release-go-module: the remote holds the tag packages\/go\/v1\.2\.3 already/);
+  assert.deepEqual(box.calls().filter(call => call[0] === 'git'), []);
+});
+
+test('release-go-module pushes nothing when binding fails', t => {
+  const box = sandbox(t, 'aarch64-apple-darwin');
+  const ran = releaseGoModule(box, ['TAG=v1.2.3'], 'refs/tags/packages/go/v1.2.3\n', true);
+  assert.notEqual(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  assert.deepEqual(box.calls().filter(call => call[0] === 'git'), []);
+});
+
+test('release-go-module refuses an output that is not the reference of the tag, and pushes nothing', t => {
+  const box = sandbox(t, 'aarch64-apple-darwin');
+  const ran = releaseGoModule(box, ['TAG=v1.2.3'], 'refs/heads/main\n');
+  assert.notEqual(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  assert.match(ran.stderr, /release-go-module: binding printed refs\/heads\/main, not refs\/tags\/packages\/go\/v1\.2\.3/);
+  assert.deepEqual(box.calls().filter(call => call[0] === 'git'), []);
+});
+
+test('release-go-module fails with 2 without TAG, and runs nothing', t => {
+  const box = sandbox(t, 'aarch64-apple-darwin');
+  const ran = releaseGoModule(box, [], 'refs/tags/packages/go/v1.2.3\n');
+  assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
+  assert.match(ran.stderr, /release-go-module: TAG is required, for example make release-go-module TAG=v0\.0\.1/);
+  assert.deepEqual(box.calls(), []);
+});
+
+test('release-go-module generates the Go binding first', t => {
+  const box = sandbox(t, 'aarch64-apple-darwin');
+  writeFileSync(path.join(box.dir, 'Cargo.lock'), '');
+  const ran = make(box, ['-n', 'release-go-module', 'TAG=v1.2.3']);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const lines = ran.stdout.split('\n');
+  const generate = lines.findIndex(line => / generate --root \S+ --target go$/.test(line));
+  const release = lines.findIndex(line => line.includes(' release-go-module --root '));
+  assert.ok(generate >= 0 && release > generate, ran.stdout);
 });

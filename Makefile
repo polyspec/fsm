@@ -706,6 +706,28 @@ release-npm: bindings-node bindings-wasm
 	$(NODE) -e 'const fs = require("fs"); const [from, to, ...platforms] = process.argv.slice(1); const p = JSON.parse(fs.readFileSync(from, "utf8")); p.optionalDependencies = Object.fromEntries(platforms.map(platform => [`$${p.name}-$${platform}`, p.version])); fs.writeFileSync(to, JSON.stringify(p, null, 2) + "\n");' packages/ts/package.json "$$work/package/package.json" $(RELEASE_NPM_PLATFORMS); \
 	$(call release_pack,"$$work/package","$$work/pack")
 
+# release-go-module carries the Go module of the release TAG (GN-19f, S-470-8): on the checkout of that tag, after the
+# generation of the Go binding, binding release-go-module checks the library of each platform in RELEASE_ASSETS/go (GN-19b),
+# proves a commit that adds the generated files and the libraries to the tree of the tag with a consumer, and creates the
+# annotated tag packages/go/<TAG> at it, keeping its index, its repositories and the caches of Go in a folder of the run. The
+# command pushes nothing: the recipe pushes the reference that it prints, and nothing when it prints none, because the
+# remote holds that tag already. The folder of the run is made writable before it is removed, since Go writes its module
+# cache read-only.
+.PHONY: release-go-module
+release-go-module: bindings-go
+	@test -n "$$TAG" || { echo 'release-go-module: TAG is required, for example make release-go-module TAG=v0.0.1' >&2; exit 2; }
+	@work=$(abspath $(RELEASE_TARGET))/go-module; \
+	set -e; \
+	if [ -d "$$work" ]; then chmod -R u+w "$$work"; rm -rf "$$work"; fi; \
+	mkdir -p "$$work"; \
+	echo "$(NODE) $(BINDING) release-go-module --root $(CURDIR) --tag $$TAG --libraries $(abspath $(RELEASE_ASSETS))/go --work $$work"; \
+	ref=$$($(NODE) $(BINDING) release-go-module --root $(CURDIR) --tag "$$TAG" --libraries $(abspath $(RELEASE_ASSETS))/go --work "$$work"); \
+	case "$$ref" in \
+	'') echo "release-go-module: the remote holds the tag packages/go/$$TAG already" ;; \
+	"refs/tags/packages/go/$$TAG") set -x; git push origin "$$ref" ;; \
+	*) echo "release-go-module: binding printed $$ref, not refs/tags/packages/go/$$TAG" >&2; exit 1 ;; \
+	esac
+
 # release-test runs the tests of the recipes of the assets (tests/release) against stand-ins of the tools that they start.
 .PHONY: release-test
 release-test:
