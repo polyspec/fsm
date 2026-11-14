@@ -27,10 +27,10 @@
 #   release-undraft makes the release public
 # The job tag runs the steps up to release-tag and gives TAG and VERSION to the later jobs (release-tag-output). The job assets
 # calls assets.yml with the tag (S-470-9): it builds the assets of each platform on the runner of that platform, after the release
-# check of binding (make release-binding-check), which fails while the dependency lines of polyspec-binding-core name the branch
-# v1/rust-core (CK-70), so no release of fsm passes until binding releases a tag. The job release runs the other steps on the
-# tree of the tag, with the assets of the job assets in var/release/assets. A failed step leaves the release a draft and fails
-# the run.
+# check of binding (make release-binding-check), which fails while a dependency line of polyspec-binding-core names a branch or a
+# commit (CK-70), so a release of fsm passes only while every line names a released tag of binding. The job release runs the
+# other steps on the tree of the tag, with the assets of the job assets in var/release/assets. A failed step leaves the release a
+# draft and fails the run.
 #
 # actions/download-artifact v8.0.2.
 name: release

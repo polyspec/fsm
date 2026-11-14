@@ -1,8 +1,8 @@
 # The assets of each platform of the core and its bindings (docs/plans/fsm-v1/plan.md, C-11; checklist S-470-9; binding GN-19a,
 # GN-19g). The workflow ci calls it for the commit of its run, and the workflow release calls it for the tree of the tag that it
 # releases, with release true, which runs the release check of binding before a job builds (make release-binding-check). That
-# check fails while the dependency lines of polyspec-binding-core name the branch v1/rust-core (CK-70): a release of fsm needs a
-# released tag of binding, and CI builds the assets without the check.
+# check fails while a dependency line of polyspec-binding-core names a branch or a commit (CK-70), the development form: a
+# release of fsm needs a released tag of binding, which every line names, and CI builds the assets without the check.
 #
 # The job platform runs on the runner of its platform, ubuntu-26.04, ubuntu-26.04-arm or macos-15, the one exception to the
 # runner rule of C-10: the asset of a platform is linked and loaded only on that platform, because no tool of the release

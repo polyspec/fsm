@@ -758,9 +758,9 @@ release-go-module: bindings-go
 	esac
 
 # release-binding-check runs the release check of binding on the contract (GN-19a, S-470-9), which the release workflow runs
-# before it builds an asset of a tag. It fails while a dependency line of polyspec-binding-core names the branch
-# v1/rust-core (CK-70), the development form that the root Cargo.toml and the binding crates use until binding releases a
-# tag: a release names the version =X.Y.Z or the tag vX.Y.Z. CI builds the assets of a commit without this check.
+# before it builds an asset of a tag. It fails while a dependency line of polyspec-binding-core names a branch or a commit
+# (CK-70), the development form: a release names the version =X.Y.Z or the tag vX.Y.Z, and the root Cargo.toml and the binding
+# crates name the tag v0.0.2 of binding. CI builds the assets of a commit without this check.
 .PHONY: release-binding-check
 release-binding-check: $(if $(filter $(BINDING_SCRIPT),$(BINDING)),$(BINDING_DEP))
 	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json --release
