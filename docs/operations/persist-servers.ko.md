@@ -1,5 +1,5 @@
 <!-- doc-id: operations-persist-servers -->
-<!-- source-sha256: 897b209f91a270456b9cf4efd5844f7259a80935307092c645b50fae4eab09bb -->
+<!-- source-sha256: 0d4971d574074bfc341f22aa09a4a7a9e3a9b261c34e2ec7e3b3a8bf839fc9cf -->
 # 영속성 테스트의 서버
 
 [English](persist-servers.md)
@@ -124,7 +124,8 @@ runner 형태에서 단계 3부터 5는 job 두 개다. `run.sh`는 `build`와 �
 `bay job wait`는 기다림이 job보다 먼저 끝날 때에도 1이기 때문이다. `build`는 `runner.sh build`를 실행한다. system package, Node.js, rustup, `tree.bundle`의
 clone, `make bootstrap`, `make install`이고, `work/` 아래에 설치한다. bay는 `bay up`처럼 `check`의 container 전에 서버를
 시작하고, `check`는 DSN을 환경에 받아 `runner.sh check make ci-targets TARGETS="..."`를 실행한다. bay는 각 job 뒤에
-project를 내린다. signal은 실행 중인 단계를 끝내고 끝나지 않은 job을 취소한다. 끝을 알 수 없는 job도 취소한다. 그 job이
+project를 내리고, part `check`는 그 job이 끝나면 project의 `bay down`을 실행한다. job의 실행을 넘겨받은 agent는 서버를
+돌게 두기 때문이다(S-481). signal은 실행 중인 단계를 끝내고 끝나지 않은 job을 취소한다. 끝을 알 수 없는 job도 취소한다. 그 job이
 읽는 디렉터리가 실행 뒤에 지워지기 때문이다.
 
 종료 코드는 host 형태에서 target의 종료 코드이고, runner 형태에서 두 job이 성공하면 0, 성공하지 않은 job에 1, 끝을 알 수

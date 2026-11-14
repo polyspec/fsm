@@ -336,7 +336,8 @@ function runFile(name: string, variables: Record<string, string>, command: reado
   ];
   // The runner form: the two jobs, which bay runs in a process of its own. The key returns the same job to a caller that was
   // cut off before it read the id. bay runs the job build with no server, starts the servers before the container of the
-  // job check and takes the project down after each job.
+  // job check and takes the project down after each job; follow runs bay down after the job check too, since an agent that
+  // took over the run of a job left its servers running (S-481).
   const jobbed = [
     '# queue queues the job of the part $1, sets job to its id and writes it to job-$1; it fails when bay queues none.',
     'queue() {',
@@ -535,6 +536,15 @@ function runFile(name: string, variables: Record<string, string>, command: reado
       '\tif [ -z "$finished" ]; then',
       '\t\techo "persist-servers: the job $1 $job of the project $project has not ended, bay job wait exited with $waited; sh $directory/run.sh wait $1 follows it again" >&2',
       '\t\treturn 3',
+      '\tfi',
+      '\t# The servers of the job check belong to the run: bay down removes them once the job ended. bay takes the project',
+      '\t# down after a job, but not after its agent took over the run of the job, and bay down ends with 0 for a project that',
+      '\t# holds no container (S-481).',
+      '\tif [ "$1" = check ]; then',
+      '\t\tstep down -f "$compose" -p "$project" down || {',
+      '\t\t\techo "persist-servers: bay down failed; the containers of the project $project may still run: run bay -f $compose -p $project down" >&2',
+      '\t\t\treturn 1',
+      '\t\t}',
       '\tfi',
       '\t[ -n "$succeeded" ] && return 0',
       '\techo "persist-servers: the job $1 $job of the project $project did not succeed, bay job wait exited with $waited" >&2',

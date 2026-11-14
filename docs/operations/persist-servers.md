@@ -135,7 +135,8 @@ job by its record, and queues `check` only after `build` succeeded. The record d
 `bay job wait`, which is 1 also when the wait ends before the job. `build` runs `runner.sh build`: the system packages, Node.js, rustup, the clone of
 `tree.bundle`, `make bootstrap` and `make install`, below `work/`. bay starts the servers before the container of `check`,
 as `bay up` does, and `check` runs `runner.sh check make ci-targets TARGETS="..."` with the DSNs in its environment. bay
-takes the project down after each job. A signal ends the step that runs and cancels the job that has not ended, and so
+takes the project down after each job, and the part `check` runs `bay down` of the project once its job ended, since an
+agent that took over the run of a job leaves its servers running (S-481). A signal ends the step that runs and cancels the job that has not ended, and so
 does a job whose end is not known, because the directory that it reads is removed after the run.
 
 The exit code of the host form is that of the targets; of the runner form 0 when both jobs succeeded, 1 for a job that

@@ -478,24 +478,30 @@ function hosted(project: Named, last: 'images' | 'up'): string[][] {
   return last === 'images' ? all.slice(0, 4) : [...all, ...ending];
 }
 
-/** The commands of bay of the job of `part` of `project`: it is queued with the commit of the bundle as its key, its output is shown, it is waited for and its record is printed. */
+/**
+ * The commands of bay of the job of `part` of `project`: it is queued with the commit of the bundle as its key, its output is
+ * shown, it is waited for and its record is printed; after the job check, whose end is known, bay down removes the servers.
+ */
 function part(project: Named, name: 'build' | 'check'): string[][] {
   const words = name === 'build' ? building(project) : project;
   const id = JOBS[name];
-  return [[...words, 'job', 'add', '-key', COMMIT, name], [...words, 'job', 'logs', '-f', '-timeout', '24h', id], [...words, 'job', 'wait', '-timeout', '24h', id], [...words, 'job', 'show', '-json', id]];
+  return [
+    [...words, 'job', 'add', '-key', COMMIT, name], [...words, 'job', 'logs', '-f', '-timeout', '24h', id], [...words, 'job', 'wait', '-timeout', '24h', id], [...words, 'job', 'show', '-json', id],
+    ...(name === 'check' ? [[...project, 'down']] : []),
+  ];
 }
 
 /**
  * The commands of bay of a run of the runner form to the step `last`: the version and the three plans of the writing, one
  * of the servers alone for their hosts and one of each whole file, then the steps of run.sh: the images, and the job build
- * and then the job check, each queued, shown, waited for and printed.
+ * and then the job check, each queued, shown, waited for and printed, and bay down after the job check.
  */
 function jobbed(project: Named, last: 'plans' | 'images' | 'add' | 'build' | 'check'): string[][] {
   const all = [
     WRITTEN, [...project, 'plan', '--json'], [...project, 'plan', '--json'], [...building(project), 'plan', '--json'], VERSIONED, [...project, 'images'],
     ...part(project, 'build'), ...part(project, 'check'),
   ];
-  return all.slice(0, { plans: 4, images: 6, add: 7, build: 10, check: 14 }[last]);
+  return all.slice(0, { plans: 4, images: 6, add: 7, build: 10, check: 15 }[last]);
 }
 
 // The lines of a report: the time and an event, and the start and the exit code of a step.
@@ -709,7 +715,7 @@ test('write of the runner form writes the directory of a run and prints it, and 
   // The report of the two runs of the directory: the time of each step and the id of each job.
   const parted = (name: 'build' | 'check'): string[] => [...stepped(`add ${name}`), event(`job ${name} ${JOBS[name]}`), ...stepped(`logs ${name}`), ...stepped(`wait ${name}`), ...stepped(`show ${name}`)];
   assert.deepEqual(readFileSync(path.join(directoryOf(project), 'report.txt'), 'utf8').split('\n'), [
-    ...stepped('version'), ...stepped('images'), ...parted('build'), ...parted('check'), event('run exit 0'),
+    ...stepped('version'), ...stepped('images'), ...parted('build'), ...parted('check'), ...stepped('down'), event('run exit 0'),
     ...stepped('version'), ...stepped('pull'), event('run exit 0'),
     '',
   ]);
@@ -784,6 +790,27 @@ test('sh run.sh wait <part> ends with 1 for a job that ended and did not succeed
   assert.equal(waited.status, 2, waited.stderr);
   assert.match(waited.stderr, new RegExp(`^persist-servers: the job check of the project ${project[4]} is not queued here: run sh ${path.join(directoryOf(project), 'run.sh')} add check$`, 'm'));
   assert.deepEqual(staged.calls().slice(before), [VERSIONED]);
+});
+
+// The servers of the job check belong to the run. bay takes the project down after a job, but an agent that took over the run
+// of a job after a restart left both servers of a finished job check running; so the run itself runs bay down after the job
+// check ended, whether it succeeded or not, and bay down ends with 0 for a project that holds no container (S-481).
+test('after the job check ended, the run and sh run.sh wait check run bay down of the project, and a failed bay down fails them', t => {
+  for (const [stand, code] of [[{}, 0], [{ checkFails: true }, 1]] as const) {
+    const staged = stage(t, stand);
+    const project = written(staged);
+    assert.equal(runSh(staged, project, ['add', 'check']).status, 0);
+    const before = staged.calls().length;
+    const waited = runSh(staged, project, ['wait', 'check']);
+    assert.equal(waited.status, code, `${JSON.stringify(stand)}: ${waited.stderr}`);
+    assert.deepEqual(staged.calls().slice(before).at(-1), [...project, 'down'], JSON.stringify(staged.calls()));
+  }
+  const failing = stage(t, { downFails: true });
+  const project = written(failing);
+  assert.equal(runSh(failing, project, ['add', 'check']).status, 0);
+  const waited = runSh(failing, project, ['wait', 'check']);
+  assert.equal(waited.status, 1, waited.stderr);
+  assert.match(waited.stderr, new RegExp(`^persist-servers: bay down failed; the containers of the project ${project[4]} may still run: run bay -f ${path.join(directoryOf(project), 'compose.yaml')} -p ${project[4]} down$`, 'm'));
 });
 
 // The whole run judges each job as wait does: a job whose end is not known is cancelled, because the run removes the
