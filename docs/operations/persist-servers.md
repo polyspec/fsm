@@ -3,28 +3,31 @@
 
 [한국어](persist-servers.ko.md)
 
-The persistence tests of PostgreSQL and MySQL run on servers of a Compose project that `bay` runs. A run has two forms
-with the same steps. In the host form, the default, the targets are processes of the machine that starts them. In the
-runner form they run in a service `runner` of the project, for a machine whose host holds `sh` and `bay` alone. This
-document is the procedure; the decision and its reasons are in
-[the plan](../plans/fsm-v1/plan.md), C-6, and the open work is in [the checklist](../plans/fsm-v1/checklist.md), S-475 and
-its sub-items.
+The persistence tests of PostgreSQL and MySQL run on servers of a Compose project that `bay` runs. A run has two forms. In
+the host form, the default, the targets are processes of the machine that starts them. In the runner form, for a machine
+whose host holds `sh` and `bay` alone, the run is two jobs of bay: `build` installs the tools of the repository with no
+server, and `check` runs the targets with the servers. This document is the procedure; the decision and its reasons are
+in [the plan](../plans/fsm-v1/plan.md), C-6, and the open work is in [the checklist](../plans/fsm-v1/checklist.md), S-475
+and its sub-items.
 
 ## What a machine needs
 
 - The machine that writes a run: the checkout with its tools and `bay` on PATH, and `git` for the runner form. It is a
   machine of development or a runner of CI.
 - The machine that executes a run of the host form: the same machine, with the machine setup of bay applied.
-- The machine that executes a run of the runner form: `sh`, `bay` with its machine setup applied, and the container engine
-  of bay. Nothing else of its host is used. It may be the same machine or another one.
+- The machine that executes a run of the runner form: `sh`, `bay` with its machine setup applied and the jobs of bay
+  (`x-bay.job`, bay 0.0.7), and the container engine of bay. Nothing else of its host is used. It may be the same machine
+  or another one.
 - The images that `config/containers.json` pins by their digests, in the store of bay: PostgreSQL 17.11 and MySQL 8.4.11,
-  and for the runner form Debian `trixie-20261104`, the image of the runner.
-- For the runner form the network, in each run: the runner installs its system packages, Node.js, rustup and the packages of
-  the locks again, because its container is new, and the first three have no pinned digest (S-475-8).
+  and for the runner form Debian `trixie-20261104`, the image of the jobs.
+- For the runner form the network, in each run: each job installs the system packages into its new container, and the
+  job `build` installs Node.js, rustup and the packages of the locks again; the first three have no pinned digest
+  (S-475-8).
 
 bay is a tool of the machine, as make is. A run uses the `bay` of PATH as it is and compares no release; it requires the
-schema 1 of the contract of `bay version --json`. A person installs bay on a machine of development, because its setup,
-`bay install`, asks for the administrator password; no target does it there.
+schema 1 of the contract of `bay version --json`, and the runner form requires that `bay plan --json` names each part as
+a job. A person installs bay on a machine of development, because its setup, `bay install`, asks for the administrator
+password; no target does it there.
 
 `BAY` holds the words that start bay, and it is `bay` when it is not set. Set it where bay must be started in another way:
 on a machine where the state of bay belongs to root and the user has `sudo` without a password, `BAY="sudo -n bay"`.
@@ -41,53 +44,96 @@ make persist-servers-write TARGETS="db-test-postgres db-test-mysql"
 - `make persist-images` pulls the three images with `bay pull`. It is the only target that downloads an image.
 - `make persist-servers TARGETS="..."` writes the directory of a run of the host form, executes it and removes it: the
   targets are processes of this machine. `make check` and `make ci-suite` run their targets through it.
-- `make persist-servers-runner TARGETS="..."` does the same in the runner form, on the machine that wrote the directory.
-- `make persist-servers-write TARGETS="..."` writes a directory of the runner form and prints its path, for a run on another
-  machine: move the directory there, run `sh <directory>/run.sh`, and remove the directory afterwards.
-  `sh <directory>/run.sh pull` pulls the images there.
+- `make persist-servers-runner TARGETS="..."` writes a directory of the runner form, runs its two jobs on this machine,
+  waits for them and removes the directory.
+- `make persist-servers-write TARGETS="..."` writes a directory of the runner form and prints its path, for a run on
+  another machine (below).
 
 In the runner form the targets run on the committed tree of the branch of the checkout: commit before such a run.
 
+## A run on another machine
+
+A job runs in a process of the agent of bay on the machine that holds it and keeps its state, its exit code, its time and
+its output, so a connection that ends while the job runs ends no job and loses no result. The machine of development
+queues each job there over `ssh` and waits for it through the peer link of bay. `<machine>` is the `ssh` host,
+`<remote>` a directory there, and `<peer>` the name of that machine as an approved peer of the bay of this machine.
+
+```sh
+directory=$(make -s persist-servers-write TARGETS="db-test-postgres db-test-mysql")
+project=${directory##*/}
+scp -r "$directory" <machine>:<remote>/
+ssh <machine> sh <remote>/$project/run.sh pull          # only when the images are not there
+build=$(ssh <machine> sh <remote>/$project/run.sh add build)
+bay job wait -peer <peer> -timeout 24h "$build"
+check=$(ssh <machine> sh <remote>/$project/run.sh add check)
+bay job wait -peer <peer> -timeout 24h "$check"
+bay job show -peer <peer> "$check"
+bay job logs -peer <peer> "$check"
+ssh <machine> rm -r <remote>/$project
+```
+
+- Queue `check` only after `bay job wait` of `build` ended with 0: `check` runs on what `build` installed.
+- `sh run.sh add <part>` queues the job with the commit of the bundle as its key, so after a connection that ended before
+  the id was read, the same command returns the same job and queues no second one.
+- `bay job wait -peer` reads the job again when the link drops, and ends with 0 for a job that succeeded and 1 for one
+  that did not. When its bound ends first, the job runs on: wait again with the same id.
+- `bay job logs -peer` prints the end of the output; the whole output is the file that `bay job show` names, on that
+  machine.
+- Remove the directory there after the last job ended. `runner.sh` gave the files of `work/` to the owner of the
+  directory, so no rights of the container are needed.
+
 ## The directory of a run
 
-`var/persist-servers/fsm-persist-<pid>-<random>` holds `compose.yaml` and `run.sh`, and in the runner form `runner.sh` and
-`tree.bundle`, the Git bundle of the branch. The runner mounts this directory read-only and nothing of the checkout.
-`run.sh` writes `report.txt` into it.
+`var/persist-servers/fsm-persist-<pid>-<random>` holds `compose.yaml` and `run.sh`. In the runner form `compose.yaml`
+also holds the job `check`, and the directory also holds `compose.build.yaml`, the job `build` alone, `runner.sh`, the
+command of the two jobs, and `tree.bundle`, the Git bundle of the branch. Each job mounts this directory writable and
+nothing of the checkout; the job `build` writes the tools and the clone below `work/`, on which the job `check` runs.
+`run.sh` writes `report.txt` into the directory.
 
 ## The report and the memory of a run
 
-`report.txt` holds one line for each event, the time in UTC and the event: `<step> start` and `<step> exit <code>` for the
-steps `version`, `images`, `up`, `command` and `down`, `memory.peak <service> <bytes>` for each service, and
-`run exit <code>`. The run shows each line as `persist-servers: <line>`; the targets that remove the directory leave these
-lines alone. The memory of a service is the highest use that the cgroup of its container recorded, read with
-`bay exec <service> cat /sys/fs/cgroup/memory.peak` before the project is removed; `not read` stands for a container that
-has no such file.
+`report.txt` holds one line for each event, the time in UTC and the event: `<step> start` and `<step> exit <code>` for
+each step, and `run exit <code>`. The steps are `version` and `images`, then `up`, `command` and `down` in the host form,
+and in the runner form `add <part>`, `logs <part>`, `wait <part>` and `show <part>` for `build` and then `check`, with the
+line `job <part> <id>`. The host form also writes `memory.peak <service> <bytes>` for each service, the highest use that
+the cgroup of its container recorded, read with `bay exec <service> cat /sys/fs/cgroup/memory.peak` before the project is
+removed; `not read` stands for a container that has no such file. In the runner form `bay job show` prints the record of
+each job, which holds its memory peak where the machine reports one. The run shows each line as `persist-servers: <line>`;
+the targets that remove the directory leave these lines alone.
 
 A machine may hold less memory than the services of a run take together: on a Linux machine of 3.7 GB the containers of bay
-slow down at 2.6 GB together and their processes are ended at 3.0 GB. To limit a service, add `"memory": "<size>"`, such as
-`"768m"`, to the pin of its image in `config/containers.json`; the Compose file of a run then holds it as `mem_limit` of
-that service. No pin holds a value yet. Choose one from the peak of a report, above it: a limit below what a service needs
-ends its processes.
+slow down at 2.6 GB together and their processes are ended at 3.0 GB. The pin of each image in `config/containers.json`
+holds `memory`, which the Compose file holds as `mem_limit` of that service: PostgreSQL `448m` and MySQL `640m`, above
+their peaks of 380 MiB and 552 MiB, and the runner `2560m`, above the peak of 2506 MiB of its installation. The job
+`build` runs with no server, so the installation and the servers do not hold their memory at once. A limit below what a
+service needs ends its processes: raise a value from the peak of a report.
 
 ## What `run.sh` does
 
-Each step but the command of the host form is one command of `bay -f <directory> -p <project>`; in the runner form
-`run.sh` starts no other program but `date`, for the time of its report.
+Each step but the command of the host form is one command of `bay -f <file> -p <project>`; in the runner form `run.sh`
+starts no other program but `date`, for the time of its report.
 
 1. `bay version --json`: the first line of the record names the bay that ran.
 2. `bay images`: an image that the store lacks fails the run and names `make persist-images`.
-3. `bay up -no-pull`: it returns after both servers are healthy. Each server declares a `healthcheck` that asks it over TCP
-   in its container, `pg_isready` and `mysqladmin ping --protocol=tcp`. The run waits for that return alone. The bound is in
-   the Compose file: a start period of 300 s for the initialization of an image, then 3 failures, one ask each second.
-   Measured on a Linux arm64 machine: MySQL healthy after 70 s, PostgreSQL after 11 s.
-4. The command, `make ci-targets TARGETS="..."`, with the four `FSM_TEST_*` DSNs, which name the host and the port of each
-   server as `bay plan --json` gave them when the directory was written. In the host form it is a process of the host with
-   the DSNs in its environment. In the runner form it is `bay exec runner sh /persist-run/runner.sh <command>`: `runner.sh`
-   installs the system packages, Node.js and rustup, clones `tree.bundle`, runs `make bootstrap` and `make install` and then
-   the targets.
-5. `bay down`, by a trap: also when a step failed and after SIGINT, SIGTERM and SIGHUP, which first end the step that runs.
+3. The host form: `bay up -no-pull` returns after both servers are healthy. Each server declares a `healthcheck` that
+   asks it over TCP in its container, `pg_isready` and `mysqladmin ping --protocol=tcp`. The run waits for that return
+   alone. The bound is in the Compose file: a start period of 300 s for the initialization of an image, then 3 failures,
+   one ask each second. Measured on a Linux arm64 machine: MySQL healthy after 70 s, PostgreSQL after 11 s.
+4. The host form: the command, `make ci-targets TARGETS="..."`, a process of the host with the four `FSM_TEST_*` DSNs in
+   its environment, which name the host and the port of each server as `bay plan --json` gave them when the directory was
+   written.
+5. The host form: `bay down`, by a trap: also when a step failed and after SIGINT, SIGTERM and SIGHUP, which first end the
+   step that runs.
 
-The exit code is that of the targets, 1 for a step that failed before them, and 130, 143 and 129 after the three signals.
+In the runner form steps 3 to 5 are the two jobs. For `build` and then `check`, `run.sh` runs `bay job add -key <commit>
+<part>`, `bay job logs -f -timeout 24h <id>`, `bay job wait -timeout 24h <id>` and `bay job show <id>`, and queues
+`check` only after `build` succeeded. `build` runs `runner.sh build`: the system packages, Node.js, rustup, the clone of
+`tree.bundle`, `make bootstrap` and `make install`, below `work/`. bay starts the servers before the container of `check`,
+as `bay up` does, and `check` runs `runner.sh check make ci-targets TARGETS="..."` with the DSNs in its environment. bay
+takes the project down after each job. A signal ends the step that runs and cancels the job that has not ended.
+
+The exit code of the host form is that of the targets; of the runner form 0 when both jobs succeeded and 1 for a job that
+did not; and 1 for a step that failed before, and 130, 143 and 129 after the three signals.
 
 ## Failures
 
@@ -96,9 +142,13 @@ The exit code is that of the targets, 1 for a step that failed before them, and 
 | `scripts/bay.mts: bay is not found on PATH` | PATH holds no bay, or not the program that `BAY` names | Install bay and run `bay install`, or correct `BAY` |
 | `scripts/bay.mts: the contract of bay is the schema <n>` | The bay of the machine has another contract than the one that the files of a run read | Use a bay of the schema 1, or change the files of a run and the stand-in of the tests for the new contract |
 | `persist-servers: bay plan --json names no host and port of the service <service>` | The JSON of `bay plan` holds no such service, host or port; the JSON follows the line | Compare the JSON with the fields `services[].name`, `host` and `port` |
+| `persist-servers: bay plan --json names the service <part> of the project <project> as no job` | The bay of the machine does not read `x-bay.job`; the JSON follows the line | Install a bay that runs jobs, 0.0.7 or later |
 | `persist-servers: an image of the project <project> is not installed` | The store of bay lacks an image | Run `make persist-images`, or `sh <directory>/run.sh pull` on the machine of the run |
 | `persist-servers: bay up failed before the servers of the project <project> were healthy` | bay refused the file, a part of the machine setup is missing, or a server did not start or did not get healthy; the lines of bay above say which | Read those lines; for a missing part of the setup run `bay install`. The run already removed the project |
+| `persist-servers: bay job add failed for the job <part> of the project <project>` | bay refused the file or the agent of bay did not answer; the lines of bay above say which | Read those lines; `bay job list` shows the queue of the machine |
 | `persist-servers: bay down failed` | bay did not remove the project; its containers may still run. The directory stays and holds the file `down-failed` | Run the command that the line shows, `bay -f <directory> -p <project> down`, then remove the directory |
+
+A job that did not succeed ends `bay job wait` with 1: `bay job show <id>` names its exit code and the file of its output.
 
 ## bay on a runner of CI
 
@@ -113,6 +163,7 @@ names changes the files of a run and the stand-in `bay` of the tests in the same
 
 ## What is not verified
 
-- A run of the files that the script writes, with a real bay, in either form (S-475-7). Measured with files of the runner
-  form written by hand: `db-test-postgres` and `db-test-mysql` pass in a runner on a Linux arm64 machine.
-- The steps of the job `check` on `ubuntu-26.04-arm` (S-475-5).
+- A run of the files that the script writes, with a real bay, in either form (S-475-7, S-475-11). Measured with files of
+  the runner form of one phase: `db-test-postgres` and `db-test-mysql` passed in a runner on a Linux arm64 machine. Not
+  measured: the two jobs, and whether the targets of the job `check` and the servers stay below 3.0 GB together.
+- The steps of the job `check` of CI on `ubuntu-26.04-arm` (S-475-5).
