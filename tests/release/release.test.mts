@@ -4,7 +4,7 @@
 // their arguments and write the files that the real tools write.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
@@ -15,9 +15,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 // The platforms of a release (GN-19a): the Rust triple of the host and the directory of the Go module that holds its library.
 const PLATFORMS = [
-  { triple: 'x86_64-unknown-linux-gnu', go: 'linux_amd64', pie: 'x86_64-linux-glibc' },
-  { triple: 'aarch64-unknown-linux-gnu', go: 'linux_arm64', pie: 'arm64-linux-glibc' },
-  { triple: 'aarch64-apple-darwin', go: 'darwin_arm64', pie: 'arm64-darwin-bsdlibc' },
+  { triple: 'x86_64-unknown-linux-gnu', platform: 'linux-x64-gnu', go: 'linux_amd64', pie: 'x86_64-linux-glibc' },
+  { triple: 'aarch64-unknown-linux-gnu', platform: 'linux-arm64-gnu', go: 'linux_arm64', pie: 'arm64-linux-glibc' },
+  { triple: 'aarch64-apple-darwin', platform: 'darwin-arm64', go: 'darwin_arm64', pie: 'arm64-darwin-bsdlibc' },
 ] as const;
 
 /** The PHP of a case: its minor, whether it is a thread-safe or a debug build, and whether the extension fails to load. */
@@ -79,6 +79,7 @@ mkdir -p "$CARGO_TARGET_DIR/release"
 case "$*" in
 *polyspec-fsm-go*) printf 'library with debug sections\\n' > "$CARGO_TARGET_DIR/release/libpolyspec_fsm_go.a" ;;
 *polyspec-fsm-php-ext*) for ext in so dylib; do printf 'extension\\n' > "$CARGO_TARGET_DIR/release/libpolyspec_fsm.$ext"; done ;;
+*polyspec-fsm-wasm*) mkdir -p "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release" && printf 'wasm\\n' > "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/polyspec_fsm_wasm.wasm" ;;
 esac
 `);
   // The PHP of the case answers the code of -r: its minor, its build, and the load check, which reads the extension of -d.
@@ -91,6 +92,39 @@ case "$code" in
 esac
 `);
   program(path.join(bin, 'php-config'), record);
+  // The napi CLI of the root package.json, by its bin link: build writes the addon of the platform of --target into
+  // --output-dir, create-npm-dirs writes the package of each platform of the configuration into --npm-dir, and artifacts
+  // copies the addon into it. Each records the configuration that --config-path names.
+  program(path.join(dir, 'node_modules/.bin/napi'), `${record}option() { while [ $# -gt 1 ] && [ "$1" != "$name" ]; do shift; done; [ "$1" = "$name" ] && printf '%s' "$2"; }
+platform() { case "$1" in
+x86_64-unknown-linux-gnu) echo linux-x64-gnu ;; aarch64-unknown-linux-gnu) echo linux-arm64-gnu ;; aarch64-apple-darwin) echo darwin-arm64 ;; esac; }
+command=$1
+name=--config-path; config=$(option "$@")
+[ -n "$config" ] && printf 'napi-config\\t%s\\n' "$(cat "$config")" >> '${calls}'
+name=--output-dir; addons=$(option "$@")
+name=--npm-dir; npm=$(option "$@")
+case "$command" in
+build) name=--target; triple=$(option "$@"); mkdir -p "$addons" && printf 'addon\\n' > "$addons/fsm.$(platform "$triple").node" ;;
+create-npm-dirs) for triple in $(sed 's/.*\\[//; s/\\].*//; s/[",]/ /g' "$config"); do p=$(platform "$triple"); mkdir -p "$npm/$p"; printf '{"name":"@polyspec/fsm-%s","version":"0.0.13","main":"fsm.%s.node","files":["fsm.%s.node"]}\\n' "$p" "$p" "$p" > "$npm/$p/package.json"; done ;;
+artifacts) for folder in "$npm"/*; do cp "$addons/fsm.$(basename "$folder").node" "$folder/"; done ;;
+*) exit 9 ;;
+esac
+`);
+  // The wasm-bindgen of WASM_BINDGEN: it prints the release of packages/ts/wasm/Cargo.toml and writes the files of the binding.
+  program(path.join(bin, 'wasm-bindgen'), `${record}case "$1" in --version) echo 'wasm-bindgen 0.2.999'; exit 0 ;; esac
+while [ "$1" != --out-dir ]; do shift; done
+mkdir -p "$2" && for file in fsm_wasm.js fsm_wasm.d.ts fsm_wasm_bg.wasm; do printf 'bound\\n' > "$2/$file"; done
+`);
+  // The npm package of the bindings, with the generated files that the generation of the Node and the WASM binding write.
+  for (const file of ['packages/ts/package.json', 'packages/ts/wasm/Cargo.toml']) {
+    mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+  }
+  copyFileSync(path.join(ROOT, 'packages/ts/package.json'), path.join(dir, 'packages/ts/package.json'));
+  writeFileSync(path.join(dir, 'packages/ts/wasm/Cargo.toml'), '[dependencies]\nwasm-bindgen = "=0.2.999"\n');
+  for (const file of ['generated/index.cjs', 'generated/index.mjs', 'generated/index.d.ts', 'wasm/generated/index.mjs', 'wasm/generated/index.d.ts', 'wasm/generated/state.mjs', 'wasm/generated/lib.rs']) {
+    mkdirSync(path.dirname(path.join(dir, 'packages/ts', file)), { recursive: true });
+    writeFileSync(path.join(dir, 'packages/ts', file), `${file}\n`);
+  }
   // zip records its directory and writes the archive that it names.
   program(path.join(bin, 'zip'), `${record}printf 'zip\\tPWD=%s\\n' "$PWD" >> '${calls}'
 printf 'zip of %s\\n' "$5" > "$4"
@@ -297,4 +331,87 @@ test('release-php-ext fails with 2 on a host that is no platform of the release,
   assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
   assert.match(ran.stderr, /release-php-ext: the host x86_64-apple-darwin is no platform of the release/);
   assert.deepEqual(box.calls().filter(call => call[0] !== 'rustc'), []);
+});
+
+// ---- release-npm-platform and release-npm (GN-19e, GN-3c, S-470-7) ---------------------------------------------------------
+
+// The generation of the Node and the WASM binding are prerequisites; a case marks them as done, so make runs the recipe alone.
+const GENERATED_NODE = ['-o', 'bindings-node', '-o', 'bindings-wasm'];
+
+/** The files of the npm archive `file` and the text of its package.json. */
+function archive(file: string): { files: string[]; manifest: Record<string, unknown> } {
+  const files = spawnSync('tar', ['-tzf', file], { encoding: 'utf8' }).stdout.split('\n').filter(line => line !== '').sort();
+  const manifest = JSON.parse(spawnSync('tar', ['-xzOf', file, 'package/package.json'], { encoding: 'utf8' }).stdout) as Record<string, unknown>;
+  return { files, manifest };
+}
+
+test('release-npm-platform builds the addon of the host with the napi CLI and packs its platform package', async t => {
+  for (const { triple, platform } of PLATFORMS) {
+    await t.test(triple, t2 => {
+      const box = sandbox(t2, triple);
+      const ran = make(box, [...GENERATED_NODE, 'release-npm-platform']);
+      assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+      const assets = path.join(box.dir, 'var/release/assets/npm');
+      assert.equal(spawnSync('ls', ['-A', assets], { encoding: 'utf8' }).stdout, `polyspec-fsm-${platform}-0.0.13.tgz\n`);
+      const { files, manifest } = archive(path.join(assets, `polyspec-fsm-${platform}-0.0.13.tgz`));
+      assert.deepEqual(files, [`package/fsm.${platform}.node`, 'package/package.json']);
+      assert.equal(manifest.name, `@polyspec/fsm-${platform}`);
+      const work = path.join(realpathSync(box.dir), 'var/release/target/npm', platform);
+      const napi = box.calls().filter(call => call[0] === 'napi');
+      assert.deepEqual(napi, [
+        ['napi', 'build', '--platform', '--release', '--no-js', '--manifest-path', 'packages/ts/Cargo.toml', '--package-json-path', 'packages/ts/package.json', '--target-dir', 'var/release/target', '--output-dir', `${work}/addons`, '--target', triple, '--', '--locked'],
+        ['napi', 'create-npm-dirs', '--package-json-path', 'packages/ts/package.json', '--config-path', `${work}/napi.json`, '--npm-dir', `${work}/npm`],
+        ['napi', 'artifacts', '--package-json-path', 'packages/ts/package.json', '--config-path', `${work}/napi.json`, '--output-dir', `${work}/addons`, '--npm-dir', `${work}/npm`],
+      ]);
+      // The configuration of the run names the triple of the host alone.
+      assert.deepEqual(box.calls().filter(call => call[0] === 'napi-config'), [['napi-config', `{"targets":["${triple}"]}`], ['napi-config', `{"targets":["${triple}"]}`]]);
+    });
+  }
+});
+
+test('release-npm-platform fails with 2 on a host that is no platform of the release, and builds nothing', t => {
+  const box = sandbox(t, 'x86_64-unknown-freebsd');
+  const ran = make(box, [...GENERATED_NODE, 'release-npm-platform']);
+  assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
+  assert.match(ran.stderr, /release-npm-platform: the host x86_64-unknown-freebsd is no platform of the release/);
+  assert.deepEqual(box.calls().filter(call => call[0] !== 'rustc'), []);
+});
+
+test('release-npm packs @polyspec/fsm with the platform packages in optionalDependencies of a copy of its manifest', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  const ran = make(box, [...GENERATED_NODE, 'release-npm', `WASM_BINDGEN=${path.join(path.dirname(box.php), 'wasm-bindgen')}`]);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const assets = path.join(box.dir, 'var/release/assets/npm');
+  assert.equal(spawnSync('ls', ['-A', assets], { encoding: 'utf8' }).stdout, 'polyspec-fsm-0.0.13.tgz\n');
+  const { files, manifest } = archive(path.join(assets, 'polyspec-fsm-0.0.13.tgz'));
+  assert.deepEqual(files, [
+    'package/generated/index.cjs', 'package/generated/index.d.ts', 'package/generated/index.mjs', 'package/package.json',
+    'package/wasm/generated/fsm_wasm.d.ts', 'package/wasm/generated/fsm_wasm.js', 'package/wasm/generated/fsm_wasm_bg.wasm',
+    'package/wasm/generated/index.d.ts', 'package/wasm/generated/index.mjs', 'package/wasm/generated/state.mjs',
+  ]);
+  assert.deepEqual(manifest.optionalDependencies, { '@polyspec/fsm-linux-x64-gnu': '0.0.13', '@polyspec/fsm-linux-arm64-gnu': '0.0.13', '@polyspec/fsm-darwin-arm64': '0.0.13' });
+  // The tracked manifest names no platform package.
+  assert.equal(JSON.parse(readFileSync(path.join(box.dir, 'packages/ts/package.json'), 'utf8')).optionalDependencies, undefined);
+  assert.deepEqual(box.calls().filter(call => call[0] === 'cargo'), [
+    ['cargo', 'build', '--release', '--locked', '-p', 'polyspec-fsm-wasm', '--target', 'wasm32-unknown-unknown'],
+    ['cargo', 'CARGO_TARGET_DIR=var/release/target', 'PHP=', 'PHP_CONFIG='],
+  ]);
+});
+
+test('release-npm fails with 2 without WASM_BINDGEN, and builds nothing', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  const ran = make(box, [...GENERATED_NODE, 'release-npm']);
+  assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
+  assert.match(ran.stderr, /release-npm needs WASM_BINDGEN/);
+  assert.deepEqual(box.calls(), []);
+});
+
+test('release-npm-platform and release-npm generate the Node binding first', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  writeFileSync(path.join(box.dir, 'Cargo.lock'), '');
+  for (const target of ['release-npm-platform', 'release-npm']) {
+    const ran = make(box, ['-n', target, 'WASM_BINDGEN=wasm-bindgen']);
+    assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+    assert.ok(/ generate --root \S+ --target node$/m.test(ran.stdout), ran.stdout);
+  }
 });

@@ -586,14 +586,14 @@ release-coverage:
 # RELEASE_TARGET, so that an asset holds nothing of a development build. Each step is a line that starts a standard tool (GN-19).
 RELEASE_ASSETS ?= var/release/assets
 RELEASE_TARGET ?= var/release/target
-# release_host sets host to the Rust triple of the toolchain, go to the directory of the Go module of its platform and pie to
-# the part of the name of a PHP extension archive that names its platform (GN-19a), and ends the recipe $(1) with 2 on a host
-# that is no platform of the release.
+# release_host sets host to the Rust triple of the toolchain, platform to the name of its platform, which names its npm
+# platform package, go to the directory of the Go module of its platform and pie to the part of the name of a PHP extension
+# archive that names its platform (GN-19a), and ends the recipe $(1) with 2 on a host that is no platform of the release.
 release_host = host=$$(rustc --print host-tuple) || exit 1; \
 	case "$$host" in \
-	x86_64-unknown-linux-gnu) go=linux_amd64 pie=x86_64-linux-glibc ;; \
-	aarch64-unknown-linux-gnu) go=linux_arm64 pie=arm64-linux-glibc ;; \
-	aarch64-apple-darwin) go=darwin_arm64 pie=arm64-darwin-bsdlibc ;; \
+	x86_64-unknown-linux-gnu) platform=linux-x64-gnu go=linux_amd64 pie=x86_64-linux-glibc ;; \
+	aarch64-unknown-linux-gnu) platform=linux-arm64-gnu go=linux_arm64 pie=arm64-linux-glibc ;; \
+	aarch64-apple-darwin) platform=darwin-arm64 go=darwin_arm64 pie=arm64-darwin-bsdlibc ;; \
 	*) echo "$(1): the host $$host is no platform of the release: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu, aarch64-apple-darwin" >&2; exit 2 ;; \
 	esac
 
@@ -655,6 +655,56 @@ release-php-ext: bindings-php
 	mkdir -p "$$out"; \
 	cp "$$copy/$$name" "$$out/.$$name.part"; \
 	mv "$$out/.$$name.part" "$$out/$$name"
+
+# The platforms of the npm package, by the names of their platform packages (GN-19a), and the napi CLI of the devDependency
+# @napi-rs/cli of the root package.json, by its bin link.
+RELEASE_NPM_PLATFORMS := linux-x64-gnu linux-arm64-gnu darwin-arm64
+NAPI := $(CURDIR)/node_modules/.bin/napi
+# release_pack packs the npm package of the folder $(1) with npm pack --ignore-scripts into the fresh folder $(2), and renames
+# each archive into RELEASE_ASSETS/npm from a copy of another name, so the assets never hold a half written archive.
+release_pack = (cd $(1) && $(NPM) pack --ignore-scripts --pack-destination $(2)); \
+	mkdir -p $(RELEASE_ASSETS)/npm; \
+	for file in $(2)/*.tgz; do \
+	name=$$(basename "$$file"); \
+	cp "$$file" "$(RELEASE_ASSETS)/npm/.$$name.part"; \
+	mv "$(RELEASE_ASSETS)/npm/.$$name.part" "$(RELEASE_ASSETS)/npm/$$name"; \
+	done
+
+# release-npm-platform builds the Node addon of the platform of the host and packs its npm platform package (GN-19e,
+# S-470-7) with the napi CLI: napi build writes the addon, and create-npm-dirs and artifacts write the package of the platform
+# with a configuration of the run that names the triple of the host alone, because napi artifacts fails for a configured
+# platform whose addon another runner builds.
+.PHONY: release-npm-platform
+release-npm-platform: bindings-node
+	@$(call release_host,release-npm-platform); \
+	work=$(abspath $(RELEASE_TARGET))/npm/$$platform; \
+	set -ex; \
+	rm -rf "$$work"; \
+	mkdir -p "$$work/pack"; \
+	printf '{"targets":["%s"]}\n' "$$host" > "$$work/napi.json"; \
+	$(NAPI) build --platform --release --no-js --manifest-path packages/ts/Cargo.toml --package-json-path packages/ts/package.json --target-dir $(RELEASE_TARGET) --output-dir "$$work/addons" --target "$$host" -- --locked; \
+	$(NAPI) create-npm-dirs --package-json-path packages/ts/package.json --config-path "$$work/napi.json" --npm-dir "$$work/npm"; \
+	$(NAPI) artifacts --package-json-path packages/ts/package.json --config-path "$$work/napi.json" --output-dir "$$work/addons" --npm-dir "$$work/npm"; \
+	$(call release_pack,"$$work/npm/$$platform","$$work/pack")
+
+# release-npm packs @polyspec/fsm itself (GN-19e, GN-3c, S-470-7) from a copy of the files that its package.json names: the
+# generated Node loader, and the WASM binding that cargo builds for release and the wasm-bindgen of WASM_BINDGEN binds. The
+# manifest of the copy names the platform package of each platform of the release at the version of the package in
+# optionalDependencies; the tracked manifest names none.
+.PHONY: release-npm
+release-npm: bindings-node bindings-wasm
+	@$(call require_tool,WASM_BINDGEN,the wasm-bindgen CLI of the release of packages/ts/wasm/Cargo.toml)
+	test "$$($(WASM_BINDGEN) --version)" = "wasm-bindgen $(WASM_BINDGEN_RELEASE)"
+	@work=$(abspath $(RELEASE_TARGET))/npm/package; \
+	set -ex; \
+	rm -rf "$$work"; \
+	mkdir -p "$$work/package/generated" "$$work/package/wasm/generated" "$$work/pack"; \
+	cp packages/ts/generated/index.cjs packages/ts/generated/index.mjs packages/ts/generated/index.d.ts "$$work/package/generated/"; \
+	cp packages/ts/wasm/generated/*.mjs packages/ts/wasm/generated/*.d.ts "$$work/package/wasm/generated/"; \
+	CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-wasm --target wasm32-unknown-unknown; \
+	$(WASM_BINDGEN) --target web --out-dir "$$work/package/wasm/generated" --out-name fsm_wasm $(RELEASE_TARGET)/wasm32-unknown-unknown/release/polyspec_fsm_wasm.wasm; \
+	$(NODE) -e 'const fs = require("fs"); const [from, to, ...platforms] = process.argv.slice(1); const p = JSON.parse(fs.readFileSync(from, "utf8")); p.optionalDependencies = Object.fromEntries(platforms.map(platform => [`$${p.name}-$${platform}`, p.version])); fs.writeFileSync(to, JSON.stringify(p, null, 2) + "\n");' packages/ts/package.json "$$work/package/package.json" $(RELEASE_NPM_PLATFORMS); \
+	$(call release_pack,"$$work/package","$$work/pack")
 
 # release-test runs the tests of the recipes of the assets (tests/release) against stand-ins of the tools that they start.
 .PHONY: release-test

@@ -17,6 +17,7 @@
     }
   },
   "devDependencies": {
+    "@napi-rs/cli": "3.10.12",
     "@polyspec/kit": "https://github.com/polyspec/kit/releases/download/v0.0.106/polyspec-kit-0.0.106.tgz",
     "@types/node": "26.6.5",
     "@types/picomatch": "4.0.3",
