@@ -14,7 +14,7 @@
 // stand-in bay records its commands and the Compose file that it was started with, and keeps the contract of bay that plan
 // C-6 states. A stand-in waits on a named pipe, never on time.
 import assert from 'node:assert/strict';
-import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { execFileSync, spawn, spawnSync, type SpawnSyncReturns } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -138,6 +138,8 @@ const STARTING = 'starting 2 services';
 const HEALTHY = 'all services are healthy';
 const STOPPED = 'bay: the service mysql stopped before it was healthy';
 const RUNNING = 'the command runs';
+// The tail of the record of every job, the last output of the job, which quotes the fields that judge a job.
+const SHOWN = String.raw`\\"state\\": \\"succeeded\\", \\"ended\\": \\"now\\"`;
 // The ids of the jobs that the stand-in bay queues, one for each part.
 const JOBS = { build: '20260102-030405.000001-b1b1', check: '20260102-030406.000002-c2c2' } as const;
 // The commit that the stand-in git names as the head of the branch, the key of the job.
@@ -164,6 +166,10 @@ interface Stand {
   buildFails?: boolean;
   /** The job check does not succeed: bay job wait ends with 1 for it. */
   checkFails?: boolean;
+  /** The job build has not ended: bay job wait ends with 1 for it, as at the end of its time limit, and bay job show records it as running. */
+  unended?: boolean;
+  /** bay job show fails. */
+  showFails?: boolean;
   /** bay down fails. */
   downFails?: boolean;
   /** The JSON of bay plan holds no service. */
@@ -218,7 +224,7 @@ function stage(t: TestContext, stand: Stand = {}): Stage {
     writeFileSync(file, `${JSON.stringify(pins, null, 2)}\n`);
   }
   const { directory, path: PATH, program: write } = standIns(t, 'Linux');
-  for (const flag of ['absent', 'upFails', 'addFails', 'buildFails', 'checkFails', 'downFails', 'unlisted', 'unjobbed', 'other'] as const) {
+  for (const flag of ['absent', 'upFails', 'addFails', 'buildFails', 'checkFails', 'unended', 'showFails', 'downFails', 'unlisted', 'unjobbed', 'other'] as const) {
     if (stand[flag] === true) writeFileSync(path.join(directory, flag), '');
   }
   if (stand.upWaits === true) execFileSync('mkfifo', [path.join(directory, 'up-waits')]);
@@ -249,8 +255,9 @@ esac
   // are values that no rule builds from the project and the service, so a DSN holds them only when the script read them.
   // exec prints the memory of a container. job add prints the id of the job of its part on standard output and its
   // progress on standard error; job logs prints the output of a job, job wait ends with 0 for a job that succeeded and 1
-  // for one that did not, and job show and job cancel print a line. No job runs: the installation and the command would
-  // run in a container.
+  // for one that did not or has not ended, job show -json prints the record of a job as bay does, one field a line, with
+  // the field ended once the job ended and a tail that quotes other fields, and job cancel prints a line. No job runs: the
+  // installation and the command would run in a container.
   if (stand.bay !== false) {
     write('bay', `${record('bay', 'calls')}f=
 p=
@@ -321,11 +328,22 @@ job)
 		;;
 	wait)
 		job=$(id "$5")
+		if [ "$job" = ${JOBS.build} ] && [ -e "$d/unended" ]; then echo "bay: job $job has not ended" >&2; exit 1; fi
 		if [ "$job" = ${JOBS.build} ] && [ -e "$d/buildFails" ]; then echo "bay: job $job failed, exit 7" >&2; exit 1; fi
 		if [ "$job" = ${JOBS.check} ] && [ -e "$d/checkFails" ]; then echo "bay: job $job failed, exit 7" >&2; exit 1; fi
 		;;
 	show)
-		echo "state of $(id "$3") succeeded"
+		[ "$3" = -json ] || exit 2
+		job=$(id "$4")
+		if [ -e "$d/showFails" ]; then echo 'bay: the agent did not answer' >&2; exit 1; fi
+		state=succeeded
+		ended=1
+		if [ "$job" = ${JOBS.build} ] && [ -e "$d/buildFails" ]; then state=failed; fi
+		if [ "$job" = ${JOBS.check} ] && [ -e "$d/checkFails" ]; then state=failed; fi
+		if [ "$job" = ${JOBS.build} ] && [ -e "$d/unended" ]; then state=running; ended=; fi
+		printf '{\n  "id": "%s",\n  "state": "%s",\n' "$job" "$state"
+		if [ -n "$ended" ]; then printf '  "ended": "%s",\n' '${TIME}'; fi
+		printf '  "tail": "${SHOWN}"\n}\n'
 		;;
 	cancel)
 		echo "cancelled job $(id "$3")"
@@ -407,6 +425,18 @@ function directoryOf(project: Named): string {
   return path.dirname(project[2]);
 }
 
+/** Writes the directory of a run of the runner form of `staged` and returns the words of its project. */
+function written(staged: Stage): Named {
+  const wrote = spawnSync(process.execPath, [staged.script, 'write', '--runner', '--', ...COMMAND], { encoding: 'utf8', env: staged.env });
+  assert.equal(wrote.status, 0, wrote.stderr);
+  return named(staged);
+}
+
+/** Runs run.sh of `project` with `args` from another directory, as sh <directory>/run.sh over ssh does. */
+function runSh(staged: Stage, project: Named, args: readonly string[]): SpawnSyncReturns<string> {
+  return spawnSync('/bin/sh', [path.join(directoryOf(project), 'run.sh'), ...args], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
+}
+
 /**
  * The words before the command of the one project that the calls of `staged` name: bay, -f with compose.yaml of the
  * directory of the run and -p with the project, the name of that directory. Fails when the calls name no project or more
@@ -452,7 +482,7 @@ function hosted(project: Named, last: 'images' | 'up'): string[][] {
 function part(project: Named, name: 'build' | 'check'): string[][] {
   const words = name === 'build' ? building(project) : project;
   const id = JOBS[name];
-  return [[...words, 'job', 'add', '-key', COMMIT, name], [...words, 'job', 'logs', '-f', '-timeout', '24h', id], [...words, 'job', 'wait', '-timeout', '24h', id], [...words, 'job', 'show', id]];
+  return [[...words, 'job', 'add', '-key', COMMIT, name], [...words, 'job', 'logs', '-f', '-timeout', '24h', id], [...words, 'job', 'wait', '-timeout', '24h', id], [...words, 'job', 'show', '-json', id]];
 }
 
 /**
@@ -600,12 +630,13 @@ test('a run of the runner form queues the job build and then the job check with 
     ['git', 'bundle', 'create', path.join(directoryOf(project), 'tree.bundle'), 'main'],
   ]);
   assert.deepEqual(staged.left(), [], 'the run left its directory');
-  // The record of a run names the bay that made its result, and holds the output of each job and its record.
-  assert.ok(ended.stderr.startsWith(`persist-servers: bay version: ${VERSION}\n`), ended.stderr);
-  assert.ok(ended.stdout.startsWith(`${VERSION}\n`), ended.stdout);
+  // The record of a run names the bay that made its result, and holds the output of each job and its record, all on
+  // standard error: the standard output of run.sh holds results alone.
+  assert.ok(ended.stderr.startsWith(`persist-servers: bay version: ${VERSION}\n${VERSION}\n`), ended.stderr);
+  assert.equal(ended.stdout, '');
   for (const id of Object.values(JOBS)) {
-    assert.match(ended.stdout, new RegExp(`^${RUNNING} ${id}$`, 'm'));
-    assert.match(ended.stdout, new RegExp(`^state of ${id} succeeded$`, 'm'));
+    assert.match(ended.stderr, new RegExp(`^${RUNNING} ${id}$`, 'm'));
+    assert.match(ended.stderr, new RegExp(`^  "id": "${id}",\n  "state": "succeeded",$`, 'm'));
   }
   for (const line of [event(`job build ${JOBS.build}`), event(`job check ${JOBS.check}`), event('wait check exit 0'), event('run exit 0')]) assert.ok(ended.stderr.includes(`persist-servers: ${line}\n`), `the run does not show ${line}:\n${ended.stderr}`);
   // The project of a second run has another name, so two runs share no directory, no project and no container.
@@ -665,31 +696,89 @@ test('write of the runner form writes the directory of a run and prints it, and 
     ...stepped('version'), ...stepped('pull'), event('run exit 0'),
     '',
   ]);
-  for (const args of [['start'], ['add'], ['add', 'runner'], ['add', 'build', 'check']]) {
+  for (const args of [['start'], ['add'], ['add', 'runner'], ['add', 'build', 'check'], ['wait'], ['wait', 'runner'], ['wait', 'build', 'check']]) {
     const unknown = spawnSync('/bin/sh', [path.join(directoryOf(project), 'run.sh'), ...args], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
     assert.equal(unknown.status, 2, args.join(' '));
-    assert.match(unknown.stderr, /^usage: sh run\.sh \[run\|add build\|add check\|pull\]$/m);
+    assert.match(unknown.stderr, /^usage: sh run\.sh \[run\|add build\|add check\|wait build\|wait check\|pull\]$/m);
   }
 });
 
 // A run on another machine is queued there part by part and read from the machine that wrote it: a job runs on without
 // its caller, who queues check after build succeeded.
-test('sh run.sh add <part> queues the job of that part, prints its id and ends, and waits for nothing', t => {
+// The standard output of add is the id alone, so that id=$(ssh <machine> sh run.sh add build) holds the id; the version of
+// bay and every line of the run are on standard error.
+test('sh run.sh add <part> queues the job of that part, prints its id alone on standard output and ends, and waits for nothing', t => {
   const staged = stage(t);
-  const written = spawnSync(process.execPath, [staged.script, 'write', '--runner', '--', ...COMMAND], { encoding: 'utf8', env: staged.env });
-  assert.equal(written.status, 0, written.stderr);
-  const project = named(staged);
+  const project = written(staged);
   const report: string[] = [];
   for (const name of ['build', 'check'] as const) {
-    const added = spawnSync('/bin/sh', [path.join(directoryOf(project), 'run.sh'), 'add', name], { cwd: tmpdir(), encoding: 'utf8', env: staged.env });
+    const added = runSh(staged, project, ['add', name]);
     assert.equal(added.status, 0, added.stderr);
     const id = JOBS[name];
-    assert.equal(added.stdout.split('\n').at(-2), id);
+    assert.equal(added.stdout, `${id}\n`);
+    assert.ok(added.stderr.includes(`${VERSION}\n`), added.stderr);
     assert.deepEqual(staged.calls().slice(-3), [VERSIONED, [...project, 'images'], part(project, name)[0]]);
-    assert.ok(added.stderr.includes(`persist-servers: the job ${id} runs on; read its result with bay job wait ${id}, bay job logs ${id} and bay job show ${id}, with -peer <machine> on another machine\n`), added.stderr);
+    assert.ok(added.stderr.includes(`persist-servers: the job ${id} runs on; sh ${path.join(directoryOf(project), 'run.sh')} wait ${name} on this machine follows it to its end\n`), added.stderr);
+    assert.equal(readFileSync(path.join(directoryOf(project), `job-${name}`), 'utf8'), `${id}\n`);
     report.push(...stepped('version'), ...stepped('images'), ...stepped(`add ${name}`), event(`job ${name} ${id}`), event('run exit 0'));
   }
   assert.deepEqual(readFileSync(path.join(directoryOf(project), 'report.txt'), 'utf8').split('\n'), [...report, '']);
+});
+
+// wait runs on the machine that runs the job, so a lost connection of the one who waits ends the wait and not the job;
+// its code says how the job ended, by the record of bay, and 3 says that its end is not known, so wait follows it again.
+test('sh run.sh wait <part> follows the job that add queued to its end and ends with 0 for a job that succeeded, prints nothing on standard output and queues nothing', t => {
+  const staged = stage(t);
+  const project = written(staged);
+  for (const name of ['build', 'check'] as const) {
+    assert.equal(runSh(staged, project, ['add', name]).status, 0);
+    const before = staged.calls().length;
+    const waited = runSh(staged, project, ['wait', name]);
+    assert.equal(waited.status, 0, waited.stderr);
+    assert.equal(waited.stdout, '');
+    assert.deepEqual(staged.calls().slice(before), [VERSIONED, ...part(project, name).slice(1)]);
+    assert.match(waited.stderr, new RegExp(`^${RUNNING} ${JOBS[name]}$`, 'm'));
+    assert.match(waited.stderr, new RegExp(`^  "id": "${JOBS[name]}",$`, 'm'));
+    assert.equal(readFileSync(path.join(directoryOf(project), `job-${name}.json`), 'utf8').split('\n')[2], '  "state": "succeeded",');
+  }
+});
+
+test('sh run.sh wait <part> ends with 1 for a job that ended and did not succeed, 3 for one that has not ended or that bay cannot show, and 2 for a part that add did not queue', t => {
+  for (const [stand, code, said] of [
+    [{ buildFails: true }, 1, 'did not succeed'],
+    [{ unended: true }, 3, 'has not ended'],
+    [{ showFails: true }, 3, 'has no record'],
+  ] as const) {
+    const staged = stage(t, stand);
+    const project = written(staged);
+    assert.equal(runSh(staged, project, ['add', 'build']).status, 0);
+    const waited = runSh(staged, project, ['wait', 'build']);
+    assert.equal(waited.status, code, `${JSON.stringify(stand)}: ${waited.stderr}`);
+    assert.equal(waited.stdout, '');
+    assert.match(waited.stderr, new RegExp(`^persist-servers: the job build ${JOBS.build} of the project ${project[4]} ${said}`, 'm'));
+    if (code === 3) assert.match(waited.stderr, new RegExp(`sh ${path.join(directoryOf(project), 'run.sh')} wait build follows it again`));
+    // A wait cancels nothing: the job runs on without the one who waits.
+    assert.ok(!staged.calls().some(call => call.includes('cancel')), JSON.stringify(staged.calls()));
+  }
+  const staged = stage(t);
+  const project = written(staged);
+  const before = staged.calls().length;
+  const waited = runSh(staged, project, ['wait', 'check']);
+  assert.equal(waited.status, 2, waited.stderr);
+  assert.match(waited.stderr, new RegExp(`^persist-servers: the job check of the project ${project[4]} is not queued here: run sh ${path.join(directoryOf(project), 'run.sh')} add check$`, 'm'));
+  assert.deepEqual(staged.calls().slice(before), [VERSIONED]);
+});
+
+// The whole run judges each job as wait does: a job whose end is not known is cancelled, because the run removes the
+// directory that the job reads.
+test('a run of the runner form whose job build has not ended ends with 3 and cancels the job', async t => {
+  const staged = stage(t, { unended: true });
+  const ended = await script(staged, RUN);
+  assert.deepEqual([ended.code, ended.signal], [3, null], ended.stderr);
+  const project = named(staged);
+  const build = building(project);
+  assert.deepEqual(staged.calls(), [...jobbed(project, 'build'), [...build, 'job', 'cancel', JOBS.build], [...build, 'job', 'wait', '-timeout', '24h', JOBS.build]]);
+  assert.deepEqual(staged.left(), []);
 });
 
 test('runner.sh installs the tools of the repository below work/ in the job build and runs the command on them in the job check', t => {
@@ -866,7 +955,8 @@ test('pull writes a directory, runs bay pull on it and removes it', async t => {
   assert.deepEqual([ended.code, ended.signal], [0, null], ended.stderr);
   const project = named(staged);
   assert.deepEqual(staged.calls(), [...jobbed(project, 'plans'), VERSIONED, [...project, 'pull']]);
-  assert.match(ended.stdout, /^pulled 3 images$/m);
+  assert.match(ended.stderr, /^pulled 3 images$/m);
+  assert.equal(ended.stdout, '');
   assert.deepEqual(staged.left(), []);
 });
 
