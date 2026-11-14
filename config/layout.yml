@@ -56,10 +56,11 @@ rules:
       - "!tests/php-ext-persist"
       - "!tests/python-tools"
       - "!tests/workflows"
-      # the tests of the container scripts of the PostgreSQL and MySQL servers (S-472-1): scripts/container.mts and
-      # scripts/persist-servers.mts, each against stand-ins of the container programs that the test writes
-      - "!tests/container"
+      # the tests of the script of the PostgreSQL and MySQL servers (S-472-1, S-475): scripts/persist-servers.mts against a
+      # stand-in bay that the test writes
       - "!tests/persist-servers"
+      # the tests of the installation of bay on a runner of CI (S-475-5): scripts/bay.mts against stand-ins that the test writes
+      - "!tests/bay"
       # the type check of the declarations of legacy/packages/js (S-09-2, make npm-types): tsc compiles tests/npm-types/consumer.ts in strict mode against legacy/packages/js/src/*.d.ts
       - "!tests/npm-types"
 

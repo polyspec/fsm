@@ -1,6 +1,6 @@
-// What the tests of the container scripts share (S-472-1): a directory of stand-in programs of one case, the only programs of
-// its PATH, with a uname that names the platform. A test writes its container program into it, so it needs no container
-// runtime, and a docker or a container of the machine is never found: the PATH of the script under test is that directory
+// What the tests of the scripts of the servers share (S-472-1, S-475): a directory of stand-in programs of one case, the only
+// programs of its PATH, with a uname that names the platform. A test writes its bay into it, so it needs no container
+// runtime, and a bay, a docker or a container of the machine is never found: the PATH of the script under test is that directory
 // alone, and a stand-in sets the PATH of the system for the tools that it runs itself.
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

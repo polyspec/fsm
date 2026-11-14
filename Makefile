@@ -590,7 +590,7 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 # itself, so the workflow and make check cannot differ (S-474; make workflows-test).
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test binding-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test container-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test binding-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test bay-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
@@ -862,22 +862,51 @@ install: fsm-install
 	$(MAKE) --no-print-directory install-link
 fsm-install: install-kit $(PACKAGE_DEPS)
 
-# persist-images pulls the images of the PostgreSQL and MySQL servers of the tests, which config/containers.json pins by their
-# digests, into the images of the container program of the platform, Apple container on Darwin and docker on Linux
-# (scripts/container.mts). It is the only target that downloads them. persist-servers runs TARGETS through make ci-targets with
-# both servers, each in a container of the run, and with the four FSM_TEST_* variables of those servers in the environment of
-# the targets; scripts/persist-servers.mts waits for the ready line of each server and removes the containers when the targets
-# end or fail and on SIGINT and SIGTERM (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1).
-# PERSIST_MAKE names the make of the run for the recipe of persist-servers: make runs a recipe line that holds its variable
-# MAKE also in a dry run, which would start the containers, and it only prints a line that names that make through another
-# variable.
-.PHONY: persist-images persist-servers container-test persist-servers-test
+# persist-servers runs TARGETS through make ci-targets with the PostgreSQL and MySQL servers of the tests, which bay runs as a
+# Compose project: scripts/persist-servers.mts writes the directory of the run, var/persist-servers/<project>, with the
+# Compose file of the images that config/containers.json pins by their digests and run.sh, and runs sh run.sh. run.sh starts
+# the project with bay up -no-pull, whose return is the ready event, runs the command with the four FSM_TEST_* variables, and
+# removes the project with bay down, also after a failure and a signal (docs/plans/fsm-v1/plan.md, C-6;
+# docs/plans/fsm-v1/checklist.md, S-472-1, S-475, S-475-7). A run has two forms. persist-servers has the host form: the
+# targets are processes of this machine, started by the make of this run. PERSIST_MAKE names that make for the recipe: make
+# runs a recipe line that holds its variable MAKE also in a dry run, which would start the servers, and it only prints a
+# line that names that make through another variable.
+# persist-servers-runner and persist-servers-write have the runner form, two jobs of bay: build installs the tools of the
+# repository with no server, and check runs the targets with the servers, on the committed tree of the branch, where make is
+# the make of that container, so the recipes name it by the word make (S-475-11). persist-servers-write writes the directory
+# and prints its path, for a machine that holds sh and bay alone: the directory is moved there, sh <directory>/run.sh add
+# build and then add check queue the jobs there, and bay job wait -peer waits for each from this machine
+# (docs/operations/persist-servers.md). persist-images pulls the images with bay pull; it is the only
+# target that downloads them. The targets need bay on PATH, and those of the runner form git.
+# BAY holds the words that start bay, which the scripts and run.sh read from the environment: the one who starts a run on a
+# machine sets it, because it states a fact of that machine. It is bay unless it is set; the job check of CI sets it to
+# sudo -n bay, because on its runner the state of bay belongs to root (S-475-5). A run uses the bay of its machine as it is
+# and checks the schema of its contract alone (S-475-4).
+# bay-install installs bay on a runner of CI: scripts/bay.mts install downloads the release that config/toolchain.json names
+# for the platform, verifies its sha256, installs bay and bayd into /usr/local/bin with sudo -n and applies the machine setup.
+# It downloads, so it is ONLINE. On a machine of development a person installs bay. bay-test runs the tests of that script
+# (tests/bay) against stand-ins of curl, tar, sudo and bay, so it downloads and installs nothing.
+BAY ?= bay
+export BAY
+.PHONY: persist-images persist-servers persist-servers-runner persist-servers-write persist-servers-test bay-install bay-test
 PERSIST_MAKE = $(MAKE)
+bay-install:
+	$(ONLINE) $(NODE) scripts/bay.mts install
+
+bay-test:
+	$(RUN_TESTS) node --results .results/bay-test.json --inputs scripts/bay.mts --inputs config/toolchain.json --inputs tests/bay --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/bay
+
 persist-images:
 	$(NODE) scripts/persist-servers.mts pull
 
 persist-servers:
 	$(NODE) scripts/persist-servers.mts run -- $(PERSIST_MAKE) ci-targets TARGETS="$(TARGETS)"
+
+persist-servers-runner:
+	$(NODE) scripts/persist-servers.mts run --runner -- make ci-targets TARGETS="$(TARGETS)"
+
+persist-servers-write:
+	$(NODE) scripts/persist-servers.mts write --runner -- make ci-targets TARGETS="$(TARGETS)"
 
 # check runs the full suite once per committed tree, after the last item is committed; ci-targets runs the targets to their end.
 # ci-suite runs the suite of ci.yml. Both run their targets with the servers of persist-servers, so the PostgreSQL and MySQL
@@ -906,22 +935,17 @@ package-names-test:
 	$(RUN_TESTS) node --results .results/package-names-test.json --inputs legacy/packages/js/package.json --inputs legacy/packages/python/pyproject.toml --inputs legacy/packages/rust/Cargo.toml --inputs tests/package-names -- --test-concurrency=1 $(or $(TESTS),tests/package-names/package-names.test.mts)
 
 # workflows-test runs the tests of the CI and Pages workflows (.github/workflows): every action is pinned to a verified commit,
-# the check job runs make install and its suite through make persist-servers, which starts the servers of plan C-6, holds no
+# the check job runs make install and its suite through make persist-servers, which starts the servers of plan C-6 through bay, holds no
 # block services and uploads its report, and each version comes from the file that declares it (docs/plans/fsm-v1/plan.md, C-10; docs/plans/fsm-v1/checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
 	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs config/owner-checks.json --inputs config/release.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs legacy/packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs .github/actions --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts tests/workflows/rules.test.mts
 
-# container-test runs the tests of scripts/container.mts (tests/container): the command of each verb on the container program
-# of each platform, Apple container on Darwin and docker on Linux, against stand-ins of the programs that the test writes, so
-# it needs no container runtime (docs/plans/fsm-v1/plan.md, C-6; docs/plans/fsm-v1/checklist.md, S-472-1).
-container-test:
-	$(RUN_TESTS) node --results .results/container-test.json --inputs scripts/container.mts --inputs tests/container --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/container
-
-# persist-servers-test runs the tests of scripts/persist-servers.mts (tests/persist-servers): the start of both servers, the
-# ready line of each, the DSNs of the command, a container that stops first, the signals and the removal, against stand-ins of
-# the programs that the test writes, so it needs no container runtime (docs/plans/fsm-v1/plan.md, C-6; S-472-1).
+# persist-servers-test runs the tests of scripts/persist-servers.mts (tests/persist-servers): the directory of a run, its
+# Compose file, the steps of run.sh as commands of bay, the order of runner.sh, a failed start, the signals and the removal.
+# Each case copies the script into a root of its own and runs it against stand-ins of bay and git that it writes, so it needs
+# neither bay nor a container runtime (docs/plans/fsm-v1/plan.md, C-6; S-472-1, S-475, S-475-7).
 persist-servers-test:
-	$(RUN_TESTS) node --results .results/persist-servers-test.json --inputs scripts/persist-servers.mts --inputs scripts/container.mts --inputs config/containers.json --inputs tests/persist-servers --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/persist-servers
+	$(RUN_TESTS) node --results .results/persist-servers-test.json --inputs scripts/persist-servers.mts --inputs scripts/bay.mts --inputs config/containers.json --inputs config/toolchain.json --inputs mise.toml --inputs tests/persist-servers --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/persist-servers
 
 # name-test runs the tests of scripts/check-name.mts; name-check fails while a tracked file or path names the library by its old
 # outside the allowlist of the checker (docs/plans/fsm-v1/checklist.md, S-18; the library is named fsm).

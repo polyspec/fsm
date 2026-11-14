@@ -14,6 +14,17 @@
       "linux-arm64": "88aea77e41c2a3c45a9cbd64df9516ba887017442846213b3de178acbd3c9a46"
     }
   },
+  "bay": {
+    "version": "0.0.7",
+    "sha256": {
+      "darwin-arm64": "6d919245656e074e1f88bd578cfa9ea9c029412d205f312bbf9369ed7cf6d82b",
+      "darwin-x64": "84163225923008e171e1bd2b223f811d0e27f9a70a688c88c51d64820305493d",
+      "linux-x64": "209923dd30a57379268d4f2cf8d08f735ef2e8f4ed8f0f0f15d4e9012620111f",
+      "linux-arm64": "e2a22f79bb5e1c160655ac69380b492966b2a3fd38bd7580abd0d352ddf7a152"
+    },
+    "reason": "the release of bay that make bay-install installs on a runner of CI (docs/plans/fsm-v1/plan.md, C-6): a runner holds no bay, so it downloads one, and a download is used only with its pinned digest. No run reads this value: a run uses the bay of its machine and checks the schema of its contract. It is the release of the machines that run the servers; several bay up and bay down at once keep the registrations of their projects since 0.0.2",
+    "removal": "when no target of fsm runs on a server of a container; the pin is raised, not removed, when a release of bay holds a correction that a run needs"
+  },
   "symbolExtractors": [
     "php"
   ]

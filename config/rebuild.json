@@ -26,13 +26,13 @@
       "kind": "ecosystem",
       "tool": "node:util"
     },
-    "scripts/container.mts": {
+    "scripts/bay.mts": {
       "kind": "ecosystem",
-      "tool": "docker"
+      "tool": "bay"
     },
     "scripts/persist-servers.mts": {
       "kind": "ecosystem",
-      "tool": "docker"
+      "tool": "bay"
     },
     "scripts/docs-build.mts": {
       "kind": "policy",

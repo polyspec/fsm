@@ -48,13 +48,13 @@ function markdownFiles(relative = ''): string[] {
   return found;
 }
 
-/** The include list of C-8: the root and package READMEs, the spec, the plan, the verification pages and the changelogs. */
+/** The include list of C-8: the root and package READMEs, the spec, the plan, the operations and verification pages and the changelogs. */
 function isSitePage(file: string): boolean {
   return /^(?:README|CHANGELOG)(?:\.ko)?\.md$/.test(file)
     || /^(?:legacy\/)?packages\/[^/]+\/README(?:\.ko)?\.md$/.test(file)
     || /^docs\/spec\/.+\.md$/.test(file)
     || /^docs\/plans\/fsm-v1\/plan(?:\.ko)?\.md$/.test(file)
-    || /^docs\/operations\/verification\/.+\.md$/.test(file);
+    || /^docs\/operations\/.+\.md$/.test(file);
 }
 
 const MARKDOWN = markdownFiles();
@@ -114,13 +114,18 @@ function literalInlineCode(md: MarkdownIt): void {
   });
 }
 
-/** The entries of one language: the overview, the specification, the plan, the packages, the verification and the changelog. */
+/** The entries of one language: the overview, the specification, the plan, the packages, the operations, the verification and the changelog. */
 function entriesOf(lang: 'en' | 'ko') {
   const suffix = lang === 'ko' ? '.ko' : '';
   const has = (file: string) => SITE_PAGES.has(file);
   const packages = Object.entries(PACKAGES)
     .filter(([, { dir }]) => has(`${dir}/README${suffix}.md`))
     .map(([name, { dir, ...labels }]) => ({ text: `${labels[lang]} (${name})`, link: routeOf(`${dir}/README${suffix}.md`) }));
+  // The procedures are the documents that lie in docs/operations itself.
+  const operations = [...SITE_PAGES]
+    .filter(file => path.posix.dirname(file) === 'docs/operations' && file.endsWith('.ko.md') === (lang === 'ko'))
+    .sort()
+    .map(file => ({ text: path.posix.basename(file, '.md'), link: routeOf(file) }));
   const verification = [...SITE_PAGES]
     .filter(file => file.startsWith('docs/operations/verification/') && file.endsWith('.ko.md') === (lang === 'ko'))
     .sort()
@@ -130,6 +135,7 @@ function entriesOf(lang: 'en' | 'ko') {
     specification: { text: lang === 'ko' ? '명세' : 'Specification', link: routeOf(`docs/spec/fsm${suffix}.md`) },
     plan: { text: lang === 'ko' ? '계획' : 'Plan', link: routeOf(`docs/plans/fsm-v1/plan${suffix}.md`) },
     packages,
+    operations,
     verification,
     changelog: { text: lang === 'ko' ? '변경 이력' : 'Changelog', link: routeOf(`CHANGELOG${suffix}.md`) },
   };
@@ -146,6 +152,7 @@ const groupOf = (title: string, lang: 'en' | 'ko') => {
     entries.specification,
     entries.plan,
     { text: lang === 'ko' ? '패키지' : 'Packages', items: entries.packages },
+    ...(entries.operations.length ? [{ text: lang === 'ko' ? '운영' : 'Operations', items: entries.operations }] : []),
     ...(entries.verification.length ? [{ text: lang === 'ko' ? '검증' : 'Verification', items: entries.verification }] : []),
     entries.changelog,
     ],
