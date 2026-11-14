@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 8bcfc51eae480356b7a751bd1fbe0d81e1450df8132c4f67e72d0df70fdeb5e1 -->
+<!-- source-sha256: 4112a445d5577da586d5bcb5574c8688eeadee046dfe1981832bcfd8e3ac545e -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make layout-check`가 tool test `tests/binding`과 함께 통과한다(S-477-2). 이전에는 `tests/binding: layout-root-tests: S7`로 실패했다. S-477이 `scripts/binding.mts`의 시험을 `tests/binding`에 더했는데, `config/layout.yml`의 규칙 `layout-root-tests`가 그것을 선언하지 않았다. 그 시험은 `tests/check-name`처럼 어떤 package에도 속하지 않는 root의 script를 시험하므로, 규칙이 그 이유와 함께 `tests/binding`을 root의 tool test로 선언한다.
 
 - `make lint-go`가 바인딩 module `packages/go`의 단계를 통과한다(S-477-1). 이전에는 S-477이 바인딩을 생성한 뒤 `golangci-lint packages/go (tag polyspec_codec_test)`와 `deadcode packages/go`가 `tests/conformance_test.go: undefined: binding.IntIn`으로 실패했다. root `Cargo.lock`의 `polyspec-binding-core` commit이 `binding.IntIn`(binding GN-13g)을 생성하지 않았기 때문이다. 더 새 binding으로는 `deadcode packages/go`가 어떤 main package도 어떤 시험도 닿지 않는 `internal/binding/zz_generated_binding.go`의 함수 16개를 보고했고, keyed-map 도우미가 그 가운데 있었다. 이제 root `Cargo.lock`은 생성기가 `binding.IntIn`과 계약이 쓰는 도우미만 쓰는(binding GN-15h) binding commit을 고정하고, 바인딩 package는 그 scaffold가 쓰는 것이다. 각 manifest의 licence `MIT`, build script `packages/python/build.rs`, `packages/php-ext/composer.json`의 `download-url-method`, `packages/ts/package.json`의 `napi` target이다.
 

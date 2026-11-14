@@ -34,8 +34,9 @@ rules:
       - "!packages/ts"
       - "!packages/gui"
 
-  # The tool tests of the root: the checks of scripts/ (check-name, check-readmes, check-commit-names), the documentation site, the
-  # make targets of the package dependencies and of the Python toolchain, and the CI workflows.
+  # The tool tests of the root: the checks of scripts/ (check-name, check-readmes, check-commit-names), the runner of the binding
+  # generator (binding), the documentation site, the make targets of the package dependencies and of the Python toolchain, and
+  # the CI workflows.
   - id: layout-root-tests
     paths:
       - "tests/*"
@@ -44,6 +45,9 @@ rules:
       - "!tests/support"
       - "!tests/check-readmes"
       - "!tests/check-commit-names"
+      # the tests of scripts/binding.mts (S-477, make binding-test), a script of the root that no package holds: the commit of the
+      # generator from the root Cargo.lock and the refusal of a command whose generator is not installed
+      - "!tests/binding"
       - "!tests/docs-build"
       - "!tests/make-install"
       # the name tests of the released runtimes (S-410): the manifests of @polyspec/fsm, polyspec-fsm (python) and polyspec-fsm (rust)
