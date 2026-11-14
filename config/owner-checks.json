@@ -477,7 +477,11 @@
       "paths": [
         "Makefile",
         "tests/release/**",
-        "tests/support/make-sandbox.mts"
+        "tests/support/make-sandbox.mts",
+        "mise.toml",
+        "mise.lock",
+        "Cargo.lock",
+        "packages/ts/wasm/Cargo.toml"
       ],
       "targets": [
         "release-test"

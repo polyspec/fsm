@@ -411,9 +411,9 @@ test('release-npm packs @polyspec/fsm with the platform packages in optionalDepe
   ]);
 });
 
-test('release-npm fails with 2 without WASM_BINDGEN, and builds nothing', t => {
+test('release-npm fails with 2 with an empty WASM_BINDGEN, and builds nothing', t => {
   const box = sandbox(t, 'x86_64-unknown-linux-gnu');
-  const ran = make(box, [...GENERATED_NODE, 'release-npm']);
+  const ran = make(box, [...GENERATED_NODE, 'release-npm', 'WASM_BINDGEN=']);
   assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
   assert.match(ran.stderr, /release-npm needs WASM_BINDGEN/);
   assert.deepEqual(box.calls(), []);
@@ -494,4 +494,23 @@ test('release-go-module generates the Go binding first', t => {
   const generate = lines.findIndex(line => / generate --root \S+ --target go$/.test(line));
   const release = lines.findIndex(line => line.includes(' release-go-module --root '));
   assert.ok(generate >= 0 && release > generate, ran.stdout);
+});
+
+// ---- The wasm-bindgen CLI (S-470-9) ----------------------------------------------------------------------------------------
+
+test('WASM_BINDGEN is the shim of the wasm-bindgen that mise installs into the checkout', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  const ran = make(box, ['-n', '-o', 'bindings-node', '-o', 'bindings-wasm', 'release-npm']);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  assert.ok(ran.stdout.includes(`test "$(${realpathSync(box.dir)}/var/tools/mise/shims/wasm-bindgen --version)" = "wasm-bindgen `), ran.stdout);
+});
+
+test('the wasm-bindgen of mise.toml and mise.lock is the release of the wasm-bindgen crate of packages/ts/wasm and Cargo.lock', () => {
+  const read = (file: string): string => readFileSync(path.join(ROOT, file), 'utf8');
+  const crate = /^wasm-bindgen = "=([^"]+)"$/m.exec(read('packages/ts/wasm/Cargo.toml'))?.[1];
+  const locked = /^name = "wasm-bindgen"\nversion = "([^"]+)"$/m.exec(read('Cargo.lock'))?.[1];
+  const tool = /^"github:wasm-bindgen\/wasm-bindgen" = "([^"]+)"$/m.exec(read('mise.toml'))?.[1];
+  const lock = /^\[\[tools\."github:wasm-bindgen\/wasm-bindgen"\]\]\nversion = "([^"]+)"$/m.exec(read('mise.lock'))?.[1];
+  assert.ok(crate !== undefined, 'packages/ts/wasm/Cargo.toml pins no wasm-bindgen with =');
+  assert.deepEqual({ cargoLock: locked, miseToml: tool, miseLock: lock }, { cargoLock: crate, miseToml: crate, miseLock: crate });
 });

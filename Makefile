@@ -329,10 +329,11 @@ legacy-test-php-ext: legacy-build-php-ext
 # node, go and wasm, and contracts/cases.json holds its cases, taken from contracts/conformance/vectors.json. binding is not yet a
 # package that package-lock.json pins: BINDING is scripts/binding.mts, which runs the generator of the commit of
 # polyspec-binding-core that the root Cargo.lock pins, the one that make binding-install installs into var/binding (S-477), and a
-# BINDING of the command line names the cli (packages/ts/src/cli.ts) of a binding checkout in its place. fsm pins none of the
-# other tools that only the bindings use: until they are pinned, WASM_BINDGEN names the wasm-bindgen CLI of the release of
-# packages/ts/wasm/Cargo.toml, MATURIN the maturin and TSC the TypeScript compiler of a binding checkout, and each target that
-# needs one refuses to run without it. bindings writes the generated folders of packages/{ts,ts/wasm,python,php-ext,go/internal/ffi} and the
+# BINDING of the command line names the cli (packages/ts/src/cli.ts) of a binding checkout in its place. WASM_BINDGEN is the
+# wasm-bindgen CLI that mise.toml pins at the release of the wasm-bindgen crate of packages/ts/wasm/Cargo.toml and that make
+# install-tools installs, by the absolute path of its shim. fsm pins none of the other tools that only the bindings use: until
+# they are pinned, MATURIN names the maturin and TSC the TypeScript compiler of a binding checkout, and each target that needs
+# one refuses to run without it. bindings writes the generated folders of packages/{ts,ts/wasm,python,php-ext,go/internal/ffi} and the
 # Go files zz_generated_*.go of packages/go, which Git ignores; bindings-check runs the contract check, which also compares the
 # tracked binding packages with what binding scaffold writes (binding L-2, CK-19) and the commit of polyspec-binding-core in the
 # root Cargo.lock with the commit of the cli (CK-20).
@@ -343,7 +344,7 @@ BINDING_TARGETS := php python node wasm go
 	test-python-binding test-python-conformance test-php-binding test-php-conformance test-go-binding test-go-conformance
 BINDING_SCRIPT := scripts/binding.mts
 BINDING ?= $(BINDING_SCRIPT)
-WASM_BINDGEN ?=
+WASM_BINDGEN ?= $(KIT_TOOLS)/mise/shims/wasm-bindgen
 MATURIN ?=
 TSC ?=
 # require_tool stops the target $@ when the variable $(1) is empty, naming the variable and what it holds ($(2)).
@@ -731,7 +732,7 @@ release-go-module: bindings-go
 # release-test runs the tests of the recipes of the assets (tests/release) against stand-ins of the tools that they start.
 .PHONY: release-test
 release-test:
-	$(RUN_TESTS) node --results .results/release-test.json --inputs Makefile --inputs tests/release --inputs tests/support/make-sandbox.mts -- --test-concurrency=1 tests/release
+	$(RUN_TESTS) node --results .results/release-test.json --inputs Makefile --inputs tests/release --inputs tests/support/make-sandbox.mts --inputs mise.toml --inputs mise.lock --inputs Cargo.lock --inputs packages/ts/wasm/Cargo.toml -- --test-concurrency=1 tests/release
 
 # The release builds the released versions, so its Go runs without the go.work that make link writes in each Go module.
 release-prepare release-tools release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage: export GOWORK := off
