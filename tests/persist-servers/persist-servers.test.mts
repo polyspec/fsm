@@ -392,9 +392,9 @@ interface Ended {
  * Runs the script of `staged` with `args`. `seen` receives each line of its output with the stream that held it and a
  * function that sends a signal to the script, so a test acts on an event of the run.
  */
-function script(staged: Stage, args: string[], seen: (line: string, stream: 'stdout' | 'stderr', kill: (signal: NodeJS.Signals) => void) => void = () => undefined): Promise<Ended> {
+function script(staged: Stage, args: string[], seen: (line: string, stream: 'stdout' | 'stderr', kill: (signal: NodeJS.Signals) => void) => void = () => undefined, cwd?: string): Promise<Ended> {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [staged.script, ...args], { env: staged.env, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, [staged.script, ...args], { cwd, env: staged.env, stdio: ['ignore', 'pipe', 'pipe'] });
     const output = { stdout: '', stderr: '' };
     for (const stream of ['stdout', 'stderr'] as const) {
       createInterface({ input: child[stream] }).on('line', line => {
@@ -522,6 +522,20 @@ test('a run of the host form starts the servers alone, runs the command on the h
   assert.match(ended.stderr, new RegExp(`^persist-servers: removed the project ${project[4]}$`, 'm'));
   // The lines of the report are shown, because run removes the directory that holds the file.
   for (const line of ['up exit 0', 'command exit 0', 'memory.peak postgres 4096', 'memory.peak mysql 4096', 'run exit 0']) assert.ok(ended.stderr.includes(`persist-servers: ${TIME} ${line}\n`), `the run does not show ${line}:\n${ended.stderr}`);
+});
+
+// The command of the host form is that of the caller, such as make ci-targets of make persist-servers, so it runs in the
+// directory of the caller and not in the directory of the run that run.sh enters: there, make found no Makefile and the job
+// check of CI ended with `No rule to make target 'ci-targets'` (S-480).
+test('the command of a run of the host form runs in the directory of the caller', async t => {
+  const staged = stage(t);
+  const caller = realpathSync(mkdtempSync(path.join(tmpdir(), 'fsm-persist-caller-')));
+  t.after(() => { rmSync(caller, { recursive: true, force: true }); });
+  const file = path.join(staged.root, 'directory');
+  const ended = await script(staged, ['run', '--', '/bin/sh', '-c', `pwd -P > '${file}'`], undefined, caller);
+  assert.deepEqual([ended.code, ended.signal], [0, null], ended.stderr);
+  assert.equal(readFileSync(file, 'utf8'), `${caller}\n`);
+  assert.deepEqual(staged.left(), []);
 });
 
 test('the code of a run of the host form is that of the command, and a failed bay up runs no command and removes the project', async t => {

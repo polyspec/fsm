@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: eb9fc2d09c089dd428598aa7aee1a904a1844b48aa651879ff4308798decd0b6 -->
+<!-- source-sha256: 783c2cad8474c0fdee21087f9689be2c3391acf2622a6923084a9ae3b40db7c2 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- 영속성 서버의 host 형태 명령이 실행을 시작한 쪽의 디렉터리에서 돈다(S-480). 입력: CI job `check`의 `make ci-suite`. 이 target은 `make persist-servers`를 실행하고, 그것이 `make ci-targets`를 실행한다. 이전 동작: `run.sh`가 자기 파일을 위해 `var/persist-servers/<project>`로 들어가 명령도 그곳에서 시작했으므로, 두 서버가 healthy가 된 뒤 make가 `No rule to make target 'ci-targets'`로 끝났고 실행은 2로 끝났다. 기대 동작: host 형태의 `run.sh`는 자기가 시작된 디렉터리를 기억해 그곳에서 명령을 시작한다. `node --test tests/persist-servers/persist-servers.test.mts`로 검증했다(33개 통과). 새 시험은 이전에 실행의 디렉터리를 받아 실패했다.
 - 영속성 테스트 서버의 실행이 MySQL 8.4.11의 준비 줄에서 다음으로 넘어간다(S-479). 입력: CI job `check`의 `make ci-suite`. 이전 동작: mysqld의 준비 줄은 `... port: 3306  MySQL Community Server - GPL.`인데 `scripts/persist-servers.mts`는 `port: 3306`을 줄 끝에서만 찾았으므로, 실행은 서버가 쓰지 않는 줄을 끝없이 기다렸고 target을 시작하지 않았으며 서버의 줄 뒤로 아무것도 보이지 않았다. CI run 43551106408은 3시간 45분 뒤 취소되었다. 기대 동작: 초기화 뒤의 mysqld 준비 줄이 사건이고 그 port는 줄 안에서 읽는다. 다른 port의 준비 줄은 그 줄과 함께 실행을 바로 실패시킨다. 실행은 container의 시작, 각 서버의 초기화와 준비 줄, 명령의 시작과 끝, 제거에서 줄을 하나씩 보인다. `make persist-servers-test`로 검증했다(14개 통과). S-475와의 merge는 S-475의 script를 남긴다. 그 script에서는 bay가 서버를 시작하고 healthcheck로 준비를 판정하므로, 준비 줄을 읽지 않는다.
 - `config/toolchain.json`이 `make bay-install`이 CI runner에 설치하는 릴리스로 bay 0.0.9를 적고, 그 릴리스의 `SHA256SUMS`에서 가져온 archive 네 개의 sha256을 함께 적는다(S-475-11). 입력: `make bay-install`을 실행하는 CI runner. 이전 동작: bay 0.0.7을 설치했고, 이 버전은 Linux에서 Docker가 container를 시작하거나 멈추거나 제거해도 project의 hosts 블록을 다시 쓰지 않았으므로, 블록의 이름이 어떤 container도 갖지 않은 주소를 가리킬 수 있었다. 기대 동작: bay 0.0.9를 설치하고, 이 버전은 Docker event마다 hosts 블록을 다시 쓴다. `make bay-test`, `make workflows-test`, `make persist-servers-test`로 검증했다.
 - runner 형태의 `sh run.sh add <part>`가 job의 id만 표준 출력에 출력하고, `sh run.sh wait <part>`가 job을 그것을 실행하는 머신에서 따라간다(S-475-11). 입력: Linux arm64 머신에 있는 `make persist-servers-write TARGETS="db-test-postgres db-test-mysql"`의 디렉터리와 `build=$(ssh <machine> sh <directory>/run.sh add build)`. 이전 동작: `run.sh`가 id 앞에 bay의 version과 `bay images`의 줄을 표준 출력에 출력해서, `build`가 id를 담지 못했고 `bay job wait "$build"`가 `bay: name one job by its ID`로 실패했으며, 다른 머신에서의 기다림은 bay의 peer 연결로 job을 읽어야 했다. 기대 동작: bay의 출력을 포함한 `run.sh`의 모든 줄이 표준 오류에 있다. `add`는 id를 `job-<part>`에 쓰고 그것만 출력한다. `wait <part>`는 job의 출력을 보여 주고, 그것을 기다리고, `bay job show -json`을 `job-<part>.json`에 쓰며, job이 끝나고 성공하면 0, 끝나고 성공하지 않으면 1, 끝나지 않았거나 bay가 기록을 보여 주지 않으면 3, `add`가 그 part를 큐에 넣지 않았으면 2로 끝나고, 아무것도 취소하지 않는다. 전체 실행은 각 job을 같은 기록으로 판정하고, 끝을 알 수 없는 job에는 3으로 끝나며 그 job을 취소한다. `make persist-servers-test`로 검증했다. 테스트 32개 중 9개가 이전에 실패했다.
