@@ -4,6 +4,7 @@ name = "polyspec-fsm-wasm"
 version = "0.0.13"
 edition = "2021"
 rust-version = "1.99.0"
+license = "MIT"
 publish = false
 
 [lib]

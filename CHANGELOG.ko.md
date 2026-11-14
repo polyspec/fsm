@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4ff1f6e0922b1e587a1678181e9727887bc80a2648e1287894cf3dd5c065f4e2 -->
+<!-- source-sha256: 8bcfc51eae480356b7a751bd1fbe0d81e1450df8132c4f67e72d0df70fdeb5e1 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `make lint-go`가 바인딩 module `packages/go`의 단계를 통과한다(S-477-1). 이전에는 S-477이 바인딩을 생성한 뒤 `golangci-lint packages/go (tag polyspec_codec_test)`와 `deadcode packages/go`가 `tests/conformance_test.go: undefined: binding.IntIn`으로 실패했다. root `Cargo.lock`의 `polyspec-binding-core` commit이 `binding.IntIn`(binding GN-13g)을 생성하지 않았기 때문이다. 더 새 binding으로는 `deadcode packages/go`가 어떤 main package도 어떤 시험도 닿지 않는 `internal/binding/zz_generated_binding.go`의 함수 16개를 보고했고, keyed-map 도우미가 그 가운데 있었다. 이제 root `Cargo.lock`은 생성기가 `binding.IntIn`과 계약이 쓰는 도우미만 쓰는(binding GN-15h) binding commit을 고정하고, 바인딩 package는 그 scaffold가 쓰는 것이다. 각 manifest의 licence `MIT`, build script `packages/python/build.rs`, `packages/php-ext/composer.json`의 `download-url-method`, `packages/ts/package.json`의 `napi` target이다.
 
 - CI pipeline의 runtime php job은 `lint-php`가 읽는 것을 설치한다(S-476). 이전에는 새 checkout에서 `config/ci.json`의 runtime php setup 뒤에 `make kit-gates-runtime-php`가 `[lint-php] packages/php-ext/vendor/autoload.php is missing`으로 실패했다. PHPStan은 추적하는 PHP 파일이 있는 Composer project마다 그 autoloader로 실행되는데, setup은 `legacy/packages/php`만 설치했고 `lint-php`에는 prerequisite가 없었다. 이제 setup은 `binding-php-install`을 적고, `lint-php`는 `legacy/packages/php`와 `packages/php-ext`의 설치와 `fsm-php-gen`을 prerequisite로 적는다. 새 checkout에서 setup과 `kit-gates-runtime-php`의 `make ci-targets`가 통과한다.
 - CI pipeline의 runtime go job은 `lint-go`가 읽는 Go 바인딩을 생성한다(S-477). 이전에는 새 checkout에서 `make kit-gates-runtime-go`가 바인딩 module `packages/go`에서 `no go files to analyze`로 실패했다. 이 module의 Go 파일은 `tests/conformance_test.go`를 빼면 생성물이고 추적하지 않는데, setup은 `legacy/packages/go`의 파일만 생성했고, `make bindings-go`는 `BINDING`에 binding checkout의 cli를 받아야 했으며 어떤 job에도 그것이 없다. 이제 `scripts/binding.mts`가 루트 `Cargo.lock`에 있는 `polyspec-binding-core`의 commit으로 Cargo가 만든 checkout에서 binding을 `var/binding/<commit>`에 설치하고(`make binding-install`, `Cargo.lock` 기준, `make install`의 일부) 실행하며, 이것이 `BINDING`의 기본값이다. `lint-go`는 `fsm-go-gen`과 `bindings-go`를 prerequisite로 적는다. runtime go의 setup은 `binding-install`과 `bindings-go`를 적고, `config/ci.json`의 `tools.go`는 Rust toolchain을 적는다. 그 cargo가 checkout을 찾는다. `make binding-test`는 4개 통과, `make make-install-test`는 18개 통과이며, 변경 전에는 6개가 실패했다. 생성 파일이 있으면 `make lint-go`의 step `golangci-lint legacy/packages/go`, `deadcode legacy/packages/go`, `golangci-lint packages/go`가 통과한다. 두 step은 아직 실패하며 행 S-477-1이 그것을 가진다. `golangci-lint packages/go (tag polyspec_codec_test)`와 `deadcode packages/go`가 `undefined: binding.IntIn`으로 끝난다. `packages/go/tests/conformance_test.go`가 binding GN-13g의 함수를 호출하는데, `Cargo.lock`에 있는 commit의 binding은 그것을 생성하지 않기 때문이다(S-467).
