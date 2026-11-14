@@ -20,6 +20,10 @@ const PLATFORMS = [
   { triple: 'aarch64-apple-darwin', go: 'darwin_arm64' },
 ] as const;
 
+// The commit time of HEAD in a sandbox and its seconds since the epoch.
+const COMMIT_DATE = '2026-01-02T03:04:05Z';
+const COMMIT_EPOCH = String(Date.parse(COMMIT_DATE) / 1000);
+
 /** A copy of the Makefile with the stand-ins of one case. */
 interface Sandbox {
   dir: string;
@@ -60,6 +64,17 @@ mkdir -p "$CARGO_TARGET_DIR/release" && printf 'library with debug sections\\n' 
 `);
   program(path.join(bin, 'strip'), record);
   program(path.join(sysroot, 'lib/rustlib', host, 'bin/llvm-strip'), `${record}${stripFails ? 'exit 1\n' : `for last in "$@"; do :; done; printf 'stripped\\n' > "$last"\n`}`);
+  // The uv of the checkout, which the Makefile starts by its path in var/tools: it records the environment of maturin and
+  // writes a wheel into the directory of --out-dir.
+  program(path.join(dir, 'var/tools/mise/shims/uv'), `${record}printf 'uv\\tCARGO_TARGET_DIR=%s\\tMATURIN_PEP517_ARGS=%s\\tSOURCE_DATE_EPOCH=%s\\n' "$CARGO_TARGET_DIR" "$MATURIN_PEP517_ARGS" "$SOURCE_DATE_EPOCH" >> '${calls}'
+while [ "$1" != --out-dir ]; do shift; done
+mkdir -p "$2" && printf 'wheel\\n' > "$2/polyspec_fsm-0.0.13-cp314-abi3-platform.whl"
+`);
+  // The commit of HEAD, whose time is the SOURCE_DATE_EPOCH of a wheel.
+  const git = (...args: string[]): void => {
+    spawnSync('git', ['-C', dir, ...args], { env: { ...cleanEnv(), GIT_AUTHOR_DATE: COMMIT_DATE, GIT_COMMITTER_DATE: COMMIT_DATE, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@example.invalid', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@example.invalid' } });
+  };
+  git('commit', '-q', '--allow-empty', '-m', 'release');
   return {
     dir,
     sysroot,
@@ -122,4 +137,41 @@ test('a strip that fails leaves no library in the assets', t => {
   const ran = make(box, ['release-go-static']);
   assert.notEqual(ran.status, 0, `${ran.stdout}${ran.stderr}`);
   assert.equal(existsSync(path.join(box.dir, 'var/release/assets/go/linux_arm64/libpolyspec_fsm_go.a')), false);
+});
+
+// ---- release-wheel (GN-19c, S-470-5) ---------------------------------------------------------------------------------------
+
+// The generation of the Python binding is a prerequisite of the wheel; a case marks it as done, so make runs the recipe alone.
+const GENERATED = ['-o', 'bindings-python'];
+
+test('release-wheel builds the abi3 wheel of the host with uv, maturin locked and the commit time of HEAD', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  const ran = make(box, [...GENERATED, 'release-wheel']);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const calls = box.calls().filter(call => call[0] === 'uv');
+  assert.deepEqual(calls, [
+    ['uv', 'build', '--wheel', '--python', 'python3', '--out-dir', 'var/release/assets/wheel', 'packages/python'],
+    ['uv', 'CARGO_TARGET_DIR=var/release/target', 'MATURIN_PEP517_ARGS=--locked', `SOURCE_DATE_EPOCH=${COMMIT_EPOCH}`],
+  ]);
+  assert.equal(readFileSync(path.join(box.dir, 'var/release/assets/wheel/polyspec_fsm-0.0.13-cp314-abi3-platform.whl'), 'utf8'), 'wheel\n');
+});
+
+test('release-wheel generates the Python binding first', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  // The install of the generator is keyed on the root Cargo.lock, which the copy of the Makefile holds empty.
+  writeFileSync(path.join(box.dir, 'Cargo.lock'), '');
+  const ran = make(box, ['-n', 'release-wheel']);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const lines = ran.stdout.split('\n');
+  const generate = lines.findIndex(line => / generate --root \S+ --target python$/.test(line));
+  const build = lines.findIndex(line => line.includes(' build --wheel '));
+  assert.ok(generate >= 0 && build > generate, ran.stdout);
+});
+
+test('release-wheel fails with 2 on a host that is no platform of the release, and builds nothing', t => {
+  const box = sandbox(t, 'riscv64gc-unknown-linux-gnu');
+  const ran = make(box, [...GENERATED, 'release-wheel']);
+  assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
+  assert.match(ran.stderr, /release-wheel: the host riscv64gc-unknown-linux-gnu is no platform of the release/);
+  assert.deepEqual(box.calls().filter(call => call[0] === 'uv'), []);
 });

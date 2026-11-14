@@ -614,6 +614,15 @@ release-go-static:
 	cp "$$copy/libpolyspec_fsm_go.a" "$$out/.libpolyspec_fsm_go.a.part"; \
 	mv "$$out/.libpolyspec_fsm_go.a.part" "$$out/libpolyspec_fsm_go.a"
 
+# release-wheel builds the abi3 wheel of the platform of the host (GN-19c, S-470-5) from the generated Python binding, with the
+# uv of the checkout: maturin builds with --locked, and the time of the commit of HEAD dates the files of the wheel. One wheel
+# of a platform serves every supported Python.
+.PHONY: release-wheel
+release-wheel: bindings-python
+	@$(call release_host,release-wheel); \
+	set -ex; \
+	CARGO_TARGET_DIR=$(RELEASE_TARGET) MATURIN_PEP517_ARGS=--locked SOURCE_DATE_EPOCH=$$(git log -1 --format=%ct HEAD) $(UV) build --wheel --python python3 --out-dir $(RELEASE_ASSETS)/wheel packages/python
+
 # release-test runs the tests of the recipes of the assets (tests/release) against stand-ins of the tools that they start.
 .PHONY: release-test
 release-test:

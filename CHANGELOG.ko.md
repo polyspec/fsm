@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 0c97b1e0744271f60afe93decc7165205eb504ba48a9c9bba0551276c5126acd -->
+<!-- source-sha256: 0e3b18ea2bd3e8c2e4c7dd2ee25d6bc0c0f1d4b2a4a6ddc84e34f688e706b714 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make release-wheel`이 host platform의 Python 바인딩 abi3 wheel을 build한다(S-470-5, plan C-11, binding GN-19c). 입력: 릴리스의 host에서 `make release-wheel`. 이전 동작: platform의 wheel을 build하는 recipe가 없었다. 기대 동작: recipe는 Python 바인딩을 생성한 뒤, checkout의 uv로 `MATURIN_PEP517_ARGS=--locked`, HEAD의 commit 시각인 `SOURCE_DATE_EPOCH`, `RELEASE_TARGET`인 `CARGO_TARGET_DIR`과 함께 `uv build --wheel --python python3 --out-dir RELEASE_ASSETS/wheel packages/python`를 실행한다. 다른 host는 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(10개 통과). wheel의 시험 세 개는 이전에 `No rule to make target`으로 실패했다.
 - `make release-go-static`이 host platform의 Go module 정적 library를 build한다(S-470-4, plan C-11, binding GN-19b). 입력: 릴리스의 host(`x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`, `aarch64-apple-darwin`)에서 `make release-go-static`. 이전 동작: platform의 릴리스 asset을 build하는 recipe가 없었다. 기대 동작: recipe는 `CARGO_TARGET_DIR`을 `RELEASE_TARGET`으로 두고 `cargo build --release --locked -p polyspec-fsm-go`를 실행하고, 사본의 debug section을 toolchain의 `llvm-strip`으로 지우고, 그 사본의 이름을 `RELEASE_ASSETS/go/<Go 디렉터리>/libpolyspec_fsm_go.a`로 바꾼다. 다른 host는 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(7개 통과). 시험은 이전에 `No rule to make target`으로 실패했다.
 - 문서 사이트가 `docs/operations/persist-servers.md`와 함께 build된다(S-482). 입력: `make docs-build`와 `make docs-build-test`. 이전 동작: runner 형태를 다루는 code span이 `<commit>` 뒤에서 줄이 바뀌어 다음 줄이 `<part>`로 시작했고, VitePress가 그것을 HTML tag로 읽어 build가 그 page에서 `Element is missing end tag`로 끝났다. 기대 동작: code span `bay job add -key <commit> <part>`가 한 줄에 있고 사이트가 build된다. `make docs-build`로 검증했다.
 - 영속성 서버 runner 형태의 job `check`의 서버가 실행보다 오래 남지 않는다(S-481). 입력: job `check`가 도는 동안 bay agent가 다시 시작한 Linux arm64 머신의 runner 형태 실행. 이전 동작: agent가 그 job을 넘겨받아 성공을 기록하고 PostgreSQL과 MySQL의 container를 몇 시간 동안 돌게 두었다. bay는 job 뒤에 project를 내리지만 넘겨받은 뒤에는 내리지 않고, `run.sh`는 `bay down`을 실행하지 않았기 때문이다. 기대 동작: job `check`가 끝나면 전체 실행과 `sh run.sh wait check`가 `bay -f compose.yaml -p <project> down`을 실행한다. 이 명령은 container가 없는 project에도 0으로 끝나고, 실패한 bay down은 그것을 1로 실패시키고 project를 제거하는 명령을 적는다. `node --test tests/persist-servers/persist-servers.test.mts`로 검증했다(34개 통과). 새 시험은 이전에 job 뒤의 bay down이 없어 실패했다.
