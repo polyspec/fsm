@@ -31,7 +31,9 @@ function reference(kind: Kind): string {
 }
 
 // The lines of a server whose image initialized it: the temporary server of the initialization logs a ready line too, and
-// MySQL logs one for the port of its X plugin, so only the last line of each list is the ready line of the server.
+// MySQL logs one for the port of its X plugin, so only the last line of each list is the ready line of the server. The
+// lines of MySQL are those of MySQL 8.4.11 in CI: its ready line names the port inside the line, before the name of the
+// server, and a ready line that the run read only at the end of the line was never found (S-479).
 const OUTPUT: Record<Kind, string[]> = {
   postgres: [
     'LOG:  database system is ready to accept connections',
@@ -40,10 +42,11 @@ const OUTPUT: Record<Kind, string[]> = {
     'LOG:  database system is ready to accept connections',
   ],
   mysql: [
-    "[System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.4.11'  socket: '/var/run/mysqld/mysqld.sock'  port: 0",
+    '[System] [MY-011323] [Server] X Plugin ready for connections. Socket: /var/run/mysqld/mysqlx.sock',
+    "[System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.4.11'  socket: '/var/run/mysqld/mysqld.sock'  port: 0  MySQL Community Server - GPL.",
     '[Note] [Entrypoint]: MySQL init process done. Ready for start up.',
-    "[System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060",
-    "[System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.4.11'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306",
+    "[System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock",
+    "[System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.4.11'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.",
   ],
 };
 
@@ -203,7 +206,18 @@ test('on Linux the run starts both servers in docker, passes their DSNs to the c
   ]);
   // The lines of each server are shown, so the log of a run holds the output of its servers.
   assert.match(ended.stderr, /^persist-servers: postgres: PostgreSQL init process complete; ready for start up\.$/m);
-  assert.match(ended.stderr, /^persist-servers: mysql: .*port: 3306$/m);
+  assert.match(ended.stderr, /^persist-servers: mysql: .*port: 3306  MySQL Community Server - GPL\.$/m);
+  // Each step of the run is a line, so a run that waits shows what it waits for (S-479).
+  for (const step of [
+    /^persist-servers: started fsm-persist-\S+-postgres fsm-persist-\S+-mysql; the run waits for the ready line of each server$/m,
+    /^persist-servers: postgres is initialized; the run waits for the ready line of its server$/m,
+    /^persist-servers: mysql is initialized; the run waits for the ready line of its server$/m,
+    /^persist-servers: postgres is ready$/m,
+    /^persist-servers: mysql is ready$/m,
+    /^persist-servers: the servers are ready; running \/bin\/sh -c /m,
+    /^persist-servers: \/bin\/sh ended with 0; the run removes the servers$/m,
+    /^persist-servers: removed fsm-persist-\S+-postgres fsm-persist-\S+-mysql$/m,
+  ]) assert.match(ended.stderr, step);
   // The names of a second run are other names, so two runs share no container.
   const again = stage(t, 'Linux', 'docker');
   await script(again, writes(path.join(again.directory, 'variables')));
@@ -256,6 +270,21 @@ for (const kind of KINDS) {
     assert.deepEqual(calls.filter(call => call[1] === 'inspect'), []);
   });
 }
+
+// A ready line of mysqld after the initialization is the event of the server; when it names another port, no later line
+// would be the ready line, so the run fails at it instead of waiting (S-479).
+test('a MySQL ready line that names another port than 3306 fails the run with that line, and both containers are removed', async t => {
+  const other = "[System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.4.11'  socket: '/var/run/mysqld/mysqld.sock'  port: 3307  MySQL Community Server - GPL.";
+  const staged = stage(t, 'Linux', 'docker', { mysql: { lines: [...OUTPUT.mysql.slice(0, -1), other] } });
+  const file = path.join(staged.directory, 'variables');
+  const ended = await script(staged, writes(file));
+  assert.deepEqual([ended.code, ended.signal], [1, null], ended.stderr);
+  assert.ok(ended.stderr.includes(`persist-servers: mysql: the server is ready on another port than 3306: ${other}\n`), ended.stderr);
+  assert.equal(existsSync(file), false, 'the command ran with a server that was not ready');
+  const calls = staged.calls();
+  assert.deepEqual(calls.filter(call => call[1] === 'rm'), [['docker', 'rm', '--force', nameOf(calls, 'postgres'), nameOf(calls, 'mysql')]]);
+  assert.deepEqual(calls.filter(call => call[1] === 'inspect'), []);
+});
 
 test('an image that is not installed fails the run before a container starts and names make persist-images', async t => {
   const staged = stage(t, 'Linux', 'docker', {}, true);

@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: ef48fd740ae2eb2f9d297bf73858d0e47437e1db45c6cc8d778e5cd8d7379323 -->
+<!-- source-sha256: b16a3b8fdd6e3513fe91f354727fe19a5e5c2f802774f2b74328b006a5530ff5 -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -272,7 +272,7 @@ Conformance machine(`machines/`, S-25): 모든 kind가 `machines/`의 모든 mac
   - 프로그램: `scripts/container.mts`가 container 프로그램의 명령을 가진다. 프로그램은 플랫폼만으로, 곧 `uname -s`가 출력하는 이름으로 정한다. Darwin은 Apple `container`, Linux는 `docker`다. 이 script는 S9가 저장소의 infrastructure에 요구하는 대로 TypeScript다. 어떤 변수도 프로그램을 고르지 않는다. PATH에 없는 프로그램은 모든 동사를 즉시 실패시키고, 프로그램의 이름과 설치 방법을 적는다. 동사는 `program`, `pull`, `present`, `run`, `delete`, `inspect`다.
   - 이미지: `make persist-images`가 두 이미지를 pull하며, 이미지를 내려받는 target은 이것뿐이다. 설치되지 않은 이미지로 시작한 실행은 container를 시작하기 전에 실패하고 `make persist-images`를 적는다.
   - 실행: `make persist-servers TARGETS="..."`는 `scripts/persist-servers.mts run -- make ci-targets`를 실행한다. script는 두 서버를 각각의 container에서 attach 상태로 시작한다. container 이름은 실행의 process id와 무작위 4바이트를 가진 `fsm-persist-<pid>-<random>-postgres`와 `fsm-persist-<pid>-<random>-mysql`이므로, 한 머신의 두 실행이 container를 공유하지 않는다. 포트는 게시하지 않는다.
-  - 준비: script는 각 container의 출력을 줄 단위로 읽고, 이미지가 초기화를 끝낸 뒤 서버가 연결을 받는다고 적는 줄에서 다음으로 넘어간다. `PostgreSQL init process complete` 다음의 `database system is ready to accept connections`, 그리고 `MySQL init process done` 다음의 `port: 3306`이 있는 `ready for connections`다. 각 쌍의 첫 줄이 필요한 이유는 이미지가 초기화를 위해 임시 서버를 띄우고 그 서버도 둘째 줄을 적기 때문이다. sleep도 polling도 시간 제한도 없다. 준비 줄 전에 멈춘 container는 출력의 마지막 줄들과 함께 target을 실패시킨다.
+  - 준비: script는 각 container의 출력을 줄 단위로 읽고, 이미지가 초기화를 끝낸 뒤 서버가 연결을 받는다고 적는 줄에서 다음으로 넘어간다. `PostgreSQL init process complete` 다음의 `database system is ready to accept connections`, 그리고 `MySQL init process done` 다음의 `mysqld: ready for connections` 줄이며, 이 줄은 `port: 3306`을 줄 끝이 아니라 서버 이름 앞, 줄 안에 적는다(S-479). 각 쌍의 첫 줄이 필요한 이유는 이미지가 초기화를 위해 임시 서버를 띄우고 그 서버도 둘째 줄을 적기 때문이다. sleep도 polling도 시간 제한도 없다. 준비 줄은 서버의 사건이다. 초기화 뒤의 mysqld 준비 줄이 다른 port를 적으면 뒤의 어떤 줄도 준비 줄이 아니므로 target은 그 줄과 함께 바로 실패하고, 준비 줄 전에 멈춘 container는 출력의 마지막 줄들과 함께 target을 실패시킨다. script는 단계마다 한 줄을 보인다. container의 시작, 각 서버의 초기화와 준비 줄, 명령의 시작과 끝, 제거다. 그래서 기다리는 실행은 무엇을 기다리는지 보인다.
   - 주소: script는 프로그램의 `inspect`가 출력하는 JSON에서 각 container의 주소를 읽는다. docker는 `NetworkSettings.Networks.<network>.IPAddress`, Apple `container`는 prefix 길이를 뺀 `status.networks[].ipv4Address`다. DSN은 그 주소와 container 안 서버의 포트를 적는다.
   - account는 이미지가 container의 환경에서 만드는 것이다. PostgreSQL은 `POSTGRES_USER=fsm`, `POSTGRES_PASSWORD=fsm`, `POSTGRES_DB=fsm_test`이므로 `fsm`은 `createEmptyDatabase`가 만드는 database의 owner가 되는 superuser다. MySQL은 `MYSQL_ROOT_PASSWORD=root`, `MYSQL_USER=fsm`, `MYSQL_PASSWORD=fsm`, `MYSQL_DATABASE=fsm_test`이고, account `root`와 `fsm`은 모든 host에서 연결한다.
   - 끝: script는 아래 네 변수와 함께 명령을 실행하고, SIGINT와 SIGTERM을 명령에 전달하고, 명령이 끝나거나 실패할 때, 서버의 시작이 실패할 때, 실행이 두 signal 중 하나를 받을 때 두 container를 제거한다. 서버를 시작하는 중에 받은 signal은 시작이 끝난 뒤 명령 없이 실행을 끝낸다. 종료 상태는 명령의 종료 상태이고, 두 signal에는 130과 143이다. 제거가 실패하면 아직 실행 중일 수 있는 container의 이름을 적고 실행을 실패시킨다.

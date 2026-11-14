@@ -18,7 +18,10 @@
 // Waiting for a server has no sleep, no polling and no time limit: the container runs attached, the run reads each line of
 // its output, shows it on standard error as `persist-servers: <kind>: <line>`, and goes on at the ready line that the
 // server logs after the line of the initialization of its image; the temporary server of that initialization logs a ready
-// line too, which is not the one. A container that stops before its ready line fails the run with its last lines.
+// line too, which is not the one. The ready line is the event of the server: a ready line that names another port than
+// that of the tests fails the run with that line at once, since no later line of the server would be its ready line, and a
+// container that stops before its ready line fails the run with its last lines. The run shows each of its steps: the
+// initialization and the ready line of each server, the start of the command and its end, and the removal.
 //
 // The command runs with the four variables of the servers, FSM_TEST_PG_DSN, FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and
 // FSM_TEST_MYSQL_ADMIN_DSN. The run removes its containers when the command ends or fails and when the start of a server
@@ -53,13 +56,15 @@ const KINDS: readonly Kind[] = ['postgres', 'mysql'];
 
 /**
  * A server of the tests. `environment` creates its accounts and its database when the image initializes it; `initialized`
- * is the line of the image after that initialization, and `ready` tells the first line after it that names a server that
- * accepts connections on its port; `variables` are the variables of the tests for the address of the container.
+ * is the line of the image after that initialization, and `ready` tells the first line after it that says that the server
+ * accepts connections; `refused` gives the failure of such a line that names another port than that of the tests, and
+ * undefined for a line of that port; `variables` are the variables of the tests for the address of the container.
  */
 interface Server {
   environment: string[];
   initialized: string;
   ready: (line: string) => boolean;
+  refused: (line: string) => string | undefined;
   variables: (address: string) => Record<string, string>;
 }
 
@@ -70,6 +75,8 @@ const SERVERS: Record<Kind, Server> = {
     environment: ['POSTGRES_USER=fsm', 'POSTGRES_PASSWORD=fsm', 'POSTGRES_DB=fsm_test'],
     initialized: 'PostgreSQL init process complete',
     ready: line => line.includes('database system is ready to accept connections'),
+    // The ready line of PostgreSQL names no port; the server listens on 5432, the line before it says so.
+    refused: () => undefined,
     variables: address => {
       const dsn = `postgres://fsm:fsm@${address}:5432/fsm_test?sslmode=disable`;
       return { FSM_TEST_PG_DSN: dsn, FSM_TEST_PG_ADMIN_DSN: dsn };
@@ -78,8 +85,11 @@ const SERVERS: Record<Kind, Server> = {
   mysql: {
     environment: ['MYSQL_ROOT_PASSWORD=root', 'MYSQL_USER=fsm', 'MYSQL_PASSWORD=fsm', 'MYSQL_DATABASE=fsm_test'],
     initialized: 'MySQL init process done',
-    // The temporary server of the initialization listens on port 0 and the X plugin on 33060; the server on 3306.
-    ready: line => line.includes('ready for connections') && /\bport: 3306$/.test(line.trimEnd()),
+    // The ready line of the server names its port inside the line: `... port: 3306  MySQL Community Server - GPL.`. The
+    // temporary server of the initialization logs it with port 0 before the line of the initialization, and the line of the
+    // X plugin is `X Plugin ready for connections`, which is not the line of mysqld.
+    ready: line => line.includes('mysqld: ready for connections'),
+    refused: line => (/\bport: 3306\b/.test(line) ? undefined : `the server is ready on another port than 3306: ${line}`),
     variables: address => ({
       FSM_TEST_MYSQL_DSN: `mysql://fsm:fsm@${address}:3306/fsm_test`,
       FSM_TEST_MYSQL_ADMIN_DSN: `mysql://root:root@${address}:3306/mysql`,
@@ -186,8 +196,16 @@ function launch(program: Program, kind: Kind, name: string): Launched {
         show(`persist-servers: ${kind}: ${line}`);
         last.push(line);
         if (last.length > TAIL) last.shift();
-        if (line.includes(server.initialized)) initialized = true;
-        else if (initialized && server.ready(line)) resolve();
+        if (line.includes(server.initialized)) {
+          initialized = true;
+          show(`persist-servers: ${kind} is initialized; the run waits for the ready line of its server`);
+        } else if (initialized && server.ready(line)) {
+          const refused = server.refused(line);
+          if (refused === undefined) {
+            show(`persist-servers: ${kind} is ready`);
+            resolve();
+          } else reject(new Failure(`persist-servers: ${kind}: ${refused}`));
+        }
       };
       for (const stream of [child.stdout, child.stderr]) createInterface({ input: stream }).on('line', read);
       const stop = (failure: Failure): void => {
@@ -252,17 +270,20 @@ async function run(command: readonly string[]): Promise<number> {
   let code = 1;
   try {
     for (const kind of KINDS) launched.push(launch(program, kind, `${id}-${kind}`));
+    show(`persist-servers: started ${launched.map(each => each.name).join(' ')}; the run waits for the ready line of each server`);
     await Promise.all(launched.map(each => each.ready));
     if (state.received !== undefined) code = SIGNALS[state.received];
     else {
       const variables: Record<string, string> = {};
       for (const each of launched) Object.assign(variables, SERVERS[each.kind].variables(address(program, each.name)));
+      show(`persist-servers: the servers are ready; running ${command.join(' ')}`);
       code = await new Promise<number>((resolve, reject) => {
         const spawned = spawn(file, args, { env: { ...process.env, ...variables }, stdio: 'inherit' });
         state.child = spawned;
         spawned.on('error', error => { reject(new Failure(`persist-servers: ${file}: ${error.message}`)); });
         spawned.on('exit', (ended, signal) => { resolve(ended ?? (signal === 'SIGINT' || signal === 'SIGTERM' ? SIGNALS[signal] : 1)); });
       });
+      show(`persist-servers: ${file} ended with ${String(code)}; the run removes the servers`);
     }
   } finally {
     const removed = await remove(program, launched);
