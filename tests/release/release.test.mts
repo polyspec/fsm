@@ -138,6 +138,7 @@ const ref = ${JSON.stringify(path.join(tmp, 'ref'))};
 if (existsSync(ref)) process.stdout.write(readFileSync(ref, 'utf8'));
 process.exit(existsSync(${JSON.stringify(path.join(tmp, 'fails'))}) ? 1 : 0);
 `);
+  program(path.join(bin, 'gh'), record);
   // zip records its directory and writes the archive that it names.
   program(path.join(bin, 'zip'), `${record}printf 'zip\\tPWD=%s\\n' "$PWD" >> '${calls}'
 printf 'zip of %s\\n' "$5" > "$4"
@@ -513,4 +514,94 @@ test('the wasm-bindgen of mise.toml and mise.lock is the release of the wasm-bin
   const lock = /^\[\[tools\."github:wasm-bindgen\/wasm-bindgen"\]\]\nversion = "([^"]+)"$/m.exec(read('mise.lock'))?.[1];
   assert.ok(crate !== undefined, 'packages/ts/wasm/Cargo.toml pins no wasm-bindgen with =');
   assert.deepEqual({ cargoLock: locked, miseToml: tool, miseLock: lock }, { cargoLock: crate, miseToml: crate, miseLock: crate });
+});
+
+// ---- The steps of the release workflow (S-470-9) ---------------------------------------------------------------------------
+
+/** Writes the assets of a release of `version` with the PHP minors `minors` into the sandbox, leaving out `without`. */
+function assets(box: Sandbox, version: string, minors: string[], without: string[] = []): string[] {
+  const files = [
+    `wheel/polyspec_fsm-${version}-cp314-abi3-manylinux_2_39_x86_64.whl`,
+    `wheel/polyspec_fsm-${version}-cp314-abi3-manylinux_2_39_aarch64.whl`,
+    `wheel/polyspec_fsm-${version}-cp314-abi3-macosx_11_0_arm64.whl`,
+    `npm/polyspec-fsm-${version}.tgz`,
+    ...PLATFORMS.map(({ platform }) => `npm/polyspec-fsm-${platform}-${version}.tgz`),
+    ...minors.flatMap(minor => PLATFORMS.map(({ pie }) => `php-ext/php_polyspec_fsm-v${version}_php${minor}-${pie}-nts.zip`)),
+  ].filter(file => !without.includes(file));
+  for (const file of files) {
+    mkdirSync(path.dirname(path.join(box.dir, 'var/release/assets', file)), { recursive: true });
+    writeFileSync(path.join(box.dir, 'var/release/assets', file), file);
+  }
+  return files;
+}
+
+test('release-platform-assets uploads the assets of each platform to the release of TAG under their labels', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  assets(box, '1.2.3', ['8.4', '8.5']);
+  const ran = make(box, ['release-platform-assets', 'TAG=v1.2.3']);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const a = 'var/release/assets';
+  assert.deepEqual(box.calls().filter(call => call[0] === 'gh'), [[
+    'gh', 'release', 'upload', 'v1.2.3',
+    `${a}/wheel/polyspec_fsm-1.2.3-cp314-abi3-macosx_11_0_arm64.whl#polyspec-fsm-python-1.2.3-darwin-arm64`,
+    `${a}/wheel/polyspec_fsm-1.2.3-cp314-abi3-manylinux_2_39_aarch64.whl#polyspec-fsm-python-1.2.3-linux-arm64-gnu`,
+    `${a}/wheel/polyspec_fsm-1.2.3-cp314-abi3-manylinux_2_39_x86_64.whl#polyspec-fsm-python-1.2.3-linux-x64-gnu`,
+    `${a}/npm/polyspec-fsm-1.2.3.tgz#polyspec-fsm-ts-1.2.3`,
+    `${a}/npm/polyspec-fsm-darwin-arm64-1.2.3.tgz#polyspec-fsm-ts-1.2.3-darwin-arm64`,
+    `${a}/npm/polyspec-fsm-linux-arm64-gnu-1.2.3.tgz#polyspec-fsm-ts-1.2.3-linux-arm64-gnu`,
+    `${a}/npm/polyspec-fsm-linux-x64-gnu-1.2.3.tgz#polyspec-fsm-ts-1.2.3-linux-x64-gnu`,
+    `${a}/php-ext/php_polyspec_fsm-v1.2.3_php8.4-arm64-darwin-bsdlibc-nts.zip#polyspec-fsm-php-ext-1.2.3-php8.4-darwin-arm64`,
+    `${a}/php-ext/php_polyspec_fsm-v1.2.3_php8.4-arm64-linux-glibc-nts.zip#polyspec-fsm-php-ext-1.2.3-php8.4-linux-arm64-gnu`,
+    `${a}/php-ext/php_polyspec_fsm-v1.2.3_php8.4-x86_64-linux-glibc-nts.zip#polyspec-fsm-php-ext-1.2.3-php8.4-linux-x64-gnu`,
+    `${a}/php-ext/php_polyspec_fsm-v1.2.3_php8.5-arm64-darwin-bsdlibc-nts.zip#polyspec-fsm-php-ext-1.2.3-php8.5-darwin-arm64`,
+    `${a}/php-ext/php_polyspec_fsm-v1.2.3_php8.5-arm64-linux-glibc-nts.zip#polyspec-fsm-php-ext-1.2.3-php8.5-linux-arm64-gnu`,
+    `${a}/php-ext/php_polyspec_fsm-v1.2.3_php8.5-x86_64-linux-glibc-nts.zip#polyspec-fsm-php-ext-1.2.3-php8.5-linux-x64-gnu`,
+  ]]);
+});
+
+test('release-platform-assets uploads nothing when an asset of a platform is missing or names no platform of the release', async t => {
+  const cases: [string, (box: Sandbox) => void, RegExp][] = [
+    ['a missing wheel', box => assets(box, '1.2.3', ['8.5'], ['wheel/polyspec_fsm-1.2.3-cp314-abi3-macosx_11_0_arm64.whl']), /var\/release\/assets\/wheel holds 2 wheels, not one of each of the 3 platforms/],
+    ['a missing platform package', box => assets(box, '1.2.3', ['8.5'], ['npm/polyspec-fsm-darwin-arm64-1.2.3.tgz']), /var\/release\/assets\/npm holds 3 packages/],
+    ['a missing PHP extension', box => assets(box, '1.2.3', ['8.5'], ['php-ext/php_polyspec_fsm-v1.2.3_php8.5-x86_64-linux-glibc-nts.zip']), /var\/release\/assets\/php-ext holds 2 extensions/],
+    ['no PHP extension', box => assets(box, '1.2.3', []), /php-ext\/\*\.zip is no PHP extension of the release 1\.2\.3/],
+    ['a wheel of another platform', box => { assets(box, '1.2.3', ['8.5']); writeFileSync(path.join(box.dir, 'var/release/assets/wheel/polyspec_fsm-1.2.3-cp314-abi3-win_amd64.whl'), ''); }, /win_amd64\.whl is no wheel of a platform of the release/],
+    ['a package of another version', box => { assets(box, '1.2.3', ['8.5']); writeFileSync(path.join(box.dir, 'var/release/assets/npm/polyspec-fsm-1.2.2.tgz'), ''); }, /polyspec-fsm-1\.2\.2\.tgz is no npm package of the release 1\.2\.3/],
+  ];
+  for (const [name, write, message] of cases) {
+    await t.test(name, t2 => {
+      const box = sandbox(t2, 'x86_64-unknown-linux-gnu');
+      write(box);
+      const ran = make(box, ['release-platform-assets', 'TAG=v1.2.3']);
+      assert.notEqual(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+      assert.match(ran.stderr, message);
+      assert.deepEqual(box.calls().filter(call => call[0] === 'gh'), []);
+    });
+  }
+});
+
+test('release-platform-assets fails with 2 without TAG', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  const ran = make(box, ['release-platform-assets']);
+  assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
+  assert.match(ran.stderr, /release-platform-assets: TAG is required/);
+});
+
+test('release-tag-output writes the tag and the version of the environment into the outputs of the step', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  const output = path.join(path.dirname(box.dir), 'output');
+  writeFileSync(output, 'earlier=1\n');
+  const ran = spawnSync('make', ['--no-print-directory', 'release-tag-output'], { cwd: box.dir, encoding: 'utf8', env: { ...box.env, GITHUB_OUTPUT: output, TAG: 'v1.2.3', VERSION: '1.2.3' } });
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  assert.equal(readFileSync(output, 'utf8'), 'earlier=1\ntag=v1.2.3\nversion=1.2.3\n');
+  const none = make(box, ['release-tag-output']);
+  assert.equal(none.status, 2, `${none.stdout}${none.stderr}`);
+  assert.match(none.stderr, /release-tag-output: GITHUB_OUTPUT is not set/);
+});
+
+test('release-binding-check runs the release check of binding on the contract', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  const ran = make(box, ['release-binding-check', `BINDING=${path.join(path.dirname(box.dir), 'binding.mjs')}`]);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  assert.deepEqual(box.calls().filter(call => call[0] === 'binding'), [['binding', 'check', `${realpathSync(box.dir)}/packages/rust/interface.json`, '--release']]);
 });

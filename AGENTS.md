@@ -72,6 +72,11 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   it; a `BINDING` of the command line names the cli of a binding checkout in its place. A target that reads generated files of a
   binding generates them first, because no checkout tracks them and a CI job starts without them.
   Enforced by: `make make-install-test`, which requires the install and the generation before the lint of the Go modules.
+- Own: Every job of a workflow runs on ubuntu-26.04-arm, the runner of `config/ci.json`, except the job `platform` of
+  `.github/workflows/assets.yml`, which runs on the runner of each platform of the release: ubuntu-26.04 for linux-x64-gnu,
+  ubuntu-26.04-arm for linux-arm64-gnu and macos-15 for darwin-arm64. The asset of a platform is linked and loaded only on that
+  platform, because no tool of the release compiles for another platform (plan C-11, S-470-9).
+  Enforced by: `make workflows-test`
 
 ## Generated files
 

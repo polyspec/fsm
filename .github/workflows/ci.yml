@@ -1,10 +1,12 @@
-# Continuous integration (docs/plans/fsm-v1/plan.md, C-10 and Verification; docs/plans/fsm-v1/checklist.md, S-21). The job kit calls the pipeline ci-pipeline.yml of fsm (K910), and the job check runs
+# Continuous integration (docs/plans/fsm-v1/plan.md, C-10 and Verification; docs/plans/fsm-v1/checklist.md, S-21). The job kit calls the pipeline ci-pipeline.yml of fsm (K910), the job assets calls assets.yml,
+# which builds the assets of each platform on the runner of that platform (S-470-9), and the job check runs
 # `make install` and then `make ci-suite`, the targets of make check that the job kit does not run (S-474). The
 # job holds no block services: `make persist-images` pulls the images of PostgreSQL and MySQL that config/containers.json pins
 # by their digests, through bay, and `make persist-servers` starts both servers through bay as a Compose project of the run, runs the
 # targets on the runner of the job with their DSNs and removes the project (plan C-6, S-472-1, S-475, S-475-7). `make bay-install` installs bay
 # before them (S-475-5). The job uploads the report of its targets. The last job ci-passed
-# passes only when every other job succeeded (S-472); every job runs on ubuntu-26.04-arm, and each run step is one make target
+# passes only when every other job succeeded (S-472); every job runs on ubuntu-26.04-arm, except the platform jobs of assets.yml,
+# and each run step is one make target
 # (make workflows-test).
 # The versions come from the files that declare them: PHP from config/toolchain.json, Rust from rust-toolchain.toml, and
 # Node.js, Go, Python and uv from mise.toml, which mise installs at the digests of mise.lock: Node.js with make install-tools
@@ -76,12 +78,18 @@ jobs:
           path: var/report/ci-targets/
           if-no-files-found: ignore
 
+  # The assets of each platform of the commit, built as a release builds them (assets.yml, S-470-9), without the release check of
+  # binding, which fails until binding releases a tag (CK-70); ci-passed requires them, so a release tags only a commit whose
+  # assets built.
+  assets:
+    uses: ./.github/workflows/assets.yml
+
   # The result of the run: the job runs after every other job, also after a failed or cancelled one, and make ci-passed
   # passes only when each job of needs has the result success; a skipped job fails it (FAIL_SKIPPED=1). make
   # workflows-test fails this workflow when ci-passed is not its last job or when needs leaves a job out.
   ci-passed:
     if: ${{ always() }}
-    needs: [kit, check]
+    needs: [kit, check, assets]
     runs-on: ubuntu-26.04-arm
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

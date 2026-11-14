@@ -345,6 +345,12 @@ BINDING_TARGETS := php python node wasm go
 BINDING_SCRIPT := scripts/binding.mts
 BINDING ?= $(BINDING_SCRIPT)
 WASM_BINDGEN ?= $(KIT_TOOLS)/mise/shims/wasm-bindgen
+# install-wasm-bindgen installs that CLI alone with the mise of var/tools at the digest of mise.lock, for a job that needs no
+# other tool of mise.toml: the TOOLS of install-tools select only the tools that kit knows, and make install-tools without TOOLS
+# installs it with every other tool.
+.PHONY: install-wasm-bindgen
+install-wasm-bindgen:
+	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked github:wasm-bindgen/wasm-bindgen
 MATURIN ?=
 TSC ?=
 # require_tool stops the target $@ when the variable $(1) is empty, naming the variable and what it holds ($(2)).
@@ -728,6 +734,68 @@ release-go-module: bindings-go
 	"refs/tags/packages/go/$$TAG") set -x; git push origin "$$ref" ;; \
 	*) echo "release-go-module: binding printed $$ref, not refs/tags/packages/go/$$TAG" >&2; exit 1 ;; \
 	esac
+
+# release-binding-check runs the release check of binding on the contract (GN-19a, S-470-9), which the release workflow runs
+# before it builds an asset of a tag. It fails while a dependency line of polyspec-binding-core names the branch
+# v1/rust-core (CK-70), the development form that the root Cargo.toml and the binding crates use until binding releases a
+# tag: a release names the version =X.Y.Z or the tag vX.Y.Z. CI builds the assets of a commit without this check.
+.PHONY: release-binding-check
+release-binding-check: $(if $(filter $(BINDING_SCRIPT),$(BINDING)),$(BINDING_DEP))
+	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json --release
+
+# release-tag-output gives the later jobs of the release workflow the tag and the version that release-tag wrote into the
+# environment of its job (TAG, VERSION), through the outputs of the step (GITHUB_OUTPUT); both are empty when the run releases
+# nothing.
+.PHONY: release-tag-output
+release-tag-output:
+	@test -n "$$GITHUB_OUTPUT" || { echo 'release-tag-output: GITHUB_OUTPUT is not set; run it in the release workflow' >&2; exit 2; }
+	printf 'tag=%s\nversion=%s\n' "$$TAG" "$$VERSION" >> "$$GITHUB_OUTPUT"
+
+# release-platform-assets uploads the assets of each platform to the draft GitHub Release of TAG with gh (GN-19g, S-470-9),
+# each under the label polyspec-fsm-<runtime>-<version>-<platform>, or -php<X.Y>-<platform> for the PHP extension, and the
+# npm package without a platform under polyspec-fsm-ts-<version>: the wheel of each platform, the npm package and its platform
+# packages, and the PHP extension of each platform and PHP minor. The file keeps the name that its packer gave, which PIE and
+# the package managers read. It fails before an upload when an asset of a platform is missing or a file names no platform.
+.PHONY: release-platform-assets
+release-platform-assets:
+	@test -n "$$TAG" || { echo 'release-platform-assets: TAG is required, for example make release-platform-assets TAG=v0.0.1' >&2; exit 2; }
+	@set -e; version=$${TAG#v}; dir=$(RELEASE_ASSETS); fail() { echo "release-platform-assets: $$1" >&2; exit 1; }; \
+	set --; wheels=0; npm=0; php=0; \
+	for file in "$$dir"/wheel/*.whl; do \
+	case "$$file" in \
+	*manylinux*_x86_64.whl) platform=linux-x64-gnu ;; \
+	*manylinux*_aarch64.whl) platform=linux-arm64-gnu ;; \
+	*macosx*_arm64.whl) platform=darwin-arm64 ;; \
+	*) fail "$$file is no wheel of a platform of the release" ;; \
+	esac; \
+	set -- "$$@" "$$file#polyspec-fsm-python-$$version-$$platform"; wheels=$$((wheels + 1)); \
+	done; \
+	for file in "$$dir"/npm/*.tgz; do \
+	name=$$(basename "$$file" .tgz); \
+	case "$$name" in \
+	"polyspec-fsm-$$version") label=polyspec-fsm-ts-$$version ;; \
+	"polyspec-fsm-linux-x64-gnu-$$version"|"polyspec-fsm-linux-arm64-gnu-$$version"|"polyspec-fsm-darwin-arm64-$$version") \
+	platform=$${name#polyspec-fsm-}; label=polyspec-fsm-ts-$$version-$${platform%-$$version} ;; \
+	*) fail "$$file is no npm package of the release $$version" ;; \
+	esac; \
+	set -- "$$@" "$$file#$$label"; npm=$$((npm + 1)); \
+	done; \
+	for file in "$$dir"/php-ext/*.zip; do \
+	name=$$(basename "$$file" .zip); \
+	case "$$name" in \
+	"php_polyspec_fsm-v$${version}_php"*-x86_64-linux-glibc-*) platform=linux-x64-gnu ;; \
+	"php_polyspec_fsm-v$${version}_php"*-arm64-linux-glibc-*) platform=linux-arm64-gnu ;; \
+	"php_polyspec_fsm-v$${version}_php"*-arm64-darwin-bsdlibc-*) platform=darwin-arm64 ;; \
+	*) fail "$$file is no PHP extension of the release $$version" ;; \
+	esac; \
+	minor=$${name#*_php}; minor=$${minor%%-*}; \
+	set -- "$$@" "$$file#polyspec-fsm-php-ext-$$version-php$$minor-$$platform"; php=$$((php + 1)); \
+	done; \
+	test "$$wheels" -eq 3 || fail "$$dir/wheel holds $$wheels wheels, not one of each of the 3 platforms"; \
+	test "$$npm" -eq 4 || fail "$$dir/npm holds $$npm packages, not the package and one of each of the 3 platforms"; \
+	test "$$php" -gt 0 && test $$((php % 3)) -eq 0 || fail "$$dir/php-ext holds $$php extensions, not one of each of the 3 platforms for each PHP minor"; \
+	set -x; \
+	gh release upload "$$TAG" "$$@"
 
 # release-test runs the tests of the recipes of the assets (tests/release) against stand-ins of the tools that they start.
 .PHONY: release-test

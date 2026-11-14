@@ -1,0 +1,108 @@
+# The assets of each platform of the core and its bindings (docs/plans/fsm-v1/plan.md, C-11; checklist S-470-9; binding GN-19a,
+# GN-19g). The workflow ci calls it for the commit of its run, and the workflow release calls it for the tree of the tag that it
+# releases, with release true, which runs the release check of binding before a job builds (make release-binding-check). That
+# check fails while the dependency lines of polyspec-binding-core name the branch v1/rust-core (CK-70): a release of fsm needs a
+# released tag of binding, and CI builds the assets without the check.
+#
+# The job platform runs on the runner of its platform, ubuntu-26.04, ubuntu-26.04-arm or macos-15, the one exception to the
+# runner rule of C-10: the asset of a platform is linked and loaded only on that platform, because no tool of the release
+# compiles for another platform (make workflows-test checks the three entries). Each job builds the static library of the Go
+# module, the abi3 wheel, the PHP extension for the PHP of .php-version and the npm platform package of its platform, and the
+# job npm the npm package itself with the wasm-bindgen of mise.toml. Each uploads var/release/assets as an artifact, which the
+# workflow release downloads. Each run step is one make target, and the build steps after the first run also after a failed
+# one, so one run names every asset that does not build.
+name: assets
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: The tag whose tree the jobs build; empty builds the commit of the calling run
+        required: false
+        type: string
+        default: ''
+      release:
+        description: Whether each job runs the release check of binding before it builds
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# rustup installs no toolchain on the first cargo; make install-tools TOOLS=rust installs the toolchain of rust-toolchain.toml
+# with its components llvm-tools and clippy and its target wasm32-unknown-unknown.
+env:
+  RUSTUP_AUTO_INSTALL: '0'
+
+jobs:
+  platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-x64-gnu
+            runner: ubuntu-26.04
+          - platform: linux-arm64-gnu
+            runner: ubuntu-26.04-arm
+          - platform: darwin-arm64
+            runner: macos-15
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      # The PHP of .php-version with its php-config, which the build of the extension reads; make release-php-ext PHP=php
+      # resolves php on PATH, where no PHP of var/tools comes first, since the job installs none.
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version-file: .php-version
+          tools: none
+          coverage: none
+      - uses: ./.github/actions/kit-bootstrap
+      # The Rust toolchain of rust-toolchain.toml, and the uv and the Python of mise.toml, with which uv builds the wheel.
+      - name: Install Rust, uv and Python
+        run: make install-tools TOOLS="rust uv python"
+      - name: Run the release check of binding
+        if: ${{ inputs.release }}
+        run: make release-binding-check
+      - name: Build the static library of the Go module
+        run: make release-go-static
+      - name: Build the wheel
+        if: ${{ !cancelled() }}
+        run: make release-wheel
+      - name: Build the PHP extension
+        if: ${{ !cancelled() }}
+        run: make release-php-ext PHP=php
+      - name: Build the npm platform package
+        if: ${{ !cancelled() }}
+        run: make release-npm-platform
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: assets-${{ matrix.platform }}
+          path: var/release/assets/
+          if-no-files-found: error
+
+  npm:
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: ./.github/actions/kit-bootstrap
+      - name: Install Rust
+        run: make install-tools TOOLS=rust
+      - name: Install the wasm-bindgen of mise.toml
+        run: make install-wasm-bindgen
+      - name: Run the release check of binding
+        if: ${{ inputs.release }}
+        run: make release-binding-check
+      - name: Pack the npm package
+        run: make release-npm
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: assets-npm
+          path: var/release/assets/
+          if-no-files-found: error

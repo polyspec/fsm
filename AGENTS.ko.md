@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: fad6454e8bd9c182d3058053fad5f3f743b0eba19913a3bbf1e8b2476fe0ed83 -->
+<!-- source-sha256: 957e995ba366aadbd5c0726e187ac51c6b91844024af436fac59f3a0705d4b90 -->
 # 개발
 
 [English](AGENTS.md)
@@ -64,6 +64,11 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   checkout의 cli를 적는다. 바인딩의 생성 파일을 읽는 target은 먼저 그것을 생성한다. 어떤 checkout도 그 파일을 추적하지 않고
   CI job은 그 파일 없이 시작하기 때문이다.
   Enforced by: `make make-install-test`, Go module의 lint 앞에 설치와 생성이 있을 것을 요구한다.
+- Own: workflow의 모든 job은 `config/ci.json`의 runner인 ubuntu-26.04-arm에서 실행한다. 예외는
+  `.github/workflows/assets.yml`의 job `platform`이며, 릴리스의 각 platform의 runner에서 실행한다: linux-x64-gnu는 ubuntu-26.04,
+  linux-arm64-gnu는 ubuntu-26.04-arm, darwin-arm64는 macos-15. 릴리스의 어떤 도구도 다른 platform을 위해 compile하지 않으므로,
+  platform의 asset은 그 platform에서만 link하고 load한다(plan C-11, S-470-9).
+  Enforced by: `make workflows-test`
 
 ## 생성 파일
 

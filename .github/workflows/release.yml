@@ -17,14 +17,22 @@
 #                    commit is on origin/main, reads X.Y.Z from the change log of that commit, creates and pushes the annotated
 #                    tag vX.Y.Z and the tag of every Go module at that commit, or passes for a tag there already (K269), and
 #                    appends TAG and VERSION to GITHUB_ENV; a tag pushed with the token of the run starts no run
-#   release-checkout checks out the tag; then the bootstrap, npm and the packages of the tagged commit again
 #   release-prepare  installs the PHP of var/tools, whose phpize and gen_stub.php write the arginfo header of the php-ext archive
 #   release-tools    installs the tools that config/release.json needs for the packages of this repository; a make entry adds none
 #   release-tools-path puts var/tools/bin on the PATH of the steps that follow, through GITHUB_PATH
 #   release-assets  builds the archive of every package, and packages.json of the Composer packages, into var/release/assets
+#   release-go-module carries the Go module of the tag with the static libraries of the platforms (GN-19f) and pushes its tag
 #   release-publish creates the GitHub Release of the tag as a draft, with its notes and those files
+#   release-platform-assets uploads the assets of each platform to the draft under their labels (GN-19g)
 #   release-undraft makes the release public
-# A failed step leaves the release a draft and fails the run.
+# The job tag runs the steps up to release-tag and gives TAG and VERSION to the later jobs (release-tag-output). The job assets
+# calls assets.yml with the tag (S-470-9): it builds the assets of each platform on the runner of that platform, after the release
+# check of binding (make release-binding-check), which fails while the dependency lines of polyspec-binding-core name the branch
+# v1/rust-core (CK-70), so no release of fsm passes until binding releases a tag. The job release runs the other steps on the
+# tree of the tag, with the assets of the job assets in var/release/assets. A failed step leaves the release a draft and fails
+# the run.
+#
+# actions/download-artifact v8.0.2.
 name: release
 
 on:
@@ -44,7 +52,7 @@ permissions:
   actions: read
 
 jobs:
-  release:
+  tag:
     # A workflow_run starts the release for a successful push or dispatch run of CI alone (K987). The concurrency group is the job's,
     # so a run whose job is skipped never replaces the pending release of a version commit.
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')) }}
@@ -52,6 +60,9 @@ jobs:
       group: release-${{ github.repository }}
       cancel-in-progress: false
     runs-on: ubuntu-26.04-arm
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
     env:
       RUN: ${{ inputs.run || github.event.workflow_run.id }}
       GH_TOKEN: ${{ github.token }}
@@ -63,47 +74,84 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_sha }}
-      - name: verify the Composer archive tool
-        run: make release-zip
-      # shivammathur/setup-php 2.40.0: the PHP of .php-version for the Composer packages and the extension of the release. A
-      # repository that needs PHP (a Composer package of config/release.json, or php of config/toolchain.json) declares
-      # .php-version; a repository without PHP has none and sets up no PHP. The release runs no check of its own: release-tag
-      # refuses a commit whose CI run did not pass (K755).
-      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
-        if: ${{ hashFiles('.php-version') != '' }}
-        with:
-          php-version-file: .php-version
-          # The proof runs with no debugger or coverage driver, as the checks do.
-          coverage: none
       # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
       - uses: ./.github/actions/kit-bootstrap
       - name: tag the commit of the CI run
         run: make release-tag ${{ github.event_name == 'workflow_run' && 'AUTO=1' || '' }}
-      # The release builds the tagged commit with its own kit and packages.
-      - name: check out the tag
-        if: ${{ env.TAG != '' }}
-        run: make release-checkout
+      - id: tag
+        name: give the tag to the later jobs
+        run: make release-tag-output
+
+  assets:
+    needs: tag
+    if: ${{ needs.tag.outputs.tag != '' }}
+    uses: ./.github/workflows/assets.yml
+    with:
+      ref: ${{ needs.tag.outputs.tag }}
+      release: true
+
+  release:
+    needs: [tag, assets]
+    if: ${{ needs.tag.outputs.tag != '' }}
+    concurrency:
+      group: release-${{ github.repository }}-publish
+      cancel-in-progress: false
+    runs-on: ubuntu-26.04-arm
+    env:
+      TAG: ${{ needs.tag.outputs.tag }}
+      VERSION: ${{ needs.tag.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+      RUSTUP_AUTO_INSTALL: '0'
+    steps:
+      # The release builds the tree of the tag with its own kit and packages, with the whole history for the Go module.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.tag.outputs.tag }}
+      - name: verify the Composer archive tool
+        run: make release-zip
+      # shivammathur/setup-php 2.40.0: the PHP of .php-version for the Composer packages and the extension of the release. The
+      # release runs no check of its own: release-tag refuses a commit whose CI run did not pass (K755).
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        with:
+          php-version-file: .php-version
+          # The proof runs with no debugger or coverage driver, as the checks do.
+          coverage: none
       # The bootstrap of kit for the tagged commit, with its own kit and packages (K992).
       - uses: ./.github/actions/kit-bootstrap
-        if: ${{ env.TAG != '' }}
       - name: prepare the release of the repository
-        if: ${{ env.TAG != '' }}
         run: make release-prepare
       - name: make release-tools
-        if: ${{ env.TAG != '' }}
         run: make release-tools
       # The tools of var/tools/bin — the Go of mise.toml that the release builds with, and whatever else the packages
       # need — join PATH for the steps that follow; a step's PATH is its own, so the export goes to the file the
       # runner reads between steps.
       - name: put the installed tools on PATH
-        if: ${{ env.TAG != '' }}
         run: make release-tools-path
       - name: build the assets
-        if: ${{ env.TAG != '' }}
         run: make release-assets
+      # The assets of each platform that the job assets built, merged into var/release/assets.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: assets-*
+          path: var/release/assets
+          merge-multiple: true
+      # The Rust toolchain, whose llvm-nm and llvm-size check the libraries, and the Go of mise.toml, with which a consumer
+      # proves the commit of the Go module.
+      - name: install Rust and Go
+        run: make install-tools TOOLS="rust go"
+      # binding makes the commit of the Go module with the identity of the Git of the run, which is the actor of the run, as the
+      # tags of release-tag are.
+      - name: carry the Go module of the tag
+        env:
+          GIT_AUTHOR_NAME: ${{ github.actor }}
+          GIT_AUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com
+          GIT_COMMITTER_NAME: ${{ github.actor }}
+          GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
+        run: make release-go-module
       - name: create the draft release
-        if: ${{ env.TAG != '' }}
         run: make release-publish
+      - name: upload the assets of each platform
+        run: make release-platform-assets
       - name: make the release public
-        if: ${{ env.TAG != '' }}
         run: make release-undraft

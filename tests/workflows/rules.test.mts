@@ -1,7 +1,9 @@
 // The rules of the GitHub workflows of this repository (docs/plans/fsm-v1/checklist.md, S-472), checked on the tracked
 // files of .github and on the Makefile:
 //
-//   - every job runs on ubuntu-26.04-arm;
+//   - every job runs on ubuntu-26.04-arm, except the job platform of assets.yml, which runs on the runner of each platform of the
+//     release, ubuntu-26.04, ubuntu-26.04-arm or macos-15, because the asset of a platform is linked and loaded only on that
+//     platform: no tool of the release compiles for another platform (plan C-11, S-470-9);
 //   - no job holds a block services: a server of a test runs from an image pinned by its digest, which a make target
 //     starts in the container program of the platform;
 //   - every action is a local action of .github/actions or is pinned by its full commit, and a comment of the file names
@@ -28,6 +30,11 @@ const RUNNER = 'ubuntu-26.04-arm';
 const CI = '.github/workflows/ci.yml';
 const RELEASE = '.github/workflows/release.yml';
 const LAST = 'ci-passed';
+const ASSETS = '.github/workflows/assets.yml';
+// The runner of each platform of the release, on which the job platform of assets.yml builds the assets of that platform
+// (binding GN-19a with the runners of this repository).
+const PLATFORM_RUNNERS: Record<string, string> = { 'linux-x64-gnu': 'ubuntu-26.04', 'linux-arm64-gnu': 'ubuntu-26.04-arm', 'darwin-arm64': 'macos-15' };
+const MATRIX_RUNNER = '${{ matrix.runner }}';
 
 // A run step: make, one target, then arguments NAME=value, NAME="words" for a list such as the tools of a job, or
 // expressions ${{ ... }}.
@@ -67,7 +74,8 @@ function findings(file: string, text: string, targets: Set<string>, actions: Set
     const runner = valueOf(line, 'runs-on');
     if (runner !== undefined) {
       runners += 1;
-      if (runner !== RUNNER) found.push(`${at}: runs on ${runner}, not on ${RUNNER}`);
+      // The runner of the matrix is judged by platformFindings, in the job platform of assets.yml alone.
+      if (runner !== RUNNER && !(file === ASSETS && runner === MATRIX_RUNNER)) found.push(`${at}: runs on ${runner}, not on ${RUNNER}`);
     }
     // The release of an action is named by a comment line, `# <owner>/<repository> <release>`, or by the comment that
     // ends the line of its pin, `# <release>`.
@@ -153,6 +161,35 @@ function lastJobFindings(file: string, text: string): string[] {
     found.push(`${file}: the job ${LAST} needs ${needs.join(', ') || 'no job'}, not every other job: ${others.join(', ') || 'none'}`);
   if (value('RESULTS') !== '${{ toJSON(needs) }}') found.push(`${file}: the job ${LAST} does not pass RESULTS, the JSON of its needs`);
   if (!lines.some((line) => valueOf(line, 'run') === `make ${LAST} FAIL_SKIPPED=1`)) found.push(`${file}: the job ${LAST} does not run make ${LAST} FAIL_SKIPPED=1`);
+  return found;
+}
+
+/**
+ * The findings of the runners of assets.yml: the job platform runs on the runner of its matrix, whose entries are the
+ * platforms of the release, each with its runner, and no other job runs on a runner of the matrix.
+ */
+function platformFindings(file: string, text: string): string[] {
+  const found: string[] = [];
+  const jobs = jobsOf(text);
+  for (const [name, lines] of jobs) {
+    if (name !== 'platform' && lines.some((line) => valueOf(line, 'runs-on') === MATRIX_RUNNER)) found.push(`${file}: the job ${name} runs on the runner of a matrix`);
+  }
+  const lines = jobs.get('platform');
+  if (lines === undefined) return [...found, `${file}: has no job platform`];
+  if (!lines.some((line) => valueOf(line, 'runs-on') === MATRIX_RUNNER)) found.push(`${file}: the job platform does not run on ${MATRIX_RUNNER}`);
+  const entries: Record<string, string> = {};
+  let platform: string | undefined;
+  for (const line of lines) {
+    const named = valueOf(line, 'platform');
+    if (named !== undefined && line.trim().startsWith('- ')) platform = named;
+    const runner = valueOf(line, 'runner');
+    if (runner !== undefined && platform !== undefined) {
+      entries[platform] = runner;
+      platform = undefined;
+    }
+  }
+  if (JSON.stringify(Object.entries(entries).sort()) !== JSON.stringify(Object.entries(PLATFORM_RUNNERS).sort()))
+    found.push(`${file}: the job platform runs on ${JSON.stringify(entries)}, not on ${JSON.stringify(PLATFORM_RUNNERS)}`);
   return found;
 }
 
@@ -269,5 +306,45 @@ test('the workflows and the actions of the repository keep the rules', () => {
   const found = [...workflows, ...actionFiles].flatMap((file) => findings(file, readFileSync(join(root, file), 'utf8'), targets, actions));
   found.push(...triggerFindings(CI, readFileSync(join(root, CI), 'utf8')));
   found.push(...lastJobFindings(CI, readFileSync(join(root, CI), 'utf8')));
+  assert.ok(workflows.includes(ASSETS), `${ASSETS} is not tracked`);
+  found.push(...platformFindings(ASSETS, readFileSync(join(root, ASSETS), 'utf8')));
   assert.deepEqual(found, []);
+});
+
+const PLATFORM = `name: assets
+jobs:
+  platform:
+    strategy:
+      matrix:
+        include:
+          - platform: linux-x64-gnu
+            runner: ubuntu-26.04
+          - platform: linux-arm64-gnu
+            runner: ubuntu-26.04-arm
+          - platform: darwin-arm64
+            runner: macos-15
+    runs-on: \${{ matrix.runner }}
+    steps:
+      - run: make docs-check
+  npm:
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - run: make docs-check
+`;
+
+test('the job platform of assets.yml alone runs on the runner of each platform of the release', () => {
+  assert.deepEqual(findings(ASSETS, PLATFORM, TARGETS, ACTIONS), []);
+  assert.deepEqual(platformFindings(ASSETS, PLATFORM), []);
+  const broken = (from: string, to: string): string[] => {
+    assert.ok(PLATFORM.includes(from), `the sample holds no ${from}`);
+    const text = PLATFORM.replace(from, to);
+    return [...findings(ASSETS, text, TARGETS, ACTIONS), ...platformFindings(ASSETS, text)];
+  };
+  // The runner of a matrix in another workflow is a runner that is not ubuntu-26.04-arm.
+  assert.deepEqual(findings(CI, PLATFORM, TARGETS, ACTIONS), [`${CI}:13: runs on \${{ matrix.runner }}, not on ${RUNNER}`]);
+  assert.deepEqual(broken('runner: ubuntu-26.04\n', 'runner: ubuntu-24.04\n'), [`${ASSETS}: the job platform runs on {"linux-x64-gnu":"ubuntu-24.04","linux-arm64-gnu":"ubuntu-26.04-arm","darwin-arm64":"macos-15"}, not on ${JSON.stringify(PLATFORM_RUNNERS)}`]);
+  assert.deepEqual(broken('          - platform: darwin-arm64\n            runner: macos-15\n', ''), [`${ASSETS}: the job platform runs on {"linux-x64-gnu":"ubuntu-26.04","linux-arm64-gnu":"ubuntu-26.04-arm"}, not on ${JSON.stringify(PLATFORM_RUNNERS)}`]);
+  assert.deepEqual(broken('    runs-on: ${{ matrix.runner }}', '    runs-on: macos-15'), [`${ASSETS}:13: runs on macos-15, not on ${RUNNER}`, `${ASSETS}: the job platform does not run on ${MATRIX_RUNNER}`]);
+  assert.deepEqual(broken('  npm:\n    runs-on: ubuntu-26.04-arm', '  npm:\n    runs-on: ${{ matrix.runner }}'), [`${ASSETS}: the job npm runs on the runner of a matrix`]);
+  assert.deepEqual(platformFindings(ASSETS, PLATFORM.replace('  platform:', '  build:')), [`${ASSETS}: the job build runs on the runner of a matrix`, `${ASSETS}: has no job platform`]);
 });
