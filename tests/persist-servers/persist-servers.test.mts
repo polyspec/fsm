@@ -570,7 +570,7 @@ test('a bay down that fails fails the run, which keeps its directory, marks it a
 // and the runner, which installs in the job build with no server, a limit above the peak of its installation that stays
 // below 3.0 GB.
 test('the pins hold the memory limit of each service, and that of the runner stays below the 3.0 GB of the machine of a run', () => {
-  assert.deepEqual(['postgres', 'mysql', 'runner'].map(kind => pin(kind as Kind, 'memory')), ['448m', '640m', '2560m']);
+  assert.deepEqual((['postgres', 'mysql', 'runner'] as const).map(kind => pin(kind, 'memory')), ['448m', '640m', '2560m']);
   assert.ok(2560 * 2 ** 20 < 3.0e9);
 });
 

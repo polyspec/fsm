@@ -843,10 +843,12 @@ fsm-install: install-kit $(PACKAGE_DEPS)
 # targets are processes of this machine, started by the make of this run. PERSIST_MAKE names that make for the recipe: make
 # runs a recipe line that holds its variable MAKE also in a dry run, which would start the servers, and it only prints a
 # line that names that make through another variable.
-# persist-servers-runner and persist-servers-write have the runner form: the targets run in the service runner of the
-# project, on the committed tree of the branch, where make is the make of that container, so the recipes name it by the word
-# make. persist-servers-write writes the directory and prints its path, for a machine that holds sh and bay alone: the
-# directory is moved there and sh <directory>/run.sh runs it. persist-images pulls the images with bay pull; it is the only
+# persist-servers-runner and persist-servers-write have the runner form, two jobs of bay: build installs the tools of the
+# repository with no server, and check runs the targets with the servers, on the committed tree of the branch, where make is
+# the make of that container, so the recipes name it by the word make (S-475-11). persist-servers-write writes the directory
+# and prints its path, for a machine that holds sh and bay alone: the directory is moved there, sh <directory>/run.sh add
+# build and then add check queue the jobs there, and bay job wait -peer waits for each from this machine
+# (docs/operations/persist-servers.md). persist-images pulls the images with bay pull; it is the only
 # target that downloads them. The targets need bay on PATH, and those of the runner form git.
 # BAY holds the words that start bay, which the scripts and run.sh read from the environment: the one who starts a run on a
 # machine sets it, because it states a fact of that machine. It is bay unless it is set; the job check of CI sets it to

@@ -1,50 +1,56 @@
 #!/usr/bin/env node
 // persist-servers writes the directory of a run of the PostgreSQL and the MySQL server of the tests, which its run.sh
 // executes, from the images that config/containers.json pins by their digests (docs/plans/fsm-v1/plan.md, C-6;
-// docs/plans/fsm-v1/checklist.md, S-472-1, S-475, S-475-7).
+// docs/plans/fsm-v1/checklist.md, S-472-1, S-475, S-475-7, S-475-11).
 //
 //   node scripts/persist-servers.mts write [--runner] -- <command> [argument...]   writes the directory, prints its path
 //   node scripts/persist-servers.mts run [--runner] -- <command> [argument...]     writes it, runs sh run.sh, removes it
 //   node scripts/persist-servers.mts pull                                          writes it, runs sh run.sh pull, removes it
 //
 // bay pulls, starts and removes the servers: it runs a Compose project on Apple container on Darwin and on Docker on Linux,
-// and no file of a run calls a container program itself. A run has two forms, which share their steps: the version of bay,
-// the images, bay up, the command, bay down. The form is chosen when the directory is written.
+// and no file of a run calls a container program itself. A run has two forms, which share the version of bay and the
+// images as their first steps. The form is chosen when the directory is written.
 //
-//   the host form, the default   the servers alone are the project, and the command is a process of the host, which gets
-//                                the DSNs in its environment: for a machine of development and for CI, whose host holds
-//                                the tools of the repository
-//   the runner form, --runner    the command runs in the service runner of the project with bay exec, and run.sh starts
-//                                no program but bay and date: for a machine whose host holds sh and bay alone; the
-//                                directory alone is moved there
+//   the host form, the default   the servers alone are the project: bay up, the command as a process of the host, which
+//                                gets the DSNs in its environment, and bay down; for a machine of development and for CI,
+//                                whose host holds the tools of the repository
+//   the runner form, --runner    two jobs of bay, which run.sh queues and waits for: build installs with no server, and
+//                                check runs the command with the servers; run.sh starts no program but bay and date: for
+//                                a machine whose host holds sh and bay alone; the directory alone is moved there, and
+//                                sh run.sh add <part> queues the job of a part there, which runs on and keeps its result
+//                                without the one who queued it
 //
 // The directory is var/persist-servers/<project> of the checkout, which Git ignores; the project is
 // fsm-persist-<pid>-<random>, with the process id of this process and 4 random bytes, so two runs share no directory, no
 // project and no container. It holds:
 //
-//   compose.yaml   the services postgres and mysql, and in the runner form the service runner; no service publishes a port
-//   compose.install.yaml   the runner form: the service runner alone, with which the run installs before the servers start
+//   compose.yaml   the services postgres and mysql, and in the runner form the job check; no service publishes a port
+//   compose.build.yaml   the runner form: the job build alone
 //   run.sh         the steps of the run
-//   report.txt     written by run.sh: the time of each step and the highest memory use of each service
-//   runner.sh      the runner form: the steps that run inside runner, the installation order of the repository, then the
-//                  command
+//   report.txt     written by run.sh: the time of each step, and the highest memory use of each service of the host form
+//                  or the id of each job of the runner form
+//   runner.sh      the runner form: the command of the two jobs, the installation order of the repository below work/
+//                  in build and the command in check
 //   tree.bundle    the runner form: the Git bundle of the branch of the checkout, the committed tree of the command
 //
-// The runner is a Debian image with a command that does not end, which mounts the directory of the run read-only and
-// nothing of the checkout: runner.sh clones the bundle into the container, so the tools and the build outputs of the
-// runner never meet those of the host. The command gets the four variables of the servers, FSM_TEST_PG_DSN,
-// FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and FSM_TEST_MYSQL_ADMIN_DSN, with the host and the port of each server as bay
-// plan --json gives them when the directory is written. This file builds no name of a service itself, because the form of
-// the name belongs to bay.
+// Each job runs a Debian image that mounts the directory of the run, writable, and nothing of the checkout: the job build
+// clones the bundle into work/ of that directory, so the tools and the build outputs of the jobs never meet those of the
+// host, and the job check runs on them. The command
+// gets the four variables of the servers, FSM_TEST_PG_DSN, FSM_TEST_PG_ADMIN_DSN, FSM_TEST_MYSQL_DSN and
+// FSM_TEST_MYSQL_ADMIN_DSN, with the host and the port of each server as bay plan --json gives them when the directory is
+// written. This file builds no name of a service itself, because the form of the name belongs to bay.
 //
 // No file of a run has a sleep, a polling or a time limit of its own: each server declares a healthcheck, the program of
-// the server over TCP in its container, bay runs it and returns from up after each server is healthy, and that return is
-// the ready event. The values of a healthcheck are declarations that bay evaluates (plan C-6 states the reason of each).
+// the server over TCP in its container, bay runs it and returns from up, or starts the container of a job, after each
+// server is healthy, and that is the ready event. The values of a healthcheck, the time limit of the job and the bound of
+// the waits for it are declarations that bay evaluates (plan C-6 states the reason of each).
 //
-// run.sh removes the project with bay down once bay up was started, by a trap also after a failed step and on SIGINT,
-// SIGTERM and SIGHUP, which first end the step that runs. A bay down that fails fails the run and writes the file
-// down-failed into the directory; run then keeps the directory. The exit code of run is that of run.sh: that of the
-// command, 1 for a step that failed before it, and 130 or 143 for the two signals.
+// run.sh of the host form removes the project with bay down once bay up was started, by a trap also after a failed step
+// and on SIGINT, SIGTERM and SIGHUP, which first end the step that runs. A bay down that fails fails the run and writes the
+// file down-failed into the directory; run then keeps the directory. In the runner form bay takes the project down after
+// each job, and the trap cancels a job that has not ended. The exit code of run is that of run.sh: that of the command,
+// or 0 when both jobs succeeded and 1 for a job that did not, 1 for a step that failed before it, and 130 or 143 for the two
+// signals.
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -56,7 +62,13 @@ const PINS = path.join(ROOT, 'config/containers.json');
 const TOOLS = path.join(ROOT, 'mise.toml');
 const RUNS = path.join(ROOT, 'var/persist-servers');
 const USAGE = 'usage: scripts/persist-servers.mts run [--runner] -- <command> [argument...] | write [--runner] -- <command> [argument...] | pull';
-// The path in runner of the directory of the run, and the file that run.sh writes into the directory after a failed bay down.
+// The longest time of one job of the runner form, which bay requires of a job: about six times the 20 min 27 s that the
+// installation and two targets took on a Linux arm64 machine, so that a job that hangs gives the queue of its machine back.
+const JOB_TIMEOUT = '2h';
+// The bound of the commands of run.sh that wait for a job: the longest time of a job of bay. The job ends by its own
+// limit; the wait also holds the time of the jobs that were queued before it on the machine.
+const WAIT = '24h';
+// The path in a job of the directory of the run, and the file that run.sh writes into the directory after a failed bay down.
 const MOUNT = '/persist-run';
 const DOWN_FAILED = 'down-failed';
 // The declarations of a healthcheck, which bay evaluates: the start period is the time of the initialization of an image,
@@ -176,56 +188,88 @@ function quoted(text: string): string {
   return `'${text.replaceAll("'", "'\\''")}'`;
 }
 
+/** The text `text` as a string of a Compose file: a JSON string, which YAML reads as the same string, whose `$` is `$$`, because bay replaces a `$` of a Compose file by a variable of its own environment. */
+function composed(text: string): string {
+  return JSON.stringify(text.replaceAll('$', () => '$$'));
+}
+
+/** A part of the runner form, which is a job of bay and a service of its Compose file: build installs, check runs the command. */
+type Part = 'build' | 'check';
+
+/** The Compose file of each part: build is alone, so it runs with no server, and check is with the servers. */
+const PART_FILES: Record<Part, string> = { build: 'compose.build.yaml', check: 'compose.yaml' };
+
+/** The lines of the job `part`, which runs `sh runner.sh` with `words` and has `variables` in its environment. */
+function jobLines(part: Part, words: readonly string[], variables: Record<string, string>): string[] {
+  const environment = Object.entries(variables).map(([name, value]) => `      ${name}: ${composed(value)}`);
+  return [
+    `  ${part}:`, `    image: ${JSON.stringify(image('runner'))}`, ...memoryLimit('runner'), `    command: [${['sh', `${MOUNT}/runner.sh`, ...words].map(composed).join(', ')}]`,
+    ...(environment.length > 0 ? ['    environment:', ...environment] : []),
+    `    volumes: ["./:${MOUNT}"]`, '    x-bay:', '      job: true', `      timeout: ${JSON.stringify(JOB_TIMEOUT)}`,
+  ];
+}
+
 /**
- * The Compose file of a run: a service for each server, with the image of its pin, the port of its server in `expose`, the
- * environment of its accounts and its healthcheck, when `servers`, and with `runner` the service runner. The runner is the
- * same text with and without the servers, so bay keeps its container when the servers are added to its project. Each text is written as a JSON
- * string, which YAML reads as the same string. The file names no project and no host port. The one mount, of the runner, is
- * the directory of the run itself, read-only, by the one relative path that a run writes: with it the directory works
- * wherever it lies.
+ * The Compose file of a run: a service for each server, with the image of its pin, its memory limit, the port of its
+ * server in `expose`, the environment of its accounts and its healthcheck, and with `check` the job check, which runs the
+ * command with the variables of the servers. The file names no project and no host port. The one mount, of the job, is the
+ * directory of the run itself, by the one relative path that a run writes: with it the directory works wherever it lies.
+ * It is writable, because the job check runs on what the job build installed there.
  */
-function composeFile(servers: boolean, runner: boolean): string {
+function composeFile(check?: { command: readonly string[]; variables: Record<string, string> }): string {
   const lines = ['services:'];
-  for (const kind of servers ? KINDS : []) {
+  for (const kind of KINDS) {
     const server = SERVERS[kind];
     lines.push(`  ${kind}:`, `    image: ${JSON.stringify(image(kind))}`, ...memoryLimit(kind), `    expose: [${JSON.stringify(String(server.port))}]`, '    environment:');
     for (const [name, value] of Object.entries(server.environment)) lines.push(`      ${name}: ${JSON.stringify(value)}`);
     lines.push('    healthcheck:', `      test: [${['CMD', ...server.health].map(word => JSON.stringify(word)).join(', ')}]`, ...HEALTH.map(declared => `      ${declared}`));
   }
-  // The command of runner does not end, so the container stays for the commands of bay exec.
-  if (runner) lines.push('  runner:', `    image: ${JSON.stringify(image('runner'))}`, ...memoryLimit('runner'), '    command: ["sleep", "infinity"]', `    volumes: ["./:${MOUNT}:ro"]`);
+  if (check !== undefined) lines.push(...jobLines('check', ['check', ...check.command], check.variables));
   return `${lines.join('\n')}\n`;
 }
 
+/** The Compose file of the job build: the job alone, so the installation runs with no server. */
+function buildFile(): string {
+  return `${['services:', ...jobLines('build', ['build'], {})].join('\n')}\n`;
+}
+
 /**
- * runner.sh, which runs inside runner in two parts: the installation order of the repository on the image of the pin, with
- * the clone of the bundle of `branch`, and the command of the run in that clone. A step that fails ends the file with its
- * exit code.
+ * runner.sh, the command of the two jobs: each first installs the system packages of the pin into its new container; the
+ * job build then installs the tools of the repository and the clone of the bundle of `branch` below work/ of the directory
+ * of the run, and the job check runs the command of the run in that clone with those tools. A step that fails ends the file
+ * with its exit code, and the files of work/ are given to the owner of the directory when the file ends.
  */
 function runnerFile(branch: string): string {
   const node = nodeVersion();
   return `${[
     '#!/bin/sh',
-    '# Runs in the service runner of a run of scripts/persist-servers.mts (docs/plans/fsm-v1/plan.md, C-6):',
+    '# Runs in the jobs of a run of scripts/persist-servers.mts (docs/plans/fsm-v1/plan.md, C-6):',
     '#',
-    '#   sh runner.sh install               installs what the targets of the repository need and clones the bundle',
-    '#   sh runner.sh run <command> ...     runs the command in that clone',
+    '#   sh runner.sh build                 installs what the targets of the repository need below work/ and clones the bundle',
+    '#   sh runner.sh check <command> ...   runs the command in that clone',
     '#',
-    '# The two parts are two commands of bay exec in one container: the servers of the run start between them, so the',
-    '# installation and the servers do not hold their memory at once. The container is new in each run, so each run',
-    '# installs again (S-475-8). Nothing is written into the directory of the run, which is mounted read-only.',
+    '# bay runs the job build with no server and starts the servers before the container of the job check, so the',
+    '# installation and the servers do not hold their memory at once. A container is new in each job, so what the jobs',
+    `# share is work/ of the directory of the run, which bay mounts at ${MOUNT}, and each run installs again (S-475-8).`,
     'set -eu',
     'export DEBIAN_FRONTEND=noninteractive',
-    'work=/persist-work',
+    `work=${MOUNT}/work`,
+    '# The container writes as its own user, so the files of work/ are given to the owner of the directory of the run when',
+    '# the file ends, and the one who removes the directory needs no rights of the container.',
+    `owner=$(stat -c %u:%g ${MOUNT})`,
+    'release() {',
+    '\tchown -R "$owner" "$work" || echo "persist-runner: the files of $work keep the owner of the container" >&2',
+    '}',
+    'trap release EXIT',
+    'mkdir -p "$work/tmp"',
     'export TMPDIR="$work/tmp" CARGO_HOME="$work/cargo" RUSTUP_HOME="$work/rustup"',
-    'PATH="$CARGO_HOME/bin:$PATH"',
+    'PATH="$work/node/bin:$CARGO_HOME/bin:$PATH"',
     'export PATH',
+    "echo 'persist-runner: the system packages' >&2",
+    'apt-get update -q',
+    `apt-get install -y -q ${packages().join(' ')}`,
     'case "$1" in',
-    'install)',
-    '\tmkdir -p "$work/tmp"',
-    "\techo 'persist-runner: the system packages' >&2",
-    '\tapt-get update -q',
-    `\tapt-get install -y -q ${packages().join(' ')}`,
+    'build)',
     '\t# make bootstrap starts the npm of the machine, so Node.js at the version of mise.toml comes before it.',
     '\tcase "$(uname -m)" in',
     '\taarch64 | arm64) arch=arm64 ;;',
@@ -233,10 +277,11 @@ function runnerFile(branch: string): string {
     '\t*) echo "persist-runner: no archive of Node.js is named for $(uname -m)" >&2; exit 1 ;;',
     '\tesac',
     `\techo 'persist-runner: Node.js ${node}' >&2`,
-    `\tcurl -fsSL "https://nodejs.org/dist/v${node}/node-v${node}-linux-$arch.tar.xz" | tar -xJ -C /usr/local --strip-components=1`,
+    '\tmkdir -p "$work/node"',
+    `\tcurl -fsSL "https://nodejs.org/dist/v${node}/node-v${node}-linux-$arch.tar.xz" | tar -xJ -C "$work/node" --strip-components=1`,
     '\t# make install installs the toolchain of rust-toolchain.toml with rustup, which no package of the image provides.',
     "\techo 'persist-runner: rustup' >&2",
-    '\tcurl -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain none --profile minimal',
+    '\tcurl -fsSL https://sh.rustup.rs | sh -s -- -y --no-modify-path --default-toolchain none --profile minimal',
     `\techo 'persist-runner: the tree of the branch ${branch}' >&2`,
     `\tgit clone -q -b ${branch} ${MOUNT}/tree.bundle "$work/tree"`,
     '\tcd "$work/tree"',
@@ -244,13 +289,13 @@ function runnerFile(branch: string): string {
     '\tmake bootstrap',
     '\tmake install',
     '\t;;',
-    'run)',
+    'check)',
     '\tshift',
     '\tcd "$work/tree"',
-    '\texec "$@"',
+    '\t"$@"',
     '\t;;',
     '*)',
-    "\techo 'usage: sh runner.sh install | run <command> ...' >&2",
+    "\techo 'usage: sh runner.sh build | check <command> ...' >&2",
     '\texit 2',
     '\t;;',
     'esac',
@@ -258,47 +303,124 @@ function runnerFile(branch: string): string {
 }
 
 /**
- * run.sh of the project `name`: the steps of a run, whose exit codes decide it. The command of the run, `command`, gets
- * `variables`. With `runner` it runs in the service runner, as a command of bay, and the file starts no program but bay
- * and date, which gives the time of its report: what else it does is of sh itself. Without it the command is a process that the file starts, with the variables in its
- * environment. A step runs as a job that the file waits for, so a signal reaches the trap at once, which ends the step.
+ * run.sh of the project `name`: the steps of a run, whose exit codes decide it. Without `key` it is the host form: the
+ * command `command` is a process that the file starts, with `variables` in its environment, between bay up and bay down.
+ * With `key` it is the runner form: the file queues the job build and, after it succeeded, the job check with that key,
+ * the commit of the bundle, shows the output of each and waits for it, and starts no program but bay and date, which gives
+ * the time of its report: what else it does is of sh itself. A step runs as a job of sh that the file waits for, so a signal reaches the trap at once, which ends the
+ * step.
  */
-function runFile(name: string, variables: Record<string, string>, command: readonly string[], runner: boolean): string {
-  const exec = ['exec', ...Object.entries(variables).flatMap(([key, value]) => ['-e', quoted(`${key}=${value}`)]), 'runner', 'sh', `${MOUNT}/runner.sh`, 'run', ...command.map(quoted)];
-  // The command of the host form: the variables are assignments before the words of the command, which sh puts into the
-  // environment of that process alone.
-  const hosted = ["mark 'command start'", `${[...Object.entries(variables).map(([key, value]) => `${key}=${quoted(value)}`), ...command.map(quoted)].join(' ')} &`, 'child=$!', 'wait "$child"', 'code=$?', 'child=', 'mark "command exit $code"', 'exit'];
-  const commanded = runner ? [`step command -f "$compose" -p "$project" ${exec.join(' ')}`, 'code=$?', 'exit'] : ['# The command of the run, a process of this host.', ...hosted];
-  // The first phase of the runner form: the runner alone starts and installs before the servers start, so the installation
-  // and the servers do not hold their memory at once. The memory of the runner is read here, because this value is what a
-  // limit of the runner must hold.
-  const installing = runner ? [
-    '# The runner alone, and the installation in it.',
-    'step runner-up -f "$directory/compose.install.yaml" -p "$project" up -no-pull || {',
-    '\techo "persist-servers: bay up failed for the runner of the project $project" >&2',
+function runFile(name: string, variables: Record<string, string>, command: readonly string[], key?: string): string {
+  const runner = key !== undefined;
+  // The steps after the images. The host form: the servers, the command as a process of this host, whose variables are
+  // assignments before its words, which sh puts into the environment of that process alone, and bay down by the trap.
+  const hosted = [
+    'started=1',
+    '# bay up returns after each server is healthy; it pulls nothing and changes no machine setup.',
+    'step up -f "$compose" -p "$project" up -no-pull || {',
+    '\techo "persist-servers: bay up failed before the servers of the project $project were healthy" >&2',
     '\texit',
     '}',
-    `step install -f "$directory/compose.install.yaml" -p "$project" exec runner sh ${MOUNT}/runner.sh install || {`,
-    '\techo "persist-servers: the installation in the runner of the project $project failed" >&2',
-    '\texit',
+    '# The command of the run, a process of this host.',
+    "mark 'command start'",
+    `${[...Object.entries(variables).map(([variable, value]) => `${variable}=${quoted(value)}`), ...command.map(quoted)].join(' ')} &`,
+    'child=$!',
+    'wait "$child"',
+    'code=$?',
+    'child=',
+    'mark "command exit $code"',
+    'exit',
+  ];
+  // The runner form: the two jobs, which bay runs in a process of its own. The key returns the same job to a caller that was
+  // cut off before it read the id. bay runs the job build with no server, starts the servers before the container of the
+  // job check and takes the project down after each job.
+  const jobbed = [
+    '# queue queues the job of the part $1 and sets job to its id; it fails when bay queues none.',
+    'queue() {',
+    '\tfile=$directory/compose.$1.yaml',
+    '\t[ "$1" = check ] && file=$compose',
+    '\tmark "add $1 start"',
+    `\tjob=$($bay -f "$file" -p "$project" job add -key ${quoted(key ?? '')} "$1")`,
+    '\tadded=$?',
+    '\tmark "add $1 exit $added"',
+    '\t[ "$added" -eq 0 ] && [ -n "$job" ] || {',
+    '\t\techo "persist-servers: bay job add failed for the job $1 of the project $project" >&2',
+    '\t\treturn 1',
+    '\t}',
+    '\tmark "job $1 $job"',
     '}',
-    'peak=$($bay -f "$directory/compose.install.yaml" -p "$project" exec runner cat /sys/fs/cgroup/memory.peak 2>/dev/null) || peak=\'not read\'',
-    'mark "memory.peak runner $peak after install"',
-    '# The servers are added to the project; bay keeps the container of the runner, whose declaration did not change.',
-  ] : [];
-  // The services of the project, whose memory the report holds.
-  const services = runner ? [...KINDS, 'runner'] : KINDS;
+    '# follow shows the output of the job of the part $1, waits for it and prints its record; it ends with 0 for a job that',
+    '# succeeded and with 1 for one that did not, as bay job wait does.',
+    'follow() {',
+    '\tqueued=$file',
+    `\tstep "logs $1" -f "$file" -p "$project" job logs -f -timeout ${WAIT} "$job"`,
+    `\tstep "wait $1" -f "$file" -p "$project" job wait -timeout ${WAIT} "$job"`,
+    '\tresult=$?',
+    '\tqueued=',
+    '\tstep "show $1" -f "$file" -p "$project" job show "$job"',
+    '\treturn "$result"',
+    '}',
+    'if [ "$verb" = add ]; then',
+    '\tqueue "$part" || exit',
+    '\techo "$job"',
+    '\techo "persist-servers: the job $job runs on; read its result with bay job wait $job, bay job logs $job and bay job show $job, with -peer <machine> on another machine" >&2',
+    '\tcode=0',
+    '\texit',
+    'fi',
+    '# The job check is queued only after the job build succeeded.',
+    'for part in build check; do',
+    '\tqueue "$part" || exit',
+    '\tfollow "$part" || exit',
+    'done',
+    'code=0',
+    'exit',
+  ];
+  // The ending of the trap. The host form reads the memory of each server and removes the project once bay up was started;
+  // the runner form cancels a job that has not ended and waits for it, so no container of the run outlives it.
+  const ending = runner ? [
+    '\tif [ -n "$queued" ]; then',
+    '\t\tmark \'cancel start\'',
+    '\t\t$bay -f "$queued" -p "$project" job cancel "$job"',
+    '\t\tmark "cancel exit $?"',
+    `\t\t$bay -f "$queued" -p "$project" job wait -timeout ${WAIT} "$job"`,
+    '\tfi',
+  ] : [
+    '\tif [ -n "$started" ]; then',
+    '\t\t# The highest memory use of each service, which the cgroup of its container holds, before the project is removed. A',
+    '\t\t# service whose file cannot be read does not fail the run.',
+    `\t\tfor service in ${KINDS.join(' ')}; do`,
+    '\t\t\tpeak=$($bay -f "$compose" -p "$project" exec "$service" cat /sys/fs/cgroup/memory.peak 2>/dev/null) || peak=\'not read\'',
+    '\t\t\tmark "memory.peak $service $peak"',
+    '\t\tdone',
+    "\t\tmark 'down start'",
+    '\t\tif $bay -f "$compose" -p "$project" down; then',
+    "\t\t\tmark 'down exit 0'",
+    '\t\t\techo "persist-servers: removed the project $project" >&2',
+    '\t\telse',
+    '\t\t\tmark "down exit $?"',
+    `\t\t\t: > "$directory/${DOWN_FAILED}"`,
+    '\t\t\techo "persist-servers: bay down failed; the containers of the project $project may still run: run bay -f $compose -p $project down" >&2',
+    '\t\t\t[ "$code" -ne 0 ] || code=1',
+    '\t\tfi',
+    '\tfi',
+  ];
+  const verbs = runner ? 'run|add build|add check|pull' : 'run|pull';
   return `${[
     '#!/bin/sh',
     '# Executes a run that scripts/persist-servers.mts wrote into this directory, with sh and bay alone',
     '# (docs/plans/fsm-v1/plan.md, C-6):',
     '#',
-    `#   sh run.sh        starts the servers${runner ? ' and the runner' : ''}, runs the command ${runner ? 'in the runner' : 'on this host'} and removes the project`,
+    ...(runner ? [
+      '#   sh run.sh              queues the job build, which installs, and after it the job check, which runs the command',
+      '#                          with the servers, shows the output of each and waits for it',
+      '#   sh run.sh add <part>   queues the job of the part build or check and prints its id: the job runs on without the',
+      '#                          one who queued it, who queues check after build succeeded',
+    ] : ['#   sh run.sh        starts the servers, runs the command on this host and removes the project']),
     '#   sh run.sh pull   pulls the images of the project, the only step that downloads an image',
     '#',
-    '# The exit code of each step decides the run. The exit code is that of the command, 1 for a step that failed before',
-    '# it, and 130, 143 and 129 after SIGINT, SIGTERM and SIGHUP. The file report.txt of this directory gets the time of',
-    '# each step and the highest memory use of each service, and each of its lines is shown.',
+    `# The exit code of each step decides the run. The exit code is ${runner ? '0 when both jobs succeeded and 1 for a job that did not' : 'that of the command'}, 1 for a step that failed`,
+    '# before it, and 130, 143 and 129 after SIGINT, SIGTERM and SIGHUP. The file report.txt of this directory gets the time',
+    `# of each step and ${runner ? 'the id of each job' : 'the highest memory use of each service'}, and each of its lines is shown.`,
     'set -u',
     'case "$0" in',
     '*/*) directory=${0%/*} ;;',
@@ -310,9 +432,10 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     `project=${quoted(name)}`,
     '# The words that start bay on this machine: those of the variable BAY, which the one who starts the run sets.',
     'bay=${BAY:-bay}',
-    '# child is the step that runs, started is set once bay up was started, and code is the exit code of the run.',
+    `# child is the step that runs, ${runner ? 'job is the id of the last job, queued is its Compose file while it has not ended' : 'started is set once bay up was started'}, and code is the exit`,
+    '# code of the run.',
     'child=',
-    'started=',
+    ...(runner ? ['job=', 'queued='] : ['started=']),
     'code=1',
     '# mark writes a line of the report, the time in UTC and an event, and shows it. date is the one program beside bay',
     '# that this file starts for its own steps.',
@@ -334,9 +457,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\tmark "$name exit $ended"',
     '\treturn "$ended"',
     '}',
-    '# finish ends the step that runs and removes the project that bay up may have started. bay down ends with 0',
-    '# also for a project that holds no container. After a failed bay down the directory is marked, because bay down needs',
-    '# its Compose file.',
+    `# finish ends the step that runs and ${runner ? 'cancels the job that has not ended and waits for it' : 'removes the project that bay up may have started. bay down ends with 0\n# also for a project that holds no container. After a failed bay down the directory is marked, because bay down needs\n# its Compose file'}.`,
     'finish() {',
     "\ttrap '' INT TERM HUP",
     '\ttrap - EXIT',
@@ -344,24 +465,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\t\tkill -TERM "$child" 2>/dev/null',
     '\t\twait "$child"',
     '\tfi',
-    '\tif [ -n "$started" ]; then',
-    '\t\t# The highest memory use of each service, which the cgroup of its container holds, before the project is removed. A',
-    '\t\t# service whose file cannot be read does not fail the run.',
-    `\t\tfor service in ${services.join(' ')}; do`,
-    '\t\t\tpeak=$($bay -f "$compose" -p "$project" exec "$service" cat /sys/fs/cgroup/memory.peak 2>/dev/null) || peak=\'not read\'',
-    '\t\t\tmark "memory.peak $service $peak"',
-    '\t\tdone',
-    "\t\tmark 'down start'",
-    '\t\tif $bay -f "$compose" -p "$project" down; then',
-    "\t\t\tmark 'down exit 0'",
-    '\t\t\techo "persist-servers: removed the project $project" >&2',
-    '\t\telse',
-    '\t\t\tmark "down exit $?"',
-    `\t\t\t: > "$directory/${DOWN_FAILED}"`,
-    '\t\t\techo "persist-servers: bay down failed; the containers of the project $project may still run: run bay -f $compose -p $project down" >&2',
-    '\t\t\t[ "$code" -ne 0 ] || code=1',
-    '\t\tfi',
-    '\tfi',
+    ...ending,
     '\tmark "run exit $code"',
     '\texit "$code"',
     '}',
@@ -369,8 +473,10 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     "trap 'code=130; exit' INT",
     "trap 'code=143; exit' TERM",
     "trap 'code=129; exit' HUP",
-    'case "${1:-run}" in',
-    'run) ;;',
+    'verb=${1:-run}',
+    ...(runner ? ['part=${2:-}'] : []),
+    'case "$verb${2+ $2}${3+ $3}" in',
+    `${runner ? "run|'add build'|'add check'" : 'run'}) ;;`,
     'pull)',
     '\tstep version version --json || exit',
     '\tstep pull -f "$compose" -p "$project" pull',
@@ -378,7 +484,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\texit',
     '\t;;',
     '*)',
-    "\techo 'usage: sh run.sh [run|pull]' >&2",
+    `\techo 'usage: sh run.sh [${verbs}]' >&2`,
     '\tcode=2',
     '\texit',
     '\t;;',
@@ -391,14 +497,7 @@ function runFile(name: string, variables: Record<string, string>, command: reado
     '\techo "persist-servers: an image of the project $project is not installed: run make persist-images, or sh $directory/run.sh pull" >&2',
     '\texit',
     '}',
-    'started=1',
-    ...installing,
-    '# bay up returns after each server is healthy; it pulls nothing and changes no machine setup.',
-    'step up -f "$compose" -p "$project" up -no-pull || {',
-    '\techo "persist-servers: bay up failed before the servers of the project $project were healthy" >&2',
-    '\texit',
-    '}',
-    ...commanded,
+    ...(runner ? jobbed : hosted),
   ].join('\n')}\n`;
 }
 
@@ -427,13 +526,25 @@ function addresses(text: string): Record<Kind, string> {
 }
 
 /**
+ * Fails unless the JSON `text` of `bay plan --json` of the Compose file of `part` of the project `name` names the service
+ * of that part as a job: a bay that does not read x-bay.job would start it as a service.
+ */
+function requireJob(text: string, part: Part, name: string): void {
+  const services = field(parse(text, 'the output of bay plan --json'), 'services');
+  const service: unknown = Array.isArray(services) ? services.find(each => field(each, 'name') === part) : undefined;
+  if (!isRecord(field(service, 'job'))) throw new Failure(`persist-servers: bay plan --json names the service ${part} of the project ${name} as no job, so this bay does not run jobs:\n${text}`.trimEnd());
+}
+
+/**
  * Writes the directory of a run of `command`, of the runner form with `runner` and of the host form without it, and returns
  * its path. Fails at once unless PATH holds bay; a failure after the directory was made removes it.
  */
 function write(command: readonly string[], runner: boolean): string {
   // The files are built first, so a pin that is wrong fails before anything is made.
-  const composed = composeFile(true, runner);
+  const servers = composeFile();
   if (runner) {
+    composeFile({ command, variables: {} });
+    buildFile();
     packages();
     nodeVersion();
   }
@@ -442,24 +553,29 @@ function write(command: readonly string[], runner: boolean): string {
   const version = bayVersion();
   process.stderr.write(`persist-servers: bay version: ${version.text}\n`);
   requireContract(version);
-  // The runner runs the committed tree of the branch of the checkout.
+  // The jobs run the committed tree of the branch of the checkout, and the commit of that branch is the key of each job.
   const branch = runner ? output('git', ['symbolic-ref', '--short', 'HEAD']).trim() : '';
   if (runner && !/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(branch)) throw new Failure(`persist-servers: the checkout is on no branch that a line of sh can name: ${JSON.stringify(branch)}`);
+  const commit = runner ? output('git', ['rev-parse', '--verify', `${branch}^{commit}`]).trim() : undefined;
+  if (commit !== undefined && !/^[0-9a-f]{40}(?:[0-9a-f]{24})?$/.test(commit)) throw new Failure(`persist-servers: git names no commit of the branch ${branch}: ${JSON.stringify(commit)}`);
   const name = `fsm-persist-${String(process.pid)}-${randomBytes(4).toString('hex')}`;
   const directory = path.join(RUNS, name);
   mkdirSync(directory, { recursive: true });
   try {
+    // The hosts of the servers come from the plan of the servers alone, and the job check holds them.
     const compose = path.join(directory, 'compose.yaml');
-    writeFileSync(compose, composed);
+    writeFileSync(compose, servers);
     const hosts = addresses(bayOutput(['-f', compose, '-p', name, 'plan', '--json']));
     const variables: Record<string, string> = {};
     for (const kind of KINDS) Object.assign(variables, SERVERS[kind].variables(hosts[kind]));
     if (runner) {
-      writeFileSync(path.join(directory, 'compose.install.yaml'), composeFile(false, true));
+      writeFileSync(compose, composeFile({ command, variables }));
+      writeFileSync(path.join(directory, PART_FILES.build), buildFile());
+      for (const part of ['check', 'build'] as const) requireJob(bayOutput(['-f', path.join(directory, PART_FILES[part]), '-p', name, 'plan', '--json']), part, name);
       output('git', ['bundle', 'create', path.join(directory, 'tree.bundle'), branch]);
       writeFileSync(path.join(directory, 'runner.sh'), runnerFile(branch));
     }
-    writeFileSync(path.join(directory, 'run.sh'), runFile(name, variables, command, runner));
+    writeFileSync(path.join(directory, 'run.sh'), runFile(name, variables, command, commit));
   } catch (error) {
     rmSync(directory, { recursive: true, force: true });
     throw error;
@@ -471,7 +587,7 @@ const SIGNALS = { SIGINT: 130, SIGTERM: 143 } as const;
 
 /**
  * Writes the directory of a run of `command`, in the form that `runner` names, runs its run.sh with `args` and returns its exit code. SIGINT and SIGTERM
- * are forwarded to run.sh, whose trap removes the project. The directory is removed unless run.sh marked it after a failed
+ * are forwarded to run.sh, whose trap removes the project or cancels the job. The directory is removed unless run.sh marked it after a failed
  * bay down.
  */
 async function execute(command: readonly string[], runner: boolean, args: readonly string[]): Promise<number> {
