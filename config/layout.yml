@@ -61,6 +61,9 @@ rules:
       - "!tests/persist-servers"
       # the tests of the installation of bay on a runner of CI (S-475-5): scripts/bay.mts against stand-ins that the test writes
       - "!tests/bay"
+      # the tests of the recipes of the release assets of each platform (S-470-4, make release-test): the Makefile against stand-ins
+      # of the tools that the recipes start
+      - "!tests/release"
       # the type check of the declarations of legacy/packages/js (S-09-2, make npm-types): tsc compiles tests/npm-types/consumer.ts in strict mode against legacy/packages/js/src/*.d.ts
       - "!tests/npm-types"
 

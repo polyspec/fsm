@@ -475,6 +475,16 @@
     },
     {
       "paths": [
+        "Makefile",
+        "tests/release/**",
+        "tests/support/make-sandbox.mts"
+      ],
+      "targets": [
+        "release-test"
+      ]
+    },
+    {
+      "paths": [
         "scripts/bay.mts",
         "config/toolchain.json",
         "tests/bay/**"

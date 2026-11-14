@@ -580,6 +580,45 @@ release-undraft:
 release-coverage:
 	$(NODE) $(KIT)/release.$(KIT_EXT) coverage
 
+# ---- The assets of each platform (docs/plans/fsm-v1/plan.md, C-11; binding GN-19 to GN-19g) ---------------------------------
+# A recipe builds the asset of the platform of its host, because no tool of the release compiles for another platform: it reads
+# the host from rustc of the pinned toolchain and writes into RELEASE_ASSETS, building with CARGO_TARGET_DIR set to
+# RELEASE_TARGET, so that an asset holds nothing of a development build. Each step is a line that starts a standard tool (GN-19).
+RELEASE_ASSETS ?= var/release/assets
+RELEASE_TARGET ?= var/release/target
+# release_host sets host to the Rust triple of the toolchain and go to the directory of the Go module of its platform (GN-19a),
+# and ends the recipe $(1) with 2 on a host that is no platform of the release.
+release_host = host=$$(rustc --print host-tuple) || exit 1; \
+	case "$$host" in \
+	x86_64-unknown-linux-gnu) go=linux_amd64 ;; \
+	aarch64-unknown-linux-gnu) go=linux_arm64 ;; \
+	aarch64-apple-darwin) go=darwin_arm64 ;; \
+	*) echo "$(1): the host $$host is no platform of the release: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu, aarch64-apple-darwin" >&2; exit 2 ;; \
+	esac
+
+# release-go-static builds the static library of the Go module (GN-19b, S-470-4) and strips the debug sections of a copy in
+# RELEASE_TARGET with the llvm-strip of the component llvm-tools of the toolchain, never the strip of PATH, which differs by
+# machine. The stripped copy enters the assets under another name and is renamed there, so the assets never hold a library
+# that is half written or not stripped.
+.PHONY: release-go-static
+release-go-static:
+	@$(call release_host,release-go-static); \
+	set -ex; \
+	CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-go; \
+	copy=$(RELEASE_TARGET)/stripped/$$go; \
+	mkdir -p "$$copy"; \
+	cp $(RELEASE_TARGET)/release/libpolyspec_fsm_go.a "$$copy/libpolyspec_fsm_go.a"; \
+	"$$(rustc --print sysroot)/lib/rustlib/$$host/bin/llvm-strip" --strip-debug "$$copy/libpolyspec_fsm_go.a"; \
+	out=$(RELEASE_ASSETS)/go/$$go; \
+	mkdir -p "$$out"; \
+	cp "$$copy/libpolyspec_fsm_go.a" "$$out/.libpolyspec_fsm_go.a.part"; \
+	mv "$$out/.libpolyspec_fsm_go.a.part" "$$out/libpolyspec_fsm_go.a"
+
+# release-test runs the tests of the recipes of the assets (tests/release) against stand-ins of the tools that they start.
+.PHONY: release-test
+release-test:
+	$(RUN_TESTS) node --results .results/release-test.json --inputs Makefile --inputs tests/release --inputs tests/support/make-sandbox.mts -- --test-concurrency=1 tests/release
+
 # The release builds the released versions, so its Go runs without the go.work that make link writes in each Go module.
 release-prepare release-tools release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage: export GOWORK := off
 
@@ -590,7 +629,7 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 # itself, so the workflow and make check cannot differ (S-474; make workflows-test).
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test binding-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test bay-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test binding-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test bay-test release-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
