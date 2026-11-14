@@ -1,5 +1,5 @@
 <!-- doc-id: plan-fsm-v1 -->
-<!-- source-sha256: b5e84adafb74feeafbca871954b17a17ddf973f2c4a38868ce4f0470440a3dc9 -->
+<!-- source-sha256: 01a598806790fc91b6ce96621c20b98c9fc662927736f807336079ab51d9ce97 -->
 # fsm v1 계획
 
 [English](plan.md)
@@ -41,7 +41,7 @@
 **v1 범위 밖 (감사 지적 대상이 아님)**
 - B-0의 비채택 목록
 - 다중 편집자 동시성(GUI는 단일 편집자)
-- 패키지 배포/릴리스(언어 패키지는 검증대)
+- `legacy/` 아래 legacy 언어 패키지의 배포(검증대다). 코어와 바인딩의 릴리스는 C-11이다
 - DB dialect별 차이(orm 소유)
 - 성능 최적화, i18n, 인증/권한
 
@@ -387,6 +387,19 @@ FSM_TEST_MYSQL_ADMIN_DSN=mysql://root:root@<host of the service mysql>:<its port
 - `.github/workflows/pages.yml`은 main의 모든 push와 수동 실행에서 돈다. `VITEPRESS_BASE=/fsm/`(사이트의 base이며 `docs/.vitepress/config.mts`가 읽는다)로 `make docs-build`를 실행하고, `docs/.vitepress/dist`를 upload-pages-artifact로 올린 뒤 deploy-pages로 배포한다. 사이트는 https://polyspec.github.io/fsm/ 에 게시된다.
 - 두 워크플로는 최상위에 `permissions: contents: read`를 두고, concurrency 그룹은 실행을 취소하지 않는다. 새 push가 이전 실행을 취소하지 않는다.
 - 테스트는 `tests/workflows/`(`make workflows-test`)이다. 워크플로를 텍스트로 읽고 네트워크가 필요 없다. 모든 pin, check job의 make 호출, `services` 블록이 없음, 이미지 step과 서버 step, 버전, 보고서 artifact, 사이트의 base와 배포를 확인한다.
+
+### C-11. 코어와 바인딩의 릴리스(S-470)
+- fsm은 코어와 binding이 생성한 바인딩을 자기 recipe와 자기 release workflow로 릴리스한다. binding이 바인딩을 가진 저장소에 대해 적은 방식(binding `docs/spec/generator.md`, GN-19부터 GN-19g)을 따른다. kit은 platform별 build를 주지 않는다. kit의 release 도구는 platform이 필요 없는 npm, Composer, wheel의 archive를 묶고, 릴리스에 tag를 달고, GitHub Release를 만든다. 각 platform의 build와 pack은 fsm의 단계다(kit K1221). 나누는 규칙(GN-19): 표준 도구가 하는 단계(Cargo, `uv build`를 통한 maturin, napi CLI, npm, `zip`, `llvm-strip`)는 그 도구를 시작하는 `Makefile` recipe의 한 줄이다. 바인딩의 형태만으로 정해지는 Go module의 commit과 tag는 명령 `binding release-go-module`이다(GN-19f).
+- platform(GN-19a): `linux-x64-gnu`, `linux-arm64-gnu`, `darwin-arm64`. Rust triple은 `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`, `aarch64-apple-darwin`, PIE 이름 부분은 `x86_64-linux-glibc`, `arm64-linux-glibc`, `arm64-darwin-bsdlibc`, Go 디렉터리는 `linux_amd64`, `linux_arm64`, `darwin_arm64`다. 릴리스의 어떤 도구도 다른 platform용으로 compile하지 않으므로, recipe는 자기 host platform의 asset을 build한다. 고정된 toolchain의 `rustc --print host-tuple`에서 host를 읽고, 릴리스의 platform이 아닌 host에서는 종료 코드 2로 실패한다. recipe는 `RELEASE_ASSETS`(기본값 `var/release/assets`)에 쓰고 `CARGO_TARGET_DIR`을 `RELEASE_TARGET`(기본값 `var/release/target`)으로 두고 build한다. 그래서 asset은 개발 build의 어떤 것도 담지 않는다.
+- recipe는 asset의 종류마다 하나다.
+  - `make release-go-static`(GN-19b, S-470-4): `cargo build --release --locked -p polyspec-fsm-go`, 그다음 `libpolyspec_fsm_go.a`의 사본에 고정된 toolchain의 `<sysroot>/lib/rustlib/<host>/bin`에 있는 `llvm-strip --strip-debug`를 실행한다(`rustc --print sysroot`, `rust-toolchain.toml`의 component `llvm-tools`, S-470-1). `PATH`의 `strip`은 쓰지 않는다. 결과는 `RELEASE_ASSETS/go/<Go 디렉터리>/libpolyspec_fsm_go.a`이며, 다른 이름으로 쓴 뒤 완성되면 이름을 바꾼다.
+  - `make release-wheel`(GN-19c, S-470-5): `MATURIN_PEP517_ARGS=--locked SOURCE_DATE_EPOCH=<commit 시각> uv build --wheel --python python3 --out-dir RELEASE_ASSETS/wheel packages/python`. wheel은 abi3이므로 한 platform의 wheel 하나가 지원하는 모든 Python에 쓰인다.
+  - `make release-php-ext PHP=<php>`(GN-19d, S-470-6): `PHP=<php> PHP_CONFIG=<php-config> cargo build --release --locked -p polyspec-fsm-php-ext`, cdylib을 `polyspec_fsm.so`로 복사, 적재 검사 `php -n -d extension=<path> -r 'exit(extension_loaded("polyspec_fsm") ? 0 : 1);'`, 그다음 `zip -q -9 -X php_polyspec_fsm-v<version>_php<X.Y>-<PIE 이름 부분>[-debug]-<zts|nts>.zip polyspec_fsm.so`. PIE가 미리 묶인 binary를 찾는 이름이다.
+  - `make release-npm-platform`(GN-19e, S-470-7): 루트 `package.json`의 devDependency `@napi-rs/cli`의 napi CLI가 addon을 build하고(`napi build --platform --release --no-js ... --target <Rust triple> -- --locked`), host의 triple만 적은 실행의 설정으로 `napi create-npm-dirs`와 `napi artifacts`를 실행하고, `npm pack --ignore-scripts`가 platform package를 묶는다. `make release-npm`은 사본 manifest의 `optionalDependencies`에 각 platform package를 릴리스 버전으로 쓴 뒤 `@polyspec/fsm`을 묶는다. 추적하는 manifest는 아무것도 적지 않는다(GN-3c).
+  - `make release-go-module`(GN-19f, S-470-8): `binding generate --target go`와 `binding release-go-module --root . --tag vX.Y.Z --libraries RELEASE_ASSETS/go --work <실행의 디렉터리>`. 이 명령은 세 platform의 library를 검사하고, consumer로 commit을 증명하고, annotated tag `packages/go/vX.Y.Z`를 만든다. recipe는 명령이 출력한 reference를 push한다.
+- workflow(GN-19a, GN-19g, S-470-9): release workflow는 각 asset을 그 platform의 job에서, GN-19a가 적은 runner(`ubuntu-24.04`, `ubuntu-24.04-arm`, `macos-15`)에서, tag의 tree 사본에서 build한다. PHP extension은 PHP minor마다 entry가 하나다. archive를 build하기 전에 `binding check packages/rust/interface.json --release`가 통과한다. 이 job들은 C-10의 runner 규칙의 유일한 예외다. 릴리스의 어떤 도구도 다른 platform용으로 compile하지 않기 때문이다. CI는 같은 matrix로 자기 commit의 같은 asset을 build하고 `ci-passed`가 그 job들을 요구한다. 그래서 릴리스는 asset이 build된 commit에만 tag를 단다. GitHub Release의 asset은 label `polyspec-fsm-<runtime>-<version>`을 갖고, 그 뒤에 `-<platform>`이, PHP extension이면 `-php<X.Y>-<platform>`이 붙는다.
+- `config/release.json`(S-470-10): `packages/ts`, `packages/python`, `packages/php-ext`, `packages/go`의 manifest는 그 recipe와 job이 통과하면 `notReleased`에서 나오고, `make release-coverage`가 그것들을 릴리스한 상태로 통과한다.
+- 생성기(S-470-3): 루트 `Cargo.lock`은 binding을 그 릴리스 줄 `v1/rust-core`의 commit 가운데 GN-3c(`binding scaffold`가 manifest에 쓰는 릴리스 field)와 GN-19f를 담은 commit에 고정한다. binding의 lane branch는 고정하지 않는다.
 
 ## D. 체크리스트와 owner 검사
 
