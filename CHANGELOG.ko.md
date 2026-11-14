@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 2b2c642abae8b695f7dfe9c4ccf72c0da3c086e312d64a68dc9893b2542b561d -->
+<!-- source-sha256: bfd011570866dc31fe3b0d70ef7d0cd5683072c53396b844df48c2ffa98a29e8 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -7,6 +7,7 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- `make release-php-ext`가 생성물이 없는 checkout에서 build되고, `PHP`를 PATH 위의 이름으로 받는다(S-470-6). 입력: 새 checkout에서 `make release-php-ext PHP=<php>`, 또는 `PHP=php`. 이전 동작: recipe가 PHP 바인딩을 생성하지 않아 cargo가 `couldn't find file packages/php-ext/generated/lib.rs`로 멈췄고, `PHP`를 적힌 그대로 cargo에 넘겨 ext-php-rs의 build script가 `PHP=php`를 `php executable not found at php`로 거부했다. 기대 동작: `release-wheel`이 `bindings-python`에 의존하듯 recipe가 `bindings-php`에 의존하고, cargo를 시작하기 전에 `PHP`와 `PHP_CONFIG`를 PATH에서 절대 경로로 푼다. `make release-test`로 검증했다(26개 통과). 새 시험 두 개는 이전에 실패했다.
 - `make release-php-ext PHP=<php>`가 host platform과 그 PHP minor의 PHP 확장을 build하고 묶는다(S-470-6, plan C-11, binding GN-19d). 입력: 릴리스의 host에서 `make release-php-ext PHP=<php>`, `PHP_CONFIG`는 선택. 이전 동작: 릴리스의 PHP 확장을 build하는 recipe가 없었다. 기대 동작: recipe는 `PHP`, `PHP_CONFIG`(주어지지 않으면 그 PHP 옆의 `php-config`), `RELEASE_TARGET`인 `CARGO_TARGET_DIR`과 함께 `cargo build --release --locked -p polyspec-fsm-php-ext`를 실행하고, cdylib를 `polyspec_fsm.so`로 복사하고, `php -n -d extension=<절대 경로>`가 그것을 load해야 하며, 그 PHP에서 읽은 `debug`와 `zts`로 `RELEASE_ASSETS/php-ext/php_polyspec_fsm-v<crate 버전>_php<X.Y>-<PIE platform>[-debug]-<zts|nts>.zip`를 `zip -q -9 -X`로 묶는다. load되지 않는 확장은 아무것도 묶지 않고, `PHP`가 없는 실행과 다른 host는 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(24개 통과). 확장의 시험은 이전에 `No rule to make target`으로 실패했다.
 - `make release-wheel`이 host platform의 Python 바인딩 abi3 wheel을 build한다(S-470-5, plan C-11, binding GN-19c). 입력: 릴리스의 host에서 `make release-wheel`. 이전 동작: platform의 wheel을 build하는 recipe가 없었다. 기대 동작: recipe는 Python 바인딩을 생성한 뒤, checkout의 uv로 `MATURIN_PEP517_ARGS=--locked`, HEAD의 commit 시각인 `SOURCE_DATE_EPOCH`, `RELEASE_TARGET`인 `CARGO_TARGET_DIR`과 함께 `uv build --wheel --python python3 --out-dir RELEASE_ASSETS/wheel packages/python`를 실행한다. 다른 host는 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(10개 통과). wheel의 시험 세 개는 이전에 `No rule to make target`으로 실패했다.
 - `make release-go-static`이 host platform의 Go module 정적 library를 build한다(S-470-4, plan C-11, binding GN-19b). 입력: 릴리스의 host(`x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`, `aarch64-apple-darwin`)에서 `make release-go-static`. 이전 동작: platform의 릴리스 asset을 build하는 recipe가 없었다. 기대 동작: recipe는 `CARGO_TARGET_DIR`을 `RELEASE_TARGET`으로 두고 `cargo build --release --locked -p polyspec-fsm-go`를 실행하고, 사본의 debug section을 toolchain의 `llvm-strip`으로 지우고, 그 사본의 이름을 `RELEASE_ASSETS/go/<Go 디렉터리>/libpolyspec_fsm_go.a`로 바꾼다. 다른 host는 2로 실패하고 아무것도 build하지 않는다. `make release-test`로 검증했다(7개 통과). 시험은 이전에 `No rule to make target`으로 실패했다.

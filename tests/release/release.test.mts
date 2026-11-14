@@ -90,6 +90,7 @@ case "$code" in
 *) exit 9 ;;
 esac
 `);
+  program(path.join(bin, 'php-config'), record);
   // zip records its directory and writes the archive that it names.
   program(path.join(bin, 'zip'), `${record}printf 'zip\\tPWD=%s\\n' "$PWD" >> '${calls}'
 printf 'zip of %s\\n' "$5" > "$4"
@@ -211,13 +212,16 @@ test('release-wheel fails with 2 on a host that is no platform of the release, a
 
 // ---- release-php-ext (GN-19d, S-470-6) -------------------------------------------------------------------------------------
 
+// The generation of the PHP binding is a prerequisite of the extension; a case marks it as done, so make runs the recipe alone.
+const GENERATED_PHP = ['-o', 'bindings-php'];
+
 test('release-php-ext builds, loads and packs the PHP extension under the name by which PIE finds it', async t => {
   for (const { triple, pie } of PLATFORMS) {
     for (const php of [{ minor: '8.4' }, { minor: '8.5', zts: true }, { minor: '8.3', debug: true, zts: true }] as Php[]) {
       const build = `${php.debug ? '-debug' : ''}-${php.zts ? 'zts' : 'nts'}`;
       await t.test(`${triple} php${php.minor}${build}`, t2 => {
         const box = sandbox(t2, triple, false, php);
-        const ran = make(box, ['release-php-ext', `PHP=${box.php}`]);
+        const ran = make(box, [...GENERATED_PHP, 'release-php-ext', `PHP=${box.php}`]);
         assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
         const name = `php_polyspec_fsm-v1.2.3_php${php.minor}-${pie}${build}.zip`;
         const assets = path.join(box.dir, 'var/release/assets/php-ext');
@@ -242,15 +246,38 @@ test('release-php-ext builds, loads and packs the PHP extension under the name b
 
 test('release-php-ext passes PHP_CONFIG and writes into RELEASE_ASSETS', t => {
   const box = sandbox(t, 'aarch64-apple-darwin');
-  const ran = make(box, ['release-php-ext', `PHP=${box.php}`, 'PHP_CONFIG=/opt/php/bin/php-config', 'RELEASE_ASSETS=out/assets']);
+  const config = path.join(path.dirname(box.dir), 'other/php-config');
+  program(config, '');
+  const ran = make(box, [...GENERATED_PHP, 'release-php-ext', `PHP=${box.php}`, `PHP_CONFIG=${config}`, 'RELEASE_ASSETS=out/assets']);
   assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
   assert.ok(existsSync(path.join(box.dir, 'out/assets/php-ext/php_polyspec_fsm-v1.2.3_php8.4-arm64-darwin-bsdlibc-nts.zip')));
-  assert.ok(box.calls().some(call => call[0] === 'cargo' && call[3] === 'PHP_CONFIG=/opt/php/bin/php-config'), JSON.stringify(box.calls()));
+  assert.ok(box.calls().some(call => call[0] === 'cargo' && call[3] === `PHP_CONFIG=${config}`), JSON.stringify(box.calls()));
+});
+
+test('release-php-ext gives cargo the absolute paths of a PHP and a php-config that are named relative to the checkout', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  // The build script of ext-php-rs refuses a PHP that it cannot find by the path that PHP names.
+  const ran = make(box, [...GENERATED_PHP, 'release-php-ext', 'PHP=../bin/php']);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const real = realpathSync(box.dir);
+  assert.ok(box.calls().some(call => call[0] === 'cargo' && call[2] === `PHP=${real}/../bin/php` && call[3] === `PHP_CONFIG=${real}/../bin/php-config`), JSON.stringify(box.calls()));
+});
+
+test('release-php-ext generates the PHP binding first, so that a checkout without generated files builds', t => {
+  const box = sandbox(t, 'x86_64-unknown-linux-gnu');
+  // The install of the generator is keyed on the root Cargo.lock, which the copy of the Makefile holds empty.
+  writeFileSync(path.join(box.dir, 'Cargo.lock'), '');
+  const ran = make(box, ['-n', 'release-php-ext', `PHP=${box.php}`]);
+  assert.equal(ran.status, 0, `${ran.stdout}${ran.stderr}`);
+  const lines = ran.stdout.split('\n');
+  const generate = lines.findIndex(line => / generate --root \S+ --target php$/.test(line));
+  const build = lines.findIndex(line => line.includes('cargo build --release --locked -p polyspec-fsm-php-ext'));
+  assert.ok(generate >= 0 && build > generate, ran.stdout);
 });
 
 test('release-php-ext packs nothing when the extension does not load', t => {
   const box = sandbox(t, 'x86_64-unknown-linux-gnu', false, { minor: '8.4', loadFails: true });
-  const ran = make(box, ['release-php-ext', `PHP=${box.php}`]);
+  const ran = make(box, [...GENERATED_PHP, 'release-php-ext', `PHP=${box.php}`]);
   assert.notEqual(ran.status, 0, `${ran.stdout}${ran.stderr}`);
   assert.deepEqual(box.calls().filter(call => call[0] === 'zip'), []);
   assert.equal(existsSync(path.join(box.dir, 'var/release/assets/php-ext')), false);
@@ -258,7 +285,7 @@ test('release-php-ext packs nothing when the extension does not load', t => {
 
 test('release-php-ext fails with 2 without PHP, and builds nothing', t => {
   const box = sandbox(t, 'x86_64-unknown-linux-gnu');
-  const ran = make(box, ['release-php-ext']);
+  const ran = make(box, [...GENERATED_PHP, 'release-php-ext']);
   assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
   assert.match(ran.stderr, /release-php-ext: PHP is required, for example make release-php-ext PHP=php/);
   assert.deepEqual(box.calls(), []);
@@ -266,7 +293,7 @@ test('release-php-ext fails with 2 without PHP, and builds nothing', t => {
 
 test('release-php-ext fails with 2 on a host that is no platform of the release, and builds nothing', t => {
   const box = sandbox(t, 'x86_64-apple-darwin');
-  const ran = make(box, ['release-php-ext', `PHP=${box.php}`]);
+  const ran = make(box, [...GENERATED_PHP, 'release-php-ext', `PHP=${box.php}`]);
   assert.equal(ran.status, 2, `${ran.stdout}${ran.stderr}`);
   assert.match(ran.stderr, /release-php-ext: the host x86_64-apple-darwin is no platform of the release/);
   assert.deepEqual(box.calls().filter(call => call[0] !== 'rustc'), []);
