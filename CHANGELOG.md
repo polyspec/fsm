@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The job `publish` of `release.yml` copies the downloaded platform assets into `var/release/assets` (S-490). Input: the release of the tag v0.0.15. Behaviour before: only `packages/release.mk` defined `RELEASE_ASSETS`, and the checkout of the tag holds that file only after `release-recipes`, so the line of `ci-release-publish` ran `mkdir -p  && cp -R var/release/downloaded/. /` and stopped at the failed `mkdir`. Expected behaviour: the Makefile defines `RELEASE_ASSETS ?= var/release/assets`, the value of `packages/release.mk`, and the line copies into `var/release/assets/`; no other line of the recipe names a variable that only `packages/release.mk` defines. Red: `make release-test` 9 passed and 1 failed; Green: 10 passed.
+
 ## 0.0.15
 
 - The job `publish` of `release.yml` installs uv, Python and Composer before `make release-assets` (S-489). Input: the release of the tag v0.0.14. Behaviour before: `ci-release-publish` ran `release-assets` before `install-tools TOOLS="rust go"`, and `release-assets` of kit runs `uv workspace dir` for each Python project, so the job failed with `uv workspace dir could not start: spawnSync uv ENOENT`. Expected behaviour: `ci-release-publish` runs `install-tools TOOLS="rust go uv python composer"` before `release-assets`. Red: `make release-test` 8 passed and 1 failed; Green: 9 passed.

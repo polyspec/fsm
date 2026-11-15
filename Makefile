@@ -600,6 +600,9 @@ ci-release-tag:
 # with uv (uv workspace dir) and Composer (composer config vendor-dir) and packs with npm, uv and python, so the tools of the
 # release are installed before it.
 RELEASE_DOWNLOADED ?= var/release/downloaded
+# RELEASE_ASSETS has the value of packages/release.mk, which the checkout of the tag holds only after release-recipes, so the
+# recipe below names var/release/assets before that file exists.
+RELEASE_ASSETS ?= var/release/assets
 ci-release-publish: export TAG = $(shell git describe --tags --exact-match HEAD 2>/dev/null)
 ci-release-publish: export VERSION = $(patsubst v%,%,$(TAG))
 ci-release-publish: export PATH := $(KIT_TOOLS)/mise/shims:$(KIT_TOOLS)/bin:$(PATH)

@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: e3bf70ad1b9bfb0e73f9c349b60c2c1e8a6ece80e379e9867bc9ab033fc5f661 -->
+<!-- source-sha256: 3ecc85e898824b2c6f01c63cbf76ec5dd907e13cbf81f45fa0d7fc5e7a0f1c55 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+- `release.yml`의 job `publish`는 내려받은 플랫폼 asset을 `var/release/assets`로 복사한다(S-490). 입력: 태그 v0.0.15의 릴리스. 이전 동작: `RELEASE_ASSETS`는 `packages/release.mk`만 정의했고, 태그의 checkout은 `release-recipes` 뒤에야 그 파일을 가지므로 `ci-release-publish`의 줄이 `mkdir -p  && cp -R var/release/downloaded/. /`를 실행했고 실패한 `mkdir`에서 멈췄다. 기대 동작: Makefile이 `packages/release.mk`의 값인 `RELEASE_ASSETS ?= var/release/assets`를 정의하고, 그 줄은 `var/release/assets/`로 복사한다. recipe의 다른 줄은 `packages/release.mk`만 정의하는 변수를 쓰지 않는다. Red: `make release-test` 9 passed, 1 failed; Green: 10 passed.
 
 ## 0.0.15
 

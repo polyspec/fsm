@@ -4,7 +4,7 @@
 // the tools that the generated recipes start, and the step release-tag-output of the release workflow.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -113,4 +113,19 @@ test('ci-release-publish installs uv, python and composer before release-assets'
   assert.ok(assets >= 0 && install >= 0 && install < assets, `ci-release-publish installs its tools before release-assets:\n${body}`);
   const tools = /TOOLS="([^"]*)"/.exec(lines[install] ?? '')?.[1]?.split(' ') ?? [];
   for (const tool of ['rust', 'go', 'uv', 'python', 'composer']) assert.ok(tools.includes(tool), `ci-release-publish does not install ${tool} before release-assets: ${lines[install] ?? ''}`);
+});
+
+// A job of release.yml checks out the tag, where Git holds no packages/release.mk until release-recipes writes it; a variable
+// that only that file defines is empty in the lines of ci-release-publish, and `cp -R … $(RELEASE_ASSETS)/` would copy into /.
+// The Makefile is copied alone into a folder of the test, and CI_MAKE is `:`, so the dry run prints the lines of the recipe
+// itself and starts no make of them.
+test('the lines of ci-release-publish name var/release/assets in a checkout without packages/release.mk', t => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'fsm-release-'));
+  t.after(() => { rmSync(dir, { recursive: true, force: true }); });
+  copyFileSync(path.join(ROOT, 'Makefile'), path.join(dir, 'Makefile'));
+  const ran = spawnSync('make', ['--no-print-directory', '-n', 'ci-release-publish', 'TAG=v0.0.0', 'CI_MAKE=:'], { cwd: dir, encoding: 'utf8', env: cleanEnv() });
+  assert.equal(ran.status, 0, ran.stderr);
+  const copy = ran.stdout.split('\n').find(line => line.startsWith('mkdir -p'));
+  assert.equal(copy, 'mkdir -p var/release/assets && cp -R var/release/downloaded/. var/release/assets/', `the copy of the downloaded assets:\n${ran.stdout}`);
+  assert.doesNotMatch(ran.stdout, /mkdir -p {2}| \/$/m, `a line of ci-release-publish names an empty variable:\n${ran.stdout}`);
 });
