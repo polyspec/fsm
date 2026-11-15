@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: 325b55823aa4d720ef64e4cded256179a4a0d4c00c5aec4ade722831f5e2c9c2 -->
+<!-- source-sha256: 2042bc30be45c7147fed6c2fa9c90edac4241e0b4b60b3937bd9feaa95438a72 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -186,3 +186,4 @@
 | S-487 | `polyspec-binding-core`에 대한 모든 의존 줄이 binding의 tag v0.0.8을 적고, platform asset의 recipe는 binding release-recipes가 쓰는 `packages/release.mk`다(GN-19h). v0.0.8에서 `make bindings-check`는 CK-94로 실패했다: Makefile이 `packages/release.mk`를 include하지 않고 release-go-static, release-wheel, release-php-ext, release-npm-platform, release-npm, release-go-module, release-binding-check, release-platform-assets의 recipe를 직접 정의했다. 이제 Makefile이 끝에서 그 파일을 include하고, `make release-recipes`가 그것을 쓰며, `assets.yml`의 job과 `release.yml`의 job `publish`가 먼저 그것을 실행한다. `config/toolchain.json`이 extension의 PHP minor(`phpExtension.minors`)를 적고, `rust-toolchain.toml`이 Go static library의 musl target을 더하며, `tests/release`는 fsm이 가진 release 부분을 검사한다 | binding crate와 core의 `Cargo.toml`, `Cargo.lock`, `Makefile`, `.gitignore`, `config/toolchain.json`, `rust-toolchain.toml`, `tests/release/release.test.mts`, `tests/workflows/workflows.test.mts` | `make bindings-check`와 `make release-test` | [o] |
 | S-488 | legacy test의 persist 단위 네 개가 binding의 store에서 실행된다: 한 행의 두 transition을 같은 event로 동시에(하나는 Changed, 하나는 Unchanged), 두 event로 동시에(하나는 Changed, 하나는 E_CONFLICT), transaction을 다시 실행하는 DEADLOCK(FSM-B4-3), 다시 실행하지 않는 다른 database error(FSM-B4-4)이며, SQLite, PostgreSQL, MySQL에서다. legacy package는 그것을 여섯 kind에서 실행한다(`legacy/packages/*/tests/persist*`). corpus `contracts/conformance/vectors.json`은 그 바탕인 core의 step(`persist_first`, `persist_retry`, `persist_conflict`, S-485가 core에서 실행)을 가지지만, 동시성과 재실행은 store와 database의 성질이므로 core의 vector가 가질 수 없다. store를 bind하는 plan f6, step 7p를 기다린다 | binding store의 persist test | 세 dialect에서 binding store의 persist target | [ ] |
 | S-489 | S-484부터 S-487까지의 행을 담아 fsm 0.0.14를 릴리즈한다 | the versions of the packages and their locks, `CHANGELOG.md(.ko)` | `make release-coverage` and `make docs-check` | [o] |
+| S-490 | 0.0.14 릴리스의 수정을 담아 fsm 0.0.15를 릴리즈한다 | the versions of the packages and their locks, `CHANGELOG.md(.ko)` | `make release-coverage` and `make docs-check` | [o] |

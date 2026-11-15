@@ -1,11 +1,13 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: aacd1de3e0b23fbc21d9b1fbf0c120bea956bac6e4953e03d6d2926a29675158 -->
+<!-- source-sha256: e3bf70ad1b9bfb0e73f9c349b60c2c1e8a6ece80e379e9867bc9ab033fc5f661 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
 
 <a id="unreleased"></a>
 ## Unreleased
+
+## 0.0.15
 
 - `release.yml`의 job `publish`는 `make release-assets` 전에 uv, Python, Composer를 설치한다(S-489). 입력: 태그 v0.0.14의 릴리스. 이전 동작: `ci-release-publish`는 `install-tools TOOLS="rust go"`보다 먼저 `release-assets`를 실행했고, kit의 `release-assets`는 Python 프로젝트마다 `uv workspace dir`를 실행하므로 job이 `uv workspace dir could not start: spawnSync uv ENOENT`로 실패했다. 기대 동작: `ci-release-publish`는 `release-assets` 전에 `install-tools TOOLS="rust go uv python composer"`를 실행한다. Red: `make release-test` 8 passed, 1 failed; Green: 9 passed.
 

@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+## 0.0.15
+
 - The job `publish` of `release.yml` installs uv, Python and Composer before `make release-assets` (S-489). Input: the release of the tag v0.0.14. Behaviour before: `ci-release-publish` ran `release-assets` before `install-tools TOOLS="rust go"`, and `release-assets` of kit runs `uv workspace dir` for each Python project, so the job failed with `uv workspace dir could not start: spawnSync uv ENOENT`. Expected behaviour: `ci-release-publish` runs `install-tools TOOLS="rust go uv python composer"` before `release-assets`. Red: `make release-test` 8 passed and 1 failed; Green: 9 passed.
 
 ## 0.0.14

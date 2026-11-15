@@ -1140,7 +1140,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-fsm"
-version = "0.0.14"
+version = "0.0.15"
 dependencies = [
  "libtest-mimic",
  "polyspec-binding-core",
@@ -1149,7 +1149,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-fsm-go"
-version = "0.0.14"
+version = "0.0.15"
 dependencies = [
  "polyspec-binding-core",
  "polyspec-fsm",
@@ -1157,7 +1157,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-fsm-node"
-version = "0.0.14"
+version = "0.0.15"
 dependencies = [
  "napi",
  "napi-build",
@@ -1168,7 +1168,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-fsm-php-ext"
-version = "0.0.14"
+version = "0.0.15"
 dependencies = [
  "ext-php-rs",
  "polyspec-binding-core",
@@ -1177,7 +1177,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-fsm-python"
-version = "0.0.14"
+version = "0.0.15"
 dependencies = [
  "polyspec-binding-core",
  "polyspec-fsm",
@@ -1186,7 +1186,7 @@ dependencies = [
 
 [[package]]
 name = "polyspec-fsm-wasm"
-version = "0.0.14"
+version = "0.0.15"
 dependencies = [
  "js-sys",
  "polyspec-binding-core",
