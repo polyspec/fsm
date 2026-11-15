@@ -1,6 +1,6 @@
 {
   "name": "@polyspec/fsm",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "The fsm library of polyspec for Node and the browser",
   "license": "MIT",
   "type": "module",

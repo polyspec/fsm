@@ -1,5 +1,5 @@
 <!-- doc-id: checklist-fsm-v1 -->
-<!-- source-sha256: 2042bc30be45c7147fed6c2fa9c90edac4241e0b4b60b3937bd9feaa95438a72 -->
+<!-- source-sha256: a5fc608209b3e3093e8d30936bc5217809d34584b2259331dc9d208ac492cc18 -->
 # 실행 체크리스트
 
 ## fsm v1
@@ -187,3 +187,4 @@
 | S-488 | legacy test의 persist 단위 네 개가 binding의 store에서 실행된다: 한 행의 두 transition을 같은 event로 동시에(하나는 Changed, 하나는 Unchanged), 두 event로 동시에(하나는 Changed, 하나는 E_CONFLICT), transaction을 다시 실행하는 DEADLOCK(FSM-B4-3), 다시 실행하지 않는 다른 database error(FSM-B4-4)이며, SQLite, PostgreSQL, MySQL에서다. legacy package는 그것을 여섯 kind에서 실행한다(`legacy/packages/*/tests/persist*`). corpus `contracts/conformance/vectors.json`은 그 바탕인 core의 step(`persist_first`, `persist_retry`, `persist_conflict`, S-485가 core에서 실행)을 가지지만, 동시성과 재실행은 store와 database의 성질이므로 core의 vector가 가질 수 없다. store를 bind하는 plan f6, step 7p를 기다린다 | binding store의 persist test | 세 dialect에서 binding store의 persist target | [ ] |
 | S-489 | S-484부터 S-487까지의 행을 담아 fsm 0.0.14를 릴리즈한다 | the versions of the packages and their locks, `CHANGELOG.md(.ko)` | `make release-coverage` and `make docs-check` | [o] |
 | S-490 | 0.0.14 릴리스의 수정을 담아 fsm 0.0.15를 릴리즈한다 | the versions of the packages and their locks, `CHANGELOG.md(.ko)` | `make release-coverage` and `make docs-check` | [o] |
+| S-491 | 0.0.15 릴리스의 수정을 담아 fsm 0.0.16을 릴리즈한다 | the versions of the packages and their locks, `CHANGELOG.md(.ko)` | `make release-coverage` and `make docs-check` | [o] |
