@@ -46,7 +46,7 @@ test('every job of assets.yml and release.yml that runs a generated recipe write
   for (const job of ['ci-assets-platform', 'ci-assets-npm', 'ci-release-publish']) {
     const body = new RegExp(`^${job}:\\n((?:\\t.*\\n)+)`, 'm').exec(makefile)?.[1] ?? '';
     const lines = body.split('\n');
-    const recipes = lines.findIndex(line => / release-recipes$/.test(line));
+    const recipes = lines.findIndex(line => line.endsWith(' release-recipes'));
     const first = lines.findIndex(line => GENERATED.some(target => new RegExp(`\\b${target}\\b`).test(line)));
     assert.ok(recipes >= 0 && first > recipes, `${job} runs release-recipes before the first generated recipe:\n${body}`);
   }
@@ -87,4 +87,16 @@ test('release-tag-output writes the tag and the version of the environment into 
   const none = spawnSync('make', ['--no-print-directory', 'release-tag-output'], { cwd: ROOT, encoding: 'utf8', env: { ...cleanEnv(), GITHUB_OUTPUT: '' } });
   assert.equal(none.status, 2, `${none.stdout}${none.stderr}`);
   assert.match(none.stderr, /release-tag-output: GITHUB_OUTPUT is not set/);
+});
+
+test('every job that writes packages/release.mk installs the generator of the bindings first', () => {
+  const makefile = read('Makefile');
+  assert.match(makefile, /^\$\(foreach [^\n]* bindings-check release-recipes: \$\(if \$\(filter \$\(BINDING_SCRIPT\),\$\(BINDING\)\),\$\(BINDING_DEP\)\)$/m, 'release-recipes names BINDING_DEP after its definition');
+  for (const job of ['ci-assets-platform', 'ci-assets-npm', 'ci-release-publish']) {
+    const body = new RegExp(`^${job}:\\n((?:\\t.*\\n)+)`, 'm').exec(makefile)?.[1] ?? '';
+    const lines = body.split('\n');
+    const install = lines.findIndex(line => line.endsWith(' $(BINDING_DEP)'));
+    const recipes = lines.findIndex(line => line.endsWith(' release-recipes'));
+    assert.ok(install >= 0 && recipes > install, `${job} installs the generator (BINDING_DEP) before release-recipes:\n${body}`);
+  }
 });

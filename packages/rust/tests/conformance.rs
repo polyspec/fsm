@@ -10,7 +10,9 @@
 
 use std::path::{Path, PathBuf};
 
-use libtest_mimic::{Arguments, Failed, Trial};
+mod common;
+
+use libtest_mimic::{Failed, Trial};
 use polyspec_fsm::{Error, Machine};
 use serde_json::{json, Map, Value};
 
@@ -187,12 +189,5 @@ fn trials() -> Result<Vec<Trial>, Failed> {
 }
 
 fn main() -> std::process::ExitCode {
-    let arguments = Arguments::from_args();
-    match trials() {
-        Ok(trials) => libtest_mimic::run(&arguments, trials).exit_code(),
-        Err(error) => {
-            eprintln!("the vectors did not load: {error:?}");
-            std::process::ExitCode::FAILURE
-        }
-    }
+    common::run_trials("the vectors", trials())
 }

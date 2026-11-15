@@ -30,12 +30,6 @@ function text(value: unknown, what: string): string {
   return value;
 }
 
-/** `value` as a list of strings; throws when it is another value. */
-function words(value: unknown): string[] {
-  if (!Array.isArray(value) || !value.every((word): word is string => typeof word === 'string')) throw new Error('the value must be a list of strings');
-  return value;
-}
-
 // The pipeline and the release workflow, ci-pipeline.yml and release.yml, are the workflows that fsm took from the examples of
 // kit (S-424); they keep the form of those examples, so the rules of the workflows that fsm wrote itself below do not read them.
 const VENDORED = ['.github/workflows/release.yml', '.github/workflows/ci-pipeline.yml'];
@@ -420,14 +414,14 @@ test('the jobs of assets.yml and pages.yml run their recipes, and RELEASE=true a
   for (const name of ['platform', 'npm']) assert.match(job(assets, name), new RegExp(`\\n {8}run: make ci-assets-${name} RELEASE=\\$\\{\\{ inputs\\.release \\}\\}$`, 'm'), `the job ${name} of assets.yml does not run make ci-assets-${name} with the input release`);
   assert.match(job(assets, 'platform'), /uses: \.\/\.github\/actions\/runner-setup\n {8}with:\n {10}llvm: 'true'\n/, 'the job platform does not install LLVM through runner-setup');
   assert.match(job(jobsOf(PAGES), 'pages'), /\n {8}run: make ci-pages$/m, 'the job pages does not run make ci-pages');
-  assert.deepEqual(callsOf(['ci-assets-platform']), ['install-tools', 'llvm-check', 'release-recipes', '-k']);
-  assert.deepEqual(callsOf(['ci-assets-platform', 'RELEASE=true']), ['install-tools', 'llvm-check', 'release-recipes', 'release-binding-check', '-k']);
+  assert.deepEqual(callsOf(['ci-assets-platform']), ['install-tools', 'llvm-check', 'var/deps/binding', 'release-recipes', '-k']);
+  assert.deepEqual(callsOf(['ci-assets-platform', 'RELEASE=true']), ['install-tools', 'llvm-check', 'var/deps/binding', 'release-recipes', 'release-binding-check', '-k']);
   const platform = make(['-n', 'ci-assets-platform', 'RELEASE=false']);
   assert.equal(platform.code, 0, platform.output);
   assert.match(platform.output, /^\S*make --no-print-directory install-tools TOOLS="rust uv python"$/m);
   assert.match(platform.output, /^\S*make --no-print-directory -k release-go-static release-wheel release-php-ext release-npm-platform PHP=php$/m);
-  assert.deepEqual(callsOf(['ci-assets-npm']), ['install-tools', 'release-recipes', 'install-wasm-bindgen', 'release-npm']);
-  assert.deepEqual(callsOf(['ci-assets-npm', 'RELEASE=true']), ['install-tools', 'release-recipes', 'install-wasm-bindgen', 'release-binding-check', 'release-npm']);
+  assert.deepEqual(callsOf(['ci-assets-npm']), ['install-tools', 'var/deps/binding', 'release-recipes', 'install-wasm-bindgen', 'release-npm']);
+  assert.deepEqual(callsOf(['ci-assets-npm', 'RELEASE=true']), ['install-tools', 'var/deps/binding', 'release-recipes', 'install-wasm-bindgen', 'release-binding-check', 'release-npm']);
   for (const goal of ['ci-assets-platform', 'ci-assets-npm']) {
     const wrong = make([goal, 'RELEASE=yes']);
     assert.equal(wrong.code, 2, wrong.output);
@@ -446,6 +440,6 @@ test('the jobs of release.yml run make ci-release-tag and make ci-release-publis
   assert.match(job(release, 'tag'), /\n {8}run: make ci-release-tag RUN=\$\{\{ inputs\.run \}\}$/m, 'the job tag does not run make ci-release-tag RUN=${{ inputs.run }}');
   assert.match(job(release, 'publish'), /\n {8}run: make ci-release-publish$/m, 'the job publish does not run make ci-release-publish');
   assert.deepEqual(callsOf(['ci-release-tag', 'RUN=7'], { GITHUB_ENV: '/dev/null' }), ['release-tag', 'release-tag-output']);
-  assert.match(make(['-n', 'ci-release-tag', 'RUN=7', 'GITHUB_EVENT_NAME=workflow_run'], { GITHUB_ENV: '/dev/null' }).output, /release-tag AUTO=1$/m, 'a workflow_run does not release with AUTO=1');
-  assert.deepEqual(callsOf(['ci-release-publish', 'TAG=v0.0.1']), ['release-zip', 'release-prepare', 'release-tools', 'release-assets', 'install-tools', 'release-recipes', 'release-go-module', 'release-publish', 'release-platform-assets', 'release-undraft']);
+  assert.match(make(['-n', 'ci-release-tag', 'RUN=7', 'GITHUB_EVENT_NAME=workflow_run'], { GITHUB_ENV: '/dev/null' }).output, /release-tag RUN="\S*" AUTO=1$/m, 'a workflow_run does not release with AUTO=1');
+  assert.deepEqual(callsOf(['ci-release-publish', 'TAG=v0.0.1']), ['release-zip', 'release-prepare', 'release-tools', 'release-assets', 'install-tools', 'var/deps/binding', 'release-recipes', 'release-go-module', 'release-publish', 'release-platform-assets', 'release-undraft']);
 });

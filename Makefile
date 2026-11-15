@@ -561,12 +561,14 @@ ci-check:
 # binding, which stops the job at its failure, then the assets. ci-assets-platform builds every asset of its platform to its
 # end, so one run names every asset that does not build. LLVM is a package of the machine (make install-llvm, which
 # runner-setup runs on a runner of GitHub); llvm-check stops the job when it is missing. release-recipes writes
-# packages/release.mk, whose recipes the later lines run.
+# packages/release.mk, whose recipes the later lines run, with the generator that $(BINDING_DEP) installs first (make
+# binding-install, once per Cargo.lock), since a fresh checkout holds none.
 CI_RELEASE_VALUE = @case '$(RELEASE)' in ''|true|false) ;; *) echo '$@: RELEASE is true, false or empty, not $(RELEASE)' >&2; exit 2;; esac
 ci-assets-platform:
 	$(CI_RELEASE_VALUE)
 	$(CI_MAKE) install-tools TOOLS="rust uv python"
 	$(CI_MAKE) llvm-check
+	$(CI_MAKE) $(BINDING_DEP)
 	$(CI_MAKE) release-recipes
 	$(if $(filter true,$(RELEASE)),$(CI_MAKE) release-binding-check)
 	$(CI_MAKE) -k release-go-static release-wheel release-php-ext release-npm-platform PHP=php
@@ -574,6 +576,7 @@ ci-assets-platform:
 ci-assets-npm:
 	$(CI_RELEASE_VALUE)
 	$(CI_MAKE) install-tools TOOLS=rust
+	$(CI_MAKE) $(BINDING_DEP)
 	$(CI_MAKE) release-recipes
 	$(CI_MAKE) install-wasm-bindgen
 	$(if $(filter true,$(RELEASE)),$(CI_MAKE) release-binding-check)
@@ -587,7 +590,7 @@ ci-pages:
 # GITHUB_ENV; release-tag-output reads them from there and gives them to the later jobs.
 CI_EVENT_RUN = $(NODE) -p 'JSON.parse(require("fs").readFileSync(process.env.GITHUB_EVENT_PATH, "utf8")).workflow_run?.id ?? ""'
 ci-release-tag:
-	run='$(RUN)'; test -n "$$run" || run="$$($(CI_EVENT_RUN))"; RUN="$$run" $(CI_MAKE) release-tag $(if $(filter workflow_run,$(GITHUB_EVENT_NAME)),AUTO=1)
+	run='$(RUN)'; test -n "$$run" || run="$$($(CI_EVENT_RUN))"; $(CI_MAKE) release-tag RUN="$$run" $(if $(filter workflow_run,$(GITHUB_EVENT_NAME)),AUTO=1)
 	set -a; . "$$GITHUB_ENV"; set +a; $(CI_MAKE) release-tag-output
 
 # ci-release-publish is the job publish of release.yml, on the checkout of the tag: the tools of the release, with
@@ -610,6 +613,7 @@ ci-release-publish:
 	$(CI_MAKE) release-assets
 	mkdir -p $(RELEASE_ASSETS) && cp -R $(RELEASE_DOWNLOADED)/. $(RELEASE_ASSETS)/
 	$(CI_MAKE) install-tools TOOLS="rust go"
+	$(CI_MAKE) $(BINDING_DEP)
 	$(CI_MAKE) release-recipes
 	$(CI_MAKE) release-go-module
 	$(CI_MAKE) release-publish
@@ -678,7 +682,7 @@ release-coverage:
 # reads none of its targets.
 BINDING_RUN = $(NODE) $(BINDING)
 .PHONY: release-recipes
-release-recipes: $(if $(filter $(BINDING_SCRIPT),$(BINDING)),$(BINDING_DEP))
+release-recipes:
 	$(BINDING_RUN) release-recipes --root $(CURDIR)
 
 # llvm-check and install-llvm read the LLVM of config/toolchain.json, which the build of the PHP extension of packages/release.mk
@@ -809,7 +813,8 @@ $(BINDING_DEP): Cargo.lock
 	$(ONLINE) $(MAKE) binding-install
 	touch $@
 
-$(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings-check: $(if $(filter $(BINDING_SCRIPT),$(BINDING)),$(BINDING_DEP))
+# release-recipes names its prerequisite here, after BINDING_DEP, since make expands a prerequisite where it reads the rule.
+$(foreach target,$(BINDING_TARGETS),bindings-$(target)) bindings-check release-recipes: $(if $(filter $(BINDING_SCRIPT),$(BINDING)),$(BINDING_DEP))
 
 # The lints that read installed and generated files install and generate them first (S-476, S-477).
 lint-php: $(PHP_DEP) $(BINDING_PHP_DEP) fsm-php-gen

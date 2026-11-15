@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 6601307f35122894929cd19f0612180423eed06d37e805549377d2e7ea9ecab0 -->
+<!-- source-sha256: 4799dc0c370ac75b538f0490f46f2a12cf30b2f8ada8fba4bb9654d2836afe4f -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -8,6 +8,8 @@
 ## Unreleased
 
 ## 0.0.14
+
+- `assets.yml`과 `release.yml`의 job은 `make release-recipes` 전에 binding 생성기를 설치한다(S-489). 입력: `main`의 push. 이전 동작: `release-recipes`의 전제 `var/deps/binding`이 Makefile에서 정의되기 전에 읽혀 비어 있었으므로, 새 checkout에서 `release-recipes`가 `holds no installed generator; run make binding-install`로 실패했다. `ci-release-tag`는 `RUN="$run" make release-tag`를 실행했고, PATH의 make로 실행한 `make rules-check`는 이를 `release-tag` 호출로 읽지 않는다. `lint-ts`는 `tests/release/release.test.mts`(`endsWith` 권장)와 `tests/workflows/workflows.test.mts`의 쓰이지 않는 `words`를, `duplication-check`는 `packages/rust/tests/cases.rs`와 `conformance.rs`의 `main`을 보고했다. 기대 동작: `release-recipes`는 정의 뒤에서 `var/deps/binding`을 전제로 두고, `ci-assets-platform`, `ci-assets-npm`, `ci-release-publish`는 `release-recipes` 전에 이를 실행하며, `ci-release-tag`는 `make release-tag RUN=…`를 실행하고, 코어의 두 테스트 파일은 `packages/rust/tests/common/mod.rs`를 함께 쓴다.
 
 - platform asset의 recipe는 binding 0.0.8의 `packages/release.mk`다(S-487). 입력: `make bindings-check`와 `assets.yml`, `release.yml`의 job. 이전 동작: binding crate는 tag v0.0.2를 적었고, v0.0.8에서 `make bindings-check`는 손으로 쓴 release recipe 때문에 CK-94로 실패했다. 기대 동작: 모든 crate가 v0.0.8을 적고, `make release-recipes`가 Makefile이 include하고 Git이 무시하는 `packages/release.mk`를 쓰며, 각 release job이 먼저 그것을 실행하고, `config/toolchain.json`과 `rust-toolchain.toml`이 생성된 recipe가 읽는 PHP minor와 musl target을 가진다. Green: `make bindings-check` 통과, `make release-test` 7개 통과.
 - CI가 kit 0.0.114로 공통 suite를 다섯 binding에서 실행한다(S-486). 입력: `main`의 push나 `ci.yml`의 수동 실행. 이전 동작: `CHECK_TARGETS`가 `test-*-conformance` target을 적지 않아 `contracts/conformance/vectors.json`의 vector 290개는 CI에서 어떤 binding에서도 실행되지 않았다. 명령 줄이 binding checkout의 도구를 적지 않으면 `MATURIN`과 `TSC`는 비어 있었다. `ci-shared`와 `ci-runtime`은 kit 0.0.113이 거부하는 ci-setup의 mode `--setup`과 `--context-*`를 실행했다. 기대 동작: job `check`가 `test-node-conformance`, `test-wasm-conformance`, `test-python-conformance`, `test-php-conformance`, `test-go-conformance`를 실행한다. `MATURIN`은 `mise.toml`의 maturin 1.16.0이고 `TSC`는 `package.json`의 TypeScript 7.0.2다. `ci-shared`와 `ci-runtime`은 kit 0.0.114의 `ci-setup --job`을 실행하고, `scripts/ci-plan.mts`는 제거되었다. Green: `make workflows-test` 27개 통과.
