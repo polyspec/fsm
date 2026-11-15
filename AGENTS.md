@@ -89,7 +89,7 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   `uses` step that provisions the runner or carries a result (the checkout, setup-php, the bootstrap action, `runner-setup`, the
   artifacts, the Pages actions), and only a `uses` step has an `if`. The recipe `ci-<job>` holds the order and the conditions: the installs and
   the prerequisites first, which stop it at a failure, then the checks through `make ci-targets` or `make -k`, every target to
-  its end, then the cleanup of the context, also after a failure; its status is that of the checks, or that of the cleanup
+  its end, then the cleanup of the context, also after a failure; it fails when the checks failed, or when the cleanup failed
   when the checks passed. The tools and the targets
   of a job of the pipeline are read from `config/ci.json` by `ci-setup --job` of kit, which its recipe runs. The fan-out of the
   matrix may come from the outputs of the plan job, whose run step is `make kit-ci-plan`, because the fan-out is no content of a

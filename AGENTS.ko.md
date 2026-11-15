@@ -80,7 +80,7 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   package와 bay를 설치한다. 나머지 step은 모두 runner를 준비하거나 결과를 옮기는 `uses` step(checkout, setup-php,
   bootstrap action, `runner-setup`, artifact, Pages action)이고, `if`는 `uses` step만 가진다. recipe `ci-<job>`이 순서와 조건을 가진다: 먼저 설치와
   선행 조건(실패하면 멈춘다), 다음에 `make ci-targets` 또는 `make -k`로 모든 target을 끝까지 실행하는 검사, 마지막으로 실패
-  뒤에도 실행하는 context 정리. 그 상태는 검사의 상태이고, 검사가 통과했으면 정리의 상태다. pipeline의 job은 도구와 target을 recipe가 실행하는 kit의
+  뒤에도 실행하는 context 정리. 검사가 실패하면 실패하고, 검사가 통과한 뒤 정리가 실패하면 실패한다. pipeline의 job은 도구와 target을 recipe가 실행하는 kit의
   `ci-setup --job`이 `config/ci.json`에서 읽는다. matrix의 펼침은 run step이 `make kit-ci-plan`인 plan job의 output에서 올 수 있다.
   펼침은 job의 내용이 아니기 때문이다. 판정 job(`required`, `ci-passed`)은 다른 job의 결과를 읽고 CI에만 있으며,
   유일한 다른 expression을 가진 `make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1`을 실행한다. local 실행은

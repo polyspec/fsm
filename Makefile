@@ -527,7 +527,7 @@ ci-summary:
 # whose content is YAML, with steps, conditions of steps and expressions in its commands, runs nowhere but on a runner of GitHub.
 # A recipe holds the order and the conditions of its job: the installs and the prerequisites first, each line stopping the
 # recipe at its failure, then the checks, every target to its end, then the cleanup of the context, also after a failed check.
-# Its status is that of the checks, or that of the cleanup when the checks passed. The jobs of the pipeline read their tools and
+# It fails when the checks failed, or when the checks passed and the cleanup failed. The jobs of the pipeline read their tools and
 # their targets from config/ci.json: the jobs shared and runtime are runs of ci-setup of kit (kit K1250), which installs the
 # tools of the job, runs its setup targets and stops at the first failure, prepares the context that config/ci.json declares
 # for the job, runs kit-gates-static or kit-gates-runtime-<runtime> with the targets of the job through make -k ci-targets,
