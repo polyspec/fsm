@@ -32,6 +32,12 @@ path = "src/lib.rs"
 name = "cases"
 harness = false
 
+# One trial per vector of contracts/conformance/vectors.json, the common suite of the legacy tests that the conformance tests of
+# the bindings run too.
+[[test]]
+name = "conformance"
+harness = false
+
 # The lints of the root workspace (Cargo.toml of the repository), which make lint-rust (cargo clippy) reads.
 [lints]
 workspace = true
