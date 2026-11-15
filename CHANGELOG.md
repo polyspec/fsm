@@ -6,6 +6,8 @@
 <a id="unreleased"></a>
 ## Unreleased
 
+- The job `publish` of `release.yml` installs uv, Python and Composer before `make release-assets` (S-489). Input: the release of the tag v0.0.14. Behaviour before: `ci-release-publish` ran `release-assets` before `install-tools TOOLS="rust go"`, and `release-assets` of kit runs `uv workspace dir` for each Python project, so the job failed with `uv workspace dir could not start: spawnSync uv ENOENT`. Expected behaviour: `ci-release-publish` runs `install-tools TOOLS="rust go uv python composer"` before `release-assets`. Red: `make release-test` 8 passed and 1 failed; Green: 9 passed.
+
 ## 0.0.14
 
 - Three sentences that described the result of a job of CI no longer use the old library name (S-489). Input: `make name-check` in the job `check`. Behaviour before: the description of the result of a job in `AGENTS.md`, `Makefile` and `docs/plans/fsm-v1/plan.md` used the word that is the old library name, and the check reported 3 occurrences. Expected behaviour: the three sentences state when the job fails, and `make name-check` reports no occurrence.

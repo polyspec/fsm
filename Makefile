@@ -596,7 +596,9 @@ ci-release-tag:
 # ci-release-publish is the job publish of release.yml, on the checkout of the tag: the tools of the release, with
 # var/tools/bin and the shims first on PATH, the assets, those of each platform that the job assets uploaded and the workflow
 # downloaded into RELEASE_DOWNLOADED, the Go module, which carries the identity of the actor of the run, then the draft release,
-# its platform assets and its publication. TAG and VERSION are the tag of HEAD.
+# its platform assets and its publication. TAG and VERSION are the tag of HEAD. release-assets of kit reads the install folders
+# with uv (uv workspace dir) and Composer (composer config vendor-dir) and packs with npm, uv and python, so the tools of the
+# release are installed before it.
 RELEASE_DOWNLOADED ?= var/release/downloaded
 ci-release-publish: export TAG = $(shell git describe --tags --exact-match HEAD 2>/dev/null)
 ci-release-publish: export VERSION = $(patsubst v%,%,$(TAG))
@@ -610,9 +612,9 @@ ci-release-publish:
 	$(CI_MAKE) release-zip
 	$(CI_MAKE) release-prepare
 	$(CI_MAKE) release-tools
+	$(CI_MAKE) install-tools TOOLS="rust go uv python composer"
 	$(CI_MAKE) release-assets
 	mkdir -p $(RELEASE_ASSETS) && cp -R $(RELEASE_DOWNLOADED)/. $(RELEASE_ASSETS)/
-	$(CI_MAKE) install-tools TOOLS="rust go"
 	$(CI_MAKE) $(BINDING_DEP)
 	$(CI_MAKE) release-recipes
 	$(CI_MAKE) release-go-module

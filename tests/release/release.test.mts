@@ -100,3 +100,17 @@ test('every job that writes packages/release.mk installs the generator of the bi
     assert.ok(install >= 0 && recipes > install, `${job} installs the generator (BINDING_DEP) before release-recipes:\n${body}`);
   }
 });
+
+// release-assets of kit refuses an install folder that links out of the checkout, which it finds with the tools of each
+// ecosystem: uv workspace dir for each Python project and composer config vendor-dir for each Composer project; then it packs
+// with npm, and its wheels with uv and python. A runner holds none of the uv and python of mise, so the job installs them first.
+test('ci-release-publish installs uv, python and composer before release-assets', () => {
+  const makefile = read('Makefile');
+  const body = /^ci-release-publish:\n((?:\t.*\n)+)/m.exec(makefile)?.[1] ?? '';
+  const lines = body.split('\n');
+  const assets = lines.findIndex(line => line.endsWith(' release-assets'));
+  const install = lines.findIndex(line => / install-tools TOOLS="[^"]*"$/.test(line));
+  assert.ok(assets >= 0 && install >= 0 && install < assets, `ci-release-publish installs its tools before release-assets:\n${body}`);
+  const tools = /TOOLS="([^"]*)"/.exec(lines[install] ?? '')?.[1]?.split(' ') ?? [];
+  for (const tool of ['rust', 'go', 'uv', 'python', 'composer']) assert.ok(tools.includes(tool), `ci-release-publish does not install ${tool} before release-assets: ${lines[install] ?? ''}`);
+});

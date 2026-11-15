@@ -441,5 +441,5 @@ test('the jobs of release.yml run make ci-release-tag and make ci-release-publis
   assert.match(job(release, 'publish'), /\n {8}run: make ci-release-publish$/m, 'the job publish does not run make ci-release-publish');
   assert.deepEqual(callsOf(['ci-release-tag', 'RUN=7'], { GITHUB_ENV: '/dev/null' }), ['release-tag', 'release-tag-output']);
   assert.match(make(['-n', 'ci-release-tag', 'RUN=7', 'GITHUB_EVENT_NAME=workflow_run'], { GITHUB_ENV: '/dev/null' }).output, /release-tag RUN="\S*" AUTO=1$/m, 'a workflow_run does not release with AUTO=1');
-  assert.deepEqual(callsOf(['ci-release-publish', 'TAG=v0.0.1']), ['release-zip', 'release-prepare', 'release-tools', 'release-assets', 'install-tools', 'var/deps/binding', 'release-recipes', 'release-go-module', 'release-publish', 'release-platform-assets', 'release-undraft']);
+  assert.deepEqual(callsOf(['ci-release-publish', 'TAG=v0.0.1']), ['release-zip', 'release-prepare', 'release-tools', 'install-tools', 'release-assets', 'var/deps/binding', 'release-recipes', 'release-go-module', 'release-publish', 'release-platform-assets', 'release-undraft']);
 });
