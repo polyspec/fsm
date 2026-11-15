@@ -1,5 +1,5 @@
 <!-- doc-id: agents -->
-<!-- source-sha256: 957e995ba366aadbd5c0726e187ac51c6b91844024af436fac59f3a0705d4b90 -->
+<!-- source-sha256: f2ea8065d0e0e1b9500422f73ae774933364c81c79f24f50ecb55967616872c1 -->
 # 개발
 
 [English](AGENTS.md)
@@ -69,6 +69,24 @@ fsm는 state machine을 한 번 정의하고 go, npm(js + d.ts), php, php-ext, p
   linux-arm64-gnu는 ubuntu-26.04-arm, darwin-arm64는 macos-15. 릴리스의 어떤 도구도 다른 platform을 위해 compile하지 않으므로,
   platform의 asset은 그 platform에서만 link하고 load한다(plan C-11, S-470-9).
   Enforced by: `make workflows-test`
+- Own: 모든 workflow(`ci.yml`, `ci-pipeline.yml`, `assets.yml`, `pages.yml`, `release.yml`)의 job은 내용을 `Makefile`의 recipe에 둔다.
+  내용이 YAML인 job(`run` step 여러 개, step의 조건, 명령 안의 expression)은 GitHub runner에서만 실행되고, local 실행은 CI와
+  같은 호출이어야 하기 때문이다. 그래서 모든 job은 `run` step을 정확히 하나 가지며, 그것은 `NAME=value` 인자만 가진
+  `make ci-<job>`이다. 호출되는 workflow `assets.yml`에서는 `make ci-assets-<job>`, `release.yml`에서는 `make ci-release-<job>`이다.
+  그 job 이름을 다른 workflow도 쓰기 때문이다. matrix의 값이나 workflow의 input은 `NAME=${{ matrix.<key> }}` 또는 `NAME=${{ inputs.<key> }}`로 넘기고,
+  run 줄에는 다른 expression이 없다. run step이 설정하는 변수는 run의 token `GH_TOKEN: ${{ github.token }}` 하나다. gh가 그것을
+  필요로 하고 어떤 recipe도 그것을 만들 수 없기 때문이다. 어떤 recipe도 sudo를 실행하거나 머신의 설정을 바꾸지 않는다. local
+  실행은 그것을 실행하는 머신을 바꾸면 안 되기 때문이다. GitHub runner에서는 action `runner-setup`이 run step 전에 system의
+  package와 bay를 설치한다. 나머지 step은 모두 runner를 준비하거나 결과를 옮기는 `uses` step(checkout, setup-php,
+  bootstrap action, `runner-setup`, artifact, Pages action)이고, `if`는 `uses` step만 가진다. recipe `ci-<job>`이 순서와 조건을 가진다: 먼저 설치와
+  선행 조건(실패하면 멈춘다), 다음에 `make ci-targets` 또는 `make -k`로 모든 target을 끝까지 실행하는 검사, 마지막으로 실패
+  뒤에도 실행하는 context 정리. 그 상태는 검사의 상태이고, 검사가 통과했으면 정리의 상태다. pipeline의 job은 도구와 target을 recipe가 `config/ci.json`의
+  plan에서 읽는다(`scripts/ci-plan.mts`). matrix의 펼침은 run step이 `make kit-ci-plan`인 plan job의 output에서 올 수 있다.
+  펼침은 job의 내용이 아니기 때문이다. 판정 job(`required`, `ci-passed`)은 다른 job의 결과를 읽고 CI에만 있으며,
+  유일한 다른 expression을 가진 `make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1`을 실행한다. local 실행은
+  `make ci-<job> NAME=value`이다. 예: `make ci-runtime RUNTIME=php`.
+  Enforced by: `make workflows-test`, 그 `tests/workflows/rules.test.mts`가 모든 workflow의 모든 job을 읽고 `tests/workflows/workflows.test.mts`가
+  dry run이 sudo를 실행하는 job의 recipe를 실패로 보고한다
 
 ## 생성 파일
 

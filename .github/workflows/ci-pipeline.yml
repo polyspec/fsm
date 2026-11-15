@@ -1,13 +1,14 @@
 # The CI pipeline of fsm (K270, K910), taken from the example of kit and owned by fsm (S-424); every make target it runs is a
 # target of the Makefile of fsm. .github/workflows/ci.yml holds the triggers and the concurrency and calls it as a job
-# (`uses: ./.github/workflows/ci-pipeline.yml`), so one push runs one workflow: shared first, then the runtime jobs in
-# parallel, then required. Each job installs only its own locked prerequisites, declared in config/ci.json or selected from the
+# (`uses: ./.github/workflows/ci-pipeline.yml`), so one push runs one workflow: the plan first, then shared and the runtime
+# jobs in parallel, then required. The plan job writes the plan of config/ci.json into its outputs (make kit-ci-plan), and the
+# matrix of the runtime jobs fans out from them. Each other job has one run step, make ci-<job>, whose recipe holds the content
+# of the job (S-484): it installs only the locked prerequisites of its group, declared in config/ci.json or selected from the
 # repository's deps-<runtime> targets (K859), and runs the gate of its group with the targets that config/ci.json declares for
-# that group (targets.shared, targets.runtimes.<runtime>) through make ci-targets, inside its context window.
-# Each run step is one make target (S-472). A value that an expression gives, the tools and the targets of the plan and the
-# runtime of the matrix, reaches the target as a variable of the environment of its step alone (TOOLS, TARGETS, RUNTIME), which
-# make reads as the variable of that name; the command of the step holds no expression. Every job names the runner
-# ubuntu-26.04-arm, which runner of config/ci.json names too (make workflows-test compares them).
+# that group (targets.shared, targets.runtimes.<runtime>) through make ci-targets, inside its context window. The value of
+# the matrix is an argument of the run step, `RUNTIME=${{ matrix.runtime }}`, and a local run makes the same call. Every
+# other step provisions the runner or uploads the report. Every job names the runner ubuntu-26.04-arm, which runner of
+# config/ci.json names too (make workflows-test compares them).
 name: ci-pipeline
 
 on:
@@ -17,12 +18,24 @@ permissions:
   contents: read
 
 jobs:
-  # The shared job writes the plan of the runtime jobs.
-  shared:
+  # The plan job writes the plan of the runtime jobs.
+  plan:
     runs-on: ubuntu-26.04-arm
     outputs:
       runtimes: ${{ steps.plan.outputs.runtimes }}
       has_runtimes: ${{ steps.plan.outputs.has_runtimes }}
+      common_tools: ${{ steps.plan.outputs.common_tools }}
+    steps:
+      # actions/checkout v7.0.1.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
+      - uses: ./.github/actions/kit-bootstrap
+      - id: plan
+        run: make kit-ci-plan
+
+  shared:
+    needs: plan
+    runs-on: ubuntu-26.04-arm
     steps:
       # actions/checkout v7.0.1: with the whole history, which the checks of the documents and the owners read.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -30,32 +43,15 @@ jobs:
           fetch-depth: 0
       # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
       - uses: ./.github/actions/kit-bootstrap
-      - id: plan
-        run: make kit-ci-plan
       # shivammathur/setup-php 2.40.0: the PHP of .php-version, when a common gate tool of the plan needs it.
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
-        if: ${{ contains(steps.plan.outputs.common_tools, 'php') }}
+        if: ${{ contains(needs.plan.outputs.common_tools, 'php') }}
         with:
           php-version-file: .php-version
           tools: none
           coverage: none
-      - name: install common gate tools
-        if: ${{ steps.plan.outputs.common_tools != '[]' }}
-        env:
-          TOOLS: ${{ join(fromJSON(steps.plan.outputs.common_tools), ' ') }}
-        run: make install-tools
-      - name: install shared prerequisites
-        run: make kit-ci-setup GROUP=shared
-      - id: context_prepare
-        name: prepare shared CI context
-        run: make kit-ci-context-prepare GROUP=shared
       - name: shared gates
-        env:
-          TARGETS: kit-gates-static ${{ join(fromJSON(steps.plan.outputs.shared_targets), ' ') }}
-        run: make ci-targets
-      - name: cleanup shared CI context
-        if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
-        run: make kit-ci-context-cleanup GROUP=shared
+        run: make ci-shared
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
       - name: report
         if: ${{ !cancelled() }}
@@ -66,12 +62,12 @@ jobs:
           if-no-files-found: ignore
 
   runtime:
-    needs: shared
-    if: ${{ needs.shared.outputs.has_runtimes == 'true' }}
+    needs: plan
+    if: ${{ needs.plan.outputs.has_runtimes == 'true' }}
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.shared.outputs.runtimes) }}
+        include: ${{ fromJSON(needs.plan.outputs.runtimes) }}
     runs-on: ubuntu-26.04-arm
     steps:
       # actions/checkout v7.0.1 and shivammathur/setup-php 2.40.0, the PHP of .php-version for the PHP runtimes.
@@ -84,32 +80,8 @@ jobs:
           coverage: none
       # The bootstrap of kit (K992): the Node.js of mise.toml, the locked kit package, the npm of var/tools and the packages.
       - uses: ./.github/actions/kit-bootstrap
-      - name: install runtime tools
-        if: ${{ join(matrix.installTools, ' ') != '' }}
-        env:
-          TOOLS: ${{ join(matrix.installTools, ' ') }}
-        run: make install-tools
-      - name: install runtime prerequisites
-        env:
-          RUNTIME: ${{ matrix.runtime }}
-        run: make kit-ci-setup GROUP=runtime
-      - name: install PHP symbol extractor
-        if: ${{ matrix.runtime == 'php' }}
-        run: make kit-install-symbols EXTRACTORS=php
-      - id: context_prepare
-        name: prepare runtime CI context
-        env:
-          RUNTIME: ${{ matrix.runtime }}
-        run: make kit-ci-context-prepare GROUP=runtime
       - name: runtime gate
-        env:
-          TARGETS: kit-gates-runtime-${{ matrix.runtime }} ${{ join(matrix.targets, ' ') }}
-        run: make ci-targets
-      - name: cleanup runtime CI context
-        if: ${{ always() && steps.context_prepare.outcome != 'skipped' }}
-        env:
-          RUNTIME: ${{ matrix.runtime }}
-        run: make kit-ci-context-cleanup GROUP=runtime
+        run: make ci-runtime RUNTIME=${{ matrix.runtime }}
       # actions/upload-artifact v7.0.1: the report of make ci-targets, var/report/ci-targets.
       - name: report
         if: ${{ !cancelled() }}
@@ -119,18 +91,16 @@ jobs:
           path: var/report/ci-targets/
           if-no-files-found: ignore
 
-  # The closing part: it runs after shared and runtime, also after a failed or cancelled one, and make ci-passed passes only
-  # when each of them has the result success. config/ci.json declares runtimes, so the plan selects the job runtime in every
-  # run, and a skipped job fails the pipeline (FAIL_SKIPPED=1): runtime is skipped only when shared wrote no plan.
+  # The closing part: it runs after plan, shared and runtime, also after a failed or cancelled one, and make ci-passed passes
+  # only when each of them has the result success. config/ci.json declares runtimes, so the plan selects the job runtime in
+  # every run, and a skipped job fails the pipeline (FAIL_SKIPPED=1): runtime is skipped only when plan wrote no plan.
   required:
     if: ${{ always() }}
-    needs: [shared, runtime]
+    needs: [plan, shared, runtime]
     runs-on: ubuntu-26.04-arm
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       # The bootstrap of kit (K992), whose utility ci-passed the target runs.
       - uses: ./.github/actions/kit-bootstrap
-      - name: require shared and runtime
-        env:
-          RESULTS: ${{ toJSON(needs) }}
-        run: make ci-passed FAIL_SKIPPED=1
+      - name: require plan, shared and runtime
+        run: make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1

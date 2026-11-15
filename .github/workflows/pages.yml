@@ -1,5 +1,6 @@
 # The documentation site (docs/plans/fsm-v1/plan.md, C-8 and C-10; docs/plans/fsm-v1/checklist.md, S-21). Every push to main
-# builds the site with `make docs-build` at the base /fsm/, the path of the GitHub Pages site of polyspec/fsm, and deploys it.
+# builds the site with `make ci-pages`, which runs `make docs-build` at the base /fsm/, the path of the GitHub Pages site of
+# polyspec/fsm, and deploys it; the recipe holds the content of the job, so a local run makes the same call (S-484).
 # A manual run (workflow_dispatch) does the same. A newer commit of main does not cancel the deployment of an earlier one.
 name: Pages
 
@@ -31,9 +32,7 @@ jobs:
         uses: ./.github/actions/kit-bootstrap
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - name: Build the site
-        run: make docs-build
-        env:
-          VITEPRESS_BASE: /fsm/
+        run: make ci-pages
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: docs/.vitepress/dist

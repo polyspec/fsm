@@ -77,6 +77,27 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   ubuntu-26.04-arm for linux-arm64-gnu and macos-15 for darwin-arm64. The asset of a platform is linked and loaded only on that
   platform, because no tool of the release compiles for another platform (plan C-11, S-470-9).
   Enforced by: `make workflows-test`
+- Own: A job of every workflow (`ci.yml`, `ci-pipeline.yml`, `assets.yml`, `pages.yml`, `release.yml`) holds its content in a
+  recipe of the `Makefile`, because a job whose content is YAML (several `run` steps, conditions of steps, expressions in commands)
+  runs only on a runner of GitHub, and a local run must be the same call as CI. So every job has exactly one `run` step,
+  `make ci-<job>` with arguments `NAME=value` alone, `make ci-assets-<job>` in the called workflow `assets.yml` and
+  `make ci-release-<job>` in `release.yml`, whose job names the other workflows also use; a value of the matrix or an input of the workflow is passed as
+  `NAME=${{ matrix.<key> }}` or `NAME=${{ inputs.<key> }}`, and no other expression is in a run line; the token of the run, `GH_TOKEN: ${{ github.token }}`, is the one variable a run
+  step sets, because gh needs it and no recipe can make it. No recipe runs sudo or changes a setting of the machine, because
+  a local run must not change the machine that runs it: the action `runner-setup` installs the packages of the system and bay
+  on a runner of GitHub before the run step. Every other step is a
+  `uses` step that provisions the runner or carries a result (the checkout, setup-php, the bootstrap action, `runner-setup`, the
+  artifacts, the Pages actions), and only a `uses` step has an `if`. The recipe `ci-<job>` holds the order and the conditions: the installs and
+  the prerequisites first, which stop it at a failure, then the checks through `make ci-targets` or `make -k`, every target to
+  its end, then the cleanup of the context, also after a failure; its status is that of the checks, or that of the cleanup
+  when the checks passed. The tools and the targets
+  of a job of the pipeline are read by its recipe from the plan of `config/ci.json` (`scripts/ci-plan.mts`). The fan-out of the
+  matrix may come from the outputs of the plan job, whose run step is `make kit-ci-plan`, because the fan-out is no content of a
+  job. A judgement job (`required`, `ci-passed`) reads the results of the other jobs, exists only in CI and runs
+  `make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1`, the one other expression. A local run is
+  `make ci-<job> NAME=value`, for example `make ci-runtime RUNTIME=php`.
+  Enforced by: `make workflows-test`, whose `tests/workflows/rules.test.mts` reads every job of every workflow and `tests/workflows/workflows.test.mts`
+  fails a recipe of a job whose dry run runs sudo
 
 ## Generated files
 

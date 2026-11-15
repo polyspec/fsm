@@ -30,6 +30,12 @@ function text(value: unknown, what: string): string {
   return value;
 }
 
+/** `value` as a list of strings; throws when it is another value. */
+function words(value: unknown): string[] {
+  if (!Array.isArray(value) || !value.every((word): word is string => typeof word === 'string')) throw new Error('the value must be a list of strings');
+  return value;
+}
+
 // The pipeline and the release workflow, ci-pipeline.yml and release.yml, are the workflows that fsm took from the examples of
 // kit (S-424); they keep the form of those examples, so the rules of the workflows that fsm wrote itself below do not read them.
 const VENDORED = ['.github/workflows/release.yml', '.github/workflows/ci-pipeline.yml'];
@@ -94,6 +100,19 @@ function step(steps: string[], part: string): string {
 
 const ci = jobsOf(CI);
 const CHECK_JOB = job(ci, 'check');
+// The one run step of the job check: the recipe ci-check holds its content (S-484), and on the runner bay starts through sudo
+// -n, because its state belongs to root there (S-475-5).
+const CHECK_RUN = 'make ci-check';
+
+/**
+ * The make calls of the recipe `make <goals>`, read from its dry run: the first word after each `make --no-print-directory` of
+ * a line, in their order. The recipes of the jobs start make through CI_MAKE, so the dry run prints those calls and runs none.
+ */
+function callsOf(goals: string[], env: Record<string, string> = {}): string[] {
+  const dry = make(['-n', ...goals], env);
+  assert.equal(dry.code, 0, dry.output);
+  return [...dry.output.matchAll(/\bmake --no-print-directory ([^\s;]+)/g)].map(match => text(match[1], 'a make call of a recipe'));
+}
 
 test('every uses: is pinned to a full commit with the version comment of the verified commit', () => {
   const found: { where: string; action: string; commit: string; version: string | undefined }[] = [];
@@ -140,7 +159,7 @@ test('the node, go, php and rust versions come from the files that declare them'
   // make install-tools of make install installs the channel, profile and components that rust-toolchain.toml names (kit
   // K151, S-44-16): the workflow runs no rustup of its own.
   assert.doesNotMatch(CHECK_JOB, /rustup/, 'the check job installs a Rust toolchain of its own');
-  assert.ok(stepsOf(CHECK_JOB).some(entry => /\n\s+run: make install$/m.test(entry)), 'the check job runs no make install');
+  assert.equal(callsOf(['ci-check'])[0], 'install', 'the recipe of the check job does not run make install first');
   assert.match(read('rust-toolchain.toml'), /^profile = "minimal"$/m);
   // clippy is the lint that kit's lint-rust runs; llvm-tools holds llvm-strip, llvm-size and llvm-nm, which the release of the Go
   // module reads from the toolchain of the checkout (S-470-1).
@@ -178,11 +197,14 @@ function suiteOf(goal: string): string[] {
   return targets.split(' ').filter(Boolean);
 }
 
-// The workflow holds no list of targets of its own (S-474): its suite step runs make ci-suite, the suite of make check without
-// the targets that the jobs of the pipeline run, so a target that an item adds to CHECK_TARGETS runs in CI and in make check.
+// The workflow holds no list of targets of its own (S-474): the recipe of its job ends with make ci-suite, the suite of make
+// check without the targets that the jobs of the pipeline run, so a target that an item adds to CHECK_TARGETS runs in CI and in
+// make check.
 test('the suite of the check job is make ci-suite: the targets of make check that no job of the pipeline runs', () => {
-  const suite = step(stepsOf(CHECK_JOB), 'Run the suite targets through make ci-targets');
-  assert.match(suite, /\n {8}run: make ci-suite$/m, `the suite step is not make ci-suite:\n${suite}`);
+  const runs = stepsOf(CHECK_JOB).filter(entry => /\n {8}run: /.test(entry));
+  assert.equal(runs.length, 1, `the check job has ${String(runs.length)} run steps`);
+  assert.ok(text(runs[0], 'the run step of the check job').includes(`\n        run: ${CHECK_RUN}\n`) || String(runs[0]).endsWith(`\n        run: ${CHECK_RUN}`), `the run step of the check job is not ${CHECK_RUN}:\n${String(runs[0])}`);
+  assert.equal(callsOf(['ci-check']).at(-1), 'ci-suite', 'the recipe of the check job does not end with make ci-suite');
   assert.doesNotMatch(CHECK_JOB, /TARGETS=/, 'the check job names targets of its own');
   const check = suiteOf('check');
   const own = suiteOf('ci-suite');
@@ -238,14 +260,10 @@ test('the suite of the CI job, make check and the owners of the core crate run i
 test('the check job holds no services and no DSN: it pulls the images and runs its suite through make persist-servers', () => {
   assert.doesNotMatch(CI, /^ *services:/m, 'ci.yml holds a block services');
   assert.doesNotMatch(CI.split('\n').filter(line => !line.trim().startsWith('#')).join('\n'), /FSM_TEST_/, 'ci.yml sets a variable of a server');
-  const steps = stepsOf(CHECK_JOB);
-  const images = steps.findIndex(entry => /\n {8}run: make persist-images$/m.test(entry));
-  const suite = steps.findIndex(entry => entry.includes('Run the suite targets through make ci-targets'));
-  assert.ok(images >= 0, 'no step of the check job runs make persist-images');
-  assert.ok(steps.findIndex(entry => /\n {8}run: make install$/m.test(entry)) < images && images < suite, 'make persist-images does not run after make install and before the suite');
-  const step = text(steps[suite], 'the step of the suite targets');
-  assert.match(step, /\n {8}if: \$\{\{ !cancelled\(\) \}\}\n/, 'the suite step does not run after a failed step');
-  assert.match(step, /\n {8}run: make ci-suite$/m, `the suite step is not make ci-suite:\n${step}`);
+  const calls = callsOf(['ci-check']);
+  const images = calls.indexOf('persist-images');
+  assert.ok(images >= 0, `the recipe of the check job runs no make persist-images: ${calls.join(' ')}`);
+  assert.ok(calls.indexOf('install') < images && images < calls.indexOf('ci-suite'), `make persist-images does not run after make install and before the suite: ${calls.join(' ')}`);
   const targets = suiteOf('ci-suite');
   // Every target that reads a DSN, and the test of the script of the servers, run in that step.
   const makefile = read('Makefile');
@@ -256,22 +274,34 @@ test('the check job holds no services and no DSN: it pulls the images and runs i
   for (const target of [...reading, 'bay-test', 'persist-servers-test']) assert.ok(check.includes(target), `make check does not run ${target}`);
 });
 
-// bay (plan C-6, S-475-5): the job installs the pinned release before a step starts bay, and each step that starts bay says
-// how it is started on the runner, where the state of bay belongs to root and the user of the job has sudo without a
-// password.
-test('the check job installs the pinned bay before the images and starts bay through sudo -n in each of its steps of bay', () => {
+// bay (plan C-6, S-475-5): the action runner-setup installs the pinned release before the run step of the job, because a recipe
+// changes no setting of the machine, and gives the job BAY="sudo -n bay" through GITHUB_ENV, because on the runner the state of
+// bay belongs to root and the user of the job has sudo without a password; the Makefile exports BAY to every call of the recipe.
+test('the check job installs the pinned bay through runner-setup and starts bay through sudo -n in each of its calls of bay', () => {
+  const calls = callsOf(['ci-check']);
+  const [install, images, suite] = ['install', 'persist-images', 'ci-suite'].map(call => calls.indexOf(call));
+  assert.ok(install !== undefined && images !== undefined && suite !== undefined && install >= 0 && install < images && images < suite, `make ci-check does not run make install, make persist-images and the suite in that order: ${calls.join(' ')}`);
+  assert.ok(!calls.includes('bay-install') && !calls.includes('gui-browser-libraries'), `make ci-check changes a setting of the machine: ${calls.join(' ')}`);
   const steps = stepsOf(CHECK_JOB);
-  const at = (run: string): number => steps.findIndex(entry => new RegExp(`\\n {8}run: ${run}$`, 'm').test(entry));
-  const [install, bay, images, suite] = [at('make install'), at('make bay-install'), at('make persist-images'), at('make ci-suite')];
-  assert.ok(bay >= 0, 'no step of the check job runs make bay-install');
-  assert.ok(install < bay && bay < images && images < suite, 'make bay-install does not run after make install and before make persist-images and the suite');
-  for (const index of [bay, images, suite]) {
-    const step = text(steps[index], 'a step of bay');
-    assert.match(step, /\n {8}env:\n(?: {10}.*\n)*? {10}BAY: sudo -n bay$/m, `the step does not set BAY to sudo -n bay:\n${step}`);
-  }
-  const recipe = make(['-n', 'bay-install']);
+  const setup = steps.findIndex(entry => entry.includes('uses: ./.github/actions/runner-setup'));
+  const run = steps.findIndex(entry => /\n {8}run: /.test(entry));
+  assert.ok(setup >= 0 && setup < run, 'the check job does not use runner-setup before its run step');
+  assert.match(text(steps[setup], 'the runner-setup step'), /\n {10}browser-libraries: 'true'\n {10}bay: 'true'(?:\n|$)/, 'the check job does not set up the libraries of Chromium and bay');
+  assert.match(read('Makefile'), /^export BAY$/m, 'the Makefile does not export BAY to the calls of a recipe');
+  const recipe = make(['-n', 'runner-setup-bay'], { GITHUB_ENV: '/dev/null' });
   assert.equal(recipe.code, 0, recipe.output);
   assert.match(recipe.output, /^\S+\/node scripts\/bay\.mts install$/m);
+  assert.match(recipe.output, /^echo 'BAY=sudo -n bay' >> "\$GITHUB_ENV"$/m);
+  const action = read('.github/actions/runner-setup/action.yml');
+  for (const target of ['install-llvm', 'gui-browser-libraries', 'runner-setup-bay']) assert.match(action, new RegExp(`\\n {6}run: make ${target}$`, 'm'), `runner-setup does not run make ${target}`);
+});
+
+// No recipe of a job runs sudo (S-484): the dry run of each recipe, with the calls of make that it prints, holds no sudo.
+test('no recipe of a job runs sudo', () => {
+  for (const goals of [['ci-shared'], ['ci-runtime', 'RUNTIME=php'], ['ci-check'], ['ci-assets-platform'], ['ci-assets-npm'], ['ci-pages'], ['ci-release-tag', 'RUN=1'], ['ci-release-publish']]) {
+    const dry = make(['-n', ...goals], { GITHUB_ENV: '/dev/null' });
+    assert.doesNotMatch(dry.output, /\bsudo\b/, `make ${goals.join(' ')} runs sudo:\n${dry.output}`);
+  }
 });
 
 // A dry run prints the recipe of the servers and starts nothing: a recipe that ran would write a line that starts with
@@ -310,7 +340,7 @@ test('the check job uploads the report of make ci-targets as its last step, also
 function make(goals: string[], env: Record<string, string> = {}): { code: number | null; output: string } {
   const clean = cleanEnv();
   // The variables that the recipes below read are those of the case alone.
-  for (const name of ['RESULTS', 'FAIL_SKIPPED', 'TAG', 'RUNNER_TEMP', 'TARGETS', 'TOOLS', 'RUNTIME', 'GROUP']) Reflect.deleteProperty(clean, name);
+  for (const name of ['RESULTS', 'FAIL_SKIPPED', 'TAG', 'RUNNER_TEMP', 'TARGETS', 'TOOLS', 'RUNTIME', 'GROUP', 'RELEASE', 'BAY', 'VITEPRESS_BASE', 'GITHUB_OUTPUT']) Reflect.deleteProperty(clean, name);
   const result = spawnSync('make', ['--no-print-directory', ...goals], { cwd: ROOT, encoding: 'utf8', env: { ...clean, ...env } });
   return { code: result.status, output: `${result.stdout}${result.stderr}` };
 }
@@ -349,33 +379,105 @@ test('make bootstrap installs the lock with the npm of devEngines outside the ch
   const libraries = make(['-n', 'gui-browser-libraries']);
   assert.equal(libraries.code, 0, libraries.output);
   assert.match(libraries.output, /^cd packages\/gui && sudo env PATH="\$PATH" +node_modules\/\.bin\/playwright install-deps chromium$/m);
-  assert.match(step(stepsOf(CHECK_JOB), 'Install the system libraries of Chromium'), /\n {8}run: make gui-browser-libraries$/m);
 });
 
-// The steps of the pipeline hold no expression in their command (S-472): the value of an expression is a variable of the
-// environment of the step, which make reads as the variable of that name, so the recipe receives what the command line gave it.
-test('a make variable of the environment of a step reaches the recipe, and the runner of config/ci.json is the runner of the jobs', () => {
-  const targets = make(['-n', 'ci-targets'], { TARGETS: 'kit-gates-runtime-php docs-check' });
+// The jobs of the pipeline hold their content in recipes (S-484): the run step of a job is make ci-<job> with the value of its
+// matrix on the command line, a variable of the command line reaches every call of the recipe, and the recipes ci-shared and
+// ci-runtime read the tools and the targets of their job from the plan from which the plan job writes the outputs of GitHub.
+test('the recipes of the pipeline install the tools of the plan, set up and run their gates inside the context, on the runner of config/ci.json', () => {
+  const targets = make(['-n', 'ci-targets', 'TARGETS=kit-gates-runtime-php docs-check']);
   assert.equal(targets.code, 0, targets.output);
   assert.match(targets.output, /ci-targets\.m[jt]s -k \S+ kit-gates-runtime-php docs-check$/m);
-  const tools = make(['-n', 'install-tools'], { TOOLS: 'php composer' });
+  const tools = make(['-n', 'install-tools', 'TOOLS=php composer']);
   assert.equal(tools.code, 0, tools.output);
   assert.match(tools.output, /install-tools\.m[jt]s --no-self-update php composer$/m);
   for (const verb of ['setup', 'context-prepare', 'context-cleanup']) {
-    const setup = make(['-n', `kit-ci-${verb}`, 'GROUP=runtime'], { RUNTIME: 'php-ext' });
+    const setup = make(['-n', `kit-ci-${verb}`, 'GROUP=runtime', 'RUNTIME=php-ext']);
     assert.equal(setup.code, 0, setup.output);
     assert.match(setup.output, new RegExp(`ci-setup\\.m[jt]s --${verb} runtime php-ext$`, 'm'));
   }
-  const pipeline = read('.github/workflows/ci-pipeline.yml');
-  const steps = [...jobsOf(pipeline).values()].flatMap(stepsOf);
-  // Each variable is set on its step alone: kit-ci-setup GROUP=shared refuses a RUNTIME, and a link takes RUNTIME as its selector.
-  for (const [name, run] of [['TOOLS', 'make install-tools'], ['TARGETS', 'make ci-targets'], ['RUNTIME', 'make kit-ci-']] as const) {
-    const setting = steps.filter(entry => new RegExp(`\\n {10}${name}: `).test(entry));
-    assert.ok(setting.length > 0, `no step of the pipeline sets ${name}`);
-    for (const entry of setting) assert.ok(entry.includes(`run: ${run}`), `a step that sets ${name} does not run ${run}:\n${entry}`);
-    assert.doesNotMatch(pipeline, new RegExp(`\\n {0,6}${name}: `), `${name} is set above a step`);
-  }
+  const pipeline = jobsOf(read('.github/workflows/ci-pipeline.yml'));
+  assert.match(job(pipeline, 'plan'), /\n {8}run: make kit-ci-plan$/m, 'the plan job does not run make kit-ci-plan');
+  assert.match(job(pipeline, 'shared'), /\n {8}run: make ci-shared$/m, 'the shared job does not run make ci-shared');
+  assert.match(job(pipeline, 'runtime'), /\n {8}run: make ci-runtime RUNTIME=\$\{\{ matrix\.runtime \}\}$/m, 'the runtime job does not run make ci-runtime with the runtime of its matrix');
+  assert.match(job(pipeline, 'runtime'), /\n {8}include: \$\{\{ fromJSON\(needs\.plan\.outputs\.runtimes\) \}\}$/m, 'the matrix of the runtime job does not fan out from the plan');
+
+  const runtime = make(['-n', 'ci-runtime', 'RUNTIME=php']);
+  assert.equal(runtime.code, 0, runtime.output);
+  assert.deepEqual(callsOf(['ci-runtime', 'RUNTIME=php']), ['install-tools', 'kit-ci-setup', 'kit-install-symbols', 'ci-context-targets']);
+  assert.deepEqual(callsOf(['ci-runtime', 'RUNTIME=go']), ['install-tools', 'kit-ci-setup', 'ci-context-targets']);
+  assert.match(runtime.output, /scripts\/ci-plan\.mts \S+\/ci-setup\.m[jt]s tools runtime php\)" && \{ test -z "\$tools" \|\| \S*make --no-print-directory install-tools TOOLS="\$tools"; \}$/m);
+  assert.match(runtime.output, /scripts\/ci-plan\.mts \S+\/ci-setup\.m[jt]s targets runtime php\)" && \S*make --no-print-directory ci-context-targets GROUP=runtime RUNTIME=php TARGETS="kit-gates-runtime-php \$targets"$/m);
+  const unset = make(['ci-runtime']);
+  assert.equal(unset.code, 2, unset.output);
+  assert.match(unset.output, /ci-runtime: RUNTIME is required/);
+  const shared = make(['-n', 'ci-shared']);
+  assert.equal(shared.code, 0, shared.output);
+  assert.deepEqual(callsOf(['ci-shared']), ['install-tools', 'kit-ci-setup', 'ci-context-targets']);
+  assert.match(shared.output, /\S*make --no-print-directory ci-context-targets GROUP=shared TARGETS="kit-gates-static \$targets"$/m);
+  // The cleanup of the context runs after the prepare has run, also after a failed prepare or target.
+  assert.deepEqual(callsOf(['ci-context-targets', 'GROUP=runtime', 'RUNTIME=php', 'TARGETS=lint-php']), ['kit-ci-context-prepare', 'ci-targets', 'kit-ci-context-cleanup']);
+
+  // scripts/ci-plan.mts prints the lists of the plan that kit computes from config/ci.json.
+  const ciSetup = /scripts\/ci-plan\.mts (\S+\/ci-setup\.m[jt]s) /.exec(shared.output)?.[1];
+  assert.ok(ciSetup !== undefined, `the recipe of ci-shared does not name the ci-setup of kit:\n${shared.output}`);
+  const plan = (...args: string[]) => spawnSync(process.execPath, ['scripts/ci-plan.mts', ciSetup, ...args], { cwd: ROOT, encoding: 'utf8', env: { ...cleanEnv(), GITHUB_OUTPUT: '' } });
+  const ciConfig: unknown = JSON.parse(read('config/ci.json'));
+  const configured = (key: string): unknown => field(field(ciConfig, 'tools', 'config/ci.json'), key, 'tools of config/ci.json');
+  const sharedTools = plan('tools', 'shared');
+  assert.equal(sharedTools.status, 0, sharedTools.stderr);
+  for (const tool of words(configured('shared'))) assert.ok(sharedTools.stdout.trim().split(' ').includes(tool), `the tools of the shared job hold no ${tool}: ${sharedTools.stdout}`);
+  const goTools = plan('tools', 'runtime', 'go');
+  assert.equal(goTools.status, 0, goTools.stderr);
+  for (const tool of words(configured('go'))) assert.ok(goTools.stdout.trim().split(' ').includes(tool), `the tools of the runtime go hold no ${tool}: ${goTools.stdout}`);
+  const goTargets = plan('targets', 'runtime', 'go');
+  assert.equal(goTargets.status, 0, goTargets.stderr);
+  assert.equal(goTargets.stdout, '\n', 'config/ci.json declares no targets of the runtime go');
+  const missing = plan('tools', 'runtime', 'none');
+  assert.equal(missing.status, 1, missing.stderr);
+  assert.match(missing.stderr, /the plan holds no runtime none; it holds go, php, php-ext, python, rust, ts/);
+  const usage = plan('tools', 'runtime');
+  assert.equal(usage.status, 2, usage.stderr);
+  assert.match(usage.stderr, /^usage: scripts\/ci-plan\.mts/);
+
   for (const file of ['.github/workflows/ci.yml', '.github/workflows/ci-pipeline.yml', '.github/workflows/release.yml', '.github/workflows/pages.yml']) {
     for (const runner of read(file).matchAll(/^ +runs-on: (.*)$/gm)) assert.equal(runner[1], field(JSON.parse(read('config/ci.json')), 'runner', 'config/ci.json'), `${file} names another runner than config/ci.json`);
   }
+});
+
+// The jobs of assets.yml and pages.yml hold their content in recipes (S-484): the input release of the caller reaches the recipe
+// as RELEASE, which runs the release check of binding before the assets, and the recipe of the site sets its base.
+test('the jobs of assets.yml and pages.yml run their recipes, and RELEASE=true adds the release check of binding', () => {
+  const assets = jobsOf(read('.github/workflows/assets.yml'));
+  for (const name of ['platform', 'npm']) assert.match(job(assets, name), new RegExp(`\\n {8}run: make ci-assets-${name} RELEASE=\\$\\{\\{ inputs\\.release \\}\\}$`, 'm'), `the job ${name} of assets.yml does not run make ci-assets-${name} with the input release`);
+  assert.match(job(assets, 'platform'), /uses: \.\/\.github\/actions\/runner-setup\n {8}with:\n {10}llvm: 'true'\n/, 'the job platform does not install LLVM through runner-setup');
+  assert.match(job(jobsOf(PAGES), 'pages'), /\n {8}run: make ci-pages$/m, 'the job pages does not run make ci-pages');
+  assert.deepEqual(callsOf(['ci-assets-platform']), ['install-tools', 'llvm-check', '-k']);
+  assert.deepEqual(callsOf(['ci-assets-platform', 'RELEASE=true']), ['install-tools', 'llvm-check', 'release-binding-check', '-k']);
+  const platform = make(['-n', 'ci-assets-platform', 'RELEASE=false']);
+  assert.equal(platform.code, 0, platform.output);
+  assert.match(platform.output, /^\S*make --no-print-directory install-tools TOOLS="rust uv python"$/m);
+  assert.match(platform.output, /^\S*make --no-print-directory -k release-go-static release-wheel release-php-ext release-npm-platform PHP=php$/m);
+  assert.deepEqual(callsOf(['ci-assets-npm']), ['install-tools', 'install-wasm-bindgen', 'release-npm']);
+  assert.deepEqual(callsOf(['ci-assets-npm', 'RELEASE=true']), ['install-tools', 'install-wasm-bindgen', 'release-binding-check', 'release-npm']);
+  for (const goal of ['ci-assets-platform', 'ci-assets-npm']) {
+    const wrong = make([goal, 'RELEASE=yes']);
+    assert.equal(wrong.code, 2, wrong.output);
+    assert.match(wrong.output, new RegExp(`${goal}: RELEASE is true, false or empty, not yes`));
+  }
+  assert.deepEqual(callsOf(['ci-pages']), ['docs-build']);
+  const makefile = read('Makefile');
+  assert.match(makefile, /^ci-pages: export VITEPRESS_BASE := \/fsm\/$/m, 'the recipe of the site does not set the base /fsm/');
+  assert.match(makefile, /^ci-check ci-assets-platform ci-assets-npm ci-release-publish: export RUSTUP_AUTO_INSTALL := 0$/m, 'the recipes that run cargo do not set RUSTUP_AUTO_INSTALL to 0');
+});
+
+// The jobs of release.yml hold their content in recipes (S-484): the job tag runs make ci-release-tag with the input run, and
+// the job publish runs make ci-release-publish, whose calls are the targets of the release in their order.
+test('the jobs of release.yml run make ci-release-tag and make ci-release-publish', () => {
+  const release = jobsOf(read('.github/workflows/release.yml'));
+  assert.match(job(release, 'tag'), /\n {8}run: make ci-release-tag RUN=\$\{\{ inputs\.run \}\}$/m, 'the job tag does not run make ci-release-tag RUN=${{ inputs.run }}');
+  assert.match(job(release, 'publish'), /\n {8}run: make ci-release-publish$/m, 'the job publish does not run make ci-release-publish');
+  assert.deepEqual(callsOf(['ci-release-tag', 'RUN=7'], { GITHUB_ENV: '/dev/null' }), ['release-tag', 'release-tag-output']);
+  assert.match(make(['-n', 'ci-release-tag', 'RUN=7', 'GITHUB_EVENT_NAME=workflow_run'], { GITHUB_ENV: '/dev/null' }).output, /release-tag AUTO=1$/m, 'a workflow_run does not release with AUTO=1');
+  assert.deepEqual(callsOf(['ci-release-publish', 'TAG=v0.0.1']), ['release-zip', 'release-prepare', 'release-tools', 'release-assets', 'install-tools', 'release-go-module', 'release-publish', 'release-platform-assets', 'release-undraft']);
 });

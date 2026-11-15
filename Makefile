@@ -531,13 +531,124 @@ ci-targets:
 ci-summary:
 	$(NODE) $(KIT)/ci-targets.$(KIT_EXT) --summary $(CI_REPORT)
 
+# The jobs of the workflows (S-484). Each job of ci.yml, ci-pipeline.yml, pages.yml, assets.yml and release.yml runs one recipe,
+# make ci-<job>, or make ci-assets-<job> and make ci-release-<job> for the jobs of assets.yml and release.yml, with arguments
+# NAME=value alone, and a local run makes the same call: make ci-shared, make ci-runtime RUNTIME=php, make ci-check,
+# make ci-assets-platform, make ci-assets-npm, make ci-pages, make ci-release-tag and make ci-release-publish. No recipe runs
+# sudo or changes a setting of the machine: the action runner-setup (.github/actions/runner-setup) provisions the runner with
+# the packages of the system and bay before the recipe runs. The workflow keeps only the steps that provision the runner or
+# carry a result (the checkout, setup-php, the bootstrap action, runner-setup, the artifacts, the Pages actions), because a job
+# whose content is YAML, with steps, conditions of steps and expressions in its commands, runs nowhere but on a runner of GitHub.
+# A recipe holds the order and the conditions of its job: the installs and the prerequisites first, each line stopping the
+# recipe at its failure, then the checks, every target to its end, then the cleanup of the context, also after a failed check.
+# Its status is that of the checks, or that of the cleanup when the checks passed. The jobs of the pipeline read their tools and
+# their targets from the plan that kit computes from config/ci.json (scripts/ci-plan.mts): the plan job writes the same plan
+# into the outputs of GitHub (make kit-ci-plan), and the matrix of the runtime jobs fans out from them. The lines start make
+# through CI_MAKE, which names make without the variable MAKE, so a dry run prints the calls of a recipe and runs none of them.
+CI_PLAN = $(NODE) scripts/ci-plan.mts $(KIT)/ci-setup.$(KIT_EXT)
+CI_MAKE := $(MAKE) --no-print-directory
+# rustup installs no toolchain on the first cargo; make install-tools installs the toolchain of rust-toolchain.toml.
+ci-check ci-assets-platform ci-assets-npm ci-release-publish: export RUSTUP_AUTO_INSTALL := 0
+# The site of GitHub Pages of polyspec/fsm is at the path /fsm/, which docs/.vitepress/config.mts reads as its base.
+ci-pages: export VITEPRESS_BASE := /fsm/
+.PHONY: ci-shared ci-runtime ci-context-targets ci-check ci-assets-platform ci-assets-npm ci-pages ci-release-tag ci-release-publish llvm-check
+ci-shared:
+	tools="$$($(CI_PLAN) tools shared)" && { test -z "$$tools" || $(CI_MAKE) install-tools TOOLS="$$tools"; }
+	$(CI_MAKE) kit-ci-setup GROUP=shared
+	targets="$$($(CI_PLAN) targets shared)" && $(CI_MAKE) ci-context-targets GROUP=shared TARGETS="kit-gates-static $$targets"
+
+ci-runtime:
+	@test -n "$(RUNTIME)" || { echo 'ci-runtime: RUNTIME is required, for example make ci-runtime RUNTIME=php' >&2; exit 2; }
+	tools="$$($(CI_PLAN) tools runtime $(RUNTIME))" && { test -z "$$tools" || $(CI_MAKE) install-tools TOOLS="$$tools"; }
+	$(CI_MAKE) kit-ci-setup GROUP=runtime RUNTIME=$(RUNTIME)
+	$(if $(filter php,$(RUNTIME)),$(CI_MAKE) kit-install-symbols EXTRACTORS=php)
+	targets="$$($(CI_PLAN) targets runtime $(RUNTIME))" && $(CI_MAKE) ci-context-targets GROUP=runtime RUNTIME=$(RUNTIME) TARGETS="kit-gates-runtime-$(RUNTIME) $$targets"
+
+# ci-context-targets runs TARGETS through make ci-targets inside the context of GROUP (and RUNTIME), which config/ci.json
+# declares: the cleanup runs after the prepare has run, also when the prepare or a target failed.
+ci-context-targets:
+	status=0; \
+	if $(CI_MAKE) kit-ci-context-prepare; then $(CI_MAKE) ci-targets || status=$$?; else status=$$?; fi; \
+	$(CI_MAKE) kit-ci-context-cleanup || { cleanup=$$?; test "$$status" -ne 0 || status=$$cleanup; }; \
+	exit $$status
+
+# ci-check is the job check of ci.yml: the installs and the images of the servers, then make ci-suite, every target of
+# CI_SUITE_TARGETS to its end. The machine holds the libraries of Chromium and bay (make gui-browser-libraries and make
+# bay-install, which runner-setup runs on a runner of GitHub). There the state of bay belongs to root, so runner-setup gives the
+# job BAY="sudo -n bay" through GITHUB_ENV, the bay command of that machine (S-475-5).
+ci-check:
+	$(CI_MAKE) install
+	$(CI_MAKE) hooks
+	$(CI_MAKE) persist-images
+	$(CI_MAKE) ci-suite
+
+# ci-assets-platform and ci-assets-npm are the jobs of assets.yml: the tools first, with RELEASE=true the release check of
+# binding, which stops the job at its failure, then the assets. ci-assets-platform builds every asset of its platform to its
+# end, so one run names every asset that does not build. LLVM is a package of the machine (make install-llvm, which
+# runner-setup runs on a runner of GitHub); llvm-check stops the job when it is missing.
+CI_RELEASE_VALUE = @case '$(RELEASE)' in ''|true|false) ;; *) echo '$@: RELEASE is true, false or empty, not $(RELEASE)' >&2; exit 2;; esac
+ci-assets-platform:
+	$(CI_RELEASE_VALUE)
+	$(CI_MAKE) install-tools TOOLS="rust uv python"
+	$(CI_MAKE) llvm-check
+	$(if $(filter true,$(RELEASE)),$(CI_MAKE) release-binding-check)
+	$(CI_MAKE) -k release-go-static release-wheel release-php-ext release-npm-platform PHP=php
+
+ci-assets-npm:
+	$(CI_RELEASE_VALUE)
+	$(CI_MAKE) install-tools TOOLS=rust
+	$(CI_MAKE) install-wasm-bindgen
+	$(if $(filter true,$(RELEASE)),$(CI_MAKE) release-binding-check)
+	$(CI_MAKE) release-npm
+
+ci-pages:
+	$(CI_MAKE) docs-build
+
+# ci-release-tag is the job tag of release.yml: release-tag tags the commit of the CI run RUN, the input run of a dispatch or
+# the run of the workflow_run event of GITHUB_EVENT_PATH, with --auto for that event (K987), and writes TAG and VERSION into
+# GITHUB_ENV; release-tag-output reads them from there and gives them to the later jobs.
+CI_EVENT_RUN = $(NODE) -p 'JSON.parse(require("fs").readFileSync(process.env.GITHUB_EVENT_PATH, "utf8")).workflow_run?.id ?? ""'
+ci-release-tag:
+	run='$(RUN)'; test -n "$$run" || run="$$($(CI_EVENT_RUN))"; RUN="$$run" $(CI_MAKE) release-tag $(if $(filter workflow_run,$(GITHUB_EVENT_NAME)),AUTO=1)
+	set -a; . "$$GITHUB_ENV"; set +a; $(CI_MAKE) release-tag-output
+
+# ci-release-publish is the job publish of release.yml, on the checkout of the tag: the tools of the release, with
+# var/tools/bin and the shims first on PATH, the assets, those of each platform that the job assets uploaded and the workflow
+# downloaded into RELEASE_DOWNLOADED, the Go module, which carries the identity of the actor of the run, then the draft release,
+# its platform assets and its publication. TAG and VERSION are the tag of HEAD.
+RELEASE_DOWNLOADED ?= var/release/downloaded
+ci-release-publish: export TAG = $(shell git describe --tags --exact-match HEAD 2>/dev/null)
+ci-release-publish: export VERSION = $(patsubst v%,%,$(TAG))
+ci-release-publish: export PATH := $(KIT_TOOLS)/mise/shims:$(KIT_TOOLS)/bin:$(PATH)
+ci-release-publish: export GIT_AUTHOR_NAME = $(GITHUB_ACTOR)
+ci-release-publish: export GIT_AUTHOR_EMAIL = $(GITHUB_ACTOR)@users.noreply.github.com
+ci-release-publish: export GIT_COMMITTER_NAME = $(GITHUB_ACTOR)
+ci-release-publish: export GIT_COMMITTER_EMAIL = $(GITHUB_ACTOR)@users.noreply.github.com
+ci-release-publish:
+	@test -n "$$TAG" || { echo 'ci-release-publish: HEAD carries no tag; the job checks out the tag of the job tag' >&2; exit 2; }
+	$(CI_MAKE) release-zip
+	$(CI_MAKE) release-prepare
+	$(CI_MAKE) release-tools
+	$(CI_MAKE) release-assets
+	mkdir -p $(RELEASE_ASSETS) && cp -R $(RELEASE_DOWNLOADED)/. $(RELEASE_ASSETS)/
+	$(CI_MAKE) install-tools TOOLS="rust go"
+	$(CI_MAKE) release-go-module
+	$(CI_MAKE) release-publish
+	$(CI_MAKE) release-platform-assets
+	$(CI_MAKE) release-undraft
+
+# llvm-check stops a recipe when the LLVM of config/toolchain.json is not installed; make install-llvm installs it.
+llvm-check:
+	@test -n "$(LLVM_MAJOR)" || { echo 'llvm-check: config/toolchain.json pins no major release of LLVM (llvm.version)' >&2; exit 2; }
+	@test -x "$(LLVM_ROOT)/bin/clang" && ls "$(LLVM_ROOT)/lib" | grep -q '^libclang' || { echo 'llvm-check: LLVM $(LLVM_MAJOR) is not installed in $(LLVM_ROOT); make install-llvm installs it' >&2; exit 1; }
+
 # ---- Release ---------------------------------------------------------------------------------------------------------
 # The steps of the release workflow (.github/workflows/release.yml, config/release.json), in its order. release-tag tags the
 # commit of the successful CI run RUN with vX.Y.Z, X.Y.Z the newest section of the change log, and appends TAG and VERSION to
 # GITHUB_ENV; the later steps read TAG. release-prepare installs the PHP of var/tools (install-tools TOOLS=php), whose phpize and
 # gen_stub.php fsm-php-ext-gen runs for the arginfo header of the generated extension that the php-ext archive carries (S-370);
 # release-tools installs no tool for a make entry (kit K930).
-.PHONY: release-candidate release-zip release-checkout release-prepare release-tools release-tools-path release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage
+.PHONY: release-candidate release-zip release-checkout release-prepare release-tools release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage
 release-candidate:
 	RELEASE_ASSETS=var/release/assets $(NODE) $(KIT)/release-run.$(KIT_EXT) prepare "$(VERSION)"
 
@@ -555,14 +666,6 @@ release-prepare:
 
 release-tools:
 	$(ONLINE) $(NODE) $(KIT)/release-tools.$(KIT_EXT)
-
-# The steps of the workflow after release-tools run with var/tools/bin and the shims on PATH and with the environment of mise.
-release-tools-path:
-	@test -n "$$GITHUB_PATH" || { echo 'release-tools-path: GITHUB_PATH is not set; run it in the release workflow between steps'; exit 1; }
-	@test -n "$$GITHUB_ENV" || { echo 'release-tools-path: GITHUB_ENV is not set; run it in the release workflow between steps'; exit 1; }
-	@echo "$(KIT_TOOLS)/mise/shims" >> "$$GITHUB_PATH"
-	@echo "$(KIT_TOOLS)/bin" >> "$$GITHUB_PATH"
-	@for name in $(MISE_ENVIRONMENT); do echo "$$name=$$(printenv $$name)"; done >> "$$GITHUB_ENV"
 
 release-tag:
 	@test -n "$$RUN" || { echo "release-tag: RUN is required, for example make release-tag RUN=123"; exit 1; }
@@ -1132,10 +1235,16 @@ fsm-install: install-kit $(PACKAGE_DEPS)
 # (tests/bay) against stand-ins of curl, tar, sudo and bay, so it downloads and installs nothing.
 BAY ?= bay
 export BAY
-.PHONY: persist-images persist-servers persist-servers-runner persist-servers-write persist-servers-test bay-install bay-test
+.PHONY: persist-images persist-servers persist-servers-runner persist-servers-write persist-servers-test bay-install bay-test runner-setup-bay
 PERSIST_MAKE = $(MAKE)
 bay-install:
 	$(ONLINE) $(NODE) scripts/bay.mts install
+
+# runner-setup-bay is the bay of the action runner-setup on a runner of GitHub: make bay-install, then BAY="sudo -n bay" for the
+# later steps of the job through GITHUB_ENV, because there the state of bay belongs to root (S-475-5).
+runner-setup-bay: bay-install
+	@test -n "$$GITHUB_ENV" || { echo 'runner-setup-bay: GITHUB_ENV is not set; run it in a job of GitHub' >&2; exit 2; }
+	echo 'BAY=sudo -n bay' >> "$$GITHUB_ENV"
 
 bay-test:
 	$(RUN_TESTS) node --results .results/bay-test.json --inputs scripts/bay.mts --inputs config/toolchain.json --inputs tests/bay --inputs tests/support/stand-ins.mts -- --test-concurrency=1 tests/bay
@@ -1182,7 +1291,7 @@ package-names-test:
 # the check job runs make install and its suite through make persist-servers, which starts the servers of plan C-6 through bay, holds no
 # block services and uploads its report, and each version comes from the file that declares it (docs/plans/fsm-v1/plan.md, C-10; docs/plans/fsm-v1/checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
-	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs config/owner-checks.json --inputs config/release.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs legacy/packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs .github/actions --inputs tests/workflows -- --test-concurrency=1 tests/workflows/workflows.test.mts tests/workflows/rules.test.mts
+	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs config/owner-checks.json --inputs config/release.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs legacy/packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs .github/actions --inputs tests/workflows --inputs scripts/ci-plan.mts --inputs config/ci.json -- --test-concurrency=1 tests/workflows/workflows.test.mts tests/workflows/rules.test.mts
 
 # persist-servers-test runs the tests of scripts/persist-servers.mts (tests/persist-servers): the directory of a run, its
 # Compose file, the steps of run.sh as commands of bay, the order of runner.sh, a failed start, the signals and the removal.

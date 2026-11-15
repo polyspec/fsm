@@ -1,0 +1,27 @@
+# The setup of the machine of a CI job of fsm (S-484): the packages of the system and bay, which a recipe of the Makefile never
+# installs, because a recipe runs no sudo and changes no setting of the machine that runs it. A job uses it after the bootstrap
+# of kit and before its one run step; a local machine is set up once with the same make targets.
+name: runner setup
+description: Installs the packages of the system that a job names (LLVM, the libraries of Chromium) and bay, and gives the job the bay command of the runner.
+inputs:
+  llvm:
+    description: Install the LLVM of config/toolchain.json (make install-llvm).
+    default: 'false'
+  browser-libraries:
+    description: Install the system libraries of the Chromium of packages/gui (make gui-browser-libraries).
+    default: 'false'
+  bay:
+    description: Install bay and give the job BAY="sudo -n bay" (make runner-setup-bay).
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - if: ${{ inputs.llvm == 'true' }}
+      shell: bash
+      run: make install-llvm
+    - if: ${{ inputs.browser-libraries == 'true' }}
+      shell: bash
+      run: make gui-browser-libraries
+    - if: ${{ inputs.bay == 'true' }}
+      shell: bash
+      run: make runner-setup-bay

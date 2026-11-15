@@ -36,9 +36,9 @@ const ASSETS = '.github/workflows/assets.yml';
 const PLATFORM_RUNNERS: Record<string, string> = { 'linux-x64-gnu': 'ubuntu-26.04', 'linux-arm64-gnu': 'ubuntu-26.04-arm', 'darwin-arm64': 'macos-15' };
 const MATRIX_RUNNER = '${{ matrix.runner }}';
 
-// A run step: make, one target, then arguments NAME=value, NAME="words" for a list such as the tools of a job, or
-// expressions ${{ ... }}.
-const RUN = /^make ([a-z][a-z0-9-]*)((?: (?:[A-Z][A-Z0-9_]*=(?:[A-Za-z0-9_.-]+|"[A-Za-z0-9_. -]+")|\$\{\{[^}]*\}\}))*)$/;
+// A run step: make, one target, then arguments NAME=value, NAME="words" for a list such as the tools of a job,
+// NAME=${{ ... }}, or expressions ${{ ... }}. jobContentFindings narrows the expressions of the workflows that CI runs.
+const RUN = /^make ([a-z][a-z0-9-]*)((?: (?:[A-Z][A-Z0-9_]*=(?:[A-Za-z0-9_.-]+|"[A-Za-z0-9_. -]+"|'\$\{\{ toJSON\(needs\) \}\}'|\$\{\{[^}]*\}\})|\$\{\{[^}]*\}\}))*)$/;
 const PINNED = /^([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)@[0-9a-f]{40}$/;
 
 /** The targets that the text of a Makefile defines with a rule. */
@@ -159,8 +159,9 @@ function lastJobFindings(file: string, text: string): string[] {
   const others = names.filter((name) => name !== LAST);
   if ([...needs].sort().join(' ') !== [...others].sort().join(' '))
     found.push(`${file}: the job ${LAST} needs ${needs.join(', ') || 'no job'}, not every other job: ${others.join(', ') || 'none'}`);
-  if (value('RESULTS') !== '${{ toJSON(needs) }}') found.push(`${file}: the job ${LAST} does not pass RESULTS, the JSON of its needs`);
-  if (!lines.some((line) => valueOf(line, 'run') === `make ${LAST} FAIL_SKIPPED=1`)) found.push(`${file}: the job ${LAST} does not run make ${LAST} FAIL_SKIPPED=1`);
+  const run = value('run');
+  if (!run?.includes("RESULTS='${{ toJSON(needs) }}'")) found.push(`${file}: the job ${LAST} does not pass RESULTS, the JSON of its needs`);
+  if (run?.replace(" RESULTS='${{ toJSON(needs) }}'", '') !== `make ${LAST} FAIL_SKIPPED=1`) found.push(`${file}: the job ${LAST} does not run make ${LAST} FAIL_SKIPPED=1`);
   return found;
 }
 
@@ -266,9 +267,7 @@ const LAST_JOB = `  rust:
     steps:
       - uses: ./.github/actions/bootstrap
       - name: every job passed
-        env:
-          RESULTS: \${{ toJSON(needs) }}
-        run: make ci-passed FAIL_SKIPPED=1
+        run: make ci-passed RESULTS='\${{ toJSON(needs) }}' FAIL_SKIPPED=1
 `;
 
 test('the last job of the workflow ci is ci-passed, which needs every other job and judges their results', () => {
@@ -287,8 +286,155 @@ test('the last job of the workflow ci is ci-passed, which needs every other job 
   assert.deepEqual(broken('needs: [shared, rust]', 'needs: [shared]'), [`${CI}: the job ci-passed needs shared, not every other job: shared, rust`]);
   assert.deepEqual(broken('    needs: [shared, rust]\n', ''), [`${CI}: the job ci-passed needs no job, not every other job: shared, rust`]);
   assert.deepEqual(broken('needs: [shared, rust]', 'needs: [shared, rust, other]'), [`${CI}: the job ci-passed needs shared, rust, other, not every other job: shared, rust`]);
-  assert.deepEqual(broken('          RESULTS: ${{ toJSON(needs) }}\n', ''), [`${CI}: the job ci-passed does not pass RESULTS, the JSON of its needs`]);
-  assert.deepEqual(broken('run: make ci-passed FAIL_SKIPPED=1', 'run: make ci-passed'), [`${CI}: the job ci-passed does not run make ci-passed FAIL_SKIPPED=1`]);
+  assert.deepEqual(broken(" RESULTS='${{ toJSON(needs) }}'", ''), [`${CI}: the job ci-passed does not pass RESULTS, the JSON of its needs`]);
+  assert.deepEqual(broken("run: make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1", "run: make ci-passed RESULTS='${{ toJSON(needs) }}'"), [`${CI}: the job ci-passed does not run make ci-passed FAIL_SKIPPED=1`]);
+});
+
+// Every tracked workflow, the release workflow included (S-484).
+const CI_WORKFLOWS = ['.github/workflows/assets.yml', '.github/workflows/ci-pipeline.yml', CI, '.github/workflows/pages.yml', RELEASE];
+// The recipe of a job is ci-<job>; a job of the called workflow assets.yml and of the release workflow names its workflow
+// before its job, ci-assets-<job> and ci-release-<job>, because their jobs share names with the jobs of the other workflows.
+const RECIPE_PREFIX: Record<string, string> = { '.github/workflows/assets.yml': 'assets-', [RELEASE]: 'release-' };
+// The token of the run, which the release steps give gh; it is the one secret a run step may set.
+const TOKEN_ENV = 'GH_TOKEN: ${{ github.token }}';
+// The plan job writes the outputs from which the matrix of the runtime jobs fans out; the judgement jobs read the results of
+// the other jobs, which exist only in CI.
+const PLAN_JOB = 'plan';
+const PLAN_RUN = 'make kit-ci-plan';
+const JUDGE_JOBS = new Set(['required', LAST]);
+const JUDGE_RUN = "make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1";
+// An argument of the run step of a job: NAME=value, NAME="words", or NAME=${{ matrix.<key> }} or NAME=${{ inputs.<key> }}, a
+// parameter that the fan-out or the caller of the workflow gives the job.
+const JOB_ARGUMENT = String.raw`[A-Z][A-Z0-9_]*=(?:[A-Za-z0-9_.-]+|"[A-Za-z0-9_. -]+"|\$\{\{ (?:matrix|inputs)\.[A-Za-z0-9_-]+ \}\})`;
+
+/** The steps of the lines of a job: the lines of each item of its key `steps:`. */
+function stepsOfJob(lines: string[]): string[][] {
+  const start = lines.findIndex((line) => /^ {4}steps: *$/.test(line));
+  if (start < 0) return [];
+  const steps: string[][] = [];
+  for (const line of lines.slice(start + 1)) {
+    if (/^ {0,4}\S/.test(line)) break;
+    if (/^ {6}- /.test(line)) steps.push([line]);
+    else if (line.trim() !== '') steps.at(-1)?.push(line);
+  }
+  return steps;
+}
+
+/** The value of the key `key` of a step: a key of the step itself, on its first line or at the indent of its keys. */
+function stepValue(step: string[], key: string): string | undefined {
+  return step.map((line) => new RegExp(`^ {6}(?:- | {2})${key}: *(.*)$`).exec(line)?.[1]).find((found) => found !== undefined)?.trim();
+}
+
+/**
+ * The findings of the jobs of a workflow that CI runs (S-484): a job that runs steps has exactly one run step, `make ci-<job>`
+ * with arguments of JOB_ARGUMENT alone, the plan job `make kit-ci-plan` and a judgement job `make ci-passed FAIL_SKIPPED=1`; a
+ * run step holds no condition and no environment but GH_TOKEN, and a judgement job passes RESULTS on its command line; every other step is a
+ * uses step, and only a uses step has a condition. A job that calls a workflow runs no step of its own.
+ */
+function jobContentFindings(file: string, text: string): string[] {
+  const found: string[] = [];
+  const recipe = (job: string): string => `ci-${RECIPE_PREFIX[file] ?? ''}${job}`;
+  for (const [name, lines] of jobsOf(text)) {
+    if (lines.some((line) => /^ {4}uses: /.test(line))) continue;
+    const steps = stepsOfJob(lines);
+    const runs = steps.filter((step) => stepValue(step, 'run') !== undefined);
+    if (runs.length !== 1 && !(runs.length === 0 && steps.length > 0)) found.push(`${file}: the job ${name} has ${String(runs.length)} run steps, not one`);
+    const judge = JUDGE_JOBS.has(name);
+    const expected = name === PLAN_JOB ? PLAN_RUN : judge ? JUDGE_RUN : undefined;
+    for (const step of steps) {
+      const run = stepValue(step, 'run');
+      if (run === undefined) {
+        if (stepValue(step, 'uses') === undefined) found.push(`${file}: a step of the job ${name} is neither a run step nor a uses step`);
+        continue;
+      }
+      if (expected !== undefined ? run !== expected : !new RegExp(`^make ${recipe(name)}(?: ${JOB_ARGUMENT})*$`).test(run))
+        found.push(`${file}: the run step of the job ${name} is not ${expected ?? `make ${recipe(name)} with arguments NAME=value`}: ${run}`);
+      if (stepValue(step, 'if') !== undefined) found.push(`${file}: the run step of the job ${name} has a condition`);
+      if (/\bsudo\b/.test(run)) found.push(`${file}: the run step of the job ${name} runs sudo: ${run}`);
+      const allowed = [TOKEN_ENV];
+      for (const entry of step.filter((line) => /^ {10}[A-Z][A-Z0-9_]*: /.test(line)).map((line) => line.trim()))
+        if (!allowed.includes(entry)) found.push(`${file}: the run step of the job ${name} sets ${entry}`);
+    }
+  }
+  return found;
+}
+
+const PIPELINE = `name: ci-pipeline
+jobs:
+  plan:
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - id: plan
+        run: make kit-ci-plan
+  shared:
+    needs: plan
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        if: \${{ contains(needs.plan.outputs.common_tools, 'php') }}
+      - run: make ci-shared
+      - name: report
+        if: \${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+  runtime:
+    needs: plan
+    strategy:
+      matrix:
+        include: \${{ fromJSON(needs.plan.outputs.runtimes) }}
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: runtime gate
+        run: make ci-runtime RUNTIME=\${{ matrix.runtime }}
+  assets:
+    uses: ./.github/workflows/assets.yml
+  required:
+    if: \${{ always() }}
+    needs: [plan, shared, runtime, assets]
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: require the jobs
+        run: make ci-passed RESULTS='\${{ toJSON(needs) }}' FAIL_SKIPPED=1
+`;
+
+test('a job of a workflow that CI runs has one run step, make ci-<job>, and its other steps are uses steps', () => {
+  assert.deepEqual(jobContentFindings(CI, PIPELINE), []);
+  const broken = (from: string, to: string): string[] => {
+    assert.ok(PIPELINE.includes(from), `the sample holds no ${from}`);
+    return jobContentFindings(CI, PIPELINE.replace(from, to));
+  };
+  assert.deepEqual(broken('      - run: make ci-shared\n', '      - run: make install-tools\n      - run: make ci-shared\n'), [
+    `${CI}: the job shared has 2 run steps, not one`,
+    `${CI}: the run step of the job shared is not make ci-shared with arguments NAME=value: make install-tools`,
+  ]);
+  assert.deepEqual(broken('      - run: make ci-shared\n', ''), []);
+  assert.deepEqual(jobContentFindings(CI, 'jobs:\n  empty:\n    runs-on: ubuntu-26.04-arm\n'), [`${CI}: the job empty has 0 run steps, not one`]);
+  assert.deepEqual(broken('      - run: make ci-shared\n', '      - env:\n          GH_TOKEN: ${{ github.token }}\n        run: make ci-shared\n'), []);
+  assert.deepEqual(jobContentFindings(RELEASE, PIPELINE.replace('run: make ci-shared', 'run: make ci-release-shared').replace('make ci-runtime', 'make ci-release-runtime')), []);
+  assert.deepEqual(jobContentFindings(RELEASE, PIPELINE), [
+    `${RELEASE}: the run step of the job shared is not make ci-release-shared with arguments NAME=value: make ci-shared`,
+    `${RELEASE}: the run step of the job runtime is not make ci-release-runtime with arguments NAME=value: make ci-runtime RUNTIME=\${{ matrix.runtime }}`,
+  ]);
+  assert.deepEqual(broken('run: make ci-shared', 'run: make ci-targets TARGETS="docs-check"'), [`${CI}: the run step of the job shared is not make ci-shared with arguments NAME=value: make ci-targets TARGETS="docs-check"`]);
+  assert.deepEqual(broken('RUNTIME=${{ matrix.runtime }}', 'TARGETS="kit-gates-runtime-${{ matrix.runtime }}"'), [`${CI}: the run step of the job runtime is not make ci-runtime with arguments NAME=value: make ci-runtime TARGETS="kit-gates-runtime-\${{ matrix.runtime }}"`]);
+  assert.deepEqual(broken('RUNTIME=${{ matrix.runtime }}', "TOOLS=${{ join(matrix.installTools, ' ') }}"), [`${CI}: the run step of the job runtime is not make ci-runtime with arguments NAME=value: make ci-runtime TOOLS=\${{ join(matrix.installTools, ' ') }}`]);
+  assert.deepEqual(broken('RUNTIME=${{ matrix.runtime }}', 'RELEASE=${{ inputs.release }}'), []);
+  assert.deepEqual(broken('run: make ci-shared', 'run: make ci-shared BAY="sudo -n bay"'), [`${CI}: the run step of the job shared runs sudo: make ci-shared BAY="sudo -n bay"`]);
+  assert.deepEqual(broken('      - run: make ci-shared\n', '      - if: ${{ !cancelled() }}\n        run: make ci-shared\n'), [`${CI}: the run step of the job shared has a condition`]);
+  assert.deepEqual(broken('        run: make ci-runtime', '        env:\n          RUNTIME: ${{ matrix.runtime }}\n        run: make ci-runtime'), [`${CI}: the run step of the job runtime sets RUNTIME: \${{ matrix.runtime }}`]);
+  assert.deepEqual(broken('        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a\n', '        with:\n          name: report\n'), [`${CI}: a step of the job shared is neither a run step nor a uses step`]);
+  assert.deepEqual(broken('run: make kit-ci-plan', 'run: make ci-plan'), [`${CI}: the run step of the job plan is not ${PLAN_RUN}: make ci-plan`]);
+  assert.deepEqual(broken('run: make ci-passed RESULTS=\'${{ toJSON(needs) }}\' FAIL_SKIPPED=1', 'run: make ci-required'), [`${CI}: the run step of the job required is not ${JUDGE_RUN}: make ci-required`]);
+  assert.deepEqual(broken("run: make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1\n", "env:\n          TOOLS: ${{ needs.plan.outputs.common_tools }}\n        run: make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1\n"), [`${CI}: the run step of the job required sets TOOLS: \${{ needs.plan.outputs.common_tools }}`]);
+});
+
+test('every job of the workflows that CI runs holds its content in a recipe of the Makefile', () => {
+  const tracked = execFileSync('git', ['-C', root, 'ls-files', '-z', '--', '.github/workflows'], { encoding: 'utf8' }).split('\0').filter((file) => file !== '');
+  assert.deepEqual(tracked.sort(), [...CI_WORKFLOWS].sort(), 'a tracked workflow is not in CI_WORKFLOWS');
+  assert.deepEqual(CI_WORKFLOWS.flatMap((file) => jobContentFindings(file, readFileSync(join(root, file), 'utf8'))), []);
 });
 
 test('the Makefile rules name their targets', () => {

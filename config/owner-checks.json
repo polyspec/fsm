@@ -295,6 +295,7 @@
         ".github/workflows/**",
         ".github/actions/**",
         "tests/workflows/**",
+        "scripts/ci-plan.mts",
         ".php-version",
         "config/release.json"
       ],
