@@ -164,8 +164,10 @@ signals.
 
 `config/toolchain.json` names the release of bay that CI installs, with the sha256 of the archive of each platform. No run
 reads it. `make bay-install` downloads that archive, fails unless its sha256 is the pinned one, installs `bay` and `bayd`
-into `/usr/local/bin` with `sudo -n`, applies the machine setup with `bay install` and requires `bay check -scope run`. The
-job `check` runs it before `make persist-images` and sets `BAY` to `sudo -n bay` for its steps of bay.
+into `/usr/local/bin` with `sudo -n`, applies the machine setup with `bay install` and requires `bay check -scope run`, each through the words of `BAY`. On a
+runner of GitHub, `make runner-setup-bay` of the action `runner-setup` runs it with `BAY` set to `sudo -n bay` and sets `BAY`
+to `sudo -n bay` for the later steps of the job, so the setup is applied to the state of root, which `bay up` of those steps
+reads.
 
 To raise the release: replace the version and the four digests of `config/toolchain.json` with those of the new release,
 which its file `SHA256SUMS` names, and run `make bay-test`. A release that changes a command or an output that plan C-6

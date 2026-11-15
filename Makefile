@@ -1024,12 +1024,14 @@ export BAY
 .PHONY: persist-images persist-servers persist-servers-runner persist-servers-write persist-servers-test bay-install bay-test runner-setup-bay
 PERSIST_MAKE = $(MAKE)
 bay-install:
-	$(ONLINE) $(NODE) scripts/bay.mts install
+	$(ONLINE) BAY='$(BAY)' $(NODE) scripts/bay.mts install
 
 # runner-setup-bay is the bay of the action runner-setup on a runner of GitHub: make bay-install, then BAY="sudo -n bay" for the
-# later steps of the job through GITHUB_ENV, because there the state of bay belongs to root (S-475-5).
-runner-setup-bay: bay-install
+# later steps of the job through GITHUB_ENV, because there the state of bay belongs to root (S-475-5). The installation runs bay
+# as root as well, so bay install applies the machine setup to the state of root that bay up of the later steps reads.
+runner-setup-bay:
 	@test -n "$$GITHUB_ENV" || { echo 'runner-setup-bay: GITHUB_ENV is not set; run it in a job of GitHub' >&2; exit 2; }
+	$(MAKE) --no-print-directory bay-install BAY='sudo -n bay'
 	echo 'BAY=sudo -n bay' >> "$$GITHUB_ENV"
 
 bay-test:

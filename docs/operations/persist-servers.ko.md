@@ -1,5 +1,5 @@
 <!-- doc-id: operations-persist-servers -->
-<!-- source-sha256: 9632b186aa3d56fdc89a516e7bad2eeb49fe2a0cf5d96fc2e63da51ae64181f3 -->
+<!-- source-sha256: ba9f9b010e19dc5d592f82376e71f54f9d30b44b8be64ba515fc3dc1c7b7c2fa -->
 # 영속성 테스트의 서버
 
 [English](persist-servers.md)
@@ -152,8 +152,9 @@ project를 내리고, part `check`는 그 job이 끝나면 project의 `bay down`
 
 `config/toolchain.json`은 CI가 설치하는 bay의 릴리스를 플랫폼별 archive의 sha256과 함께 적는다. 어떤 실행도 그 값을 읽지
 않는다. `make bay-install`은 그 archive를 내려받고, sha256이 고정된 것이 아니면 실패하고, `sudo -n`으로 `bay`와 `bayd`를
-`/usr/local/bin`에 설치하고, `bay install`로 머신 설정을 적용하고, `bay check -scope run`을 요구한다. job `check`는
-`make persist-images` 앞에서 이것을 실행하고, bay의 step들에 `BAY`를 `sudo -n bay`로 설정한다.
+`/usr/local/bin`에 설치하고, `bay install`로 머신 설정을 적용하고, `bay check -scope run`을 요구하며, 각각을 `BAY`의 단어로 실행한다. GitHub runner에서는
+action `runner-setup`의 `make runner-setup-bay`가 `BAY`를 `sudo -n bay`로 두고 이것을 실행하고, job의 이후 step에 `BAY`를
+`sudo -n bay`로 설정한다. 그래서 설정은 그 step들의 `bay up`이 읽는 root의 상태에 적용된다.
 
 릴리스를 올리는 방법: `config/toolchain.json`의 version과 digest 네 개를 새 릴리스의 것으로 바꾸고(릴리스의 파일
 `SHA256SUMS`에 있다) `make bay-test`를 돌린다. 계획 C-6이 적은 명령이나 출력을 바꾸는 릴리스는 같은 변경에서 실행의

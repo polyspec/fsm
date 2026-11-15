@@ -1,5 +1,5 @@
 <!-- doc-id: changelog -->
-<!-- source-sha256: 4799dc0c370ac75b538f0490f46f2a12cf30b2f8ada8fba4bb9654d2836afe4f -->
+<!-- source-sha256: 82cfe7d9042a1a7d075adff7d9ea312ee3a7fbe0a8ebed7a6cc9da4507ebff37 -->
 # 변경 기록
 
 [English](CHANGELOG.md)
@@ -9,6 +9,7 @@
 
 ## 0.0.14
 
+- `make runner-setup-bay`는 bay의 머신 설정을 root로 적용한다(S-489). 입력: GitHub runner에서 `ci.yml`의 job `check`. 이전 동작: `make bay-install`은 `BAY`가 설정되지 않은 채 runner 사용자로 `bay install`과 `bay check -scope run`을 실행했고, 이후 step은 `sudo -n bay`를 실행했으므로 `persist-servers`의 `bay up`이 `the machine setup is missing certificate authority, …; run bay install`로 실패했다. 기대 동작: `runner-setup-bay`는 `make bay-install BAY='sudo -n bay'`를 실행하고, `bay-install`은 `BAY`를 `scripts/bay.mts`에 넘기므로 설정과 그 검사가 root로 실행된다. Red: `make bay-test` 5 passed, 1 failed; Green: 6 passed.
 - `assets.yml`과 `release.yml`의 job은 `make release-recipes` 전에 binding 생성기를 설치한다(S-489). 입력: `main`의 push. 이전 동작: `release-recipes`의 전제 `var/deps/binding`이 Makefile에서 정의되기 전에 읽혀 비어 있었으므로, 새 checkout에서 `release-recipes`가 `holds no installed generator; run make binding-install`로 실패했다. `ci-release-tag`는 `RUN="$run" make release-tag`를 실행했고, PATH의 make로 실행한 `make rules-check`는 이를 `release-tag` 호출로 읽지 않는다. `lint-ts`는 `tests/release/release.test.mts`(`endsWith` 권장)와 `tests/workflows/workflows.test.mts`의 쓰이지 않는 `words`를, `duplication-check`는 `packages/rust/tests/cases.rs`와 `conformance.rs`의 `main`을 보고했다. 기대 동작: `release-recipes`는 정의 뒤에서 `var/deps/binding`을 전제로 두고, `ci-assets-platform`, `ci-assets-npm`, `ci-release-publish`는 `release-recipes` 전에 이를 실행하며, `ci-release-tag`는 `make release-tag RUN=…`를 실행하고, 코어의 두 테스트 파일은 `packages/rust/tests/common/mod.rs`를 함께 쓴다.
 
 - platform asset의 recipe는 binding 0.0.8의 `packages/release.mk`다(S-487). 입력: `make bindings-check`와 `assets.yml`, `release.yml`의 job. 이전 동작: binding crate는 tag v0.0.2를 적었고, v0.0.8에서 `make bindings-check`는 손으로 쓴 release recipe 때문에 CK-94로 실패했다. 기대 동작: 모든 crate가 v0.0.8을 적고, `make release-recipes`가 Makefile이 include하고 Git이 무시하는 `packages/release.mk`를 쓰며, 각 release job이 먼저 그것을 실행하고, `config/toolchain.json`과 `rust-toolchain.toml`이 생성된 recipe가 읽는 PHP minor와 musl target을 가진다. Green: `make bindings-check` 통과, `make release-test` 7개 통과.

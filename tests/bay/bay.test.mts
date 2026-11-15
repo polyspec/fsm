@@ -141,3 +141,14 @@ test('a verb that the script does not know fails with the usage', t => {
     assert.deepEqual(staged.calls(), []);
   }
 });
+
+// On a runner of GitHub the later steps run bay as root (BAY="sudo -n bay"), so the installation applies the machine setup as
+// root too: a setup that the user of the runner applied leaves the state of root, /root/.bay, without one, and bay up fails.
+test('runner-setup-bay installs bay with the words BAY="sudo -n bay" that the later steps of the job use', () => {
+  const ran = spawnSync('make', ['--no-print-directory', '-n', 'runner-setup-bay', 'GITHUB_ENV=/dev/null'], { cwd: ROOT, encoding: 'utf8' });
+  assert.equal(ran.status, 0, ran.stderr);
+  const install = ran.stdout.split('\n').find(line => line.includes('scripts/bay.mts install'));
+  assert.ok(install !== undefined, `make -n runner-setup-bay runs no scripts/bay.mts install:\n${ran.stdout}`);
+  assert.match(install, /\bBAY=(['"])sudo -n bay\1 /, `the installation does not run bay as root:\n${install}`);
+  assert.match(ran.stdout, /^echo 'BAY=sudo -n bay' >> "\$GITHUB_ENV"$/m, `the later steps do not get BAY="sudo -n bay":\n${ran.stdout}`);
+});

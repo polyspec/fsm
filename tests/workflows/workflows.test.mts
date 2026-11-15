@@ -284,7 +284,7 @@ test('the check job installs the pinned bay through runner-setup and starts bay 
   assert.match(read('Makefile'), /^export BAY$/m, 'the Makefile does not export BAY to the calls of a recipe');
   const recipe = make(['-n', 'runner-setup-bay'], { GITHUB_ENV: '/dev/null' });
   assert.equal(recipe.code, 0, recipe.output);
-  assert.match(recipe.output, /^\S+\/node scripts\/bay\.mts install$/m);
+  assert.match(recipe.output, /^BAY='sudo -n bay' \S+\/node scripts\/bay\.mts install$/m);
   assert.match(recipe.output, /^echo 'BAY=sudo -n bay' >> "\$GITHUB_ENV"$/m);
   const action = read('.github/actions/runner-setup/action.yml');
   for (const target of ['install-llvm', 'gui-browser-libraries', 'runner-setup-bay']) assert.match(action, new RegExp(`\\n {6}run: make ${target}$`, 'm'), `runner-setup does not run make ${target}`);
