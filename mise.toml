@@ -19,6 +19,9 @@ golangci-lint = "2.14.0"
 # must be the release of the wasm-bindgen crate that packages/ts/wasm/Cargo.toml and Cargo.lock pin (make release-test checks
 # that the three agree); mise.lock pins the digest of its release archive of each platform.
 "github:wasm-bindgen/wasm-bindgen" = "0.2.130"
+# maturin builds the wheel of the Python binding with its test features for make test-python-binding and
+# test-python-conformance: the binary of its GitHub release, whose digest of each platform mise.lock pins.
+"github:PyO3/maturin" = "1.16.0"
 "http:composer" = { version = "2.10.3", url = "https://getcomposer.org/download/{{ version }}/composer.phar", checksum = "sha256:7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6", bin = "composer" }
 
 # The settings of mise and uv of fsm, which kit no longer sets (kit 0.0.98, S-424): mise installs and runs only what mise.lock

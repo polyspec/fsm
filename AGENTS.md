@@ -91,7 +91,7 @@ the scope (R1–R12) and the design are in `docs/plans/fsm-v1/plan.md`; the defi
   the prerequisites first, which stop it at a failure, then the checks through `make ci-targets` or `make -k`, every target to
   its end, then the cleanup of the context, also after a failure; its status is that of the checks, or that of the cleanup
   when the checks passed. The tools and the targets
-  of a job of the pipeline are read by its recipe from the plan of `config/ci.json` (`scripts/ci-plan.mts`). The fan-out of the
+  of a job of the pipeline are read from `config/ci.json` by `ci-setup --job` of kit, which its recipe runs. The fan-out of the
   matrix may come from the outputs of the plan job, whose run step is `make kit-ci-plan`, because the fan-out is no content of a
   job. A judgement job (`required`, `ci-passed`) reads the results of the other jobs, exists only in CI and runs
   `make ci-passed RESULTS='${{ toJSON(needs) }}' FAIL_SKIPPED=1`, the one other expression. A local run is

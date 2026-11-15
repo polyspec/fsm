@@ -373,7 +373,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
-        if: \${{ contains(needs.plan.outputs.common_tools, 'php') }}
+        if: \${{ needs.plan.outputs.shared_php == 'true' }}
       - run: make ci-shared
       - name: report
         if: \${{ !cancelled() }}

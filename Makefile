@@ -331,9 +331,8 @@ legacy-test-php-ext: legacy-build-php-ext
 # polyspec-binding-core that the root Cargo.lock pins, the one that make binding-install installs into var/binding (S-477), and a
 # BINDING of the command line names the cli (packages/ts/src/cli.ts) of a binding checkout in its place. WASM_BINDGEN is the
 # wasm-bindgen CLI that mise.toml pins at the release of the wasm-bindgen crate of packages/ts/wasm/Cargo.toml and that make
-# install-tools installs, by the absolute path of its shim. fsm pins none of the other tools that only the bindings use: until
-# they are pinned, MATURIN names the maturin and TSC the TypeScript compiler of a binding checkout, and each target that needs
-# one refuses to run without it. bindings writes the generated folders of packages/{ts,ts/wasm,python,php-ext,go/internal/ffi} and the
+# install-tools installs, by the absolute path of its shim; MATURIN and TSC are the maturin of mise.toml and the TypeScript
+# compiler of package.json, so the conformance targets of CHECK_TARGETS run in CI (S-487). bindings writes the generated folders of packages/{ts,ts/wasm,python,php-ext,go/internal/ffi} and the
 # Go files zz_generated_*.go of packages/go, which Git ignores; bindings-check runs the contract check, which also compares the
 # tracked binding packages with what binding scaffold writes (binding L-2, CK-19) and the commit of polyspec-binding-core in the
 # root Cargo.lock with the commit of the cli (CK-20).
@@ -345,14 +344,10 @@ BINDING_TARGETS := php python node wasm go
 BINDING_SCRIPT := scripts/binding.mts
 BINDING ?= $(BINDING_SCRIPT)
 WASM_BINDGEN ?= $(KIT_TOOLS)/mise/shims/wasm-bindgen
-# install-wasm-bindgen installs that CLI alone with the mise of var/tools at the digest of mise.lock, for a job that needs no
-# other tool of mise.toml: the TOOLS of install-tools select only the tools that kit knows, and make install-tools without TOOLS
-# installs it with every other tool.
-.PHONY: install-wasm-bindgen
-install-wasm-bindgen:
-	$(ONLINE) $(KIT_TOOLS)/bin/mise install --locked github:wasm-bindgen/wasm-bindgen
-MATURIN ?=
-TSC ?=
+# MATURIN is the maturin of mise.toml, which mise.lock pins, and TSC the TypeScript compiler of package.json; a command line may
+# name others.
+MATURIN ?= $(KIT_TOOLS)/mise/shims/maturin
+TSC ?= $(NODE) $(CURDIR)/node_modules/typescript/bin/tsc --ignoreConfig
 # require_tool stops the target $@ when the variable $(1) is empty, naming the variable and what it holds ($(2)).
 require_tool = test -n "$($(1))" || { echo "$@ needs $(1): $(2)" >&2; exit 2; }
 BINDING_CRATES := polyspec-fsm-node polyspec-fsm-wasm polyspec-fsm-python polyspec-fsm-php-ext polyspec-fsm-go
@@ -383,14 +378,14 @@ test-bindings: lint-bindings check-declarations test-python-binding test-python-
 
 # The TypeScript compiler checks the generated declarations of the Node and WASM bindings in strict mode.
 check-declarations: bindings-node bindings-wasm
-	@$(call require_tool,TSC,the TypeScript compiler of a binding checkout)
+	@$(call require_tool,TSC,the TypeScript compiler of package.json)
 	$(TSC) --noEmit --strict packages/ts/generated/index.d.ts
 	$(TSC) --noEmit --strict packages/ts/wasm/generated/index.d.ts
 
 # The wheel, built by maturin for the Python of mise.toml and installed into var/bindings/venv; the generated tests (binding G-5)
 # on unittest.
 test-python-binding: bindings-python
-	@$(call require_tool,MATURIN,the maturin of a binding checkout)
+	@$(call require_tool,MATURIN,the maturin of mise.toml)
 	$(PYTHON_BIN) -m venv --clear $(BINDING_VAR)/venv
 	rm -rf $(BINDING_VAR)/wheels
 	cd packages/python && $(MATURIN) build --locked --interpreter $(BINDING_VAR)/venv/bin/python --features panic-test --out $(BINDING_VAR)/wheels
@@ -502,19 +497,10 @@ kit-gates-runtime-go: lint-go
 kit-gates-runtime-rust: lint-rust
 kit-gates-runtime-php-ext: lint-php-ext test-php-ext
 
-# The plan, the setup and the context of the jobs of the CI pipeline, from config/ci.json.
-.PHONY: kit-ci-plan kit-ci-setup kit-ci-context-prepare kit-ci-context-cleanup ci-targets ci-summary
+# kit-ci-plan writes the fan-out of the pipeline, the runtimes and the runner of config/ci.json, to GITHUB_OUTPUT.
+.PHONY: kit-ci-plan ci-targets ci-summary
 kit-ci-plan:
 	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --plan
-
-kit-ci-setup:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --setup $(GROUP) $(RUNTIME)
-
-kit-ci-context-prepare:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-prepare $(GROUP) $(RUNTIME)
-
-kit-ci-context-cleanup:
-	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --context-cleanup $(GROUP) $(RUNTIME)
 
 # ci-passed is the last job of .github/workflows/ci.yml and of the pipeline: it fails unless every job of RESULTS, the JSON of
 # toJSON(needs), has the result success; with FAIL_SKIPPED=1 a skipped job fails it too. RESULTS that is not set or names no job
@@ -542,35 +528,24 @@ ci-summary:
 # A recipe holds the order and the conditions of its job: the installs and the prerequisites first, each line stopping the
 # recipe at its failure, then the checks, every target to its end, then the cleanup of the context, also after a failed check.
 # Its status is that of the checks, or that of the cleanup when the checks passed. The jobs of the pipeline read their tools and
-# their targets from the plan that kit computes from config/ci.json (scripts/ci-plan.mts): the plan job writes the same plan
-# into the outputs of GitHub (make kit-ci-plan), and the matrix of the runtime jobs fans out from them. The lines start make
-# through CI_MAKE, which names make without the variable MAKE, so a dry run prints the calls of a recipe and runs none of them.
-CI_PLAN = $(NODE) scripts/ci-plan.mts $(KIT)/ci-setup.$(KIT_EXT)
+# their targets from config/ci.json: the jobs shared and runtime are runs of ci-setup of kit (kit K1250), which installs the
+# tools of the job, runs its setup targets and stops at the first failure, prepares the context that config/ci.json declares
+# for the job, runs kit-gates-static or kit-gates-runtime-<runtime> with the targets of the job through make -k ci-targets,
+# every target to its end, and cleans the context up whenever its preparation ran. The plan job writes the fan-out into the
+# outputs of GitHub (make kit-ci-plan), and the matrix of the runtime jobs fans out from them. The lines start make through
+# CI_MAKE, which names make without the variable MAKE, so a dry run prints the calls of a recipe and runs none of them.
 CI_MAKE := $(MAKE) --no-print-directory
 # rustup installs no toolchain on the first cargo; make install-tools installs the toolchain of rust-toolchain.toml.
 ci-check ci-assets-platform ci-assets-npm ci-release-publish: export RUSTUP_AUTO_INSTALL := 0
 # The site of GitHub Pages of polyspec/fsm is at the path /fsm/, which docs/.vitepress/config.mts reads as its base.
 ci-pages: export VITEPRESS_BASE := /fsm/
-.PHONY: ci-shared ci-runtime ci-context-targets ci-check ci-assets-platform ci-assets-npm ci-pages ci-release-tag ci-release-publish llvm-check
+.PHONY: ci-shared ci-runtime ci-check ci-assets-platform ci-assets-npm ci-pages ci-release-tag ci-release-publish llvm-check
 ci-shared:
-	tools="$$($(CI_PLAN) tools shared)" && { test -z "$$tools" || $(CI_MAKE) install-tools TOOLS="$$tools"; }
-	$(CI_MAKE) kit-ci-setup GROUP=shared
-	targets="$$($(CI_PLAN) targets shared)" && $(CI_MAKE) ci-context-targets GROUP=shared TARGETS="kit-gates-static $$targets"
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --job shared
 
 ci-runtime:
 	@test -n "$(RUNTIME)" || { echo 'ci-runtime: RUNTIME is required, for example make ci-runtime RUNTIME=php' >&2; exit 2; }
-	tools="$$($(CI_PLAN) tools runtime $(RUNTIME))" && { test -z "$$tools" || $(CI_MAKE) install-tools TOOLS="$$tools"; }
-	$(CI_MAKE) kit-ci-setup GROUP=runtime RUNTIME=$(RUNTIME)
-	$(if $(filter php,$(RUNTIME)),$(CI_MAKE) kit-install-symbols EXTRACTORS=php)
-	targets="$$($(CI_PLAN) targets runtime $(RUNTIME))" && $(CI_MAKE) ci-context-targets GROUP=runtime RUNTIME=$(RUNTIME) TARGETS="kit-gates-runtime-$(RUNTIME) $$targets"
-
-# ci-context-targets runs TARGETS through make ci-targets inside the context of GROUP (and RUNTIME), which config/ci.json
-# declares: the cleanup runs after the prepare has run, also when the prepare or a target failed.
-ci-context-targets:
-	status=0; \
-	if $(CI_MAKE) kit-ci-context-prepare; then $(CI_MAKE) ci-targets || status=$$?; else status=$$?; fi; \
-	$(CI_MAKE) kit-ci-context-cleanup || { cleanup=$$?; test "$$status" -ne 0 || status=$$cleanup; }; \
-	exit $$status
+	$(NODE) $(KIT)/ci-setup.$(KIT_EXT) --job runtime $(RUNTIME)
 
 # ci-check is the job check of ci.yml: the installs and the images of the servers, then make ci-suite, every target of
 # CI_SUITE_TARGETS to its end. The machine holds the libraries of Chromium and bay (make gui-browser-libraries and make
@@ -585,18 +560,21 @@ ci-check:
 # ci-assets-platform and ci-assets-npm are the jobs of assets.yml: the tools first, with RELEASE=true the release check of
 # binding, which stops the job at its failure, then the assets. ci-assets-platform builds every asset of its platform to its
 # end, so one run names every asset that does not build. LLVM is a package of the machine (make install-llvm, which
-# runner-setup runs on a runner of GitHub); llvm-check stops the job when it is missing.
+# runner-setup runs on a runner of GitHub); llvm-check stops the job when it is missing. release-recipes writes
+# packages/release.mk, whose recipes the later lines run.
 CI_RELEASE_VALUE = @case '$(RELEASE)' in ''|true|false) ;; *) echo '$@: RELEASE is true, false or empty, not $(RELEASE)' >&2; exit 2;; esac
 ci-assets-platform:
 	$(CI_RELEASE_VALUE)
 	$(CI_MAKE) install-tools TOOLS="rust uv python"
 	$(CI_MAKE) llvm-check
+	$(CI_MAKE) release-recipes
 	$(if $(filter true,$(RELEASE)),$(CI_MAKE) release-binding-check)
 	$(CI_MAKE) -k release-go-static release-wheel release-php-ext release-npm-platform PHP=php
 
 ci-assets-npm:
 	$(CI_RELEASE_VALUE)
 	$(CI_MAKE) install-tools TOOLS=rust
+	$(CI_MAKE) release-recipes
 	$(CI_MAKE) install-wasm-bindgen
 	$(if $(filter true,$(RELEASE)),$(CI_MAKE) release-binding-check)
 	$(CI_MAKE) release-npm
@@ -632,6 +610,7 @@ ci-release-publish:
 	$(CI_MAKE) release-assets
 	mkdir -p $(RELEASE_ASSETS) && cp -R $(RELEASE_DOWNLOADED)/. $(RELEASE_ASSETS)/
 	$(CI_MAKE) install-tools TOOLS="rust go"
+	$(CI_MAKE) release-recipes
 	$(CI_MAKE) release-go-module
 	$(CI_MAKE) release-publish
 	$(CI_MAKE) release-platform-assets
@@ -690,183 +669,31 @@ release-undraft:
 release-coverage:
 	$(NODE) $(KIT)/release.$(KIT_EXT) coverage
 
-# ---- The assets of each platform (docs/plans/fsm-v1/plan.md, C-11; binding GN-19 to GN-19g) ---------------------------------
-# A recipe builds the asset of the platform of its host, because no tool of the release compiles for another platform: it reads
-# the host from rustc of the pinned toolchain and writes into RELEASE_ASSETS, building with CARGO_TARGET_DIR set to
-# RELEASE_TARGET, so that an asset holds nothing of a development build. Each step is a line that starts a standard tool (GN-19).
-RELEASE_ASSETS ?= var/release/assets
-RELEASE_TARGET ?= var/release/target
-# release_host sets host to the Rust triple of the toolchain, platform to the name of its platform, which names its npm
-# platform package, go to the directory of the Go module of its platform and pie to the part of the name of a PHP extension
-# archive that names its platform (GN-19a), and ends the recipe $(1) with 2 on a host that is no platform of the release.
-release_host = host=$$(rustc --print host-tuple) || exit 1; \
-	case "$$host" in \
-	x86_64-unknown-linux-gnu) platform=linux-x64-gnu go=linux_amd64 pie=x86_64-linux-glibc ;; \
-	aarch64-unknown-linux-gnu) platform=linux-arm64-gnu go=linux_arm64 pie=arm64-linux-glibc ;; \
-	aarch64-apple-darwin) platform=darwin-arm64 go=darwin_arm64 pie=arm64-darwin-bsdlibc ;; \
-	*) echo "$(1): the host $$host is no platform of the release: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu, aarch64-apple-darwin" >&2; exit 2 ;; \
-	esac
+# ---- The assets of each platform: packages/release.mk, which binding release-recipes writes (binding GN-19h; S-487) ----------
+# The recipes of the platform assets (release-go-static, release-wheel, release-php-ext, release-npm-platform, release-npm,
+# release-go-module, release-binding-check, release-platform-assets and install-wasm-bindgen) are the file that binding
+# release-recipes writes for the contract; Git ignores it, and make release-recipes writes it again before a job of assets.yml
+# runs a recipe, because no recipe of these targets is written by hand (binding CK-94). The file reads BINDING_RUN, NODE, NPM,
+# UV and BINDING_DEP, which this Makefile defines before the include at its end; a checkout that has not written the file yet
+# reads none of its targets.
+BINDING_RUN = $(NODE) $(BINDING)
+.PHONY: release-recipes
+release-recipes: $(if $(filter $(BINDING_SCRIPT),$(BINDING)),$(BINDING_DEP))
+	$(BINDING_RUN) release-recipes --root $(CURDIR)
 
-# release-go-static builds the static library of the Go module (GN-19b, S-470-4) and strips the debug sections of a copy in
-# RELEASE_TARGET with the llvm-strip of the component llvm-tools of the toolchain, never the strip of PATH, which differs by
-# machine. The stripped copy enters the assets under another name and is renamed there, so the assets never hold a library
-# that is half written or not stripped. The crate includes the generated files of the Go binding, which no checkout tracks, so
-# the recipe generates them first.
-.PHONY: release-go-static
-release-go-static: bindings-go
-	@$(call release_host,release-go-static); \
-	set -ex; \
-	CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-go; \
-	copy=$(RELEASE_TARGET)/stripped/$$go; \
-	mkdir -p "$$copy"; \
-	cp $(RELEASE_TARGET)/release/libpolyspec_fsm_go.a "$$copy/libpolyspec_fsm_go.a"; \
-	"$$(rustc --print sysroot)/lib/rustlib/$$host/bin/llvm-strip" --strip-debug "$$copy/libpolyspec_fsm_go.a"; \
-	out=$(RELEASE_ASSETS)/go/$$go; \
-	mkdir -p "$$out"; \
-	cp "$$copy/libpolyspec_fsm_go.a" "$$out/.libpolyspec_fsm_go.a.part"; \
-	mv "$$out/.libpolyspec_fsm_go.a.part" "$$out/libpolyspec_fsm_go.a"
-
-# release-wheel builds the abi3 wheel of the platform of the host (GN-19c, S-470-5) from the generated Python binding, with the
-# uv of the checkout: maturin builds with --locked, and the time of the commit of HEAD dates the files of the wheel. One wheel
-# of a platform serves every supported Python.
-.PHONY: release-wheel
-release-wheel: bindings-python
-	@$(call release_host,release-wheel); \
-	set -ex; \
-	CARGO_TARGET_DIR=$(RELEASE_TARGET) MATURIN_PEP517_ARGS=--locked SOURCE_DATE_EPOCH=$$(git log -1 --format=%ct HEAD) $(UV) build --wheel --python python3 --out-dir $(RELEASE_ASSETS)/wheel packages/python
-
-# release-php-ext builds the PHP extension of the platform of the host for the minor of the PHP that PHP names (GN-19d,
-# S-470-6) from the generated PHP binding, with the php-config of PHP_CONFIG, the one beside that PHP unless it is given.
-# The recipe resolves both on PATH to absolute paths, because the build script of ext-php-rs refuses a PHP that it cannot
-# find by the path that PHP names. The cdylib is copied as polyspec_fsm.so into a directory of RELEASE_TARGET for that PHP
-# build, which must load it without a php.ini before it is packed, and the archive takes the name by which PIE finds a
-# pre-packaged binary: the version of the crate, the minor, the platform, and debug and zts as that PHP reports them. The
-# archive enters the assets under another name and is renamed there.
-# The bindgen of ext-php-rs loads a libclang through clang-sys, which takes the libclang of the highest LLVM that it finds, and
-# asks the clang of PATH for the directories of the headers that it includes. On a machine with several LLVM releases the two
-# differ: the ubuntu-26.04 runners hold LLVM 20, 21 and 22 with clang 21 as /usr/bin/clang, and libclang 22 failed on the x86
-# headers of clang 21. So the recipe gives the build the libclang (LIBCLANG_PATH) and the clang (CLANG_PATH) of the one LLVM
-# whose major release config/toolchain.json pins, from LLVM_ROOT: /usr/lib/llvm-<major> on Linux and the Homebrew formula
-# llvm@<major> on macOS unless it is given; make install-llvm installs it.
-LLVM_MAJOR = $(shell sed -n '/"llvm": {/,/}/s/^ *"version": "\([0-9]*\)".*/\1/p' config/toolchain.json)
+# llvm-check and install-llvm read the LLVM of config/toolchain.json, which the build of the PHP extension of packages/release.mk
+# reads from LLVM_ROOT: /usr/lib/llvm-<major> on Linux and the Homebrew formula llvm@<major> on macOS unless it is given.
+LLVM_MAJOR ?= $(shell sed -n '/"llvm": {/,/}/s/^ *"version": "\([0-9]*\)".*/\1/p' config/toolchain.json)
 LLVM_ROOT ?= $(if $(filter Darwin,$(shell uname -s)),/opt/homebrew/opt/llvm@$(LLVM_MAJOR),/usr/lib/llvm-$(LLVM_MAJOR))
-.PHONY: release-php-ext install-llvm
-release-php-ext: bindings-php
-	@test -n "$(PHP)" || { echo 'release-php-ext: PHP is required, for example make release-php-ext PHP=php' >&2; exit 2; }
-	@test -n "$(LLVM_MAJOR)" || { echo 'release-php-ext: config/toolchain.json pins no major release of LLVM (llvm.version)' >&2; exit 2; }
-	@test -x "$(LLVM_ROOT)/bin/clang" && ls "$(LLVM_ROOT)/lib" | grep -q '^libclang' || { echo 'release-php-ext: the bindgen of ext-php-rs needs the libclang and the clang of LLVM $(LLVM_MAJOR) (config/toolchain.json) in $(LLVM_ROOT); make install-llvm installs it' >&2; exit 2; }
-	@test "$$("$(LLVM_ROOT)/bin/clang" -dumpversion | cut -d. -f1)" = "$(LLVM_MAJOR)" || { echo "release-php-ext: $(LLVM_ROOT)/bin/clang is clang $$("$(LLVM_ROOT)/bin/clang" -dumpversion), not $(LLVM_MAJOR) (config/toolchain.json)" >&2; exit 2; }
-	@$(call release_host,release-php-ext); \
-	php=$$(command -v '$(PHP)') || { echo 'release-php-ext: no PHP $(PHP) on PATH' >&2; exit 2; }; \
-	case "$$php" in /*) ;; *) php=$(CURDIR)/$$php ;; esac; \
-	config=$$(command -v '$(or $(PHP_CONFIG),$(PHP)-config)') || { echo 'release-php-ext: no php-config $(or $(PHP_CONFIG),$(PHP)-config) on PATH' >&2; exit 2; }; \
-	case "$$config" in /*) ;; *) config=$(CURDIR)/$$config ;; esac; \
-	set -ex; \
-	PHP="$$php" PHP_CONFIG="$$config" LIBCLANG_PATH=$(LLVM_ROOT)/lib CLANG_PATH=$(LLVM_ROOT)/bin/clang CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-php-ext; \
-	version=$$(cargo pkgid -p polyspec-fsm-php-ext); version=$${version##*@}; \
-	minor=$$("$$php" -n -r 'echo PHP_MAJOR_VERSION, ".", PHP_MINOR_VERSION;'); \
-	build=$$("$$php" -n -r 'echo PHP_DEBUG ? "-debug" : "", "-", PHP_ZTS ? "zts" : "nts";'); \
-	copy=$(abspath $(RELEASE_TARGET))/php-ext/php$$minor$$build; \
-	mkdir -p "$$copy"; \
-	cp $(RELEASE_TARGET)/release/libpolyspec_fsm.$(CDYLIB) "$$copy/polyspec_fsm.so"; \
-	"$$php" -n -d extension="$$copy/polyspec_fsm.so" -r 'exit(extension_loaded("polyspec_fsm") ? 0 : 1);'; \
-	name=php_polyspec_fsm-v$${version}_php$$minor-$$pie$$build.zip; \
-	rm -f "$$copy/$$name"; \
-	(cd "$$copy" && zip -q -9 -X "$$name" polyspec_fsm.so); \
-	out=$(RELEASE_ASSETS)/php-ext; \
-	mkdir -p "$$out"; \
-	cp "$$copy/$$name" "$$out/.$$name.part"; \
-	mv "$$out/.$$name.part" "$$out/$$name"
-
 # install-llvm installs the LLVM of config/toolchain.json with the package manager of the platform, which the release of the PHP
 # extension needs: the formula llvm@<major> of Homebrew on macOS, and the packages clang-<major> and libclang-<major>-dev of apt
 # on Linux, where a runner holds them already.
+.PHONY: install-llvm
 install-llvm:
 	@test -n "$(LLVM_MAJOR)" || { echo 'install-llvm: config/toolchain.json pins no major release of LLVM (llvm.version)' >&2; exit 2; }
 	@if test -x "$(LLVM_ROOT)/bin/clang" && ls "$(LLVM_ROOT)/lib" | grep -q '^libclang'; then echo "install-llvm: LLVM $(LLVM_MAJOR) is installed in $(LLVM_ROOT)"; \
 	elif test "$$(uname -s)" = Darwin; then set -x; $(ONLINE) brew install llvm@$(LLVM_MAJOR); \
 	else set -x; sudo apt-get install --yes clang-$(LLVM_MAJOR) libclang-$(LLVM_MAJOR)-dev; fi
-
-# The platforms of the npm package, by the names of their platform packages (GN-19a), and the napi CLI of the devDependency
-# @napi-rs/cli of the root package.json, by its bin link.
-RELEASE_NPM_PLATFORMS := linux-x64-gnu linux-arm64-gnu darwin-arm64
-NAPI := $(CURDIR)/node_modules/.bin/napi
-# release_pack packs the npm package of the folder $(1) with npm pack --ignore-scripts into the fresh folder $(2), and renames
-# each archive into RELEASE_ASSETS/npm from a copy of another name, so the assets never hold a half written archive.
-release_pack = (cd $(1) && $(NPM) pack --ignore-scripts --pack-destination $(2)); \
-	mkdir -p $(RELEASE_ASSETS)/npm; \
-	for file in $(2)/*.tgz; do \
-	name=$$(basename "$$file"); \
-	cp "$$file" "$(RELEASE_ASSETS)/npm/.$$name.part"; \
-	mv "$(RELEASE_ASSETS)/npm/.$$name.part" "$(RELEASE_ASSETS)/npm/$$name"; \
-	done
-
-# release-npm-platform builds the Node addon of the platform of the host and packs its npm platform package (GN-19e,
-# S-470-7) with the napi CLI: napi build writes the addon, and create-npm-dirs and artifacts write the package of the platform
-# with a configuration of the run that names the triple of the host alone, because napi artifacts fails for a configured
-# platform whose addon another runner builds. The folder of the run is packages/ts/npm/<platform>, which Git ignores: napi
-# refuses a package folder outside the package of --package-json-path when no workspace of npm holds both.
-.PHONY: release-npm-platform
-release-npm-platform: bindings-node
-	@$(call release_host,release-npm-platform); \
-	work=$(CURDIR)/packages/ts/npm/$$platform; \
-	set -ex; \
-	rm -rf "$$work"; \
-	mkdir -p "$$work/pack"; \
-	printf '{"targets":["%s"]}\n' "$$host" > "$$work/napi.json"; \
-	$(NAPI) build --platform --release --no-js --manifest-path packages/ts/Cargo.toml --package-json-path packages/ts/package.json --target-dir $(RELEASE_TARGET) --output-dir "$$work/addons" --target "$$host" -- --locked; \
-	$(NAPI) create-npm-dirs --package-json-path packages/ts/package.json --config-path "$$work/napi.json" --npm-dir "$$work/npm"; \
-	$(NAPI) artifacts --package-json-path packages/ts/package.json --config-path "$$work/napi.json" --output-dir "$$work/addons" --npm-dir "$$work/npm"; \
-	$(call release_pack,"$$work/npm/$$platform","$$work/pack")
-
-# release-npm packs @polyspec/fsm itself (GN-19e, GN-3c, S-470-7) from a copy of the files that its package.json names: the
-# generated Node loader, and the WASM binding that cargo builds for release and the wasm-bindgen of WASM_BINDGEN binds. The
-# manifest of the copy names the platform package of each platform of the release at the version of the package in
-# optionalDependencies; the tracked manifest names none.
-.PHONY: release-npm
-release-npm: bindings-node bindings-wasm
-	@$(call require_tool,WASM_BINDGEN,the wasm-bindgen CLI of the release of packages/ts/wasm/Cargo.toml)
-	test "$$($(WASM_BINDGEN) --version)" = "wasm-bindgen $(WASM_BINDGEN_RELEASE)"
-	@work=$(abspath $(RELEASE_TARGET))/npm/package; \
-	set -ex; \
-	rm -rf "$$work"; \
-	mkdir -p "$$work/package/generated" "$$work/package/wasm/generated" "$$work/pack"; \
-	cp packages/ts/generated/index.cjs packages/ts/generated/index.mjs packages/ts/generated/index.d.ts "$$work/package/generated/"; \
-	cp packages/ts/wasm/generated/*.mjs packages/ts/wasm/generated/*.d.ts "$$work/package/wasm/generated/"; \
-	CARGO_TARGET_DIR=$(RELEASE_TARGET) cargo build --release --locked -p polyspec-fsm-wasm --target wasm32-unknown-unknown; \
-	$(WASM_BINDGEN) --target web --out-dir "$$work/package/wasm/generated" --out-name fsm_wasm $(RELEASE_TARGET)/wasm32-unknown-unknown/release/polyspec_fsm_wasm.wasm; \
-	$(NODE) -e 'const fs = require("fs"); const [from, to, ...platforms] = process.argv.slice(1); const p = JSON.parse(fs.readFileSync(from, "utf8")); p.optionalDependencies = Object.fromEntries(platforms.map(platform => [`$${p.name}-$${platform}`, p.version])); fs.writeFileSync(to, JSON.stringify(p, null, 2) + "\n");' packages/ts/package.json "$$work/package/package.json" $(RELEASE_NPM_PLATFORMS); \
-	$(call release_pack,"$$work/package","$$work/pack")
-
-# release-go-module carries the Go module of the release TAG (GN-19f, S-470-8): on the checkout of that tag, after the
-# generation of the Go binding, binding release-go-module checks the library of each platform in RELEASE_ASSETS/go (GN-19b),
-# proves a commit that adds the generated files and the libraries to the tree of the tag with a consumer, and creates the
-# annotated tag packages/go/<TAG> at it, keeping its index, its repositories and the caches of Go in a folder of the run. The
-# command pushes nothing: the recipe pushes the reference that it prints, and nothing when it prints none, because the
-# remote holds that tag already. The folder of the run is made writable before it is removed, since Go writes its module
-# cache read-only.
-.PHONY: release-go-module
-release-go-module: bindings-go
-	@test -n "$$TAG" || { echo 'release-go-module: TAG is required, for example make release-go-module TAG=v0.0.1' >&2; exit 2; }
-	@work=$(abspath $(RELEASE_TARGET))/go-module; \
-	set -e; \
-	if [ -d "$$work" ]; then chmod -R u+w "$$work"; rm -rf "$$work"; fi; \
-	mkdir -p "$$work"; \
-	echo "$(NODE) $(BINDING) release-go-module --root $(CURDIR) --tag $$TAG --libraries $(abspath $(RELEASE_ASSETS))/go --work $$work"; \
-	ref=$$($(NODE) $(BINDING) release-go-module --root $(CURDIR) --tag "$$TAG" --libraries $(abspath $(RELEASE_ASSETS))/go --work "$$work"); \
-	case "$$ref" in \
-	'') echo "release-go-module: the remote holds the tag packages/go/$$TAG already" ;; \
-	"refs/tags/packages/go/$$TAG") set -x; git push origin "$$ref" ;; \
-	*) echo "release-go-module: binding printed $$ref, not refs/tags/packages/go/$$TAG" >&2; exit 1 ;; \
-	esac
-
-# release-binding-check runs the release check of binding on the contract (GN-19a, S-470-9), which the release workflow runs
-# before it builds an asset of a tag. It fails while a dependency line of polyspec-binding-core names a branch or a commit
-# (CK-70), the development form: a release names the version =X.Y.Z or the tag vX.Y.Z, and the root Cargo.toml and the binding
-# crates name the tag v0.0.2 of binding. CI builds the assets of a commit without this check.
-.PHONY: release-binding-check
-release-binding-check: $(if $(filter $(BINDING_SCRIPT),$(BINDING)),$(BINDING_DEP))
-	$(NODE) $(BINDING) check $(CURDIR)/packages/rust/interface.json --release
 
 # release-tag-output gives the later jobs of the release workflow the tag and the version that release-tag wrote into the
 # environment of its job (TAG, VERSION), through the outputs of the step (GITHUB_OUTPUT); both are empty when the run releases
@@ -876,56 +703,10 @@ release-tag-output:
 	@test -n "$$GITHUB_OUTPUT" || { echo 'release-tag-output: GITHUB_OUTPUT is not set; run it in the release workflow' >&2; exit 2; }
 	printf 'tag=%s\nversion=%s\n' "$$TAG" "$$VERSION" >> "$$GITHUB_OUTPUT"
 
-# release-platform-assets uploads the assets of each platform to the draft GitHub Release of TAG with gh (GN-19g, S-470-9),
-# each under the label polyspec-fsm-<runtime>-<version>-<platform>, or -php<X.Y>-<platform> for the PHP extension, and the
-# npm package without a platform under polyspec-fsm-ts-<version>: the wheel of each platform, the npm package and its platform
-# packages, and the PHP extension of each platform and PHP minor. The file keeps the name that its packer gave, which PIE and
-# the package managers read. It fails before an upload when an asset of a platform is missing or a file names no platform.
-.PHONY: release-platform-assets
-release-platform-assets:
-	@test -n "$$TAG" || { echo 'release-platform-assets: TAG is required, for example make release-platform-assets TAG=v0.0.1' >&2; exit 2; }
-	@set -e; version=$${TAG#v}; dir=$(RELEASE_ASSETS); fail() { echo "release-platform-assets: $$1" >&2; exit 1; }; \
-	set --; wheels=0; npm=0; php=0; \
-	for file in "$$dir"/wheel/*.whl; do \
-	case "$$file" in \
-	*manylinux*_x86_64.whl) platform=linux-x64-gnu ;; \
-	*manylinux*_aarch64.whl) platform=linux-arm64-gnu ;; \
-	*macosx*_arm64.whl) platform=darwin-arm64 ;; \
-	*) fail "$$file is no wheel of a platform of the release" ;; \
-	esac; \
-	set -- "$$@" "$$file#polyspec-fsm-python-$$version-$$platform"; wheels=$$((wheels + 1)); \
-	done; \
-	for file in "$$dir"/npm/*.tgz; do \
-	name=$$(basename "$$file" .tgz); \
-	case "$$name" in \
-	"polyspec-fsm-$$version") label=polyspec-fsm-ts-$$version ;; \
-	"polyspec-fsm-linux-x64-gnu-$$version"|"polyspec-fsm-linux-arm64-gnu-$$version"|"polyspec-fsm-darwin-arm64-$$version") \
-	platform=$${name#polyspec-fsm-}; label=polyspec-fsm-ts-$$version-$${platform%-$$version} ;; \
-	*) fail "$$file is no npm package of the release $$version" ;; \
-	esac; \
-	set -- "$$@" "$$file#$$label"; npm=$$((npm + 1)); \
-	done; \
-	for file in "$$dir"/php-ext/*.zip; do \
-	name=$$(basename "$$file" .zip); \
-	case "$$name" in \
-	"php_polyspec_fsm-v$${version}_php"*-x86_64-linux-glibc-*) platform=linux-x64-gnu ;; \
-	"php_polyspec_fsm-v$${version}_php"*-arm64-linux-glibc-*) platform=linux-arm64-gnu ;; \
-	"php_polyspec_fsm-v$${version}_php"*-arm64-darwin-bsdlibc-*) platform=darwin-arm64 ;; \
-	*) fail "$$file is no PHP extension of the release $$version" ;; \
-	esac; \
-	minor=$${name#*_php}; minor=$${minor%%-*}; \
-	set -- "$$@" "$$file#polyspec-fsm-php-ext-$$version-php$$minor-$$platform"; php=$$((php + 1)); \
-	done; \
-	test "$$wheels" -eq 3 || fail "$$dir/wheel holds $$wheels wheels, not one of each of the 3 platforms"; \
-	test "$$npm" -eq 4 || fail "$$dir/npm holds $$npm packages, not the package and one of each of the 3 platforms"; \
-	test "$$php" -gt 0 && test $$((php % 3)) -eq 0 || fail "$$dir/php-ext holds $$php extensions, not one of each of the 3 platforms for each PHP minor"; \
-	set -x; \
-	gh release upload "$$TAG" "$$@"
-
 # release-test runs the tests of the recipes of the assets (tests/release) against stand-ins of the tools that they start.
 .PHONY: release-test
 release-test:
-	$(RUN_TESTS) node --results .results/release-test.json --inputs Makefile --inputs tests/release --inputs tests/support/make-sandbox.mts --inputs mise.toml --inputs mise.lock --inputs Cargo.lock --inputs packages/ts/wasm/Cargo.toml -- --test-concurrency=1 tests/release
+	$(RUN_TESTS) node --results .results/release-test.json --inputs Makefile --inputs tests/release --inputs tests/support/make-sandbox.mts --inputs config/toolchain.json --inputs .php-version --inputs rust-toolchain.toml --inputs .gitignore --inputs mise.toml --inputs mise.lock --inputs Cargo.lock --inputs packages/ts/wasm/Cargo.toml -- --test-concurrency=1 tests/release
 
 # The release builds the released versions, so its Go runs without the go.work that make link writes in each Go module.
 release-prepare release-tools release-tag release-assets release-candidate-assets release-publish release-undraft release-coverage: export GOWORK := off
@@ -937,7 +718,7 @@ release-prepare release-tools release-tag release-assets release-candidate-asset
 # itself, so the workflow and make check cannot differ (S-474; make workflows-test).
 CI_SUITE_TARGETS = $(filter-out $(KIT_GATE_TARGETS),$(CHECK_TARGETS))
 
-CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test binding-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test bay-test release-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust commit-names-test commit-names-check
+CHECK_TARGETS := owner-validate docs-check hooks-check layout-check lint-ts compiler-test db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-test npm-types name-test name-check docs-build docs-build-test packages-test gui-browser-test readme-test readme-check python-tools-test make-install-test binding-test package-names-test rust-persist-test go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql workflows-test bay-test release-test persist-servers-test rules-check rebuild-check language-check duplication-check lint-php lint-python lint-go lint-rust legacy-lint-php-ext legacy-test-php-ext suppression-check test-rust test-node-conformance test-wasm-conformance test-python-conformance test-php-conformance test-go-conformance commit-names-test commit-names-check
 
 .PHONY: go-persist-test-postgres go-persist-test-mysql rust-persist-test-postgres rust-persist-test-mysql php-persist-test-postgres php-persist-test-mysql php-ext-persist-test-postgres php-ext-persist-test-mysql python-persist-test-postgres python-persist-test-mysql check compiler-test name-test name-check docs-deps docs-build docs-build-test db-deps db-test db-test-postgres db-test-mysql npm-persist-test npm-persist-test-postgres npm-persist-test-mysql gui-deps gui-build gui-test packages-test rust-persist-test npm-types gui-browsers gui-browser-test readme-test readme-check python-tools-test install make-install-test workflows-test fsm-install fsm-js-test fsm-go-test fsm-php-test fsm-rust-test fsm-python-test fsm-php-ext-test
 
@@ -1291,7 +1072,7 @@ package-names-test:
 # the check job runs make install and its suite through make persist-servers, which starts the servers of plan C-6 through bay, holds no
 # block services and uploads its report, and each version comes from the file that declares it (docs/plans/fsm-v1/plan.md, C-10; docs/plans/fsm-v1/checklist.md, S-21). It reads the workflows as text, offline.
 workflows-test:
-	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs config/owner-checks.json --inputs config/release.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs legacy/packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs .github/actions --inputs tests/workflows --inputs scripts/ci-plan.mts --inputs config/ci.json -- --test-concurrency=1 tests/workflows/workflows.test.mts tests/workflows/rules.test.mts
+	$(RUN_TESTS) node --results .results/workflows-test.json --inputs .github/workflows --inputs config/toolchain.json --inputs config/owner-checks.json --inputs config/release.json --inputs .php-version --inputs mise.toml --inputs rust-toolchain.toml --inputs legacy/packages/go/go.mod --inputs Makefile --inputs docs/plans/fsm-v1/plan.md --inputs .github/actions --inputs tests/workflows --inputs config/ci.json -- --test-concurrency=1 tests/workflows/workflows.test.mts tests/workflows/rules.test.mts
 
 # persist-servers-test runs the tests of scripts/persist-servers.mts (tests/persist-servers): the directory of a run, its
 # Compose file, the steps of run.sh as commands of bay, the order of runner.sh, a failed start, the signals and the removal.
@@ -1538,3 +1319,6 @@ legacy-build-go: examples-model
 examples-model:
 	mkdir -p legacy/packages/go/examples
 	cd legacy/packages/go && $(KIT_TOOLS)/mise/shims/go tool orm-gen gen --set $(abspath contracts/schema/dbspec-set.json) --lang go --out examples/model --scan ./examples/...
+
+# The release recipes that binding release-recipes writes (packages/release.mk), after BINDING_RUN and BINDING_DEP.
+-include packages/release.mk

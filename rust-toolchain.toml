@@ -5,5 +5,8 @@ profile = "minimal"
 # reads from the toolchain of the checkout, never from PATH (checklist S-470-1).
 components = ["clippy", "llvm-tools"]
 # wasm32-unknown-unknown is the target of the WASM crate of packages/ts/wasm, which make node-package and make release-npm build;
-# make install-tools installs it with the toolchain, so a job that builds the npm package needs no step of its own.
-targets = ["wasm32-unknown-unknown"]
+# make install-tools installs it with the toolchain, so a job that builds the npm package needs no step of its own. The musl
+# targets of the two Linux arches are those of make release-go-static of packages/release.mk, which builds the static library of
+# the Go module for the musl platform of a Linux host too, since binding release-go-module requires the libraries of five Go
+# platforms (binding GN-19b).
+targets = ["wasm32-unknown-unknown", "x86_64-unknown-linux-musl", "aarch64-unknown-linux-musl"]

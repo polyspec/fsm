@@ -382,63 +382,31 @@ test('make bootstrap installs the lock with the npm of devEngines outside the ch
 });
 
 // The jobs of the pipeline hold their content in recipes (S-484): the run step of a job is make ci-<job> with the value of its
-// matrix on the command line, a variable of the command line reaches every call of the recipe, and the recipes ci-shared and
-// ci-runtime read the tools and the targets of their job from the plan from which the plan job writes the outputs of GitHub.
-test('the recipes of the pipeline install the tools of the plan, set up and run their gates inside the context, on the runner of config/ci.json', () => {
+// matrix on the command line, and the recipes ci-shared and ci-runtime are runs of ci-setup --job of kit (kit K1250, S-486),
+// which reads the tools, the setup, the context and the targets of the job from config/ci.json.
+test('the recipes of the pipeline run the jobs of ci-setup of kit, on the runner of config/ci.json', () => {
   const targets = make(['-n', 'ci-targets', 'TARGETS=kit-gates-runtime-php docs-check']);
   assert.equal(targets.code, 0, targets.output);
   assert.match(targets.output, /ci-targets\.m[jt]s -k \S+ kit-gates-runtime-php docs-check$/m);
   const tools = make(['-n', 'install-tools', 'TOOLS=php composer']);
   assert.equal(tools.code, 0, tools.output);
   assert.match(tools.output, /install-tools\.m[jt]s --no-self-update php composer$/m);
-  for (const verb of ['setup', 'context-prepare', 'context-cleanup']) {
-    const setup = make(['-n', `kit-ci-${verb}`, 'GROUP=runtime', 'RUNTIME=php-ext']);
-    assert.equal(setup.code, 0, setup.output);
-    assert.match(setup.output, new RegExp(`ci-setup\\.m[jt]s --${verb} runtime php-ext$`, 'm'));
-  }
   const pipeline = jobsOf(read('.github/workflows/ci-pipeline.yml'));
   assert.match(job(pipeline, 'plan'), /\n {8}run: make kit-ci-plan$/m, 'the plan job does not run make kit-ci-plan');
   assert.match(job(pipeline, 'shared'), /\n {8}run: make ci-shared$/m, 'the shared job does not run make ci-shared');
+  assert.match(job(pipeline, 'shared'), /\n {8}if: \$\{\{ needs\.plan\.outputs\.shared_php == 'true' \}\}$/m, 'the shared job does not set PHP up by the output shared_php of the plan');
   assert.match(job(pipeline, 'runtime'), /\n {8}run: make ci-runtime RUNTIME=\$\{\{ matrix\.runtime \}\}$/m, 'the runtime job does not run make ci-runtime with the runtime of its matrix');
   assert.match(job(pipeline, 'runtime'), /\n {8}include: \$\{\{ fromJSON\(needs\.plan\.outputs\.runtimes\) \}\}$/m, 'the matrix of the runtime job does not fan out from the plan');
 
   const runtime = make(['-n', 'ci-runtime', 'RUNTIME=php']);
   assert.equal(runtime.code, 0, runtime.output);
-  assert.deepEqual(callsOf(['ci-runtime', 'RUNTIME=php']), ['install-tools', 'kit-ci-setup', 'kit-install-symbols', 'ci-context-targets']);
-  assert.deepEqual(callsOf(['ci-runtime', 'RUNTIME=go']), ['install-tools', 'kit-ci-setup', 'ci-context-targets']);
-  assert.match(runtime.output, /scripts\/ci-plan\.mts \S+\/ci-setup\.m[jt]s tools runtime php\)" && \{ test -z "\$tools" \|\| \S*make --no-print-directory install-tools TOOLS="\$tools"; \}$/m);
-  assert.match(runtime.output, /scripts\/ci-plan\.mts \S+\/ci-setup\.m[jt]s targets runtime php\)" && \S*make --no-print-directory ci-context-targets GROUP=runtime RUNTIME=php TARGETS="kit-gates-runtime-php \$targets"$/m);
+  assert.match(runtime.output, /ci-setup\.m[jt]s --job runtime php$/m);
   const unset = make(['ci-runtime']);
   assert.equal(unset.code, 2, unset.output);
   assert.match(unset.output, /ci-runtime: RUNTIME is required/);
   const shared = make(['-n', 'ci-shared']);
   assert.equal(shared.code, 0, shared.output);
-  assert.deepEqual(callsOf(['ci-shared']), ['install-tools', 'kit-ci-setup', 'ci-context-targets']);
-  assert.match(shared.output, /\S*make --no-print-directory ci-context-targets GROUP=shared TARGETS="kit-gates-static \$targets"$/m);
-  // The cleanup of the context runs after the prepare has run, also after a failed prepare or target.
-  assert.deepEqual(callsOf(['ci-context-targets', 'GROUP=runtime', 'RUNTIME=php', 'TARGETS=lint-php']), ['kit-ci-context-prepare', 'ci-targets', 'kit-ci-context-cleanup']);
-
-  // scripts/ci-plan.mts prints the lists of the plan that kit computes from config/ci.json.
-  const ciSetup = /scripts\/ci-plan\.mts (\S+\/ci-setup\.m[jt]s) /.exec(shared.output)?.[1];
-  assert.ok(ciSetup !== undefined, `the recipe of ci-shared does not name the ci-setup of kit:\n${shared.output}`);
-  const plan = (...args: string[]) => spawnSync(process.execPath, ['scripts/ci-plan.mts', ciSetup, ...args], { cwd: ROOT, encoding: 'utf8', env: { ...cleanEnv(), GITHUB_OUTPUT: '' } });
-  const ciConfig: unknown = JSON.parse(read('config/ci.json'));
-  const configured = (key: string): unknown => field(field(ciConfig, 'tools', 'config/ci.json'), key, 'tools of config/ci.json');
-  const sharedTools = plan('tools', 'shared');
-  assert.equal(sharedTools.status, 0, sharedTools.stderr);
-  for (const tool of words(configured('shared'))) assert.ok(sharedTools.stdout.trim().split(' ').includes(tool), `the tools of the shared job hold no ${tool}: ${sharedTools.stdout}`);
-  const goTools = plan('tools', 'runtime', 'go');
-  assert.equal(goTools.status, 0, goTools.stderr);
-  for (const tool of words(configured('go'))) assert.ok(goTools.stdout.trim().split(' ').includes(tool), `the tools of the runtime go hold no ${tool}: ${goTools.stdout}`);
-  const goTargets = plan('targets', 'runtime', 'go');
-  assert.equal(goTargets.status, 0, goTargets.stderr);
-  assert.equal(goTargets.stdout, '\n', 'config/ci.json declares no targets of the runtime go');
-  const missing = plan('tools', 'runtime', 'none');
-  assert.equal(missing.status, 1, missing.stderr);
-  assert.match(missing.stderr, /the plan holds no runtime none; it holds go, php, php-ext, python, rust, ts/);
-  const usage = plan('tools', 'runtime');
-  assert.equal(usage.status, 2, usage.stderr);
-  assert.match(usage.stderr, /^usage: scripts\/ci-plan\.mts/);
+  assert.match(shared.output, /ci-setup\.m[jt]s --job shared$/m);
 
   for (const file of ['.github/workflows/ci.yml', '.github/workflows/ci-pipeline.yml', '.github/workflows/release.yml', '.github/workflows/pages.yml']) {
     for (const runner of read(file).matchAll(/^ +runs-on: (.*)$/gm)) assert.equal(runner[1], field(JSON.parse(read('config/ci.json')), 'runner', 'config/ci.json'), `${file} names another runner than config/ci.json`);
@@ -452,14 +420,14 @@ test('the jobs of assets.yml and pages.yml run their recipes, and RELEASE=true a
   for (const name of ['platform', 'npm']) assert.match(job(assets, name), new RegExp(`\\n {8}run: make ci-assets-${name} RELEASE=\\$\\{\\{ inputs\\.release \\}\\}$`, 'm'), `the job ${name} of assets.yml does not run make ci-assets-${name} with the input release`);
   assert.match(job(assets, 'platform'), /uses: \.\/\.github\/actions\/runner-setup\n {8}with:\n {10}llvm: 'true'\n/, 'the job platform does not install LLVM through runner-setup');
   assert.match(job(jobsOf(PAGES), 'pages'), /\n {8}run: make ci-pages$/m, 'the job pages does not run make ci-pages');
-  assert.deepEqual(callsOf(['ci-assets-platform']), ['install-tools', 'llvm-check', '-k']);
-  assert.deepEqual(callsOf(['ci-assets-platform', 'RELEASE=true']), ['install-tools', 'llvm-check', 'release-binding-check', '-k']);
+  assert.deepEqual(callsOf(['ci-assets-platform']), ['install-tools', 'llvm-check', 'release-recipes', '-k']);
+  assert.deepEqual(callsOf(['ci-assets-platform', 'RELEASE=true']), ['install-tools', 'llvm-check', 'release-recipes', 'release-binding-check', '-k']);
   const platform = make(['-n', 'ci-assets-platform', 'RELEASE=false']);
   assert.equal(platform.code, 0, platform.output);
   assert.match(platform.output, /^\S*make --no-print-directory install-tools TOOLS="rust uv python"$/m);
   assert.match(platform.output, /^\S*make --no-print-directory -k release-go-static release-wheel release-php-ext release-npm-platform PHP=php$/m);
-  assert.deepEqual(callsOf(['ci-assets-npm']), ['install-tools', 'install-wasm-bindgen', 'release-npm']);
-  assert.deepEqual(callsOf(['ci-assets-npm', 'RELEASE=true']), ['install-tools', 'install-wasm-bindgen', 'release-binding-check', 'release-npm']);
+  assert.deepEqual(callsOf(['ci-assets-npm']), ['install-tools', 'release-recipes', 'install-wasm-bindgen', 'release-npm']);
+  assert.deepEqual(callsOf(['ci-assets-npm', 'RELEASE=true']), ['install-tools', 'release-recipes', 'install-wasm-bindgen', 'release-binding-check', 'release-npm']);
   for (const goal of ['ci-assets-platform', 'ci-assets-npm']) {
     const wrong = make([goal, 'RELEASE=yes']);
     assert.equal(wrong.code, 2, wrong.output);
@@ -479,5 +447,5 @@ test('the jobs of release.yml run make ci-release-tag and make ci-release-publis
   assert.match(job(release, 'publish'), /\n {8}run: make ci-release-publish$/m, 'the job publish does not run make ci-release-publish');
   assert.deepEqual(callsOf(['ci-release-tag', 'RUN=7'], { GITHUB_ENV: '/dev/null' }), ['release-tag', 'release-tag-output']);
   assert.match(make(['-n', 'ci-release-tag', 'RUN=7', 'GITHUB_EVENT_NAME=workflow_run'], { GITHUB_ENV: '/dev/null' }).output, /release-tag AUTO=1$/m, 'a workflow_run does not release with AUTO=1');
-  assert.deepEqual(callsOf(['ci-release-publish', 'TAG=v0.0.1']), ['release-zip', 'release-prepare', 'release-tools', 'release-assets', 'install-tools', 'release-go-module', 'release-publish', 'release-platform-assets', 'release-undraft']);
+  assert.deepEqual(callsOf(['ci-release-publish', 'TAG=v0.0.1']), ['release-zip', 'release-prepare', 'release-tools', 'release-assets', 'install-tools', 'release-recipes', 'release-go-module', 'release-publish', 'release-platform-assets', 'release-undraft']);
 });
